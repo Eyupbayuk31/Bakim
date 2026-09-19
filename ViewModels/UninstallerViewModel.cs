@@ -71,6 +71,32 @@ namespace Bakım.ViewModels
         private string _selectedSort = "Size"; // Size, Name, Date, Publisher
 
         [ObservableProperty]
+        private string _appFilterCategory = "UserOnly"; // "UserOnly", "SystemOnly", "All"
+
+        [ObservableProperty]
+        private int _userAppsCount;
+
+        [ObservableProperty]
+        private int _systemAppsCount;
+
+        public bool IsUserOnlyFilter => AppFilterCategory == "UserOnly";
+        public bool IsSystemOnlyFilter => AppFilterCategory == "SystemOnly";
+        public bool IsAllFilter => AppFilterCategory == "All";
+
+        public bool IsSortBySize => SelectedSort == "Size";
+        public bool IsSortByName => SelectedSort == "Name";
+        public bool IsSortByDate => SelectedSort == "Date";
+        public bool IsSortByPublisher => SelectedSort == "Publisher";
+
+        partial void OnAppFilterCategoryChanged(string value)
+        {
+            _filteredApps.Refresh();
+            OnPropertyChanged(nameof(IsUserOnlyFilter));
+            OnPropertyChanged(nameof(IsSystemOnlyFilter));
+            OnPropertyChanged(nameof(IsAllFilter));
+        }
+
+        [ObservableProperty]
         private UninstallerStats _stats = new();
 
         [ObservableProperty]
@@ -112,12 +138,34 @@ namespace Bakım.ViewModels
         partial void OnSelectedSortChanged(string value)
         {
             ApplySorting();
+            OnPropertyChanged(nameof(IsSortBySize));
+            OnPropertyChanged(nameof(IsSortByName));
+            OnPropertyChanged(nameof(IsSortByDate));
+            OnPropertyChanged(nameof(IsSortByPublisher));
+        }
+
+        [RelayCommand]
+        public void SetAppFilterCategory(string category)
+        {
+            if (string.IsNullOrWhiteSpace(category)) return;
+            AppFilterCategory = category;
         }
 
         private bool FilterAppItem(object obj)
         {
             if (obj is not InstalledAppItem item) return false;
 
+            // 1. Kategori Filtresi (Korumalı sistem bileşenleri süzgeci)
+            if (AppFilterCategory == "UserOnly" && item.IsSystemComponent)
+            {
+                return false;
+            }
+            if (AppFilterCategory == "SystemOnly" && !item.IsSystemComponent)
+            {
+                return false;
+            }
+
+            // 2. Arama Filtresi
             if (string.IsNullOrWhiteSpace(SearchText)) return true;
 
             string query = SearchText.Trim().ToLowerInvariant();
@@ -207,12 +255,18 @@ namespace Bakım.ViewModels
         private void UpdateStats()
         {
             long totalBytes = Apps.Sum(a => a.EstimatedSizeBytes);
+            int systemCount = Apps.Count(a => a.IsSystemComponent);
+            int userCount = Apps.Count(a => !a.IsSystemComponent);
+
+            UserAppsCount = userCount;
+            SystemAppsCount = systemCount;
+
             Stats = new UninstallerStats
             {
                 TotalAppsCount = Apps.Count,
                 TotalFootprintBytes = totalBytes,
                 FormattedTotalFootprint = FormatBytes(totalBytes),
-                SystemComponentsCount = Apps.Count(a => a.IsSystemComponent),
+                SystemComponentsCount = systemCount,
                 LeftoversFoundCount = Leftovers.Count,
                 TotalLeftoverBytes = Leftovers.Sum(l => l.SizeBytes),
                 FormattedTotalLeftovers = FormatBytes(Leftovers.Sum(l => l.SizeBytes))
@@ -454,7 +508,7 @@ namespace Bakım.ViewModels
         public void SelectAllApps(string selectAll)
         {
             bool select = selectAll == "true" || selectAll == "True";
-            foreach (var app in Apps)
+            foreach (var app in _filteredApps.OfType<InstalledAppItem>())
             {
                 if (!app.IsSystemComponent)
                 {

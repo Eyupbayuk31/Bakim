@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v2.7.4'
+        default: 'v2.7.8'
 
 permissions:
   contents: write
@@ -94,10 +94,11 @@ jobs:
           make_latest: true
           generate_release_notes: false
           body: |
-            • **Command Palette (Ctrl+K) Kusursuz Navigasyon**: Arama sonuçlarında satıra tıklama ve Enter tuşu ile ilgili modüle anında geçiş garantilendi. Arama kutusundayken Yukarı/Aşağı ok tuşlarıyla gezinme eklendi.
-            • **Tam Opak Modern Tasarım**: Yarı saydam arka plan sızıntısı giderildi; derin siyah karartma ve solid koyu yüzey kartı ile net okunabilirlik sağlandı.
-            • **Açılışta Otomatik Güncelleme**: Uygulama açıldığında arka planda otomatik yeni sürüm denetimi ve tek tıkla güncelleme motoru entegre edildi.
-            • **Canlı Tarama & Optimizasyon Animasyonları**: Cyber radar ışını, kategoriye özel dönen göstergeler ve 3 aşamalı RAM temizleme görsel efektleri eklendi.
+            • **Korumalı Sistem Bileşenleri İzolasyonu**: Edge WebView2, Windows SDK, Visual C++ Redistributable gibi kritik bileşenler ana kaldırma listesinden izole edildi; liste kalabalığı tamamen temizlendi.
+            • **3 Kademeli Akıllı Filtreleme Segmenti**: [Kaldırılabilir Uygulamalar], [Korumalı Sistem Bileşenleri] ve [Tümü] sekmeleri eklendi.
+            • **Tıklanabilir İnteraktif KPI Kartları**: Üst kısımdaki Kaldırılabilir ve Korumalı Sistem kartlarına tıklayarak doğrudan listeyi filtreleyebilme sağlandı.
+            • **Yüksek Çözünürlüklü Native Simgeler & Modern Sıralama**: Uygulama ikonları netleştirildi, dinamik boyut/isim/tarih/yayıncı sıralama butonları eklendi.
+            • **Güvenlik Kalkanı & InfoBar Rehberi**: Korumalı bileşenler sekmesinde sistem kararlılığını korumaya yönelik bilgilendirici durum çubuğu entegre edildi.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe
