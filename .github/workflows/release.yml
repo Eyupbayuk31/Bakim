@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v2.7.9'
+        default: 'v2.8.0'
 
 permissions:
   contents: write
@@ -49,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.7.4" }
+          if (-not $tag) { $tag = "v2.8.0" }
           
           # Rename executable to standard ascii name for distribution
           Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
@@ -64,7 +64,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.7.3" }
+          if (-not $tag) { $tag = "v2.8.0" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
@@ -88,17 +88,22 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: Bakım ${{ env.TAG_NAME }} - Fluent System Optimizer
+          name: Bakım ${{ env.TAG_NAME }} - Autoruns & Persistence Analyzer (V41.0)
           draft: false
           prerelease: false
           make_latest: true
           generate_release_notes: false
           body: |
-            • **Avcı Modu (Hunter Mode) Devrimi**: Programın kendi kendini yakalaması kökten engellendi; Win32 GetCursorPos ve GA_ROOT mimarisiyle sıfır hata hedef tespiti sağlandı.
-            • **Canlı Neon Hedef Çerçeveleme (Highlight Overlay)**: İmleç hedeflenen pencerenin üzerine geldiğinde ekran üzerinde parlayan neon mavi çerçeve ve canlı bilgi rozeti (HUD) gösterilir.
-            • **Avcı Modu Zengin Aksiyon Menüsü**: Yakalanan hedef üzerinde Standart Kaldır, Zorla Kaldır, Süreci Sonlandır (Kill Process) ve Dosya Konumunu Aç eylemleri sunulur.
-            • **Kaldırma Öncesi Geri Yükleme Noktası Onay İstemi**: Kaldırma öncesinde 15-20 saniye bekleten otomatik geri yükleme noktası oluşturma işlemi isteğe bağlı hale getirildi; kullanıcıya açıkça sorulur.
-            • **Ayarlar Sayfası Entegrasyonu**: Ayarlar modülüne "Program Kaldırıcı & Sistem Geri Yükleme Güvenliği" kartı eklendi; geri yükleme noktası sorma ve oluşturma tercihleri dinamik olarak yönetilebilir.
+            • **Sysinternals Autoruns & Persistence Analyzer (V41.0)**:
+              - Windows başlangıç ve kalıcılık noktalarını derinlemesine tarayan Sysinternals seviyesinde yepyeni analiz modülü eklendi.
+              - 8 Kalıcılık Vektörü: Run/RunOnce (HKCU/HKLM), WOW6432Node, Winlogon, IFEO Debugger saptırma, AppInit_DLLs, Başlangıç klasörleri (.lnk çözümü), Zamanlanmış Görevler (SchTasks) ve Windows Servisleri.
+              - **WinVerifyTrust Doğrulaması**: Dosyaların gerçekliğini doğrulamak için Win32 wintrust.dll ile hem Authenticode hem de Windows Catalog (.cat) dijital imza denetimi.
+              - **VirusTotal Entegrasyonu**: Kilitlenmeyen SHA-256 hesaplama ve tek tıkla VirusTotal rapor sayfasına yönlendirme / puanlama.
+              - **Güvenli Geri Alınabilir Aç/Kapa**: Girdileri silmeden `Bakim_Disabled_` öneki, task disable ve servis yapılandırması ile güvenli pasifleştirme.
+              - **Sysinternals Filtresi**: "Microsoft Girdilerini Gizle" ve "Yalnızca İmzasızları Göster" ile şüpheli yazılımları anında tespit etme.
+              - **CSV Dışa Aktarma & Sanallaştırılmış UI**: Binlerce girdiyi sıfır kasma ile listeleyen VirtualizingStackPanel arayüzü ve CSV raporlama.
+            • **Avcı Modu Saydamlık Düzeltmesi (Hunter Dialog Fix)**:
+              - Hedef yakalama diyalogundaki arka plan sızması (transparency bleed-through) tamamen giderildi; %100 opak Slate Dark `#1E293B` paneli ve yüksek kontrastlı butonlar uygulandı.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

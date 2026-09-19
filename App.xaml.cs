@@ -81,6 +81,8 @@ namespace Bakım
             services.AddSingleton<IFileExplorerTweaksService, FileExplorerTweaksService>();
             services.AddSingleton<IGitHubUpdateService, GitHubUpdateService>();
             services.AddSingleton<IAuthService, AuthService>();
+            services.AddSingleton<IVirusTotalCheckService, VirusTotalCheckService>();
+            services.AddSingleton<IAutorunsScannerEngine, AutorunsScannerEngine>();
 
             // ViewModels (Transient)
             services.AddTransient<MainViewModel>();
@@ -94,6 +96,7 @@ namespace Bakım
             services.AddTransient<PrivacyDebloatViewModel>();
             services.AddTransient<CrashAnalyzerViewModel>();
             services.AddTransient<UninstallerViewModel>();
+            services.AddTransient<AutorunsViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<LoginViewModel>();

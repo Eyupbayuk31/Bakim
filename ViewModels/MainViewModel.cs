@@ -80,6 +80,9 @@ namespace Bakım.ViewModels
             PrivacyDebloat = new PrivacyDebloatViewModel(privSvc);
             CrashAnalyzer = new CrashAnalyzerViewModel(crashSvc);
             Uninstaller = new UninstallerViewModel(uninstSvc);
+            var vtSvc = new VirusTotalCheckService();
+            var autorunsSvc = new AutorunsScannerEngine(vtSvc);
+            Autoruns = new AutorunsViewModel(autorunsSvc, vtSvc);
             WindowsTweaker = new WindowsTweakerViewModel(
                 behaviorSvc, bootLogonSvc, dtSvc, cmSvc, toolsSvc,
                 classicSvc, win11Svc, appearSvc, advAppearSvc, snapSvc,
@@ -114,6 +117,7 @@ namespace Bakım.ViewModels
         public PrivacyDebloatViewModel PrivacyDebloat { get; }
         public CrashAnalyzerViewModel CrashAnalyzer { get; }
         public UninstallerViewModel Uninstaller { get; }
+        public AutorunsViewModel Autoruns { get; }
         public WindowsTweakerViewModel WindowsTweaker { get; }
         public SettingsViewModel Settings { get; }
         public TweakerCategoriesViewModel TweakerCategories { get; }
@@ -404,6 +408,7 @@ namespace Bakım.ViewModels
                 "PrivacyDebloat" => PrivacyDebloat,
                 "CrashAnalyzer" => CrashAnalyzer,
                 "Uninstaller" => Uninstaller,
+                "Autoruns" or "Persistence" => Autoruns,
                 "Tweaker" => WindowsTweaker,
                 "WindowsTweaker" => WindowsTweaker,
                 "Settings" => Settings,

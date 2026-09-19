@@ -58,6 +58,9 @@
         <DataTemplate DataType="{x:Type vm:UninstallerViewModel}">
             <modules:UninstallerModuleView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AutorunsViewModel}">
+            <modules:AutorunsPersistenceView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:WindowsTweakerViewModel}">
             <modules:WindowsTweakerModuleView/>
         </DataTemplate>
@@ -385,7 +388,23 @@
                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
                             </ui:Button>
 
-                            <!-- 11. Windows Tweaker Hierarchical Accordion Item -->
+                            <!-- 11. Autoruns & Persistence Analyzer Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Autoruns'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Autoruns"
+                                       Icon="{ui:SymbolIcon ShieldCheckmark24}"
+                                       ToolTip="Kalıcılık &amp; Autoruns">
+                                <TextBlock Text="Kalıcılık &amp; Autoruns" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 12. Windows Tweaker Hierarchical Accordion Item -->
                             <Grid Margin="0,0,0,4">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>

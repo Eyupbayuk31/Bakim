@@ -218,6 +218,16 @@ namespace Bakım.Services
                 },
                 new()
                 {
+                    Title = "Kalıcılık & Başlangıç Analizi (Autoruns)",
+                    Category = "Sayfa Navigasyonu",
+                    Description = "Sysinternals seviyesinde 8 kalıcılık noktası, WinVerifyTrust ve VirusTotal taraması.",
+                    IconName = "ShieldCheckmark24",
+                    ActionKind = CommandActionKind.Navigate,
+                    TargetParameter = "Autoruns",
+                    KeyboardShortcut = "Autoruns"
+                },
+                new()
+                {
                     Title = "Windows Tweaker (Tüm Ayarlar)",
                     Category = "Sayfa Navigasyonu",
                     Description = "150+ Windows ince ayarı, görünüm ve davranış özelleştirme.",
