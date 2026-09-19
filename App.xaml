@@ -29,6 +29,9 @@
             <conv:StringToNavAppearanceConverter x:Key="StringToNavAppearance"/>
             <conv:SafeSymbolConverter x:Key="SafeSymbol"/>
             <conv:EventLevelToBrushConverter x:Key="EventLevelToBrush"/>
+            <conv:CategoryToForegroundConverter x:Key="CategoryToForeground"/>
+            <conv:CategoryToBackgroundConverter x:Key="CategoryToBackground"/>
+
 
             <!-- Semantic Design System Brushes mapped to Wpf.Ui System Brushes -->
             <SolidColorBrush x:Key="Brush.Window.Background" Color="#0F172A"/>
