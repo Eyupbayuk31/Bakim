@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Bakım"
-#define MyAppVersion "2.5.1"
+#define MyAppVersion "2.6.0"
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"
 #define MyAppExeName "Bakim.exe"
@@ -68,8 +68,8 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags
 ; Bilgisayar açılışında UAC istemi olmadan en yüksek yönetici yetkisiyle başlatma (Task Scheduler)
 Filename: "schtasks.exe"; Parameters: "/create /tn ""Bakım_Admin_AutoStart"" /tr """"{app}\{#MyAppExeName}"""" /sc onlogon /rl highest /f"; Flags: runhidden; Tasks: autostart
 
-; Kurulum tamamlandıktan sonra uygulamayı başlatma seçeneği (shellexec ile Hata 740 önlenir)
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent shellexec
+; Kurulum tamamlandıktan sonra uygulamayı başlatma seçeneği (shellexec ile Hata 740 önlenir, sessiz güncellemede otomatik açılır)
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall shellexec
 
 [UninstallRun]
 ; Kaldırma esnasında Görev Zamanlayıcı kaydını temizle

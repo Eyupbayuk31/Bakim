@@ -133,26 +133,13 @@
 
             <!-- 5. Action Buttons -->
             <Grid Grid.Row="4">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- GitHub Link -->
-                <ui:Button Grid.Column="0" 
-                           Appearance="Transparent" 
-                           Click="OnViewOnGitHubClicked" 
-                           Content="GitHub'da İncele" 
-                           Icon="{ui:SymbolIcon Open20}"/>
-
                 <!-- Action Group -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                     <ui:Button x:Name="LaterButton" 
                                Appearance="Secondary" 
                                Click="OnLaterClicked" 
                                Content="Daha Sonra" 
-                               Margin="0,0,8,0"/>
+                               Margin="0,0,10,0"/>
 
                     <ui:Button x:Name="UpdateButton" 
                                Appearance="Primary" 

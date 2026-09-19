@@ -19,7 +19,7 @@ namespace Bakım.Views.Dialogs
             CurrentVersionText.Text = $"v{_updateInfo.CurrentVersion}";
             LatestVersionText.Text = $"v{_updateInfo.LatestVersion}";
             ReleaseNotesText.Text = string.IsNullOrWhiteSpace(_updateInfo.ReleaseNotes) 
-                ? "Bu sürüm için detaylı değişiklik açıklaması girilmedi." 
+                ? AutoUpdateService.GetDefaultChangelog() 
                 : _updateInfo.ReleaseNotes;
 
             if (_updateInfo.FileSizeBytes > 0)
@@ -53,27 +53,17 @@ namespace Bakım.Views.Dialogs
             Close();
         }
 
-        private void OnViewOnGitHubClicked(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                string url = string.IsNullOrWhiteSpace(_updateInfo.ReleasePageUrl)
-                    ? "https://github.com/Eyupbayuk31/Bakim/releases"
-                    : _updateInfo.ReleasePageUrl;
-
-                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-            }
-            catch { }
-        }
-
         private async void OnUpdateNowClicked(object sender, RoutedEventArgs e)
         {
             if (_isDownloading) return;
 
             if (string.IsNullOrWhiteSpace(_updateInfo.DownloadUrl))
             {
-                // Fallback to release page
-                OnViewOnGitHubClicked(sender, e);
+                MessageBox.Show(
+                    "Güncelleme paketi indirme bağlantısı alınamadı. Lütfen daha sonra tekrar deneyiniz.",
+                    "Güncelleme Bildirimi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
                 return;
             }
 
@@ -102,12 +92,10 @@ namespace Bakım.Views.Dialogs
                 ProgressPanel.Visibility = Visibility.Collapsed;
 
                 MessageBox.Show(
-                    $"Güncelleme indirilemedi: {ex.Message}\nTarayıcı üzerinden manuel indirme sayfası açılıyor.",
+                    $"Güncelleme indirilemedi: {ex.Message}\nLütfen internet bağlantınızı kontrol edip tekrar deneyiniz.",
                     "Güncelleme Hatası",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
-
-                OnViewOnGitHubClicked(sender, e);
             }
         }
     }

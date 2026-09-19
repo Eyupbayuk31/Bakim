@@ -25,16 +25,56 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "2.5.1";
+        public const string DefaultCurrentVersion = "2.6.0";
 
         public static Version GetCurrentVersion()
         {
             var asmVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            if (asmVersion != null && asmVersion > new Version(0, 0, 0))
+            if (asmVersion != null && asmVersion > new Version(1, 0, 0))
             {
                 return asmVersion;
             }
-            return new Version(2, 5, 1);
+            return new Version(2, 6, 0);
+        }
+
+        public static string GetDefaultChangelog()
+        {
+            return "• Hata Düzeltmesi: Kurulum sonrası oluşan Yetki Yükseltme (Kod 740) hatası giderildi.\n" +
+                   "• Otomatik Başlatma: Güncelleme tamamlandığında program otomatik olarak açılır.\n" +
+                   "• Windows Açılış Entegrasyonu: UAC uyarısız en yüksek yetkiyle otomatik başlama desteği sağlandı.\n" +
+                   "• Donanım ve Bellek: RAM boşaltma motoru ve GPU VRAM okuma doğruluğu artırıldı.\n" +
+                   "• Performans ve Akıcılık: Modern Fluent 2.0 arayüz optimizasyonları uygulandı.";
+        }
+
+        public static string FormatChangelog(string? rawBody, string tagName)
+        {
+            if (string.IsNullOrWhiteSpace(rawBody) || rawBody.Trim().Length < 10)
+            {
+                return GetDefaultChangelog();
+            }
+
+            // GitHub linklerini veya otomatik compare satırlarını temizle (kullanıcı görmesin)
+            var lines = rawBody.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var cleanLines = new System.Collections.Generic.List<string>();
+
+            foreach (var line in lines)
+            {
+                string trimmed = line.Trim();
+                if (trimmed.Contains("github.com", StringComparison.OrdinalIgnoreCase) ||
+                    trimmed.Contains("Full Changelog", StringComparison.OrdinalIgnoreCase) ||
+                    trimmed.Contains("/compare/", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                cleanLines.Add(trimmed);
+            }
+
+            if (cleanLines.Count == 0)
+            {
+                return GetDefaultChangelog();
+            }
+
+            return string.Join("\n", cleanLines);
         }
 
         public static async Task<UpdateInfo> CheckForUpdatesAsync()
@@ -75,7 +115,8 @@ namespace Bakım.Services
 
                 string rawTag = root.GetProperty("tag_name").GetString() ?? "0.0.0";
                 string cleanTagName = rawTag.TrimStart('v', 'V', ' ');
-                string body = root.TryGetProperty("body", out var b) ? (b.GetString() ?? "Değişiklik notu belirtilmedi.") : "Değişiklik notu belirtilmedi.";
+                string rawBody = root.TryGetProperty("body", out var b) ? (b.GetString() ?? "") : "";
+                string body = FormatChangelog(rawBody, cleanTagName);
                 string htmlUrl = root.TryGetProperty("html_url", out var h) ? (h.GetString() ?? "https://github.com/Eyupbayuk31/Bakim/releases") : "https://github.com/Eyupbayuk31/Bakim/releases";
 
                 string downloadUrl = string.Empty;
