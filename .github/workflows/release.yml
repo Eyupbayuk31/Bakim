@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v2.5.0'
+        default: 'v2.7.0'
 
 permissions:
   contents: write
@@ -49,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.5.0" }
+          if (-not $tag) { $tag = "v2.7.0" }
           
           # Rename executable to standard ascii name for distribution
           Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
@@ -64,7 +64,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.5.0" }
+          if (-not $tag) { $tag = "v2.7.0" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
@@ -81,9 +81,10 @@ jobs:
           prerelease: false
           generate_release_notes: false
           body: |
-            • **Yeni Windows 11 Fluent İkonu**: Özel tasarım modern mavi Windows 11 simgesi ve kurulum ikonu entegre edildi.
-            • **Anlık Güncelleme Kontrolü**: Önbellek gecikmesi tamamen çözüldü, güncellemeler anında algılanıyor.
-            • **Sade Değişiklik Notları**: Önceki sürümlerin birikmiş notları temizlendi, sadece son yenilikler gösteriliyor.
+            • **Yeni Giriş & Kayıt Sistemi**: Fluent Segmented sekme geçişi, şifre doğrulama ve modern UI eklendi.
+            • **Windows DPAPI Koruması**: 'Beni Hatırla' bilgileri işletim sistemi düzeyinde DPAPI ile şifrelendi.
+            • **PBKDF2 Bulut Güvenliği**: Şifreler 100.000 iterasyon PBKDF2 + Salt ile güvenle doğrulanıyor.
+            • **64-bit DXGI VRAM Desteği**: Ekran kartı bellek tespiti 4GB WMI sınırından kurtarılarak doğrudan DirectX ve Registry üzerinden alındı.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

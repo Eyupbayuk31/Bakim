@@ -80,6 +80,7 @@ namespace Bakım
             services.AddSingleton<ISettingsControlPanelTweaksService, SettingsControlPanelTweaksService>();
             services.AddSingleton<IFileExplorerTweaksService, FileExplorerTweaksService>();
             services.AddSingleton<IGitHubUpdateService, GitHubUpdateService>();
+            services.AddSingleton<IAuthService, AuthService>();
 
             // ViewModels (Transient)
             services.AddTransient<MainViewModel>();
@@ -102,18 +103,33 @@ namespace Bakım
             services.AddTransient<LoginWindow>();
         }
 
+        private static DateTime _lastExceptionTime = DateTime.MinValue;
+        private static string _lastExceptionMessage = string.Empty;
+
         private void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
+            // Çöküşü engelle
+            e.Handled = true;
+
             // Kök Neden Tespiti ve Kullanıcı Bilgilendirmesi
             string rootCause = e.Exception.InnerException?.Message ?? e.Exception.Message;
+            var now = DateTime.UtcNow;
+
+            // 2 saniye throttling / de-duplication: Aynı hatanın üst üste popup açmasını engelle
+            if (string.Equals(_lastExceptionMessage, rootCause, StringComparison.Ordinal) &&
+                (now - _lastExceptionTime).TotalSeconds < 2.0)
+            {
+                return;
+            }
+
+            _lastExceptionTime = now;
+            _lastExceptionMessage = rootCause;
+
             MessageBox.Show(
                 $"Beklenmeyen bir hata oluştu fakat uygulama güvenle çalışmaya devam ediyor:\n\n{rootCause}",
                 "Bakım Sistemi - Koruyucu Hata Yakalama",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
-
-            // Çöküşü engelle
-            e.Handled = true;
         }
     }
 }
