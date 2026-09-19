@@ -79,6 +79,7 @@ namespace Bakım
             services.AddSingleton<IEdgeTweaksService, EdgeTweaksService>();
             services.AddSingleton<ISettingsControlPanelTweaksService, SettingsControlPanelTweaksService>();
             services.AddSingleton<IFileExplorerTweaksService, FileExplorerTweaksService>();
+            services.AddSingleton<IGitHubUpdateService, GitHubUpdateService>();
 
             // ViewModels (Transient)
             services.AddTransient<MainViewModel>();

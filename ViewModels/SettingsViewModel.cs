@@ -34,10 +34,12 @@ namespace Bakım.ViewModels
         private readonly string _settingsFilePath;
         private readonly string _logsDirectoryPath;
         private readonly ThemeService _themeService;
+        private readonly IGitHubUpdateService _updateService;
         private bool _isInitializing = true;
 
-        public SettingsViewModel()
+        public SettingsViewModel(IGitHubUpdateService? updateService = null)
         {
+            _updateService = updateService ?? new GitHubUpdateService();
             _themeService = new ThemeService();
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string appFolder = Path.Combine(appData, "Bakim");
@@ -447,16 +449,66 @@ namespace Bakım.ViewModels
         public async Task CheckForUpdatesAsync()
         {
             IsCheckingUpdate = true;
-            UpdateStatus = "Güncellemeler denetleniyor...";
+            UpdateStatus = "GitHub Releases üzerinden güncellemeler denetleniyor...";
+
             try
             {
-                await Task.Delay(1200);
-                UpdateStatus = "En güncel sürümü kullanıyorsunuz (v2.5.0 - Son Güncelleme: Bugün)";
-                MessageBox.Show("Uygulamanız günceldir! En son performans ve güvenlik yamalarına sahipsiniz.", "Güncelleme Kontrolü", MessageBoxButton.OK, MessageBoxImage.Information);
+                var result = await _updateService.CheckForUpdatesAsync();
+
+                if (!result.Success)
+                {
+                    UpdateStatus = $"Kontrol başarısız: {result.ErrorMessage}";
+                    MessageBox.Show(
+                        $"Güncellemeler kontrol edilirken bir sorun oluştu:\n{result.ErrorMessage}",
+                        "Güncelleme Kontrolü",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (result.IsUpdateAvailable)
+                {
+                    UpdateStatus = $"Yeni Sürüm Mevcut! ({result.LatestVersion})";
+
+                    string sizeInfo = result.FileSizeBytes > 0
+                        ? $"\nDosya Boyutu: {(result.FileSizeBytes / (1024.0 * 1024.0)):F1} MB"
+                        : string.Empty;
+
+                    var choice = MessageBox.Show(
+                        $"🎉 Yeni bir güncelleme mevcut!\n\n" +
+                        $"• Mevcut Sürüm: v{result.CurrentVersion}\n" +
+                        $"• Yeni Sürüm: v{result.LatestVersion}\n" +
+                        $"• Başlık: {result.Title}{sizeInfo}\n\n" +
+                        $"Değişiklik Notları:\n{result.Changelog}\n\n" +
+                        "Güncellemeyi indirmek için GitHub sürüm sayfasına gitmek ister misiniz?",
+                        "Yeni Sürüm Bulundu",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Information);
+
+                    if (choice == MessageBoxResult.Yes && !string.IsNullOrWhiteSpace(result.ReleaseUrl))
+                    {
+                        Process.Start(new ProcessStartInfo(result.ReleaseUrl) { UseShellExecute = true });
+                    }
+                }
+                else
+                {
+                    string extraInfo = string.IsNullOrWhiteSpace(result.ErrorMessage)
+                        ? $"Yazılım güncel (v{result.CurrentVersion} - Son kontrol: {DateTime.Now:HH:mm})"
+                        : result.ErrorMessage;
+
+                    UpdateStatus = extraInfo;
+
+                    MessageBox.Show(
+                        $"Tebrikler! En güncel Bakım sürümünü (v{result.CurrentVersion}) kullanıyorsunuz.\nSisteminiz en son optimizasyon ve güvenlik modülleriyle korunmaktadır.",
+                        "Yazılım Güncel",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                UpdateStatus = "Güncelleme sunucusuna bağlanılamadı.";
+                UpdateStatus = "Güncelleme kontrolünde hata oluştu.";
+                MessageBox.Show($"Beklenmeyen hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {

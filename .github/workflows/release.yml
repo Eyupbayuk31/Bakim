@@ -1,0 +1,70 @@
+name: Build & Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Sürüm Etiketi (Örn: v2.5.0)'
+        required: true
+        default: 'v2.5.0'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Determine Version Tag
+        id: vars
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "TAG_NAME=${{ github.event.inputs.version_tag }}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Restore dependencies
+        run: dotnet restore Bakım.csproj
+
+      - name: Publish Single-File Executable
+        run: |
+          dotnet publish Bakım.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
+
+      - name: Rename and Package Artifacts
+        shell: pwsh
+        run: |
+          $tag = $env:TAG_NAME
+          if (-not $tag) { $tag = "v2.5.0" }
+          
+          # Rename executable to standard ascii name for distribution
+          Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
+          
+          # Create zip package
+          Compress-Archive -Path "publish\win-x64\Bakim.exe" -DestinationPath "Bakim-$tag-win-x64.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Bakım ${{ env.TAG_NAME }} - Fluent System Optimizer
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            publish/win-x64/Bakim.exe
+            Bakim-*.zip

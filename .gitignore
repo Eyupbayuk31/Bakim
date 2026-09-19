@@ -15,6 +15,7 @@ obj/
 *.nupkg
 *.snupkg
 publish/
+Releases/
 
 ## Antigravity Scratch & Temporary Logs
 scratch/
