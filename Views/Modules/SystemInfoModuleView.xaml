@@ -496,17 +496,69 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Scan Progress Bar & Text -->
-                    <StackPanel Grid.Row="1">
-                        <ProgressBar IsIndeterminate="{Binding IsScanning}" 
-                                     Height="4" 
-                                     Margin="0,0,0,6"
+                    <!-- Scan Progress Bar & Animated Beam -->
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Status row: spinner + text -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="12" Height="12"
+                                             Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                             VerticalAlignment="Center"
+                                             Margin="0,0,6,0"
+                                             Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}"/>
+                            <TextBlock Text="{Binding ScanProgressText}"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Indeterminate progress bar -->
+                        <ProgressBar Grid.Row="1"
+                                     IsIndeterminate="{Binding IsScanning}"
+                                     Height="4"
+                                     Margin="0,0,0,4"
                                      Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="{Binding ScanProgressText}" 
-                                   FontSize="11" 
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
-                                   TextTrimming="CharacterEllipsis"/>
-                    </StackPanel>
+
+                        <!-- Animated radar scan beam -->
+                        <Border Grid.Row="2"
+                                Height="2"
+                                ClipToBounds="True"
+                                Margin="0,0,0,0"
+                                Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}">
+                            <Rectangle HorizontalAlignment="Left" Width="180" Height="2">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                        <GradientStop Color="#0038BDF8" Offset="0"/>
+                                        <GradientStop Color="#BB38BDF8" Offset="0.5"/>
+                                        <GradientStop Color="#0038BDF8" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                                <Rectangle.RenderTransform>
+                                    <TranslateTransform x:Name="LargeFileScanBeam"/>
+                                </Rectangle.RenderTransform>
+                                <Rectangle.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever">
+                                                <DoubleAnimation Storyboard.TargetName="LargeFileScanBeam"
+                                                                 Storyboard.TargetProperty="X"
+                                                                 From="-180" To="1400"
+                                                                 Duration="0:0:1.3"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Rectangle.Triggers>
+                            </Rectangle>
+                        </Border>
+                    </Grid>
                 </Grid>
             </ui:Card>
 

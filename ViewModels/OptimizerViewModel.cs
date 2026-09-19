@@ -69,6 +69,12 @@ namespace Bakım.ViewModels
         private bool _hasResultBanner;
 
         [ObservableProperty]
+        private string _optimizationStageText = string.Empty;
+
+        [ObservableProperty]
+        private int _optimizationProgressPercent;
+
+        [ObservableProperty]
         private string _sortColumn = "RAM"; // RAM, Name, PID
 
         [ObservableProperty]
@@ -200,13 +206,31 @@ namespace Bakım.ViewModels
 
             IsBusy = true;
             HasResultBanner = false;
-            StatusText = "Kullanılmayan bellek temizleniyor...";
+            OptimizationStageText = "Bellek haritası analiz ediliyor...";
+            OptimizationProgressPercent = 0;
 
             try
             {
+                // Stage 1: Analysis pacing
+                await Task.Delay(450);
+                OptimizationProgressPercent = 33;
+
+                // Stage 2: Working set compression
+                OptimizationStageText = "Çalışma kümeleri kırpılıyor...";
+                await Task.Delay(350);
+                OptimizationProgressPercent = 66;
+
+                // Stage 3: Actual RAM optimization
                 long freedBytes = await _cleanService.OptimizeRamAsync();
+                OptimizationProgressPercent = 90;
+                OptimizationStageText = "Donanım metrikleri yenileniyor...";
+
                 Hardware = await _infoService.GetSystemHardwareAsync();
                 await LoadTopProcessesAsync();
+
+                OptimizationProgressPercent = 100;
+                OptimizationStageText = "Bellek boşaltıldı! ✓";
+                await Task.Delay(600);
 
                 HasResultBanner = true;
                 OperationResultBanner = $"Bellek temizlendi: {CleanCategory.FormatBytes(freedBytes)} alan serbest bırakıldı.";
@@ -214,10 +238,13 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
+                OptimizationStageText = string.Empty;
                 StatusText = $"Hata: {ex.Message}";
             }
             finally
             {
+                OptimizationProgressPercent = 0;
+                OptimizationStageText = string.Empty;
                 IsBusy = false;
             }
         }

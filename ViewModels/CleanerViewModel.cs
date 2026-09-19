@@ -63,6 +63,14 @@ namespace Bakım.ViewModels
 
         public string FormattedFoundBytes => CleanCategory.FormatBytes(TotalFoundBytes);
         public string FormattedFreedBytes => CleanCategory.FormatBytes(TotalFreedBytes);
+        // Alias used in animated scan status bar XAML binding
+        public string TotalFoundBytesFormatted => CleanCategory.FormatBytes(TotalFoundBytes);
+
+        partial void OnTotalFoundBytesChanged(long value)
+        {
+            OnPropertyChanged(nameof(TotalFoundBytesFormatted));
+            OnPropertyChanged(nameof(FormattedFoundBytes));
+        }
 
         [RelayCommand]
         public void SelectAllCategories()
@@ -94,7 +102,7 @@ namespace Bakım.ViewModels
             IsBusy = true;
             IsScanning = true;
             HasResultBanner = false;
-            StatusText = "Sistem önbellekleri ve geçici dosyalar taranıyor...";
+            StatusText = "Sistem teşhis ve önbellek taraması başlatılıyor...";
             ProgressPercent = 0;
             TotalFoundBytes = 0;
             TotalFilesFound = 0;
@@ -113,48 +121,96 @@ namespace Bakım.ViewModels
 
             try
             {
-                var progress = new Progress<string>(file =>
+                // Kategori durumlarını sıfırla
+                foreach (var c in Categories)
+                {
+                    c.IsScanning = false;
+                    if (c.IsSelected)
+                    {
+                        c.TotalBytes = 0;
+                        c.FileCount = 0;
+                    }
+                }
+
+                int totalCats = selectedCategories.Count;
+                int currentCatIndex = 0;
+                int runningFileCount = 0;
+                long runningBytes = 0;
+
+                var scanProgress = new Progress<string>(file =>
                 {
                     CurrentScanningFile = file;
                 });
-
-                int totalCount = 0;
-                long totalBytes = 0;
 
                 foreach (var cat in selectedCategories)
                 {
                     _cts.Token.ThrowIfCancellationRequested();
                     cat.IsScanning = true;
-                    var (items, bytes) = await _cleanService.ScanCategoryAsync(cat, progress, _cts.Token);
+                    StatusText = $"Taranıyor: {cat.Name}...";
+
+                    // Teşhis görsel kadansı (her kategori için hissedilir başlangıç)
+                    await Task.Delay(90, _cts.Token);
+
+                    var (items, bytes) = await _cleanService.ScanCategoryAsync(cat, scanProgress, _cts.Token);
                     cat.TotalBytes = bytes;
                     cat.FileCount = items.Count;
-                    cat.IsScanning = false;
 
-                    totalBytes += bytes;
-                    totalCount += items.Count;
-
-                    foreach (var itm in items)
+                    if (items.Count > 0)
                     {
-                        ScannedFiles.Add(itm);
+                        // Öğeleri mikro-batch halinde (15-35'lik paketler) akıcı şekilde ekle
+                        int batchSize = Math.Max(15, items.Count / 8);
+                        for (int i = 0; i < items.Count; i += batchSize)
+                        {
+                            _cts.Token.ThrowIfCancellationRequested();
+                            int take = Math.Min(batchSize, items.Count - i);
+                            for (int j = 0; j < take; j++)
+                            {
+                                var itm = items[i + j];
+                                ScannedFiles.Add(itm);
+                                runningBytes += itm.SizeBytes;
+                            }
+
+                            runningFileCount += take;
+                            TotalFilesFound = runningFileCount;
+                            TotalFoundBytes = runningBytes;
+                            OnPropertyChanged(nameof(FormattedFoundBytes));
+
+                            CurrentScanningFile = items[Math.Min(i + take - 1, items.Count - 1)].FilePath;
+
+                            double catProgress = (double)(i + take) / items.Count;
+                            ProgressPercent = Math.Min(98, (int)(((currentCatIndex + catProgress) / totalCats) * 100));
+
+                            // Akıcı gözlem gecikmesi
+                            await Task.Delay(20, _cts.Token);
+                        }
                     }
+                    else
+                    {
+                        await Task.Delay(70, _cts.Token);
+                    }
+
+                    cat.IsScanning = false;
+                    currentCatIndex++;
+                    ProgressPercent = (int)(((double)currentCatIndex / totalCats) * 100);
                 }
 
-                TotalFoundBytes = totalBytes;
-                TotalFilesFound = totalCount;
+                TotalFoundBytes = runningBytes;
+                TotalFilesFound = runningFileCount;
                 OnPropertyChanged(nameof(FormattedFoundBytes));
 
+                ProgressPercent = 100;
                 StatusText = $"Tarama tamamlandı! Toplam {TotalFilesFound} dosya ({FormattedFoundBytes}) temizlenebilir.";
                 CurrentScanningFile = string.Empty;
-                ProgressPercent = 100;
             }
             catch (OperationCanceledException)
             {
                 StatusText = "Tarama işlemi iptal edildi.";
-                foreach (var cat in selectedCategories) cat.IsScanning = false;
+                foreach (var cat in Categories) cat.IsScanning = false;
             }
             catch (Exception ex)
             {
                 StatusText = $"Tarama hatası: {ex.Message}";
+                foreach (var cat in Categories) cat.IsScanning = false;
             }
             finally
             {

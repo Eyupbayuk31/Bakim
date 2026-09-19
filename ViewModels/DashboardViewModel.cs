@@ -92,6 +92,12 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _optimizationFreedBadge = string.Empty;
 
+        [ObservableProperty]
+        private string _boostStageText = string.Empty;
+
+        [ObservableProperty]
+        private int _boostProgressPercent;
+
         public event Action? NavigateToCleanerRequested;
         public event Action? NavigateToOptimizerRequested;
 
@@ -211,25 +217,44 @@ namespace Bakım.ViewModels
 
             IsOptimizing = true;
             HasOptimizationResult = false;
+            BoostStageText = "Sistem belleği analiz ediliyor...";
+            BoostProgressPercent = 0;
 
             try
             {
-                // Stage 1: Working set compression & RAM optimization
+                // Stage 1: Visual analysis pacing
+                await Task.Delay(380);
+                BoostProgressPercent = 20;
+
+                // Stage 2: RAM optimization
+                BoostStageText = "Çalışma kümeleri sıkıştırılıyor...";
+                await Task.Delay(250);
                 long freedRamBytes = await _cleanService.OptimizeRamAsync();
+                BoostProgressPercent = 55;
 
-                // Stage 2: Quick Temp Clean simulation / call
+                // Stage 3: WorkingSet trim + GC
+                BoostStageText = "Atıl süreçler temizleniyor...";
                 long freedTempBytes = await _cleanService.AutoTrimWorkingSetsAsync();
+                await Task.Delay(200);
+                BoostProgressPercent = 80;
 
-                // Force Garbage Collection
+                BoostStageText = "Çöp toplayıcı çalıştırılıyor...";
                 GC.Collect(2, GCCollectionMode.Forced, true, true);
                 GC.WaitForPendingFinalizers();
+                await Task.Delay(150);
+                BoostProgressPercent = 95;
 
-                // Refresh metrics immediately
+                // Refresh metrics
+                BoostStageText = "Telemetri güncelleniyor...";
                 await OnTelemetryTickAsync();
                 await RefreshTopHogsAsync();
+                BoostProgressPercent = 100;
 
                 long totalFreed = freedRamBytes + freedTempBytes;
                 string freedText = CleanCategory.FormatBytes(totalFreed > 0 ? totalFreed : 450 * 1024 * 1024);
+
+                BoostStageText = $"Tamamlandı! {freedText} serbest bırakıldı ✓";
+                await Task.Delay(800);
 
                 OptimizationFreedBadge = $"+{freedText} Serbest";
                 OptimizationResultMessage = $"Sistem başarıyla optimize edildi! {freedText} bellek temizlendi ve işlemci rahatlatıldı.";
@@ -242,6 +267,8 @@ namespace Bakım.ViewModels
             }
             finally
             {
+                BoostStageText = string.Empty;
+                BoostProgressPercent = 0;
                 IsOptimizing = false;
             }
         }

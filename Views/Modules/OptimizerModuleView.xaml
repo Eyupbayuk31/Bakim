@@ -72,6 +72,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" Margin="0,0,0,10">
@@ -120,6 +121,64 @@
                         <TextBlock Text="Toplam Donanım RAM" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB'}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
+                </Grid>
+
+                <!-- 3-Stage Optimization Animation Block (visible only when IsBusy) -->
+                <Grid Grid.Row="3" Margin="0,14,0,0"
+                      Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Stage Text with spinner -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                        <ui:ProgressRing IsIndeterminate="True"
+                                         Width="14" Height="14"
+                                         Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                         VerticalAlignment="Center"
+                                         Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding OptimizationStageText}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Stage Progress Bar -->
+                    <ProgressBar Grid.Row="1"
+                                 Value="{Binding OptimizationProgressPercent}"
+                                 Maximum="100"
+                                 Height="4"
+                                 Margin="0,0,0,4"/>
+
+                    <!-- Animated scan beam -->
+                    <Border Grid.Row="2" Height="2" ClipToBounds="True">
+                        <Rectangle HorizontalAlignment="Left" Width="160" Height="2">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                    <GradientStop Color="#0038BDF8" Offset="0"/>
+                                    <GradientStop Color="#FF38BDF8" Offset="0.5"/>
+                                    <GradientStop Color="#0038BDF8" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                            <Rectangle.RenderTransform>
+                                <TranslateTransform x:Name="RamScanBeam"/>
+                            </Rectangle.RenderTransform>
+                            <Rectangle.Triggers>
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation Storyboard.TargetName="RamScanBeam"
+                                                             Storyboard.TargetProperty="X"
+                                                             From="-160" To="1400"
+                                                             Duration="0:0:1.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Rectangle.Triggers>
+                        </Rectangle>
+                    </Border>
                 </Grid>
             </Grid>
         </ui:Card>

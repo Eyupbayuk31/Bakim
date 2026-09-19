@@ -129,6 +129,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Header & Actions -->
@@ -188,8 +189,41 @@
                     </StackPanel>
                 </Grid>
 
+                <!-- Cyber Scan Beam Line on Targets -->
+                <Border Grid.Row="1" Height="2" 
+                        ClipToBounds="True" 
+                        CornerRadius="1"
+                        Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
+                        Margin="0,0,0,12">
+                    <Rectangle Width="260" HorizontalAlignment="Left">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#0038BDF8" Offset="0"/>
+                                <GradientStop Color="#FF38BDF8" Offset="0.5"/>
+                                <GradientStop Color="#0038BDF8" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform x:Name="ScanBeam1"/>
+                        </Rectangle.RenderTransform>
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="ScanBeam1"
+                                                         Storyboard.TargetProperty="X"
+                                                         From="-260" To="1200"
+                                                         Duration="0:0:1.4"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+                </Border>
+
                 <!-- Categories UniformGrid -->
-                <ItemsControl Grid.Row="1" ItemsSource="{Binding Categories}">
+                <ItemsControl Grid.Row="2" ItemsSource="{Binding Categories}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <UniformGrid Columns="4"/>
@@ -198,21 +232,38 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <ui:Card Padding="12,10" Margin="4" Cursor="Hand" ClipToBounds="False">
-                                <CheckBox IsChecked="{Binding IsSelected}" 
-                                          Cursor="Hand"
-                                          Margin="2,0,4,0"
-                                          VerticalAlignment="Center">
-                                    <StackPanel Margin="6,0,0,0">
-                                        <TextBlock Text="{Binding Name}" 
-                                                   FontWeight="SemiBold" 
-                                                   FontSize="12" 
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <TextBlock Text="{Binding FormattedSize, StringFormat='Bulunan: {0}'}" 
-                                                   FontSize="10" 
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                                                   Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                </CheckBox>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <CheckBox Grid.Column="0" 
+                                              IsChecked="{Binding IsSelected}" 
+                                              Cursor="Hand"
+                                              Margin="2,0,4,0"
+                                              VerticalAlignment="Center">
+                                        <StackPanel Margin="6,0,0,0">
+                                            <TextBlock Text="{Binding Name}" 
+                                                       FontWeight="SemiBold" 
+                                                       FontSize="12" 
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding FormattedSize, StringFormat='Bulunan: {0}'}" 
+                                                       FontSize="10" 
+                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                                       Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </CheckBox>
+
+                                    <!-- Scanning indicator spinner on category -->
+                                    <ui:ProgressRing Grid.Column="1" 
+                                                     IsIndeterminate="True" 
+                                                     Width="16" Height="16" 
+                                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                     VerticalAlignment="Center"
+                                                     Margin="4,0,0,0"
+                                                     Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}"/>
+                                </Grid>
                             </ui:Card>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -220,48 +271,101 @@
             </Grid>
         </ui:Card>
 
-        <!-- Row 3: Realtime Status & Progress Bar -->
-        <ui:Card Grid.Row="3" Padding="14,10" Margin="0,0,0,16">
+        <!-- Row 3: Realtime Status & Progress Bar (Animated) -->
+        <ui:Card Grid.Row="3" Padding="14,12" Margin="0,0,0,16">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="0,0,0,6">
+                <!-- Status Row: spinner + text + live counters -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" 
-                               Text="{Binding StatusText}" 
-                               FontSize="12" 
-                               FontWeight="Medium" 
-                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                               TextTrimming="CharacterEllipsis"/>
+                    <ui:ProgressRing Grid.Column="0"
+                                     IsIndeterminate="True"
+                                     Width="14" Height="14"
+                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,8,0"
+                                     Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}"/>
 
-                    <TextBlock Grid.Column="1" 
-                               Text="{Binding ProgressPercent, StringFormat='%{0}'}" 
-                               FontSize="12" 
-                               FontWeight="Bold" 
-                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                               Margin="10,0,0,0"
-                               Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding StatusText}"
+                               FontSize="12"
+                               FontWeight="Medium"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                               TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center"/>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
+                                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{Binding TotalFilesFound, StringFormat='{}{0} dosya'}"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   Margin="10,0,0,0"/>
+                        <TextBlock Text=" · "
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding TotalFoundBytesFormatted}"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
                 </Grid>
 
-                <StackPanel Grid.Row="1">
-                    <ProgressBar Value="{Binding ProgressPercent}" 
-                                 Maximum="100" 
-                                 Margin="0,0,0,4"
-                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
-                    
-                    <TextBlock Text="{Binding CurrentScanningFile}" 
-                               FontSize="10" 
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
-                               TextTrimming="CharacterEllipsis" 
-                               Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
-                </StackPanel>
+                <!-- Progress Bar -->
+                <ProgressBar Grid.Row="1"
+                             Value="{Binding ProgressPercent}"
+                             Maximum="100"
+                             Height="5"
+                             Margin="0,0,0,4"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
+
+                <!-- Animated slim scan beam -->
+                <Border Grid.Row="2"
+                        Height="2"
+                        ClipToBounds="True"
+                        Margin="0,0,0,6"
+                        Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}">
+                    <Rectangle HorizontalAlignment="Left" Width="120" Height="2">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                <GradientStop Color="#0038BDF8" Offset="0"/>
+                                <GradientStop Color="#CC38BDF8" Offset="0.5"/>
+                                <GradientStop Color="#0038BDF8" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <TranslateTransform x:Name="ScanBeam2"/>
+                        </Rectangle.RenderTransform>
+                        <Rectangle.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation Storyboard.TargetName="ScanBeam2"
+                                                         Storyboard.TargetProperty="X"
+                                                         From="-120" To="1400"
+                                                         Duration="0:0:0.9"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Rectangle.Triggers>
+                    </Rectangle>
+                </Border>
+
+                <!-- Current Scanning File ticker — always visible -->
+                <TextBlock Grid.Row="3"
+                           Text="{Binding CurrentScanningFile, TargetNullValue='Tarama bekleniyor...'}"
+                           FontSize="10"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                           TextTrimming="CharacterEllipsis"/>
             </Grid>
         </ui:Card>
 
@@ -273,22 +377,78 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- Row 4 Header with scan beam overlay -->
                 <Grid Grid.Row="0" Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Column="0" 
-                               Text="Taranan Dosyalar" 
-                               FontSize="13" 
-                               FontWeight="SemiBold" 
-                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="1" 
-                               Text="{Binding ScannedFiles.Count, StringFormat='Listelenen: {0}'}" 
-                               FontSize="11" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Taranan Dosyalar"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <!-- Scanning indicator badge -->
+                            <Border Background="{DynamicResource ControlFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="6,2"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="TARANIY OR..."
+                                           FontSize="9"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            </Border>
+                        </StackPanel>
+
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding ScannedFiles.Count, StringFormat='Listelenen: {0}'}"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Scan beam sweep across the header -->
+                    <Border Grid.Row="1"
+                            Height="1"
+                            ClipToBounds="True"
+                            Margin="0,4,0,0"
+                            Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}">
+                        <Rectangle HorizontalAlignment="Left" Width="200" Height="1">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                    <GradientStop Color="#0038BDF8" Offset="0"/>
+                                    <GradientStop Color="#FF38BDF8" Offset="0.5"/>
+                                    <GradientStop Color="#0038BDF8" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                            <Rectangle.RenderTransform>
+                                <TranslateTransform x:Name="ScanBeam3"/>
+                            </Rectangle.RenderTransform>
+                            <Rectangle.Triggers>
+                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation Storyboard.TargetName="ScanBeam3"
+                                                             Storyboard.TargetProperty="X"
+                                                             From="-200" To="1400"
+                                                             Duration="0:0:1.1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Rectangle.Triggers>
+                        </Rectangle>
+                    </Border>
                 </Grid>
 
                 <Grid Grid.Row="1" Grid.IsSharedSizeScope="True">

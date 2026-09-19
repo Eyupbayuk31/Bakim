@@ -200,6 +200,11 @@ namespace Bakım.Services
                     int percent = total > 0 ? (processed * 100) / total : 100;
                     progress.Report((item.FilePath, percent));
 
+                    if (processed % 10 == 0)
+                    {
+                        Thread.Sleep(3);
+                    }
+
                     // 1. Kritik Sistem Koruması Kontrolü
                     if (!IsSafeTarget(item.FilePath))
                     {

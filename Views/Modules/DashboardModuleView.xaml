@@ -169,6 +169,66 @@
                         </StackPanel>
                     </ui:Button>
 
+                    <!-- Animated Boost Stage Block -->
+                    <Grid Margin="0,10,0,0"
+                          Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVis}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Stage Text -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <ui:ProgressRing IsIndeterminate="True"
+                                             Width="12" Height="12"
+                                             Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                             VerticalAlignment="Center"
+                                             Margin="0,0,6,0"/>
+                            <TextBlock Text="{Binding BoostStageText}"
+                                       FontSize="11" FontWeight="Medium"
+                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       VerticalAlignment="Center"
+                                       MaxWidth="200"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+
+                        <!-- Stage Progress Bar -->
+                        <ProgressBar Grid.Row="1"
+                                     Value="{Binding BoostProgressPercent}"
+                                     Maximum="100"
+                                     Height="3"
+                                     Margin="0,0,0,4"/>
+
+                        <!-- Scan Beam -->
+                        <Border Grid.Row="2" Height="1" ClipToBounds="True">
+                            <Rectangle HorizontalAlignment="Left" Width="100" Height="1">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                        <GradientStop Color="#0038BDF8" Offset="0"/>
+                                        <GradientStop Color="#FF38BDF8" Offset="0.5"/>
+                                        <GradientStop Color="#0038BDF8" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                                <Rectangle.RenderTransform>
+                                    <TranslateTransform x:Name="BoostScanBeam"/>
+                                </Rectangle.RenderTransform>
+                                <Rectangle.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard RepeatBehavior="Forever">
+                                                <DoubleAnimation Storyboard.TargetName="BoostScanBeam"
+                                                                 Storyboard.TargetProperty="X"
+                                                                 From="-100" To="300"
+                                                                 Duration="0:0:0.8"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Rectangle.Triggers>
+                            </Rectangle>
+                        </Border>
+                    </Grid>
+
                     <!-- Optimization Result Badge -->
                     <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
                             BorderBrush="{DynamicResource SystemFillColorSuccessBrush}" 
