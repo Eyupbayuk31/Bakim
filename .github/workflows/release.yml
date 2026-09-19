@@ -39,11 +39,11 @@ jobs:
           fi
 
       - name: Restore dependencies
-        run: dotnet restore Bakım.csproj
+        run: dotnet restore
 
       - name: Publish Single-File Executable
         run: |
-          dotnet publish Bakım.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
+          dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
 
       - name: Rename and Package Artifacts
         shell: pwsh
