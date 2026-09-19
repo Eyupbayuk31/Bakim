@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Bakım"
-#define MyAppVersion "2.6.0"
+#define MyAppVersion "2.6.1"
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"
 #define MyAppExeName "Bakim.exe"
@@ -24,6 +24,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 OutputDir=Releases
 OutputBaseFilename=Bakim-v{#MyAppVersion}-Setup
+SetupIconFile=Assets\app.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
@@ -53,11 +54,12 @@ Name: "autostart"; Description: "Bilgisayar açıldığında otomatik başlat (E
 
 [Files]
 Source: "Releases\Bakim.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Assets\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: startmenu
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: startmenu
 Name: "{group}\{#MyAppName} (Kaldır)"; Filename: "{uninstallexe}"; Tasks: startmenu
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
 ; Her zaman yönetici olarak çalıştırma kaydı (HKLM & HKCU AppCompatFlags)

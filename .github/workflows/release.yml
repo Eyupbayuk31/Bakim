@@ -82,11 +82,11 @@ jobs:
           generate_release_notes: false
           body: |
             ### 🚀 Bakım ${{ env.TAG_NAME }} Güncelleme Notları
-            • **Hata Düzeltmesi**: Kurulum sonrası oluşan Yetki Yükseltme (Kod 740) hatası giderildi.
+            • **Yeni Windows 11 Fluent İkonu**: Özel tasarım mavi modern Windows 11 karo simgesi entegre edildi.
             • **Otomatik Başlatma**: Güncelleme tamamlandığında program arka planda otomatik olarak açılır.
+            • **Hata Düzeltmesi**: Kurulum sonrası oluşan Yetki Yükseltme (Kod 740) hatası giderildi.
             • **Windows Açılış Entegrasyonu**: UAC uyarısız en yüksek yetkiyle otomatik başlama desteği.
             • **Donanım ve Bellek**: RAM boşaltma motoru ve GPU VRAM okuma doğruluğu artırıldı.
-            • **Performans ve Akıcılık**: Modern Fluent 2.0 arayüz optimizasyonları uygulandı.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

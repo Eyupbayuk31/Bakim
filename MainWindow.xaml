@@ -14,7 +14,8 @@
         Width="1280" Height="840"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
-        ExtendsContentIntoTitleBar="True">
+        ExtendsContentIntoTitleBar="True"
+        Icon="pack://application:,,,/Assets/app.ico">
 
     <Window.DataContext>
         <vm:MainViewModel/>

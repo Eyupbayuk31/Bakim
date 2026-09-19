@@ -109,7 +109,7 @@ namespace Bakım.ViewModels
         #region Update & Status Properties
 
         [ObservableProperty]
-        private string _updateStatus = "Yazılım güncel (v2.6.0)";
+        private string _updateStatus = "Yazılım güncel (v2.6.1)";
 
         [ObservableProperty]
         private bool _isCheckingUpdate;
@@ -122,7 +122,7 @@ namespace Bakım.ViewModels
         private bool _isAdmin;
 
         [ObservableProperty]
-        private string _appVersion = "v2.6.0 (Fluent Professional)";
+        private string _appVersion = "v2.6.1 (Fluent Professional)";
 
         [ObservableProperty]
         private string _frameworkVersion = ".NET 10.0 Windows Desktop";

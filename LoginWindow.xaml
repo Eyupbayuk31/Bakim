@@ -13,7 +13,8 @@
         Width="460" Height="620"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
-        ExtendsContentIntoTitleBar="True">
+        ExtendsContentIntoTitleBar="True"
+        Icon="pack://application:,,,/Assets/app.ico">
 
     <Window.DataContext>
         <vm:LoginViewModel/>

@@ -25,7 +25,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "2.6.0";
+        public const string DefaultCurrentVersion = "2.6.1";
 
         public static Version GetCurrentVersion()
         {
@@ -34,16 +34,16 @@ namespace Bakım.Services
             {
                 return asmVersion;
             }
-            return new Version(2, 6, 0);
+            return new Version(2, 6, 1);
         }
 
         public static string GetDefaultChangelog()
         {
-            return "• Hata Düzeltmesi: Kurulum sonrası oluşan Yetki Yükseltme (Kod 740) hatası giderildi.\n" +
-                   "• Otomatik Başlatma: Güncelleme tamamlandığında program otomatik olarak açılır.\n" +
+            return "• Yeni Windows 11 Fluent Uygulama İkonu: Özel tasarım mavi modern Fluent simgesi sisteme entegre edildi.\n" +
+                   "• Otomatik Başlatma: Güncelleme tamamlandığında program arka planda otomatik olarak açılır.\n" +
+                   "• Hata Düzeltmesi: Kurulum sonrası oluşan Yetki Yükseltme (Kod 740) hatası giderildi.\n" +
                    "• Windows Açılış Entegrasyonu: UAC uyarısız en yüksek yetkiyle otomatik başlama desteği sağlandı.\n" +
-                   "• Donanım ve Bellek: RAM boşaltma motoru ve GPU VRAM okuma doğruluğu artırıldı.\n" +
-                   "• Performans ve Akıcılık: Modern Fluent 2.0 arayüz optimizasyonları uygulandı.";
+                   "• Donanım ve Bellek: RAM boşaltma motoru ve GPU VRAM okuma doğruluğu artırıldı.";
         }
 
         public static string FormatChangelog(string? rawBody, string tagName)

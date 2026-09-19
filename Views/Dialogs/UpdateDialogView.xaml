@@ -12,7 +12,8 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="True"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="pack://application:,,,/Assets/app.ico">
 
     <Border Background="{DynamicResource ApplicationBackgroundBrush}"
             BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
