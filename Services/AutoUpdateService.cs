@@ -25,7 +25,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "2.6.1";
+        public const string DefaultCurrentVersion = "2.6.2";
 
         public static Version GetCurrentVersion()
         {
@@ -34,38 +34,45 @@ namespace Bakım.Services
             {
                 return asmVersion;
             }
-            return new Version(2, 6, 1);
+            return new Version(2, 6, 2);
         }
 
         public static string GetDefaultChangelog()
         {
-            return "• Yeni Windows 11 Fluent Uygulama İkonu: Özel tasarım mavi modern Fluent simgesi sisteme entegre edildi.\n" +
-                   "• Otomatik Başlatma: Güncelleme tamamlandığında program arka planda otomatik olarak açılır.\n" +
-                   "• Hata Düzeltmesi: Kurulum sonrası oluşan Yetki Yükseltme (Kod 740) hatası giderildi.\n" +
-                   "• Windows Açılış Entegrasyonu: UAC uyarısız en yüksek yetkiyle otomatik başlama desteği sağlandı.\n" +
-                   "• Donanım ve Bellek: RAM boşaltma motoru ve GPU VRAM okuma doğruluğu artırıldı.";
+            return "• Hata düzeltmeleri ve kararlılık iyileştirmeleri uygulandı.";
         }
 
         public static string FormatChangelog(string? rawBody, string tagName)
         {
-            if (string.IsNullOrWhiteSpace(rawBody) || rawBody.Trim().Length < 10)
+            if (string.IsNullOrWhiteSpace(rawBody) || rawBody.Trim().Length < 5)
             {
                 return GetDefaultChangelog();
             }
 
-            // GitHub linklerini veya otomatik compare satırlarını temizle (kullanıcı görmesin)
+            // GitHub linklerini, başlıkları ve otomatik compare satırlarını temizle
             var lines = rawBody.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
             var cleanLines = new System.Collections.Generic.List<string>();
 
             foreach (var line in lines)
             {
                 string trimmed = line.Trim();
-                if (trimmed.Contains("github.com", StringComparison.OrdinalIgnoreCase) ||
+                if (string.IsNullOrWhiteSpace(trimmed)) continue;
+
+                // Başlık veya link içeren gereksiz satırları atla
+                if (trimmed.StartsWith("#") ||
+                    trimmed.Contains("github.com", StringComparison.OrdinalIgnoreCase) ||
                     trimmed.Contains("Full Changelog", StringComparison.OrdinalIgnoreCase) ||
                     trimmed.Contains("/compare/", StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
+
+                // Madde işareti düzeltmesi
+                if (!trimmed.StartsWith("•") && !trimmed.StartsWith("-") && !trimmed.StartsWith("*"))
+                {
+                    trimmed = "• " + trimmed;
+                }
+
                 cleanLines.Add(trimmed);
             }
 
@@ -86,7 +93,18 @@ namespace Bakım.Services
                 client.DefaultRequestHeaders.Add("User-Agent", "Bakim-App-AutoUpdater (Eyupbayuk31/Bakim)");
                 client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
 
-                var response = await client.GetAsync(GitHubApiUrl);
+                // Anlık ve taze kontrol: Önbelleği tamamen devre dışı bırak
+                client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true,
+                    MustRevalidate = true
+                };
+                client.DefaultRequestHeaders.Pragma.ParseAdd("no-cache");
+
+                // Cache-buster parametresi ile GitHub CDN ve yerel Windows proxy önbelleğini atla
+                string noCacheUrl = $"{GitHubApiUrl}?_nocache={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+                var response = await client.GetAsync(noCacheUrl);
 
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
