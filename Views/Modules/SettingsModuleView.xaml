@@ -17,7 +17,8 @@
                 <RowDefinition Height="Auto"/> <!-- 2: Performance & Refresh Rate -->
                 <RowDefinition Height="Auto"/> <!-- 3: Startup & Behavior -->
                 <RowDefinition Height="Auto"/> <!-- 4: Security & UAC -->
-                <RowDefinition Height="Auto"/> <!-- 5: Metadata & Maintenance -->
+                <RowDefinition Height="Auto"/> <!-- 5: Uninstaller & Restore Point Security -->
+                <RowDefinition Height="Auto"/> <!-- 6: Metadata & Maintenance -->
             </Grid.RowDefinitions>
 
             <!-- 0. Header Area -->
@@ -446,8 +447,79 @@
                 </Grid>
             </ui:Card>
 
-            <!-- 5. Section: About & System Metadata -->
-            <ui:Card Grid.Row="5" Padding="20">
+            <!-- 5. Section: Program Uninstaller & System Restore Point Security -->
+            <ui:Card Grid.Row="5" Padding="20" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Header -->
+                        <RowDefinition Height="1"/>    <!-- Divider -->
+                        <RowDefinition Height="Auto"/> <!-- Item 1: Prompt before uninstall -->
+                        <RowDefinition Height="1"/>    <!-- Divider -->
+                        <RowDefinition Height="Auto"/> <!-- Item 2: Enable Restore Point Engine -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ui:SymbolIcon Grid.Column="0" Symbol="ArrowCounterclockwise24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,14,0" VerticalAlignment="Center"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Program Kaldırıcı &amp; Sistem Geri Yükleme Güvenliği" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Uygulama kaldırma operasyonlarında sistem çökmesini önleyici geri yükleme noktası tercihleri." 
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Grid.Row="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 1: Prompt before uninstall -->
+                    <Grid Grid.Row="2" Margin="0,12,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Kaldırma Öncesi Geri Yükleme Noktası Sor" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Bir uygulama kaldırılmadan veya zorla sökülmeden önce geri yükleme noktası oluşturulmasını onaylatır. Kapatılırsa işlem doğrudan başlar." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding PromptRestorePointBeforeUninstall, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Border Grid.Row="3" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 2: Global Restore Point Creation -->
+                    <Grid Grid.Row="4" Margin="0,12,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Sistem Geri Yükleme Koruması" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Windows Geri Yükleme Noktası (Checkpoint-Computer) motorunu aktif tutar. Devre dışı bırakılırsa geri yükleme noktaları atlanır." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding CreateRestorePointOnUninstall, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <!-- 6. Section: About & System Metadata -->
+            <ui:Card Grid.Row="6" Padding="20">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

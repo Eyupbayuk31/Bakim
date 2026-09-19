@@ -302,15 +302,42 @@ namespace Bakım.ViewModels
 
             if (confirm != MessageBoxResult.Yes) return;
 
+            // Restore Point Confirmation & Settings Evaluation
+            var settings = SettingsViewModel.LoadCurrentSettings();
+            bool createRestorePoint = false;
+
+            if (settings.PromptRestorePointBeforeUninstall)
+            {
+                var restoreChoice = MessageBox.Show(
+                    $"{app.DisplayName} uygulaması kaldırılmak üzere.\n\n" +
+                    "Sistem kararlılığını korumak için kaldırma işlemine başlamadan önce bir Windows Geri Yükleme Noktası oluşturulsun mu?\n\n" +
+                    "• [Evet] -> Geri Yükleme Noktası Oluştur ve Kaldır (~15 sn)\n" +
+                    "• [Hayır] -> Nokta Oluşturmadan Doğrudan Kaldır (Hızlı)\n" +
+                    "• [İptal] -> Kaldırma İşlemini İptal Et",
+                    "Kaldırma Güvenliği - Geri Yükleme Noktası",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (restoreChoice == MessageBoxResult.Cancel) return;
+                createRestorePoint = (restoreChoice == MessageBoxResult.Yes);
+            }
+            else
+            {
+                createRestorePoint = settings.CreateRestorePointOnUninstall;
+            }
+
             SelectedApp = app;
             app.IsBusy = true;
             IsBusy = true;
-            StatusMessage = $"{app.DisplayName} için Windows Geri Yükleme Noktası oluşturuluyor...";
 
             try
             {
-                // 1. Restore Point
-                await _deepUninstaller.CreateRestorePointAsync(app.DisplayName);
+                // 1. Restore Point (if requested or enabled)
+                if (createRestorePoint)
+                {
+                    StatusMessage = $"{app.DisplayName} için Windows Geri Yükleme Noktası oluşturuluyor...";
+                    await _deepUninstaller.CreateRestorePointAsync(app.DisplayName);
+                }
 
                 // 2. Launch Uninstaller
                 StatusMessage = $"{app.DisplayName} kaldırıcısı çalıştırılıyor...";
@@ -397,14 +424,41 @@ namespace Bakım.ViewModels
 
             if (confirm != MessageBoxResult.Yes) return;
 
+            // Restore Point Confirmation & Settings Evaluation
+            var settings = SettingsViewModel.LoadCurrentSettings();
+            bool createRestorePoint = false;
+
+            if (settings.PromptRestorePointBeforeUninstall)
+            {
+                var restoreChoice = MessageBox.Show(
+                    $"Zorla Kaldır Güvenliği:\n{app.DisplayName} için tüm bileşenler zorla silinecektir.\n\n" +
+                    "İşlem öncesinde sisteminizi güvenceye almak için bir Windows Geri Yükleme Noktası oluşturulsun mu?\n\n" +
+                    "• [Evet] -> Geri Yükleme Noktası Oluştur ve Zorla Kaldır (~15 sn)\n" +
+                    "• [Hayır] -> Nokta Oluşturmadan Doğrudan Zorla Kaldır (Hızlı)\n" +
+                    "• [İptal] -> İşlemi İptal Et",
+                    "Zorla Kaldır - Geri Yükleme Noktası",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Warning);
+
+                if (restoreChoice == MessageBoxResult.Cancel) return;
+                createRestorePoint = (restoreChoice == MessageBoxResult.Yes);
+            }
+            else
+            {
+                createRestorePoint = settings.CreateRestorePointOnUninstall;
+            }
+
             SelectedApp = app;
             app.IsBusy = true;
             IsBusy = true;
-            StatusMessage = $"{app.DisplayName} için Geri Yükleme Noktası oluşturuluyor...";
 
             try
             {
-                await _deepUninstaller.CreateRestorePointAsync(app.DisplayName);
+                if (createRestorePoint)
+                {
+                    StatusMessage = $"{app.DisplayName} için Geri Yükleme Noktası oluşturuluyor...";
+                    await _deepUninstaller.CreateRestorePointAsync(app.DisplayName);
+                }
                 StatusMessage = $"{app.DisplayName} zorla sökülüyor...";
                 int cleanedCount = await _deepUninstaller.ExecuteForceUninstallAsync(app);
 
@@ -527,7 +581,7 @@ namespace Bakım.ViewModels
         {
             try
             {
-                var hunterWindow = new HunterTargetWindow(_hunterService, Apps, OnHunterTargetCaptured);
+                var hunterWindow = new HunterTargetWindow(_hunterService, Apps, OnHunterActionRequested);
                 hunterWindow.Show();
             }
             catch (Exception ex)
@@ -536,57 +590,29 @@ namespace Bakım.ViewModels
             }
         }
 
-        private void OnHunterTargetCaptured(HunterTargetInfo info)
+        private void OnHunterActionRequested(HunterTargetInfo info, HunterAction action)
         {
-            if (!info.IsFound)
+            if (action == HunterAction.Uninstall)
             {
-                MessageBox.Show("Hedef altında çalışan bir uygulama veya süreç tespit edilemedi.", "Avcı Modu", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            if (info.MatchedApp != null)
-            {
-                SelectedApp = info.MatchedApp;
-                SearchText = info.MatchedApp.DisplayName;
-
-                var prompt = MessageBox.Show(
-                    $"Avcı Modu Hedefi Yakaladı!\n\n" +
-                    $"Uygulama: {info.MatchedApp.DisplayName}\n" +
-                    $"Yayıncı: {info.MatchedApp.Publisher}\n" +
-                    $"Dosya Yolu: {info.ExecutablePath}\n\n" +
-                    $"Bu uygulamayı kaldırmak istiyor musunuz?",
-                    "Avcı Modu - Hedef Bulundu",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
-
-                if (prompt == MessageBoxResult.Yes)
+                var targetApp = info.MatchedApp ?? new InstalledAppItem
                 {
-                    _ = UninstallAsync(info.MatchedApp);
-                }
+                    DisplayName = !string.IsNullOrWhiteSpace(info.WindowTitle) ? info.WindowTitle : info.ProcessName,
+                    InstallLocation = Path.GetDirectoryName(info.ExecutablePath) ?? string.Empty,
+                    DisplayIconPath = info.ExecutablePath
+                };
+                SelectedApp = targetApp;
+                _ = UninstallAsync(targetApp);
             }
-            else
+            else if (action == HunterAction.ForceUninstall)
             {
-                // Standart uninstall listesinde bulunmayan özel hedef
-                var prompt = MessageBox.Show(
-                    $"Avcı Modu Hedefi Yakaladı:\n\n" +
-                    $"Süreç Adı: {info.ProcessName}\n" +
-                    $"PID: {info.ProcessId}\n" +
-                    $"Yol: {info.ExecutablePath}\n\n" +
-                    $"Bu hedef yüklü programlar listesinde kayıtlı değil. Zorla Kaldırma (Force Uninstall) motoru ile kalıntıları taranıp silinsin mi?",
-                    "Avcı Modu - Özel Hedef",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning);
-
-                if (prompt == MessageBoxResult.Yes)
+                var targetApp = info.MatchedApp ?? new InstalledAppItem
                 {
-                    var customApp = new InstalledAppItem
-                    {
-                        DisplayName = info.ProcessName,
-                        InstallLocation = Path.GetDirectoryName(info.ExecutablePath) ?? string.Empty,
-                        DisplayIconPath = info.ExecutablePath
-                    };
-                    _ = ForceUninstallAsync(customApp);
-                }
+                    DisplayName = !string.IsNullOrWhiteSpace(info.WindowTitle) ? info.WindowTitle : info.ProcessName,
+                    InstallLocation = Path.GetDirectoryName(info.ExecutablePath) ?? string.Empty,
+                    DisplayIconPath = info.ExecutablePath
+                };
+                SelectedApp = targetApp;
+                _ = ForceUninstallAsync(targetApp);
             }
         }
 

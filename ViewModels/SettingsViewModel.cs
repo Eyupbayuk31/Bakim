@@ -26,6 +26,8 @@ namespace Bakım.ViewModels
         public bool AutoCleanOnExit { get; set; } = false;
         public bool AlwaysRunAsAdmin { get; set; } = false;
         public bool TaskSchedulerAutoStart { get; set; } = false;
+        public bool PromptRestorePointBeforeUninstall { get; set; } = true;
+        public bool CreateRestorePointOnUninstall { get; set; } = true;
     }
 
     public partial class SettingsViewModel : ObservableObject
@@ -108,6 +110,12 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isTaskSchedulerAutoStart;
 
+        [ObservableProperty]
+        private bool _promptRestorePointBeforeUninstall = true;
+
+        [ObservableProperty]
+        private bool _createRestorePointOnUninstall = true;
+
         #endregion
 
         #region Update & Status Properties
@@ -159,6 +167,8 @@ namespace Bakım.ViewModels
         partial void OnMinimizeToTrayChanged(bool value) => AutoSaveSettings();
         partial void OnNotifyOnHighRamChanged(bool value) => AutoSaveSettings();
         partial void OnAutoCleanOnExitChanged(bool value) => AutoSaveSettings();
+        partial void OnPromptRestorePointBeforeUninstallChanged(bool value) => AutoSaveSettings();
+        partial void OnCreateRestorePointOnUninstallChanged(bool value) => AutoSaveSettings();
 
         partial void OnStartWithWindowsChanged(bool value)
         {
@@ -212,6 +222,8 @@ namespace Bakım.ViewModels
                         MinimizeToTray = data.MinimizeToTray;
                         NotifyOnHighRam = data.NotifyOnHighRam;
                         AutoCleanOnExit = data.AutoCleanOnExit;
+                        PromptRestorePointBeforeUninstall = data.PromptRestorePointBeforeUninstall;
+                        CreateRestorePointOnUninstall = data.CreateRestorePointOnUninstall;
 
                         switch (data.Theme)
                         {
@@ -259,13 +271,31 @@ namespace Bakım.ViewModels
                     NotifyOnHighRam = NotifyOnHighRam,
                     AutoCleanOnExit = AutoCleanOnExit,
                     AlwaysRunAsAdmin = IsAlwaysRunAsAdmin,
-                    TaskSchedulerAutoStart = IsTaskSchedulerAutoStart
+                    TaskSchedulerAutoStart = IsTaskSchedulerAutoStart,
+                    PromptRestorePointBeforeUninstall = PromptRestorePointBeforeUninstall,
+                    CreateRestorePointOnUninstall = CreateRestorePointOnUninstall
                 };
 
                 string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(_settingsFilePath, json);
             }
             catch { }
+        }
+
+        public static AppSettingsData LoadCurrentSettings()
+        {
+            try
+            {
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string path = Path.Combine(appData, "Bakim", "appsettings.json");
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    return JsonSerializer.Deserialize<AppSettingsData>(json) ?? new AppSettingsData();
+                }
+            }
+            catch { }
+            return new AppSettingsData();
         }
 
         #endregion

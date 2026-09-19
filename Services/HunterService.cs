@@ -12,27 +12,53 @@ namespace Bakım.Services
     public interface IHunterService
     {
         HunterTargetInfo IdentifyTargetAtPoint(int screenX, int screenY, IEnumerable<InstalledAppItem>? installedApps = null);
+        HunterTargetInfo IdentifyTargetAtCurrentCursor(IEnumerable<InstalledAppItem>? installedApps = null);
     }
 
     public class HunterService : IHunterService
     {
-        #region Win32 P/Invoke
+        #region Win32 P/Invoke & Structures
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct POINT
+        public struct POINT
         {
             public int x;
             public int y;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
         [DllImport("user32.dll")]
-        private static extern IntPtr WindowFromPoint(POINT Point);
+        public static extern bool GetCursorPos(out POINT lpPoint);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr WindowFromPoint(POINT Point);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetAncestor(IntPtr hWnd, uint gaFlags);
+
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool IsWindowVisible(IntPtr hWnd);
 
         [DllImport("user32.dll", SetLastError = true)]
-        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, uint processId);
@@ -43,9 +69,20 @@ namespace Bakım.Services
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool CloseHandle(IntPtr hObject);
 
+        public const uint GA_ROOT = 2;
+        public const uint GA_ROOTOWNER = 3;
         private const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 
         #endregion
+
+        public HunterTargetInfo IdentifyTargetAtCurrentCursor(IEnumerable<InstalledAppItem>? installedApps = null)
+        {
+            if (GetCursorPos(out POINT curPt))
+            {
+                return IdentifyTargetAtPoint(curPt.x, curPt.y, installedApps);
+            }
+            return new HunterTargetInfo();
+        }
 
         public HunterTargetInfo IdentifyTargetAtPoint(int screenX, int screenY, IEnumerable<InstalledAppItem>? installedApps = null)
         {
@@ -58,17 +95,67 @@ namespace Bakım.Services
 
                 if (hWnd == IntPtr.Zero) return info;
 
+                // 1. Resolve Root Window (Avoid stopping at child controls or canvas elements)
+                IntPtr rootWnd = GetAncestor(hWnd, GA_ROOT);
+                if (rootWnd != IntPtr.Zero && IsWindowVisible(rootWnd))
+                {
+                    hWnd = rootWnd;
+                }
+
+                info.WindowHandle = hWnd;
+
+                // 2. Window Rect (Coordinates for real-time highlight frame)
+                if (GetWindowRect(hWnd, out RECT rect))
+                {
+                    info.WindowLeft = rect.Left;
+                    info.WindowTop = rect.Top;
+                    info.WindowWidth = Math.Max(0, rect.Right - rect.Left);
+                    info.WindowHeight = Math.Max(0, rect.Bottom - rect.Top);
+                }
+
+                // 3. Window Class
+                var sbClass = new StringBuilder(256);
+                GetClassName(hWnd, sbClass, 256);
+                info.WindowClass = sbClass.ToString();
+
+                // 4. Process ID & Self-Protection Check
                 GetWindowThreadProcessId(hWnd, out uint processId);
                 if (processId == 0) return info;
 
                 info.ProcessId = (int)processId;
 
-                // Window Title
+                // CRITICAL FIX: Ignore Bakım itself so it never targets itself!
+                uint currentProcessId = (uint)Environment.ProcessId;
+                if (processId == currentProcessId)
+                {
+                    info.IsSelfProcess = true;
+                    info.ProcessName = "Bakım";
+                    info.WindowTitle = "Bakım (Korumalı Sistem Aracı)";
+                    try
+                    {
+                        info.ExecutablePath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
+                    }
+                    catch { }
+                    return info;
+                }
+
+                // 5. Windows Shell / Desktop / Taskbar Protection
+                string classLower = info.WindowClass.ToLowerInvariant();
+                if (classLower == "progman" || classLower == "workerw" ||
+                    classLower == "shell_traywnd" || classLower == "shell_secondarytraywnd")
+                {
+                    info.IsSystemShell = true;
+                    info.ProcessName = "explorer";
+                    info.WindowTitle = "Windows Masaüstü / Görev Çubuğu (Korumalı)";
+                    return info;
+                }
+
+                // 6. Window Title
                 var sbTitle = new StringBuilder(512);
                 GetWindowText(hWnd, sbTitle, 512);
                 info.WindowTitle = sbTitle.ToString();
 
-                // Executable Path
+                // 7. Executable Path
                 string exePath = GetProcessExecutablePath(processId);
                 info.ExecutablePath = exePath;
 
@@ -86,7 +173,14 @@ namespace Bakım.Services
                     catch { }
                 }
 
-                // Match with Installed Applications
+                if (string.Equals(info.ProcessName, "explorer", StringComparison.OrdinalIgnoreCase) &&
+                    string.IsNullOrWhiteSpace(info.WindowTitle))
+                {
+                    info.IsSystemShell = true;
+                    info.WindowTitle = "Windows Gezgini (Sistem Çekirdeği)";
+                }
+
+                // 8. Match with Installed Applications
                 if (installedApps != null && !string.IsNullOrWhiteSpace(info.ExecutablePath))
                 {
                     info.MatchedApp = FindMatchingInstalledApp(info.ExecutablePath, info.ProcessName, installedApps);

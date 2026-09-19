@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v2.7.8'
+        default: 'v2.7.9'
 
 permissions:
   contents: write
@@ -94,11 +94,11 @@ jobs:
           make_latest: true
           generate_release_notes: false
           body: |
-            • **Korumalı Sistem Bileşenleri İzolasyonu**: Edge WebView2, Windows SDK, Visual C++ Redistributable gibi kritik bileşenler ana kaldırma listesinden izole edildi; liste kalabalığı tamamen temizlendi.
-            • **3 Kademeli Akıllı Filtreleme Segmenti**: [Kaldırılabilir Uygulamalar], [Korumalı Sistem Bileşenleri] ve [Tümü] sekmeleri eklendi.
-            • **Tıklanabilir İnteraktif KPI Kartları**: Üst kısımdaki Kaldırılabilir ve Korumalı Sistem kartlarına tıklayarak doğrudan listeyi filtreleyebilme sağlandı.
-            • **Yüksek Çözünürlüklü Native Simgeler & Modern Sıralama**: Uygulama ikonları netleştirildi, dinamik boyut/isim/tarih/yayıncı sıralama butonları eklendi.
-            • **Güvenlik Kalkanı & InfoBar Rehberi**: Korumalı bileşenler sekmesinde sistem kararlılığını korumaya yönelik bilgilendirici durum çubuğu entegre edildi.
+            • **Avcı Modu (Hunter Mode) Devrimi**: Programın kendi kendini yakalaması kökten engellendi; Win32 GetCursorPos ve GA_ROOT mimarisiyle sıfır hata hedef tespiti sağlandı.
+            • **Canlı Neon Hedef Çerçeveleme (Highlight Overlay)**: İmleç hedeflenen pencerenin üzerine geldiğinde ekran üzerinde parlayan neon mavi çerçeve ve canlı bilgi rozeti (HUD) gösterilir.
+            • **Avcı Modu Zengin Aksiyon Menüsü**: Yakalanan hedef üzerinde Standart Kaldır, Zorla Kaldır, Süreci Sonlandır (Kill Process) ve Dosya Konumunu Aç eylemleri sunulur.
+            • **Kaldırma Öncesi Geri Yükleme Noktası Onay İstemi**: Kaldırma öncesinde 15-20 saniye bekleten otomatik geri yükleme noktası oluşturma işlemi isteğe bağlı hale getirildi; kullanıcıya açıkça sorulur.
+            • **Ayarlar Sayfası Entegrasyonu**: Ayarlar modülüne "Program Kaldırıcı & Sistem Geri Yükleme Güvenliği" kartı eklendi; geri yükleme noktası sorma ve oluşturma tercihleri dinamik olarak yönetilebilir.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

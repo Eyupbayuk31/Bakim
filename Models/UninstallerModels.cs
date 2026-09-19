@@ -114,12 +114,20 @@ namespace Bakım.Models
 
     public class HunterTargetInfo
     {
+        public IntPtr WindowHandle { get; set; } = IntPtr.Zero;
         public int ProcessId { get; set; }
         public string ProcessName { get; set; } = string.Empty;
         public string ExecutablePath { get; set; } = string.Empty;
         public string WindowTitle { get; set; } = string.Empty;
+        public string WindowClass { get; set; } = string.Empty;
+        public int WindowLeft { get; set; }
+        public int WindowTop { get; set; }
+        public int WindowWidth { get; set; }
+        public int WindowHeight { get; set; }
+        public bool IsSelfProcess { get; set; }
+        public bool IsSystemShell { get; set; }
         public InstalledAppItem? MatchedApp { get; set; }
-        public bool IsFound => !string.IsNullOrWhiteSpace(ExecutablePath) || MatchedApp != null;
+        public bool IsFound => (!string.IsNullOrWhiteSpace(ExecutablePath) || MatchedApp != null) && !IsSelfProcess;
     }
 
     public class BatchUninstallProgress
