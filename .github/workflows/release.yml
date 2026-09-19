@@ -94,9 +94,10 @@ jobs:
           make_latest: true
           generate_release_notes: false
           body: |
-            • **Dinamik ve Esnek Liste Mimarisi**: Program Kaldırıcı listesindeki CheckBox kırpılmaları, sabit piksel kolonları ve kaymalar SharedSizeGroup ile tamamen giderildi.
-            • **Hayalet Rozet Koruması**: Boş veya eksik sürüm/yayıncı etiketlerinin gri kutucuk oluşturması engellendi.
-            • **Ayarlar Kartı Dinamik Sürüm**: Bilgi kartındaki sürüm hardcoded metinden çıkarılıp gerçek sistem sürümüne bağlandı.
+            • **Command Palette (Ctrl+K) Kusursuz Navigasyon**: Arama sonuçlarında satıra tıklama ve Enter tuşu ile ilgili modüle anında geçiş garantilendi. Arama kutusundayken Yukarı/Aşağı ok tuşlarıyla gezinme eklendi.
+            • **Tam Opak Modern Tasarım**: Yarı saydam arka plan sızıntısı giderildi; derin siyah karartma ve solid koyu yüzey kartı ile net okunabilirlik sağlandı.
+            • **Açılışta Otomatik Güncelleme**: Uygulama açıldığında arka planda otomatik yeni sürüm denetimi ve tek tıkla güncelleme motoru entegre edildi.
+            • **Canlı Tarama & Optimizasyon Animasyonları**: Cyber radar ışını, kategoriye özel dönen göstergeler ve 3 aşamalı RAM temizleme görsel efektleri eklendi.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

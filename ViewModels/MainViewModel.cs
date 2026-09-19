@@ -99,6 +99,9 @@ namespace Bakım.ViewModels
             CurrentNavKey = "Dashboard";
 
             FilteredCommands = new ObservableCollection<CommandPaletteItem>(_paletteService.GetAllCommands().Take(12));
+
+            // Arka planda açılış güncelleme denetimi (4 saniye gecikmeli, UI'ı kilitlemez)
+            _ = CheckForUpdatesOnStartupAsync();
         }
 
         public DashboardViewModel Dashboard { get; }
@@ -200,6 +203,36 @@ namespace Bakım.ViewModels
         public void CloseCommandPalette()
         {
             IsCommandPaletteOpen = false;
+        }
+
+        [RelayCommand]
+        public void SelectNextCommand()
+        {
+            if (FilteredCommands.Count == 0) return;
+            int idx = SelectedCommand != null ? FilteredCommands.IndexOf(SelectedCommand) : -1;
+            if (idx < FilteredCommands.Count - 1)
+            {
+                SelectedCommand = FilteredCommands[idx + 1];
+            }
+            else
+            {
+                SelectedCommand = FilteredCommands[0];
+            }
+        }
+
+        [RelayCommand]
+        public void SelectPreviousCommand()
+        {
+            if (FilteredCommands.Count == 0) return;
+            int idx = SelectedCommand != null ? FilteredCommands.IndexOf(SelectedCommand) : -1;
+            if (idx > 0)
+            {
+                SelectedCommand = FilteredCommands[idx - 1];
+            }
+            else
+            {
+                SelectedCommand = FilteredCommands[FilteredCommands.Count - 1];
+            }
         }
 
         [RelayCommand]
@@ -366,7 +399,7 @@ namespace Bakım.ViewModels
                 "Optimizer" => Optimizer,
                 "Startup" => Startup,
                 "SystemInfo" => SystemInfo,
-                "Network" => NetworkMonitor,
+                "Network" or "NetworkMonitor" => NetworkMonitor,
                 "ServiceManager" => ServiceManager,
                 "PrivacyDebloat" => PrivacyDebloat,
                 "CrashAnalyzer" => CrashAnalyzer,
@@ -395,6 +428,28 @@ namespace Bakım.ViewModels
         public void Logout()
         {
             LogoutRequested?.Invoke();
+        }
+
+        private async Task CheckForUpdatesOnStartupAsync()
+        {
+            try
+            {
+                await Task.Delay(4000);
+                var update = await AutoUpdateService.CheckForUpdatesAsync();
+                if (update.IsUpdateAvailable && !string.IsNullOrEmpty(update.DownloadUrl))
+                {
+                    System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                    {
+                        var dialog = new Views.Dialogs.UpdateDialogView(update);
+                        dialog.Owner = System.Windows.Application.Current.MainWindow;
+                        dialog.ShowDialog();
+                    });
+                }
+            }
+            catch
+            {
+                // Sessiz hata yakalama: Başlangıçta kullanıcıyı rahatsız etme
+            }
         }
 
         #endregion
