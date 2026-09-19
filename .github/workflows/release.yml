@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v2.7.2'
+        default: 'v2.7.3'
 
 permissions:
   contents: write
@@ -49,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.7.2" }
+          if (-not $tag) { $tag = "v2.7.3" }
           
           # Rename executable to standard ascii name for distribution
           Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
@@ -64,7 +64,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.7.2" }
+          if (-not $tag) { $tag = "v2.7.3" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
@@ -94,10 +94,9 @@ jobs:
           make_latest: true
           generate_release_notes: false
           body: |
-            • **LoginViewModel XAML Düzeltmesi**: Parameterless constructor eksikliği nedeniyle açılışta oluşan XAML oluşturucu hatası giderildi.
-            • **403 Rate Limit Koruması**: GitHub API kotasına takılmayan akıllı Web Fallback eklendi.
-            • **Yeni Giriş & Kayıt Sistemi**: Fluent Segmented sekme geçişi, şifre doğrulama ve modern UI.
-            • **Windows DPAPI Koruması**: 'Beni Hatırla' bilgileri DPAPI ile güvenle şifrelendi.
+            • **Dinamik ve Esnek Liste Mimarisi**: Program Kaldırıcı listesindeki CheckBox kırpılmaları, sabit piksel kolonları ve kaymalar SharedSizeGroup ile tamamen giderildi.
+            • **Hayalet Rozet Koruması**: Boş veya eksik sürüm/yayıncı etiketlerinin gri kutucuk oluşturması engellendi.
+            • **Ayarlar Kartı Dinamik Sürüm**: Bilgi kartındaki sürüm hardcoded metinden çıkarılıp gerçek sistem sürümüne bağlandı.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

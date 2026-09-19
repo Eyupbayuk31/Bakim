@@ -262,4 +262,34 @@ namespace Bakım.Converters
             throw new NotImplementedException();
         }
     }
+
+    public class NullToVisibilityConverter : IValueConverter
+    {
+        public bool Invert { get; set; }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool hasValue;
+            if (value == null)
+            {
+                hasValue = false;
+            }
+            else if (value is string s)
+            {
+                hasValue = !string.IsNullOrWhiteSpace(s);
+            }
+            else
+            {
+                hasValue = true;
+            }
+
+            if (Invert) hasValue = !hasValue;
+            return hasValue ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

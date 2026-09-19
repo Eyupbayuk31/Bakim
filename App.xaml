@@ -16,6 +16,10 @@
             <!-- Converters -->
             <conv:BoolToVisConverter x:Key="BoolToVis"/>
             <conv:BoolToVisConverter x:Key="InverseBoolToVis" Invert="True"/>
+            <conv:BoolToVisConverter x:Key="InverseBooleanToVisibilityConverter" Invert="True"/>
+            <conv:BoolToVisConverter x:Key="BooleanToVisibilityConverter"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <conv:NullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" Invert="True"/>
             <conv:InverseBoolConverter x:Key="InverseBool"/>
             <conv:IntToVisConverter x:Key="IntToVis"/>
             <conv:PercentageToBrushConverter x:Key="PercentageToBrush"/>

@@ -153,7 +153,7 @@
               Visibility="{Binding ActiveViewMode, Converter={StaticResource StringToVis}, ConverterParameter=AppList}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!-- Sort Pills & Batch Controls -->
@@ -211,8 +211,9 @@
                            Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}"/>
             </StackPanel>
 
-            <!-- Search Box -->
+            <!-- Search Box (Esnek Genişlik) -->
             <ui:TextBox Grid.Column="1" 
+                        MinWidth="240" MaxWidth="360"
                         PlaceholderText="Yüklü program veya yayıncı ara..." 
                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                         ClearButtonEnabled="True"
@@ -250,9 +251,11 @@
                 </ui:Card>
 
                 <ListView Grid.Row="1"
+                          Grid.IsSharedSizeScope="True"
                           ItemsSource="{Binding FilteredApps}"
                           BorderThickness="0"
                           Background="Transparent"
+                          HorizontalContentAlignment="Stretch"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           VirtualizingStackPanel.IsVirtualizing="True"
@@ -260,13 +263,13 @@
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="Padding" Value="0,0,0,6"/>
+                            <Setter Property="Padding" Value="0,0,0,8"/>
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <ContentPresenter/>
+                                        <ContentPresenter HorizontalAlignment="Stretch"/>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -274,94 +277,118 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:InstalledAppItem}">
-                            <ui:Card Padding="16,12" Margin="0,0,0,6">
-                                <Grid>
+                            <!-- SATIR KARTI (Responsive Padding & ClipToBounds=False) -->
+                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="8" 
+                                    Margin="0,0,0,8" 
+                                    Padding="14,10"
+                                    ClipToBounds="False">
+                                <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="34"/> <!-- CheckBox -->
-                                        <ColumnDefinition Width="42"/> <!-- App Icon -->
-                                        <ColumnDefinition Width="*"/>  <!-- Details -->
-                                        <ColumnDefinition Width="130"/> <!-- Size -->
-                                        <ColumnDefinition Width="Auto"/> <!-- Actions -->
+                                        <!-- Col 0: CheckBox (SharedSizeGroup ile korumalı öğelerde dahi kolon hizası bozulmaz) -->
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="CheckCol"/>
+                                        <!-- Col 1: İkon (Otomatik) -->
+                                        <ColumnDefinition Width="Auto"/>
+                                        <!-- Col 2: Bilgiler & Rozetler (Kalan Tüm Esnek Alan) -->
+                                        <ColumnDefinition Width="*"/>
+                                        <!-- Col 3: Boyut (Satırlar Arası Otomatik Senkronize Genişlik) -->
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="SizeCol"/>
+                                        <!-- Col 4: İşlem Butonları (Satırlar Arası Otomatik Senkronize Genişlik) -->
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="ActionCol"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Multi-Select CheckBox -->
+                                    <!-- Col 0: CheckBox (Margin ile Otomatik İç Pay, Kırpılma Yok) -->
                                     <CheckBox Grid.Column="0" 
-                                              IsChecked="{Binding IsSelected}" 
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" 
                                               VerticalAlignment="Center" 
                                               HorizontalAlignment="Left"
+                                              Margin="0,0,12,0"
                                               Cursor="Hand"
-                                              Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBoolToVis}}"/>
+                                              Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 
-                                    <!-- App Icon -->
+                                    <!-- Col 1: İkon -->
                                     <Border Grid.Column="1" 
-                                            Width="34" Height="34" 
                                             CornerRadius="8" 
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}" 
                                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                             BorderThickness="1" 
-                                            VerticalAlignment="Center" 
-                                            HorizontalAlignment="Left">
+                                            Padding="8"
+                                            Margin="0,0,14,0"
+                                            VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="Apps24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                     </Border>
 
-                                    <!-- Details -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="10,0,16,0">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <!-- Col 2: Başlık, Yayıncı ve Dinamik Rozetler -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                                        <!-- Başlık ve Rozetler -->
+                                        <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="SemiBold" 
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
+                                                       TextTrimming="CharacterEllipsis" 
+                                                       VerticalAlignment="Center" 
+                                                       Margin="0,0,8,0"/>
 
-                                            <Border CornerRadius="4" Padding="6,1" 
-                                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                    BorderThickness="1" 
-                                                    Margin="8,0,0,0">
-                                                <TextBlock Text="{Binding DisplayVersion, StringFormat='v{0}'}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            </Border>
+                                            <!-- Rozetler (Boşsa Otomatik Gizlenir, Boş Gri Kutucuk Oluşmaz) -->
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <!-- Sürüm Rozeti -->
+                                                <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0"
+                                                        Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                        BorderThickness="1" 
+                                                        Visibility="{Binding DisplayVersion, Converter={StaticResource NullToVisibilityConverter}}">
+                                                    <TextBlock Text="{Binding DisplayVersion, StringFormat='v{0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                </Border>
 
-                                            <!-- Architecture Badge -->
-                                            <Border CornerRadius="4" Padding="6,1" 
-                                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                    BorderThickness="1" 
-                                                    Margin="6,0,0,0">
-                                                <TextBlock Text="64-Bit" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                           Visibility="{Binding Is64Bit, Converter={StaticResource BoolToVis}}"/>
-                                            </Border>
-                                            <Border CornerRadius="4" Padding="6,1" 
-                                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                    BorderThickness="1" 
-                                                    Margin="6,0,0,0">
-                                                <TextBlock Text="32-Bit" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                           Visibility="{Binding Is64Bit, Converter={StaticResource InverseBoolToVis}}"/>
-                                            </Border>
+                                                <!-- Mimari Rozeti: 64-Bit / 32-Bit -->
+                                                <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0"
+                                                        Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                        BorderThickness="1" 
+                                                        Visibility="{Binding Is64Bit, Converter={StaticResource BoolToVis}}">
+                                                    <TextBlock Text="64-Bit" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                </Border>
+                                                <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0"
+                                                        Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                        BorderThickness="1" 
+                                                        Visibility="{Binding Is64Bit, Converter={StaticResource InverseBoolToVis}}">
+                                                    <TextBlock Text="32-Bit" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                </Border>
 
-                                            <!-- Installer Type Badge -->
-                                            <Border CornerRadius="4" Padding="6,1" 
-                                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                    BorderThickness="1" 
-                                                    Margin="6,0,0,0">
-                                                <TextBlock Text="{Binding InstallerKind}" FontSize="10" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                            </Border>
-                                        </StackPanel>
+                                                <!-- Kurulum Türü Rozeti -->
+                                                <Border CornerRadius="4" Padding="6,2" Margin="0,0,6,0"
+                                                        Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                        BorderThickness="1"
+                                                        Visibility="{Binding InstallerKind, Converter={StaticResource NullToVisibilityConverter}}">
+                                                    <TextBlock Text="{Binding InstallerKind}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </WrapPanel>
 
-                                        <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                            <TextBlock Text="{Binding Publisher}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text=" • " FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <TextBlock Text="{Binding InstallDate, StringFormat='Yüklendi: {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <!-- Yayıncı ve Yükleme Tarihi (Boş olanlar gizlenir) -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                            <TextBlock Text="{Binding Publisher}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Visibility="{Binding Publisher, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                            <TextBlock Text=" • " FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                       Visibility="{Binding InstallDate, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                            <TextBlock Text="{Binding InstallDate, StringFormat='Yüklendi: {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                       Visibility="{Binding InstallDate, Converter={StaticResource NullToVisibilityConverter}}"/>
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <!-- Formatted Size -->
-                                    <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding FormattedSize}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                        <TextBlock Text="Disk Alanı" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <!-- Col 3: Boyut (Satırlar Arası Otomatik Senkronize Genişlik) -->
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,24,0" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding FormattedSize}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="Disk Alanı" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right"/>
                                     </StackPanel>
 
-                                    <!-- Actions -->
+                                    <!-- Col 4: İşlem Butonları (Satırlar Arası Otomatik Senkronize Genişlik) -->
                                     <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                                         <!-- Protected System Component Badge -->
-                                        <Border CornerRadius="6" Padding="10,6" 
+                                        <Border CornerRadius="6" Padding="12,7" 
                                                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                 BorderBrush="{DynamicResource SystemFillColorCautionBrush}" 
                                                 BorderThickness="1"
@@ -378,9 +405,10 @@
                                                    Icon="{ui:SymbolIcon Delete20}"
                                                    Command="{Binding DataContext.UninstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
-                                                   Padding="12,7"
-                                                   Margin="0,0,6,0"
-                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBoolToVis}}"/>
+                                                   Padding="14,8"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center"
+                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 
                                         <!-- Force Uninstall Button -->
                                         <ui:Button Appearance="Secondary" 
@@ -388,11 +416,12 @@
                                                    Icon="{ui:SymbolIcon Broom24}"
                                                    Command="{Binding DataContext.ForceUninstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
-                                                   Padding="12,7"
-                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBoolToVis}}"/>
+                                                   Padding="14,8"
+                                                   VerticalAlignment="Center"
+                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                                     </StackPanel>
                                 </Grid>
-                            </ui:Card>
+                            </Border>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -454,9 +483,11 @@
 
                 <!-- Leftovers ListView -->
                 <ListView Grid.Row="1" 
+                          Grid.IsSharedSizeScope="True"
                           ItemsSource="{Binding Leftovers}"
                           BorderThickness="0"
                           Background="Transparent"
+                          HorizontalContentAlignment="Stretch"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           VirtualizingStackPanel.IsVirtualizing="True"
@@ -464,13 +495,13 @@
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="Padding" Value="0,0,0,6"/>
+                            <Setter Property="Padding" Value="0,0,0,8"/>
                             <Setter Property="Background" Value="Transparent"/>
                             <Setter Property="BorderThickness" Value="0"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListViewItem">
-                                        <ContentPresenter/>
+                                        <ContentPresenter HorizontalAlignment="Stretch"/>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -478,29 +509,37 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:LeftoverItem}">
-                            <ui:Card Padding="14,10" Margin="0,0,0,6">
-                                <Grid>
+                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="8" 
+                                    Margin="0,0,0,8" 
+                                    Padding="14,10"
+                                    ClipToBounds="False">
+                                <Grid VerticalAlignment="Center">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="34"/>
-                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="LeftoverCheckCol"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="LeftoverTypeCol"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="LeftoverSizeCol"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- CheckBox -->
+                                    <!-- CheckBox (Kırpılma Yok, Margin ile İç Pay) -->
                                     <CheckBox Grid.Column="0" 
-                                              IsChecked="{Binding IsSelected}" 
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" 
                                               VerticalAlignment="Center" 
                                               HorizontalAlignment="Left"
+                                              Margin="0,0,12,0"
                                               Cursor="Hand"/>
 
                                     <!-- Type Badge -->
                                     <Border Grid.Column="1" 
-                                            CornerRadius="4" 
-                                            Padding="8,3" 
+                                            CornerRadius="6" 
+                                            Padding="10,4" 
+                                            Margin="0,0,14,0"
                                             VerticalAlignment="Center" 
                                             HorizontalAlignment="Left"
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                            Background="{DynamicResource ControlFillColorSecondaryBrush}" 
                                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                             BorderThickness="1">
                                         <TextBlock Text="{Binding TypeBadgeText}" 
@@ -510,9 +549,10 @@
                                     </Border>
 
                                     <!-- Path & Description -->
-                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="10,0,16,0">
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,16,0">
                                         <TextBlock Text="{Binding Path}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"
+                                                   Visibility="{Binding Description, Converter={StaticResource NullToVisibilityConverter}}"/>
                                     </StackPanel>
 
                                     <!-- Size -->
@@ -524,7 +564,7 @@
                                                VerticalAlignment="Center" 
                                                HorizontalAlignment="Right"/>
                                 </Grid>
-                            </ui:Card>
+                            </Border>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
