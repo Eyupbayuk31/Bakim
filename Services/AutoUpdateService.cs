@@ -119,6 +119,13 @@ namespace Bakım.Services
 
                 if (!response.IsSuccessStatusCode)
                 {
+                    // GitHub API rate limit (403 Forbidden) veya sunucu hatası durumunda web redirect fallback'e geç
+                    var fallbackResult = await CheckForUpdatesViaWebRedirectAsync();
+                    if (fallbackResult != null)
+                    {
+                        return fallbackResult;
+                    }
+
                     return new UpdateInfo
                     {
                         IsUpdateAvailable = false,
@@ -186,6 +193,16 @@ namespace Bakım.Services
             }
             catch (Exception ex)
             {
+                try
+                {
+                    var fallbackResult = await CheckForUpdatesViaWebRedirectAsync();
+                    if (fallbackResult != null)
+                    {
+                        return fallbackResult;
+                    }
+                }
+                catch { }
+
                 return new UpdateInfo
                 {
                     IsUpdateAvailable = false,
@@ -265,6 +282,55 @@ namespace Bakım.Services
             int build = parts.Length > 2 && int.TryParse(parts[2], out int bd) ? bd : 0;
 
             return new Version(major, minor, build);
+        }
+
+        public static async Task<UpdateInfo?> CheckForUpdatesViaWebRedirectAsync()
+        {
+            try
+            {
+                using var handler = new HttpClientHandler { AllowAutoRedirect = false };
+                using var client = new HttpClient(handler);
+                client.Timeout = TimeSpan.FromSeconds(15);
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+                string webUrl = "https://github.com/Eyupbayuk31/Bakim/releases/latest";
+                var response = await client.GetAsync(webUrl);
+
+                string? location = response.Headers.Location?.ToString();
+                if (string.IsNullOrEmpty(location) && response.Headers.TryGetValues("Location", out var values))
+                {
+                    location = System.Linq.Enumerable.FirstOrDefault(values);
+                }
+
+                if (!string.IsNullOrEmpty(location))
+                {
+                    // Örnek: "https://github.com/Eyupbayuk31/Bakim/releases/tag/v2.7.0"
+                    string rawTag = location.Substring(location.LastIndexOf('/') + 1);
+                    string cleanTagName = rawTag.TrimStart('v', 'V', ' ');
+
+                    Version currentVersion = GetCurrentVersion();
+                    Version latestVersion = ParseSemVer(cleanTagName);
+
+                    string downloadUrl = $"https://github.com/Eyupbayuk31/Bakim/releases/download/{rawTag}/Bakim-{rawTag}-Setup.exe";
+
+                    return new UpdateInfo
+                    {
+                        IsUpdateAvailable = latestVersion > currentVersion,
+                        CurrentVersion = currentVersion.ToString(3),
+                        LatestVersion = cleanTagName,
+                        ReleaseNotes = "• En son sürüm performans ve güvenlik güncellemeleri içerir.",
+                        DownloadUrl = downloadUrl,
+                        FileSizeBytes = 0,
+                        ReleasePageUrl = location
+                    };
+                }
+            }
+            catch
+            {
+                // Fallback hatası yutulur
+            }
+
+            return null;
         }
     }
 }
