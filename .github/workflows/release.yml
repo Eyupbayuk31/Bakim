@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v2.7.0'
+        default: 'v2.7.1'
 
 permissions:
   contents: write
@@ -49,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.7.0" }
+          if (-not $tag) { $tag = "v2.7.1" }
           
           # Rename executable to standard ascii name for distribution
           Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
@@ -64,13 +64,25 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.7.0" }
+          if (-not $tag) { $tag = "v2.7.1" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
           Copy-Item "publish\win-x64\Bakim.exe" "Releases\Bakim.exe"
           
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$cleanVersion" "Bakim_Setup.iss"
+          $iscc = Get-Command "iscc.exe" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+          if (-not $iscc) {
+              $possiblePaths = @(
+                  "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+                  "C:\Program Files\Inno Setup 6\ISCC.exe",
+                  "C:\ProgramData\chocolatey\bin\iscc.exe"
+              )
+              $iscc = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+          if (-not $iscc) { throw "ISCC.exe bulunamadı!" }
+          Write-Host "ISCC bulundu: $iscc"
+          & $iscc "/DMyAppVersion=$cleanVersion" "Bakim_Setup.iss"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup derleme hatası: $LASTEXITCODE" }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -79,11 +91,12 @@ jobs:
           name: Bakım ${{ env.TAG_NAME }} - Fluent System Optimizer
           draft: false
           prerelease: false
+          make_latest: true
           generate_release_notes: false
           body: |
+            • **403 Rate Limit Koruması**: GitHub API kotasına takılmayan akıllı Web Fallback eklendi.
             • **Yeni Giriş & Kayıt Sistemi**: Fluent Segmented sekme geçişi, şifre doğrulama ve modern UI eklendi.
             • **Windows DPAPI Koruması**: 'Beni Hatırla' bilgileri işletim sistemi düzeyinde DPAPI ile şifrelendi.
-            • **PBKDF2 Bulut Güvenliği**: Şifreler 100.000 iterasyon PBKDF2 + Salt ile güvenle doğrulanıyor.
             • **64-bit DXGI VRAM Desteği**: Ekran kartı bellek tespiti 4GB WMI sınırından kurtarılarak doğrudan DirectX ve Registry üzerinden alındı.
           files: |
             Releases/Bakim-*-Setup.exe
