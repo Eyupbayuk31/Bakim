@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -6,6 +7,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Bakım.Services
 {
@@ -59,6 +61,7 @@ namespace Bakım.Services
     public interface IGitHubUpdateService
     {
         Task<UpdateCheckResult> CheckForUpdatesAsync();
+        Task<bool> DownloadAndApplyUpdateAsync(string downloadUrl, Action<int>? progressCallback = null);
         string GetCurrentVersion();
     }
 
@@ -171,6 +174,75 @@ namespace Bakım.Services
                     CurrentVersion = CurrentAppVersion,
                     ErrorMessage = $"Güncelleme kontrolü sırasında beklenmeyen hata: {ex.Message}"
                 };
+            }
+        }
+
+        public async Task<bool> DownloadAndApplyUpdateAsync(string downloadUrl, Action<int>? progressCallback = null)
+        {
+            try
+            {
+                string tempDir = Path.GetTempPath();
+                string tempFile = Path.Combine(tempDir, $"Bakim_Update_{Guid.NewGuid():N}.exe");
+
+                using (var resp = await HttpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
+                {
+                    resp.EnsureSuccessStatusCode();
+                    long totalBytes = resp.Content.Headers.ContentLength ?? -1L;
+
+                    using (var stream = await resp.Content.ReadAsStreamAsync())
+                    using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                    {
+                        var buffer = new byte[16384];
+                        long readBytes = 0;
+                        int bytesRead;
+
+                        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fs.WriteAsync(buffer, 0, bytesRead);
+                            readBytes += bytesRead;
+                            if (totalBytes > 0 && progressCallback != null)
+                            {
+                                int pct = (int)((readBytes * 100) / totalBytes);
+                                progressCallback(pct);
+                            }
+                        }
+                    }
+                }
+
+                string currentExePath = AdminElevationService.GetExePath();
+                bool isSetupExe = downloadUrl.EndsWith("-Setup.exe", StringComparison.OrdinalIgnoreCase);
+
+                if (isSetupExe)
+                {
+                    // Tamamen sessiz, arka planda otomatik güncelleme (Kullanıcıya hiçbir şey sormaz)
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = tempFile,
+                        Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS",
+                        UseShellExecute = true
+                    });
+                    Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
+                    return true;
+                }
+                else
+                {
+                    // Doğrudan çalışan dosyayı arka planda değiştirme ve yeniden başlatma
+                    string script = $"Start-Sleep -Seconds 1; Move-Item -Force '{tempFile}' '{currentExePath}'; Start-Process '{currentExePath}'";
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-WindowStyle Hidden -Command \"{script}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    });
+                    Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Update Apply Error] {ex.Message}");
+                return false;
             }
         }
 

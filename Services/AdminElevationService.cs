@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.Win32;
+using Bakım.Helpers;
 
 namespace Bakım.Services
 {
@@ -29,16 +30,31 @@ namespace Bakım.Services
         }
 
         /// <summary>
-        /// HKCU Compatibility Layer üzerinde RUNASADMIN bayrağının etkin olup olmadığını kontrol eder.
+        /// HKCU veya HKLM Compatibility Layer üzerinde RUNASADMIN bayrağının etkin olup olmadığını kontrol eder.
         /// </summary>
         public static bool IsAlwaysRunAsAdminEnabled()
         {
             try
             {
-                using var key = Registry.CurrentUser.OpenSubKey(AppCompatKey, false);
                 string exePath = GetExePath();
-                var value = key?.GetValue(exePath) as string;
-                return value != null && value.Contains("RUNASADMIN", StringComparison.OrdinalIgnoreCase);
+
+                // 1. Önce HKCU kontrol edilir
+                using (var key = Registry.CurrentUser.OpenSubKey(AppCompatKey, false))
+                {
+                    var value = key?.GetValue(exePath) as string;
+                    if (value != null && value.Contains("RUNASADMIN", StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                // 2. Ardından HKLM kontrol edilir (Installer tarafından kurulduysa)
+                using (var key = Registry.LocalMachine.OpenSubKey(AppCompatKey, false))
+                {
+                    var value = key?.GetValue(exePath) as string;
+                    if (value != null && value.Contains("RUNASADMIN", StringComparison.OrdinalIgnoreCase))
+                        return true;
+                }
+
+                return false;
             }
             catch
             {
@@ -53,27 +69,84 @@ namespace Bakım.Services
         {
             try
             {
-                using var key = Registry.CurrentUser.OpenSubKey(AppCompatKey, true) 
-                               ?? Registry.CurrentUser.CreateSubKey(AppCompatKey);
                 string exePath = GetExePath();
 
-                if (enable)
+                // HKCU Ayarı
+                using (var key = Registry.CurrentUser.OpenSubKey(AppCompatKey, true) 
+                               ?? Registry.CurrentUser.CreateSubKey(AppCompatKey))
                 {
-                    key.SetValue(exePath, "~ RUNASADMIN");
-                }
-                else
-                {
-                    if (key.GetValue(exePath) != null)
+                    if (enable)
                     {
-                        key.DeleteValue(exePath, false);
+                        key.SetValue(exePath, "~ RUNASADMIN");
+                    }
+                    else
+                    {
+                        if (key.GetValue(exePath) != null)
+                        {
+                            key.DeleteValue(exePath, false);
+                        }
                     }
                 }
+
+                // Eğer yönetici haklarıyla çalışıyorsa HKLM kaydını da güncelle
+                if (UacHelper.IsAdministrator())
+                {
+                    try
+                    {
+                        using var keyL = Registry.LocalMachine.OpenSubKey(AppCompatKey, true);
+                        if (keyL != null)
+                        {
+                            if (enable)
+                            {
+                                keyL.SetValue(exePath, "~ RUNASADMIN");
+                            }
+                            else if (keyL.GetValue(exePath) != null)
+                            {
+                                keyL.DeleteValue(exePath, false);
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
                 return true;
             }
             catch
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Uygulamanın Inno Setup ile resmi olarak kurulup kurulmadığını tespit eder.
+        /// </summary>
+        public static bool IsInstalledApplication()
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                if (baseDir.Contains("Program Files", StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                const string innoAppId = "{D8E5F678-31A9-4B5C-8D12-9A4E2B5C6D7E}_is1";
+                string uninstallKey = $@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{innoAppId}";
+
+                using var key = Registry.LocalMachine.OpenSubKey(uninstallKey, false) 
+                             ?? Registry.CurrentUser.OpenSubKey(uninstallKey, false);
+
+                return key != null;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static string GetInstallationStatusText()
+        {
+            return IsInstalledApplication() 
+                ? "Resmi Kurulum (Program Files / Standart Windows Uygulaması)" 
+                : "Taşınabilir Mod (Portable / Bağımsız Çalışma)";
         }
 
         /// <summary>

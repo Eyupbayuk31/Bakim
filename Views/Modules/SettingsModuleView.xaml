@@ -276,15 +276,15 @@
                                    Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <!-- Item 1: Windows Autostart -->
+                    <!-- Item 1: Autostart with Windows -->
                     <Grid Grid.Row="1" Margin="0,8,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock Text="Windows ile Birlikte Başlat" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Kayıt defteri (HKCU\Run) üzerinden bilgisayar açıldığında arka planda otomatik çalışır." 
+                            <TextBlock Text="Windows ile Birlikte Başlat (Standart)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Kayıt defteri (HKCU\Run) üzerinden standart kullanıcı yetkisiyle açılır. (Yönetici yetkileriyle UAC uyarısız başlatmak için aşağıdaki 'Sistem Açılışında UAC Uyarısız Yönetici Başlat' tercih edilmelidir)." 
                                        FontSize="11" 
                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                        Margin="0,2,0,0"/>
@@ -453,6 +453,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- Header & Actions -->
@@ -543,6 +544,30 @@
                             <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="15" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
                             <TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
+                    </Border>
+
+                    <!-- Installation & Execution Mode Banner -->
+                    <Border Grid.Row="3" 
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="6" 
+                            Padding="12,10" 
+                            Margin="0,8,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon Grid.Column="0" Symbol="AppFolder24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="Çalışma Modu: " FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding InstallationStatus}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding InstalledDirectory}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Grid>
                     </Border>
                 </Grid>
             </ui:Card>

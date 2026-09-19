@@ -135,6 +135,15 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _osVersion = Environment.OSVersion.VersionString;
 
+        [ObservableProperty]
+        private string _installationStatus = AdminElevationService.GetInstallationStatusText();
+
+        [ObservableProperty]
+        private string _installedDirectory = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
+
+        [ObservableProperty]
+        private bool _isInstalled = AdminElevationService.IsInstalledApplication();
+
         #endregion
 
         #region Change Handlers & Persistence
@@ -148,6 +157,12 @@ namespace Bakım.ViewModels
 
         partial void OnStartWithWindowsChanged(bool value)
         {
+            if (_isInitializing) return;
+            if (value && IsTaskSchedulerAutoStart)
+            {
+                IsTaskSchedulerAutoStart = false;
+                AdminElevationService.SetTaskSchedulerAutoStart(false);
+            }
             ApplyAutostartRegistry(value);
             AutoSaveSettings();
         }
@@ -162,6 +177,11 @@ namespace Bakım.ViewModels
         partial void OnIsTaskSchedulerAutoStartChanged(bool value)
         {
             if (_isInitializing) return;
+            if (value && StartWithWindows)
+            {
+                StartWithWindows = false;
+                ApplyAutostartRegistry(false);
+            }
             AdminElevationService.SetTaskSchedulerAutoStart(value);
             AutoSaveSettings();
         }
@@ -172,6 +192,8 @@ namespace Bakım.ViewModels
             {
                 IsAlwaysRunAsAdmin = AdminElevationService.IsAlwaysRunAsAdminEnabled();
                 IsTaskSchedulerAutoStart = AdminElevationService.IsTaskSchedulerAutoStartEnabled();
+                IsInstalled = AdminElevationService.IsInstalledApplication();
+                InstallationStatus = AdminElevationService.GetInstallationStatusText();
 
                 if (File.Exists(_settingsFilePath))
                 {
@@ -480,14 +502,35 @@ namespace Bakım.ViewModels
                         $"• Yeni Sürüm: v{result.LatestVersion}\n" +
                         $"• Başlık: {result.Title}{sizeInfo}\n\n" +
                         $"Değişiklik Notları:\n{result.Changelog}\n\n" +
-                        "Güncellemeyi indirmek için GitHub sürüm sayfasına gitmek ister misiniz?",
-                        "Yeni Sürüm Bulundu",
+                        "Güncellemeyi arka planda otomatik indirip sessizce uygulamak ister misiniz?\n" +
+                        "(Evet: Otomatik İndir ve Yeniden Başlat | Hayır: İptal Et)",
+                        "Yeni Sürüm Bulundu - Otomatik Güncelleme",
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Information);
 
-                    if (choice == MessageBoxResult.Yes && !string.IsNullOrWhiteSpace(result.ReleaseUrl))
+                    if (choice == MessageBoxResult.Yes)
                     {
-                        Process.Start(new ProcessStartInfo(result.ReleaseUrl) { UseShellExecute = true });
+                        if (!string.IsNullOrWhiteSpace(result.DownloadUrl))
+                        {
+                            UpdateStatus = "Güncelleme paketi indiriliyor... Lütfen bekleyin...";
+                            bool applied = await _updateService.DownloadAndApplyUpdateAsync(result.DownloadUrl, pct =>
+                            {
+                                UpdateStatus = $"Güncelleme indiriliyor: %{pct}";
+                            });
+
+                            if (!applied)
+                            {
+                                UpdateStatus = "Otomatik güncelleme uygulanamadı. GitHub sürüm sayfası açılıyor...";
+                                if (!string.IsNullOrWhiteSpace(result.ReleaseUrl))
+                                {
+                                    Process.Start(new ProcessStartInfo(result.ReleaseUrl) { UseShellExecute = true });
+                                }
+                            }
+                        }
+                        else if (!string.IsNullOrWhiteSpace(result.ReleaseUrl))
+                        {
+                            Process.Start(new ProcessStartInfo(result.ReleaseUrl) { UseShellExecute = true });
+                        }
                     }
                 }
                 else
