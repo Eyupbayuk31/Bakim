@@ -57,6 +57,21 @@ jobs:
           # Create zip package
           Compress-Archive -Path "publish\win-x64\Bakim.exe" -DestinationPath "Bakim-$tag-win-x64.zip" -Force
 
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Compile Inno Setup Installer
+        shell: pwsh
+        run: |
+          $tag = $env:TAG_NAME
+          if (-not $tag) { $tag = "v2.5.0" }
+          $cleanVersion = $tag.TrimStart('v', 'V')
+          
+          New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
+          Copy-Item "publish\win-x64\Bakim.exe" "Releases\Bakim.exe"
+          
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$cleanVersion" "Bakim_Setup.iss"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -66,5 +81,6 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
+            Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe
             Bakim-*.zip
