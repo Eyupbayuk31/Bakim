@@ -91,7 +91,7 @@ if (Test-Path $setupExePath) {
     Write-Host "  Bakim-Setup.exe SHA-256: $hashSetup" -ForegroundColor Yellow
 }
 
-$releaseUrl = "https://github.com/Eyupbayuk31/Bak-m-Arac-/releases/new"
+$releaseUrl = "https://github.com/Eyupbayuk31/Bakim/releases/new"
 Write-Host "`n==========================================================" -ForegroundColor Green
 Write-Host "  TÜM YAYIN DOSYALARI HAZIR! (Releases/ klasörü):" -ForegroundColor Green
 if (Test-Path $setupExePath) { Write-Host "  1. [KURULUM] $setupExePath" -ForegroundColor White }

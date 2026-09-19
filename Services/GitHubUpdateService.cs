@@ -65,7 +65,7 @@ namespace Bakım.Services
     public class GitHubUpdateService : IGitHubUpdateService
     {
         private const string RepositoryOwner = "Eyupbayuk31";
-        private const string RepositoryName = "Bak-m-Arac-";
+        private const string RepositoryName = "Bakim";
         private const string ReleasesApiUrl = $"https://api.github.com/repos/{RepositoryOwner}/{RepositoryName}/releases/latest";
         public const string CurrentAppVersion = "2.5.0";
 
