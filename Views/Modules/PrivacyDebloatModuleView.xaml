@@ -212,7 +212,7 @@
         <Grid Grid.Row="2" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="340"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <!-- Category Pills for Privacy Tab -->
@@ -254,7 +254,9 @@
                         ClearButtonEnabled="True"
                         Icon="{ui:SymbolIcon Search24}"
                         VerticalContentAlignment="Center"
-                        Padding="12,8"/>
+                        Padding="12,8"
+                        MinWidth="220"
+                        MaxWidth="360"/>
         </Grid>
 
         <!-- 4. Active Content Area -->
@@ -285,7 +287,7 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:PrivacyTweakItem}">
-                        <ui:Card Padding="18,14" Margin="0,0,0,8">
+                        <ui:Card Padding="18,14" Margin="0,0,0,8" ClipToBounds="False">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -301,12 +303,14 @@
                                                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                 BorderThickness="1" 
-                                                Margin="0,0,8,0">
+                                                Margin="0,0,8,0"
+                                                Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
                                             <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                         </Border>
 
                                         <!-- Risk Level Badge -->
-                                        <Border Style="{StaticResource RiskBadgeStyle}">
+                                        <Border Style="{StaticResource RiskBadgeStyle}"
+                                                Visibility="{Binding RiskLevel, Converter={StaticResource NullToVisibilityConverter}}">
                                             <TextBlock Text="{Binding RiskLevel}" Style="{StaticResource RiskBadgeTextStyle}"/>
                                         </Border>
                                     </StackPanel>
@@ -365,10 +369,10 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:BloatwareAppItem}">
-                        <ui:Card Padding="18,14" Margin="0,0,0,8">
+                        <ui:Card Padding="18,14" Margin="0,0,0,8" ClipToBounds="False">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="42"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
@@ -379,7 +383,8 @@
                                         CornerRadius="8" 
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1"
+                                        BorderThickness="1" 
+                                        Margin="0,0,12,0"
                                         VerticalAlignment="Center" 
                                         HorizontalAlignment="Left">
                                     <ui:SymbolIcon Symbol="Apps24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
@@ -397,7 +402,8 @@
                                                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                 BorderThickness="1" 
-                                                Margin="10,0,0,0">
+                                                Margin="10,0,0,0"
+                                                Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
                                             <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                         </Border>
 

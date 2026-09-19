@@ -197,9 +197,10 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ui:Card Padding="12,10" Margin="4" Cursor="Hand">
+                            <ui:Card Padding="12,10" Margin="4" Cursor="Hand" ClipToBounds="False">
                                 <CheckBox IsChecked="{Binding IsSelected}" 
                                           Cursor="Hand"
+                                          Margin="2,0,4,0"
                                           VerticalAlignment="Center">
                                     <StackPanel Margin="6,0,0,0">
                                         <TextBlock Text="{Binding Name}" 
@@ -290,7 +291,7 @@
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
 
-                <Grid Grid.Row="1">
+                <Grid Grid.Row="1" Grid.IsSharedSizeScope="True">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
@@ -306,12 +307,12 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="3*"/>
                                 <ColumnDefinition Width="1.5*"/>
-                                <ColumnDefinition Width="110"/>
-                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="CleanerSizeCol"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="CleanerStatusCol"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="Dosya Adı ve Konumu" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="1" Text="Kategori" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="2" Text="Boyut" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right"/>
+                            <TextBlock Grid.Column="2" Text="Boyut" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right" Margin="0,0,16,0"/>
                             <TextBlock Grid.Column="3" Text="Durum" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right"/>
                         </Grid>
                     </Border>
@@ -368,8 +369,8 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="3*"/>
                                         <ColumnDefinition Width="1.5*"/>
-                                        <ColumnDefinition Width="110"/>
-                                        <ColumnDefinition Width="140"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="CleanerSizeCol"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="CleanerStatusCol"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Column 0: File Name & Path (Grid instead of horizontal StackPanel) -->
@@ -389,7 +390,7 @@
                                                    Text="{Binding FilePath}" 
                                                    FontSize="10" 
                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
-                                                   VerticalAlignment="Center"
+                                                   VerticalAlignment="Center" 
                                                    TextTrimming="CharacterEllipsis" 
                                                    Margin="0,2,0,0"/>
                                     </Grid>
@@ -412,7 +413,7 @@
                                                VerticalAlignment="Center" 
                                                TextAlignment="Right"
                                                TextTrimming="CharacterEllipsis"
-                                               Margin="0,0,12,0"/>
+                                               Margin="0,0,16,0"/>
 
                                     <!-- Column 3: Status Badge -->
                                     <Border Grid.Column="3" 
@@ -422,7 +423,8 @@
                                             CornerRadius="4" 
                                             Padding="8,4" 
                                             HorizontalAlignment="Right" 
-                                            VerticalAlignment="Center">
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding Status, Converter={StaticResource NullToVisibilityConverter}}">
                                         <TextBlock Text="{Binding Status}" 
                                                    FontSize="10" 
                                                    FontWeight="Medium" 

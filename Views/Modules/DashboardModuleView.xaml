@@ -99,7 +99,8 @@
                                 CornerRadius="4" 
                                 Padding="8,2" 
                                 Margin="10,0,0,0" 
-                                VerticalAlignment="Center">
+                                VerticalAlignment="Center"
+                                Visibility="{Binding Health.ScoreText, Converter={StaticResource NullToVisibilityConverter}}">
                             <TextBlock Text="{Binding Health.ScoreText}" 
                                        FontSize="11" 
                                        FontWeight="SemiBold" 
@@ -543,7 +544,8 @@
                                             <TextBlock Text="{Binding Id, StringFormat='PID: {0}'}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         </StackPanel>
 
-                                        <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="4" Padding="8,2" Margin="8,0,10,0" VerticalAlignment="Center">
+                                        <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="4" Padding="8,2" Margin="8,0,10,0" VerticalAlignment="Center"
+                                                Visibility="{Binding FormattedMemory, Converter={StaticResource NullToVisibilityConverter}}">
                                             <TextBlock Text="{Binding FormattedMemory}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
                                         </Border>
 

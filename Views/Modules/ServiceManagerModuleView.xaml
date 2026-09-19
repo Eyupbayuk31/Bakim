@@ -271,7 +271,7 @@
 
         <!-- 4. Table Area -->
         <!-- TAB 1: Services Table -->
-        <Grid Grid.Row="3" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Services}">
+        <Grid Grid.Row="3" Grid.IsSharedSizeScope="True" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Services}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header -->
                 <RowDefinition Height="*"/>    <!-- Rows -->
@@ -287,18 +287,18 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2.5*"/> <!-- Service & Display Name -->
-                        <ColumnDefinition Width="110"/>  <!-- Status -->
-                        <ColumnDefinition Width="120"/>  <!-- Startup Type -->
-                        <ColumnDefinition Width="140"/>  <!-- Account & PID -->
-                        <ColumnDefinition Width="160"/>  <!-- Safety Badge -->
-                        <ColumnDefinition Width="140"/>  <!-- Actions -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SvcStatusCol"/>  <!-- Status -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SvcStartupCol"/>  <!-- Startup Type -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SvcAccountCol"/>  <!-- Account & PID -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SvcSafetyCol"/>  <!-- Safety Badge -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SvcActionCol"/>  <!-- Actions -->
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Hizmet Adı &amp; Açıklama" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="1" Text="Durum" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="2" Text="Başlangıç" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="3" Text="Hesap / PID" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="4" Text="Güvenlik Sınıfı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Grid.Column="0" Text="Hizmet Adı &amp; Açıklama" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Durum" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="2" Text="Başlangıç" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="3" Text="Hesap / PID" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="4" Text="Güvenlik Sınıfı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
                     <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
                 </Grid>
             </Border>
@@ -369,15 +369,15 @@
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2.5*"/>
-                                <ColumnDefinition Width="110"/>
-                                <ColumnDefinition Width="120"/>
-                                <ColumnDefinition Width="140"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="SvcStatusCol"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="SvcStartupCol"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="SvcAccountCol"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="SvcSafetyCol"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="SvcActionCol"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Col 0: Service & Display Name -->
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                 <TextBlock Text="{Binding DisplayName}" 
                                            FontSize="13" 
                                            FontWeight="SemiBold" 
@@ -397,8 +397,10 @@
                                     BorderThickness="1" 
                                     CornerRadius="6" 
                                     Padding="8,3" 
+                                    Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
-                                    HorizontalAlignment="Left">
+                                    HorizontalAlignment="Left"
+                                    Visibility="{Binding Status, Converter={StaticResource NullToVisibilityConverter}}">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <Ellipse Width="6" Height="6" Margin="0,0,6,0">
                                         <Ellipse.Style>
@@ -421,10 +423,11 @@
                                        Text="{Binding StartupType}" 
                                        FontSize="12" 
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,14,0"/>
 
                             <!-- Col 3: Account & PID -->
-                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,14,0">
                                 <TextBlock Text="{Binding Account}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                             </StackPanel>
@@ -436,8 +439,10 @@
                                     BorderThickness="1" 
                                     CornerRadius="6" 
                                     Padding="8,4" 
+                                    Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
-                                    HorizontalAlignment="Left">
+                                    HorizontalAlignment="Left"
+                                    Visibility="{Binding SafetyClassification, Converter={StaticResource NullToVisibilityConverter}}">
                                 <TextBlock Text="{Binding SafetyClassification}" 
                                            Style="{StaticResource ServiceSafetyTextStyle}"
                                            TextTrimming="CharacterEllipsis"/>
@@ -487,7 +492,7 @@
         </Grid>
 
         <!-- TAB 2: Drivers Table -->
-        <Grid Grid.Row="3" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Drivers}">
+        <Grid Grid.Row="3" Grid.IsSharedSizeScope="True" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Drivers}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header -->
                 <RowDefinition Height="*"/>    <!-- Rows -->
@@ -503,18 +508,18 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2.5*"/> <!-- Device Name -->
-                        <ColumnDefinition Width="130"/>  <!-- Device Class -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="DrvClassCol"/>  <!-- Device Class -->
                         <ColumnDefinition Width="1.8*"/> <!-- Manufacturer -->
-                        <ColumnDefinition Width="150"/>  <!-- Driver Version & Date -->
-                        <ColumnDefinition Width="140"/>  <!-- Digital Signature -->
-                        <ColumnDefinition Width="90"/>   <!-- Actions -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="DrvVerCol"/>  <!-- Driver Version & Date -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="DrvSignCol"/>  <!-- Digital Signature -->
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="DrvActionCol"/>   <!-- Actions -->
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Aygıt &amp; Sürücü Adı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="1" Text="Aygıt Sınıfı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="2" Text="Üretici / Sağlayıcı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="3" Text="Sürüm / Tarih" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Grid.Column="4" Text="Dijital İmza" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Grid.Column="0" Text="Aygıt &amp; Sürücü Adı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Aygıt Sınıfı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="2" Text="Üretici / Sağlayıcı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="3" Text="Sürüm / Tarih" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="4" Text="Dijital İmza" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
                     <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
                 </Grid>
             </Border>
@@ -575,15 +580,15 @@
 
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2.5*"/>
-                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="DrvClassCol"/>
                                 <ColumnDefinition Width="1.8*"/>
-                                <ColumnDefinition Width="150"/>
-                                <ColumnDefinition Width="140"/>
-                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="DrvVerCol"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="DrvSignCol"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="DrvActionCol"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Col 0: Device Name -->
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                 <TextBlock Text="{Binding DeviceName}" 
                                            FontSize="13" 
                                            FontWeight="SemiBold" 
@@ -604,8 +609,10 @@
                                     BorderThickness="1" 
                                     CornerRadius="6" 
                                     Padding="8,3" 
+                                    Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
-                                    HorizontalAlignment="Left">
+                                    HorizontalAlignment="Left"
+                                    Visibility="{Binding DeviceClass, Converter={StaticResource NullToVisibilityConverter}}">
                                 <TextBlock Text="{Binding DeviceClass}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </Border>
 
@@ -615,10 +622,11 @@
                                        FontSize="12" 
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                        VerticalAlignment="Center" 
-                                       TextTrimming="CharacterEllipsis"/>
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,0,12,0"/>
 
                             <!-- Col 3: Driver Version & Date -->
-                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                            <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,14,0">
                                 <TextBlock Text="{Binding DriverVersion, StringFormat='v{0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding DriverDate}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                             </StackPanel>
@@ -630,8 +638,10 @@
                                     BorderThickness="1" 
                                     CornerRadius="6" 
                                     Padding="8,4" 
+                                    Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
-                                    HorizontalAlignment="Left">
+                                    HorizontalAlignment="Left"
+                                    Visibility="{Binding Signer, Converter={StaticResource NullToVisibilityConverter}}">
                                 <TextBlock Text="{Binding Signer}" 
                                            Style="{StaticResource DriverSignTextStyle}" 
                                            TextTrimming="CharacterEllipsis"/>

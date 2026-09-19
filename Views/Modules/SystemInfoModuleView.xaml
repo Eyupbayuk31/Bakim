@@ -442,7 +442,8 @@
         </ScrollViewer>
 
         <!-- 3: Content Viewport (Tab 3: Large File Finder 1GB+) -->
-        <Grid Grid.Row="1" Visibility="{Binding IsLargeFilesTab, Converter={StaticResource BoolToVis}}">
+        <Grid Grid.Row="1" Visibility="{Binding IsLargeFilesTab, Converter={StaticResource BoolToVis}}"
+              Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Scanner Controls -->
                 <RowDefinition Height="*"/>    <!-- Large Files List -->
@@ -539,14 +540,14 @@
 
                 <ListView.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:LargeDiskFileItem}">
-                        <ui:Card Padding="14,12">
+                        <ui:Card Padding="14,12" ClipToBounds="False">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/> <!-- Extension Icon -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeExtCol"/> <!-- Extension Icon -->
                                     <ColumnDefinition Width="2.5*"/> <!-- File Name & Path -->
-                                    <ColumnDefinition Width="130"/>  <!-- Formatted Size -->
-                                    <ColumnDefinition Width="120"/>  <!-- Visual Space Bar -->
-                                    <ColumnDefinition Width="Auto"/> <!-- Action Buttons -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeSizeCol"/>  <!-- Formatted Size -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeBarCol"/>  <!-- Visual Space Bar -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeActionCol"/> <!-- Action Buttons -->
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Extension Badge -->
@@ -557,7 +558,8 @@
                                         CornerRadius="6" 
                                         Padding="8,4" 
                                         VerticalAlignment="Center" 
-                                        Margin="0,0,12,0">
+                                        Margin="0,0,12,0"
+                                        Visibility="{Binding Extension, Converter={StaticResource NullToVisibilityConverter}}">
                                     <TextBlock Text="{Binding Extension}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                 </Border>
 
@@ -582,6 +584,8 @@
                                              Value="{Binding SizePercentage}" 
                                              Maximum="100" 
                                              Height="6" 
+                                             MinWidth="100"
+                                             MaxWidth="180"
                                              Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
                                              VerticalAlignment="Center" 
                                              Margin="0,0,14,0"/>

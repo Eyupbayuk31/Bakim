@@ -24,7 +24,7 @@
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
-    <Grid Margin="28">
+    <Grid Margin="28" Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Title & Actions -->
             <RowDefinition Height="Auto"/> <!-- Quick Metric Cards -->
@@ -209,18 +209,18 @@
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2.2*"/> <!-- Process & PID -->
-                    <ColumnDefinition Width="120"/>  <!-- Protocol & State -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="NetProtoCol"/>  <!-- Protocol & State -->
                     <ColumnDefinition Width="1.6*"/> <!-- Local Endpoint -->
                     <ColumnDefinition Width="2.2*"/> <!-- Remote Endpoint & DNS -->
-                    <ColumnDefinition Width="160"/>  <!-- Security Threat Badge -->
-                    <ColumnDefinition Width="120"/>  <!-- Actions -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="NetThreatCol"/>  <!-- Security Threat Badge -->
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="NetActionCol"/>  <!-- Actions -->
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Column="0" Text="Süreç Adı &amp; PID" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                <TextBlock Grid.Column="1" Text="Protokol / Durum" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Column="1" Text="Protokol / Durum" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="12,0,12,0"/>
                 <TextBlock Grid.Column="2" Text="Yerel Soket" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                <TextBlock Grid.Column="3" Text="Uzak Hedef &amp; DNS" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                <TextBlock Grid.Column="4" Text="Güvenlik Değerlendirmesi" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Grid.Column="3" Text="Uzak Hedef &amp; DNS" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="12,0,12,0"/>
+                <TextBlock Grid.Column="4" Text="Güvenlik Değerlendirmesi" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
                 <TextBlock Grid.Column="5" Text="İşlemler" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
             </Grid>
         </Border>
@@ -291,11 +291,11 @@
 
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2.2*"/> <!-- Process & PID -->
-                            <ColumnDefinition Width="120"/>  <!-- Protocol & State -->
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="NetProtoCol"/>  <!-- Protocol & State -->
                             <ColumnDefinition Width="1.6*"/> <!-- Local Endpoint -->
                             <ColumnDefinition Width="2.2*"/> <!-- Remote Endpoint & DNS -->
-                            <ColumnDefinition Width="160"/>  <!-- Security Threat Badge -->
-                            <ColumnDefinition Width="120"/>  <!-- Actions -->
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="NetThreatCol"/>  <!-- Security Threat Badge -->
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="NetActionCol"/>  <!-- Actions -->
                         </Grid.ColumnDefinitions>
 
                         <!-- Col 0: Process Name & PID -->
@@ -313,7 +313,7 @@
                         </StackPanel>
 
                         <!-- Col 1: Protocol & State Badge -->
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,12,0">
                             <TextBlock Text="{Binding Protocol}" 
                                        FontSize="12" 
                                        FontWeight="Bold" 
@@ -334,7 +334,7 @@
                                    ToolTip="{Binding LocalEndpoint}"/>
 
                         <!-- Col 3: Remote Endpoint & DNS Domain -->
-                        <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="12,0,12,0">
                             <TextBlock Text="{Binding RemoteEndpoint}" 
                                        FontSize="12" 
                                        FontWeight="SemiBold" 
@@ -356,8 +356,10 @@
                                 BorderThickness="1" 
                                 CornerRadius="6" 
                                 Padding="8,4" 
+                                Margin="0,0,12,0" 
                                 VerticalAlignment="Center" 
-                                HorizontalAlignment="Left">
+                                HorizontalAlignment="Left"
+                                Visibility="{Binding PortCategory, Converter={StaticResource NullToVisibilityConverter}}">
                             <TextBlock Text="{Binding PortCategory}" 
                                        Style="{StaticResource PortCategoryTextStyle}"
                                        TextTrimming="CharacterEllipsis"/>

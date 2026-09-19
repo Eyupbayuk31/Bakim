@@ -69,7 +69,7 @@
 
         <!-- Startup Items List -->
         <ui:Card Grid.Row="2" Padding="18">
-            <Grid>
+            <Grid Grid.IsSharedSizeScope="True">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -84,16 +84,16 @@
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2.5*"/>
-                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="StartupImpactCol"/>
                             <ColumnDefinition Width="1.5*"/>
-                            <ColumnDefinition Width="110"/>
-                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="StartupStatusCol"/>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="StartupActionCol"/>
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0" Text="Uygulama ve Dosya Yolu" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="1" Text="Açılış Etkisi" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="Açılış Etkisi" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,14,0"/>
                         <TextBlock Grid.Column="2" Text="Kayıt Konumu" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="3" Text="Durum" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="3" Text="Durum" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,14,0"/>
                         <TextBlock Grid.Column="4" Text="Klasör" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right"/>
                     </Grid>
                 </Border>
@@ -148,10 +148,10 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="2.5*"/>
-                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="StartupImpactCol"/>
                                     <ColumnDefinition Width="1.5*"/>
-                                    <ColumnDefinition Width="110"/>
-                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="StartupStatusCol"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="StartupActionCol"/>
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Name & Path -->
@@ -183,8 +183,10 @@
                                         BorderThickness="1" 
                                         CornerRadius="6" 
                                         Padding="8,4" 
+                                        Margin="0,0,14,0"
                                         HorizontalAlignment="Left" 
-                                        VerticalAlignment="Center">
+                                        VerticalAlignment="Center"
+                                        Visibility="{Binding ImpactText, Converter={StaticResource NullToVisibilityConverter}}">
                                     <TextBlock Text="{Binding ImpactText}" 
                                                FontSize="10" 
                                                FontWeight="SemiBold" 
@@ -209,7 +211,8 @@
                                                  IsEnabled="{Binding IsActionBusy, Converter={StaticResource InverseBool}}"
                                                  OnContent="Etkin" 
                                                  OffContent="Devre Dışı"
-                                                 VerticalAlignment="Center"/>
+                                                 VerticalAlignment="Center"
+                                                 Margin="0,0,14,0"/>
 
                                 <!-- Action: Open File Location -->
                                 <ui:Button Grid.Column="4" 

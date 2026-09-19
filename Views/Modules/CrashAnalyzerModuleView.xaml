@@ -162,7 +162,7 @@
               Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Events}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
@@ -201,6 +201,7 @@
                         ClearButtonEnabled="True"
                         Icon="{ui:SymbolIcon Search24}"
                         VerticalContentAlignment="Center"
+                        MinWidth="220" MaxWidth="360"
                         Padding="12,8"
                         Margin="0,0,10,0"/>
 
@@ -264,7 +265,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:BsodCrashItem}">
-                            <ui:Card Padding="18,14" Margin="0,0,0,8">
+                            <ui:Card Padding="18,14" Margin="0,0,0,8" ClipToBounds="False">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -285,7 +286,8 @@
                                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                     BorderBrush="{DynamicResource SystemFillColorCriticalBrush}" 
                                                     BorderThickness="1" 
-                                                    Margin="10,0,0,0">
+                                                    Margin="10,0,0,0"
+                                                    Visibility="{Binding BugCheckCode, Converter={StaticResource NullToVisibilityConverter}}">
                                                 <TextBlock Text="{Binding BugCheckCode}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
                                             </Border>
 
@@ -294,7 +296,8 @@
                                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                     BorderThickness="1" 
-                                                    Margin="8,0,0,0">
+                                                    Margin="8,0,0,0"
+                                                    Visibility="{Binding FormattedCrashTime, Converter={StaticResource NullToVisibilityConverter}}">
                                                 <TextBlock Text="{Binding FormattedCrashTime}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             </Border>
                                         </StackPanel>
@@ -336,7 +339,8 @@
             </Grid>
 
             <!-- VIEW 2: Critical Event Logs -->
-            <Grid Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Events}">
+            <Grid Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Events}"
+                  Grid.IsSharedSizeScope="True">
                 <ListView ItemsSource="{Binding FilteredEvents}"
                           BorderThickness="0"
                           Background="Transparent"
@@ -361,23 +365,25 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:SystemEventItem}">
-                            <ui:Card Padding="14,10" Margin="0,0,0,6">
+                            <ui:Card Padding="14,10" Margin="0,0,0,6" ClipToBounds="False">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="CrashEventLevelCol"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="140"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="CrashEventTimeCol"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Level Badge -->
                                     <Border Grid.Column="0" 
                                             CornerRadius="4" 
                                             Padding="8,4" 
+                                            Margin="0,0,10,0"
                                             VerticalAlignment="Center" 
                                             HorizontalAlignment="Left"
                                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                            BorderThickness="1">
+                                            BorderThickness="1"
+                                            Visibility="{Binding Level, Converter={StaticResource NullToVisibilityConverter}}">
                                          <TextBlock Text="{Binding Level}" 
                                                     FontSize="11" 
                                                     FontWeight="SemiBold" 
@@ -385,7 +391,7 @@
                                     </Border>
 
                                     <!-- Event Content -->
-                                    <StackPanel Grid.Column="1" Margin="10,0,16,0" VerticalAlignment="Center">
+                                    <StackPanel Grid.Column="1" Margin="6,0,16,0" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Source}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             <TextBlock Text="{Binding EventId, StringFormat=' (Olay ID: {0})'}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
@@ -404,7 +410,9 @@
                                                FontSize="11" 
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                                VerticalAlignment="Center" 
-                                               HorizontalAlignment="Right"/>
+                                               HorizontalAlignment="Right"
+                                               Margin="8,0,0,0"
+                                               Visibility="{Binding FormattedTime, Converter={StaticResource NullToVisibilityConverter}}"/>
                                 </Grid>
                             </ui:Card>
                         </DataTemplate>

@@ -440,7 +440,8 @@
                                    Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                    Icon="{ui:SymbolIcon Search24}"
                                    VerticalContentAlignment="Center"
-                                   Width="260"/>
+                                   MinWidth="200" MaxWidth="320"
+                                   HorizontalAlignment="Stretch"/>
             </StackPanel>
         </Grid>
 
@@ -475,7 +476,7 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:SystemTweakItem}">
-                    <ui:Card Padding="18,14">
+                    <ui:Card Padding="18,14" ClipToBounds="False">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -490,7 +491,8 @@
                                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                             BorderThickness="1" 
-                                            Margin="0,0,8,0">
+                                            Margin="0,0,8,0"
+                                            Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
                                         <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </Border>
 
@@ -499,7 +501,8 @@
                                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                             BorderThickness="1" 
-                                            Margin="0,0,8,0">
+                                            Margin="0,0,8,0"
+                                            Visibility="{Binding RestartNotice, Converter={StaticResource NullToVisibilityConverter}}">
                                         <TextBlock Text="{Binding RestartNotice}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     </Border>
 
