@@ -25,7 +25,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "2.5.0";
+        public const string DefaultCurrentVersion = "2.5.1";
 
         public static Version GetCurrentVersion()
         {
@@ -34,7 +34,7 @@ namespace Bakım.Services
             {
                 return asmVersion;
             }
-            return new Version(2, 5, 0);
+            return new Version(2, 5, 1);
         }
 
         public static async Task<UpdateInfo> CheckForUpdatesAsync()
