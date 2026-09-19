@@ -58,6 +58,23 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private int _disabledCount;
 
+        [ObservableProperty]
+        private bool _isApiKeyDialogOpen;
+
+        [ObservableProperty]
+        private string _apiKeyInput = string.Empty;
+
+        [ObservableProperty]
+        private string _apiKeyStatusText = string.Empty;
+
+        [ObservableProperty]
+        private bool _isVirusTotalScanning;
+
+        [ObservableProperty]
+        private string _virusTotalScanProgress = string.Empty;
+
+        public bool HasVirusTotalApiKey => _virusTotalService.HasApiKey;
+
         public bool IsAllCategory => SelectedCategory == "All";
         public bool IsRegistryCategory => SelectedCategory == "Registry";
         public bool IsStartupCategory => SelectedCategory == "Startup";
@@ -72,6 +89,9 @@ namespace Bakım.ViewModels
         {
             _scannerEngine = scannerEngine;
             _virusTotalService = virusTotalService;
+
+            ApiKeyInput = _virusTotalService.ApiKey;
+            ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır ✓" : "API Anahtarı Tanımlanmadı";
 
             _filteredView = CollectionViewSource.GetDefaultView(Items);
             _filteredView.Filter = FilterItem;
@@ -299,6 +319,137 @@ namespace Bakım.ViewModels
             }
 
             _virusTotalService.OpenInBrowser(item.Sha256Hash);
+        }
+
+        [RelayCommand]
+        public void OpenApiKeyDialog()
+        {
+            ApiKeyInput = _virusTotalService.ApiKey;
+            ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır ✓" : "Henüz bir anahtar kaydedilmedi.";
+            IsApiKeyDialogOpen = true;
+        }
+
+        [RelayCommand]
+        public void CloseApiKeyDialog()
+        {
+            IsApiKeyDialogOpen = false;
+        }
+
+        [RelayCommand]
+        public async Task SaveApiKeyAsync()
+        {
+            if (string.IsNullOrWhiteSpace(ApiKeyInput))
+            {
+                ApiKeyStatusText = "Lütfen bir API anahtarı girin.";
+                return;
+            }
+
+            ApiKeyStatusText = "Doğrulanıyor...";
+            bool isValid = await _virusTotalService.ValidateApiKeyAsync(ApiKeyInput);
+            if (isValid)
+            {
+                _virusTotalService.SaveApiKey(ApiKeyInput);
+                OnPropertyChanged(nameof(HasVirusTotalApiKey));
+                ApiKeyStatusText = "Doğrulandı ve Kaydedildi! ✓";
+                await Task.Delay(800);
+                IsApiKeyDialogOpen = false;
+            }
+            else
+            {
+                ApiKeyStatusText = "Geçersiz API Anahtarı! Lütfen kontrol edin. ✗";
+            }
+        }
+
+        [RelayCommand]
+        public async Task ScanItemWithVirusTotalAsync(PersistenceItem? item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.Sha256Hash))
+            {
+                MessageBox.Show("Dosyanın SHA-256 hash'i bulunamadı veya dosya mevcut değil.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (!_virusTotalService.HasApiKey)
+            {
+                OpenApiKeyDialog();
+                return;
+            }
+
+            item.IsBusy = true;
+            try
+            {
+                var (malicious, total, msg) = await _virusTotalService.CheckHashAsync(item.Sha256Hash);
+                item.VirusTotalScore = msg;
+                item.VirusTotalPositives = malicious;
+            }
+            catch (Exception ex)
+            {
+                item.VirusTotalScore = $"Hata: {ex.Message}";
+            }
+            finally
+            {
+                item.IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task ScanAllVisibleWithVirusTotalAsync()
+        {
+            if (!_virusTotalService.HasApiKey)
+            {
+                OpenApiKeyDialog();
+                return;
+            }
+
+            if (IsVirusTotalScanning) return;
+
+            var itemsToScan = _filteredView.Cast<PersistenceItem>()
+                .Where(x => !string.IsNullOrWhiteSpace(x.Sha256Hash) && (string.IsNullOrWhiteSpace(x.VirusTotalScore) || x.VirusTotalScore == "Taranmadı"))
+                .ToList();
+
+            if (itemsToScan.Count == 0)
+            {
+                MessageBox.Show("Taranacak uygun veya yeni bir girdi bulunamadı.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            IsVirusTotalScanning = true;
+            int scanned = 0;
+
+            try
+            {
+                foreach (var item in itemsToScan)
+                {
+                    scanned++;
+                    VirusTotalScanProgress = $"VT Taranıyor ({scanned}/{itemsToScan.Count}): {item.Name}";
+                    item.IsBusy = true;
+
+                    try
+                    {
+                        var (malicious, total, msg) = await _virusTotalService.CheckHashAsync(item.Sha256Hash);
+                        item.VirusTotalScore = msg;
+                        item.VirusTotalPositives = malicious;
+                    }
+                    catch (Exception ex)
+                    {
+                        item.VirusTotalScore = $"Hata: {ex.Message}";
+                    }
+                    finally
+                    {
+                        item.IsBusy = false;
+                    }
+
+                    await Task.Delay(400);
+                }
+
+                VirusTotalScanProgress = $"Tarama tamamlandı! ({scanned} dosya kontrol edildi)";
+                await Task.Delay(3000);
+                VirusTotalScanProgress = string.Empty;
+            }
+            finally
+            {
+                IsVirusTotalScanning = false;
+            }
         }
 
         [RelayCommand]

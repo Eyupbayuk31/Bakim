@@ -18,7 +18,8 @@
                 <RowDefinition Height="Auto"/> <!-- 3: Startup & Behavior -->
                 <RowDefinition Height="Auto"/> <!-- 4: Security & UAC -->
                 <RowDefinition Height="Auto"/> <!-- 5: Uninstaller & Restore Point Security -->
-                <RowDefinition Height="Auto"/> <!-- 6: Metadata & Maintenance -->
+                <RowDefinition Height="Auto"/> <!-- 6: VirusTotal API Integration -->
+                <RowDefinition Height="Auto"/> <!-- 7: Metadata & Maintenance -->
             </Grid.RowDefinitions>
 
             <!-- 0. Header Area -->
@@ -518,8 +519,62 @@
                 </Grid>
             </ui:Card>
 
-            <!-- 6. Section: About & System Metadata -->
-            <ui:Card Grid.Row="6" Padding="20">
+            <!-- 6. Section: VirusTotal API Integration -->
+            <ui:Card Grid.Row="6" Padding="20" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,14">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="VirusTotal API Entegrasyonu &amp; Kalıcılık Koruması" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                        <TextBlock Text="Kalıcılık &amp; Autoruns analizöründe başlangıç dosyalarını ve zamanlanmış görevleri 70+ antivirüs motoruna karşı doğrulamak için VirusTotal API v3 anahtarınızı tanımlayın." 
+                                   FontSize="12" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ui:TextBox Grid.Row="0" Grid.Column="0"
+                                    Text="{Binding VirusTotalApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="VirusTotal API anahtarınızı (64 karakter) buraya yapıştırın..."
+                                    ClearButtonEnabled="True"
+                                    VerticalContentAlignment="Center"
+                                    Padding="12,10"/>
+
+                        <ui:Button Grid.Row="0" Grid.Column="2"
+                                   Appearance="Primary"
+                                   Command="{Binding SaveAndTestVirusTotalKeyCommand}"
+                                   IsEnabled="{Binding IsTestingVirusTotalKey, Converter={StaticResource InverseBoolToVis}}"
+                                   Padding="16,10"
+                                   Content="Doğrula &amp; Kaydet"
+                                   Icon="{ui:SymbolIcon Checkmark20}"/>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="2,8,0,0">
+                            <TextBlock Text="Durum: " FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding VirusTotalApiStatus}" FontSize="11.5" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Medium"/>
+                            <TextBlock Text=" • Ücretsiz anahtar için virustotal.com/gui/join-us adresini ziyaret edin." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="8,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <!-- 7. Section: About & System Metadata -->
+            <ui:Card Grid.Row="7" Padding="20">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

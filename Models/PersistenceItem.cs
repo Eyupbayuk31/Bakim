@@ -47,6 +47,12 @@ namespace Bakım.Models
         [ObservableProperty]
         private int _maliciousDetections = -1;
 
+        public int VirusTotalPositives
+        {
+            get => MaliciousDetections;
+            set => MaliciousDetections = value;
+        }
+
         [ObservableProperty]
         private int _totalScanners = -1;
 

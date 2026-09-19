@@ -14,12 +14,80 @@ namespace Bakım.Services
         private readonly HttpClient _httpClient;
         private readonly ConcurrentDictionary<string, (int malicious, int total, string message)> _cache = new();
 
+        public string ApiKey { get; set; } = string.Empty;
+        public bool HasApiKey => !string.IsNullOrWhiteSpace(ApiKey);
+
         public VirusTotalCheckService()
         {
             _httpClient = new HttpClient
             {
                 Timeout = TimeSpan.FromSeconds(10)
             };
+            LoadApiKey();
+        }
+
+        public string LoadApiKey()
+        {
+            try
+            {
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string path = Path.Combine(appData, "Bakim", "appsettings.json");
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    using var doc = JsonDocument.Parse(json);
+                    if (doc.RootElement.TryGetProperty("VirusTotalApiKey", out var prop))
+                    {
+                        ApiKey = prop.GetString() ?? string.Empty;
+                        return ApiKey;
+                    }
+                }
+            }
+            catch { }
+            return string.Empty;
+        }
+
+        public void SaveApiKey(string apiKey)
+        {
+            ApiKey = apiKey?.Trim() ?? string.Empty;
+            try
+            {
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string appDir = Path.Combine(appData, "Bakim");
+                if (!Directory.Exists(appDir)) Directory.CreateDirectory(appDir);
+                string path = Path.Combine(appDir, "appsettings.json");
+
+                var dict = new Dictionary<string, object>();
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        string existingJson = File.ReadAllText(path);
+                        dict = JsonSerializer.Deserialize<Dictionary<string, object>>(existingJson) ?? new Dictionary<string, object>();
+                    }
+                    catch { }
+                }
+                dict["VirusTotalApiKey"] = ApiKey;
+                File.WriteAllText(path, JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = true }));
+            }
+            catch { }
+        }
+
+        public async Task<bool> ValidateApiKeyAsync(string apiKey)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey)) return false;
+
+            try
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "https://www.virustotal.com/api/v3/files/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+                request.Headers.Add("x-apikey", apiKey.Trim());
+                using var response = await _httpClient.SendAsync(request);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public string ComputeSha256(string filePath)
@@ -48,7 +116,13 @@ namespace Bakım.Services
             if (_cache.TryGetValue(sha256Hash, out var cachedResult))
                 return cachedResult;
 
-            if (string.IsNullOrWhiteSpace(apiKey))
+            string key = !string.IsNullOrWhiteSpace(apiKey) ? apiKey : ApiKey;
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                key = LoadApiKey();
+            }
+
+            if (string.IsNullOrWhiteSpace(key))
             {
                 return (-1, -1, "API Anahtarı Gerekli");
             }
@@ -56,7 +130,7 @@ namespace Bakım.Services
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, $"https://www.virustotal.com/api/v3/files/{sha256Hash}");
-                request.Headers.Add("x-apikey", apiKey.Trim());
+                request.Headers.Add("x-apikey", key.Trim());
 
                 using var response = await _httpClient.SendAsync(request);
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

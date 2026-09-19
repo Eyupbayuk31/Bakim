@@ -28,6 +28,7 @@ namespace Bakım.ViewModels
         public bool TaskSchedulerAutoStart { get; set; } = false;
         public bool PromptRestorePointBeforeUninstall { get; set; } = true;
         public bool CreateRestorePointOnUninstall { get; set; } = true;
+        public string VirusTotalApiKey { get; set; } = string.Empty;
     }
 
     public partial class SettingsViewModel : ObservableObject
@@ -157,6 +158,15 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isInstalled = AdminElevationService.IsInstalledApplication();
 
+        [ObservableProperty]
+        private string _virusTotalApiKey = string.Empty;
+
+        [ObservableProperty]
+        private string _virusTotalApiStatus = "API anahtarı girilmedi.";
+
+        [ObservableProperty]
+        private bool _isTestingVirusTotalKey;
+
         #endregion
 
         #region Change Handlers & Persistence
@@ -224,6 +234,8 @@ namespace Bakım.ViewModels
                         AutoCleanOnExit = data.AutoCleanOnExit;
                         PromptRestorePointBeforeUninstall = data.PromptRestorePointBeforeUninstall;
                         CreateRestorePointOnUninstall = data.CreateRestorePointOnUninstall;
+                        VirusTotalApiKey = data.VirusTotalApiKey ?? string.Empty;
+                        VirusTotalApiStatus = string.IsNullOrWhiteSpace(VirusTotalApiKey) ? "API anahtarı girilmedi." : "API anahtarı kayıtlı.";
 
                         switch (data.Theme)
                         {
@@ -273,7 +285,8 @@ namespace Bakım.ViewModels
                     AlwaysRunAsAdmin = IsAlwaysRunAsAdmin,
                     TaskSchedulerAutoStart = IsTaskSchedulerAutoStart,
                     PromptRestorePointBeforeUninstall = PromptRestorePointBeforeUninstall,
-                    CreateRestorePointOnUninstall = CreateRestorePointOnUninstall
+                    CreateRestorePointOnUninstall = CreateRestorePointOnUninstall,
+                    VirusTotalApiKey = VirusTotalApiKey
                 };
 
                 string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
@@ -595,6 +608,47 @@ namespace Bakım.ViewModels
 
             AutoSaveSettings();
             MessageBox.Show("Tüm ayarlar başarıyla varsayılan değerlerine döndürüldü.", "Sıfırlama Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        #endregion
+
+        #region VirusTotal API Management
+
+        [RelayCommand]
+        public async Task SaveAndTestVirusTotalKeyAsync()
+        {
+            if (string.IsNullOrWhiteSpace(VirusTotalApiKey))
+            {
+                VirusTotalApiStatus = "Lütfen geçerli bir API anahtarı girin.";
+                return;
+            }
+
+            IsTestingVirusTotalKey = true;
+            VirusTotalApiStatus = "VirusTotal API anahtarı doğrulanıyor...";
+
+            try
+            {
+                var vtService = new VirusTotalCheckService();
+                bool isValid = await vtService.ValidateApiKeyAsync(VirusTotalApiKey);
+                if (isValid)
+                {
+                    vtService.SaveApiKey(VirusTotalApiKey);
+                    VirusTotalApiStatus = "Başarılı! API anahtarı geçerli ve sisteme kaydedildi. ✓";
+                    AutoSaveSettings();
+                }
+                else
+                {
+                    VirusTotalApiStatus = "Geçersiz API Anahtarı! Lütfen kontrol edin. ✗";
+                }
+            }
+            catch (Exception ex)
+            {
+                VirusTotalApiStatus = $"Doğrulama hatası: {ex.Message}";
+            }
+            finally
+            {
+                IsTestingVirusTotalKey = false;
+            }
         }
 
         #endregion

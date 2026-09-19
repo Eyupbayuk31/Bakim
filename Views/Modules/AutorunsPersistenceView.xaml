@@ -9,8 +9,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="850" d:DesignWidth="1100">
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
+    <Grid>
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Header & Global Actions -->
             <RowDefinition Height="Auto"/> <!-- 1: KPI Statistics Cards -->
             <RowDefinition Height="Auto"/> <!-- 2: Category Filter Bar & Options -->
@@ -34,9 +35,33 @@
                            FontSize="12.5" 
                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                            Margin="36,4,0,0"/>
+
+                <!-- Live VirusTotal Progress Bar / Text -->
+                <StackPanel Orientation="Horizontal" Margin="36,6,0,0"
+                            Visibility="{Binding IsVirusTotalScanning, Converter={StaticResource BoolToVis}}">
+                    <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Margin="0,0,8,0"/>
+                    <TextBlock Text="{Binding VirusTotalScanProgress}" FontSize="11.5" Foreground="#38BDF8" FontWeight="Medium"/>
+                </StackPanel>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- VirusTotal API Key Button -->
+                <ui:Button Appearance="Secondary" 
+                           Command="{Binding OpenApiKeyDialogCommand}"
+                           Padding="12,8"
+                           Margin="0,0,8,0"
+                           Content="🔑 VT API"
+                           ToolTip="VirusTotal API Anahtarını Gir / Güncelle"/>
+
+                <!-- VirusTotal Batch Scan Button -->
+                <ui:Button Appearance="Secondary" 
+                           Command="{Binding ScanAllVisibleWithVirusTotalCommand}"
+                           IsEnabled="{Binding IsVirusTotalScanning, Converter={StaticResource InverseBoolToVis}}"
+                           Padding="12,8"
+                           Margin="0,0,8,0"
+                           Content="🛡️ VT ile Tara"
+                           ToolTip="Listedeki dosyaları VirusTotal API ile doğrula ve puanla"/>
+
                 <ui:Button Appearance="Secondary" 
                            Command="{Binding ExportReportCsvCommand}"
                            Padding="12,8"
@@ -251,6 +276,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="CatCol"/>
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="SigCol"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="VtCol"/>
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="ActionCol"/>
                                 </Grid.ColumnDefinitions>
 
@@ -380,8 +406,32 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Column 5: Action Buttons (VirusTotal, Open Location, Delete) -->
-                                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Column 5: VirusTotal Score Badge -->
+                                <Border Grid.Column="5" 
+                                        Background="#1564748B"
+                                        BorderBrush="#334155"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="8,4"
+                                        Margin="0,0,10,0"
+                                        VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="#38BDF8" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{Binding VirusTotalScore}" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Column 6: Action Buttons (VirusTotal, Open Location, Delete) -->
+                                <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- VirusTotal API Quick Scan Button -->
+                                    <ui:Button Appearance="Secondary"
+                                               Padding="8,5"
+                                               Margin="0,0,6,0"
+                                               Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               Icon="{ui:SymbolIcon Shield20}"
+                                               ToolTip="Bu Dosyayı VirusTotal API ile Sorgula"/>
+
                                     <!-- VirusTotal Web Lookup Button -->
                                     <ui:Button Appearance="Secondary"
                                                Padding="8,5"
@@ -442,4 +492,86 @@
             <TextBlock Grid.Column="1" Text="Bakım Güvenlik Kalkanı v41.0" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
         </Grid>
     </Grid>
+
+    <!-- VirusTotal API Key Input Modal Overlay -->
+    <Grid Background="#D00F172A"
+          Visibility="{Binding IsApiKeyDialogOpen, Converter={StaticResource BoolToVis}}"
+          Panel.ZIndex="999">
+        <Border Width="500"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Background="#1E293B"
+                BorderBrush="#38BDF8"
+                BorderThickness="2"
+                CornerRadius="14"
+                Padding="24">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="32" ShadowDepth="6" Opacity="0.85" Color="#000000"/>
+            </Border.Effect>
+            <StackPanel>
+                <!-- Modal Header -->
+                <Grid Margin="0,0,0,16">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="#38BDF8" Margin="0,0,10,0"/>
+                        <StackPanel>
+                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="11.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <ui:Button Appearance="Transparent"
+                               HorizontalAlignment="Right"
+                               Padding="6,4"
+                               Command="{Binding CloseApiKeyDialogCommand}"
+                               Icon="{ui:SymbolIcon Dismiss20}"
+                               ToolTip="Kapat"/>
+                </Grid>
+
+                <!-- API Key Input Field -->
+                <TextBlock Text="VirusTotal API Anahtarı (v3):" FontSize="12.5" FontWeight="SemiBold" Foreground="#F8FAFC" Margin="0,0,0,6"/>
+                <ui:TextBox Text="{Binding ApiKeyInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            PlaceholderText="64 karakterlik VirusTotal API anahtarınızı buraya yapıştırın..."
+                            ClearButtonEnabled="True"
+                            Padding="12,10"
+                            Margin="0,0,0,12"/>
+
+                <!-- Status Message -->
+                <TextBlock Text="{Binding ApiKeyStatusText}" 
+                           FontSize="12" 
+                           Foreground="#38BDF8" 
+                           FontWeight="Medium"
+                           Margin="0,0,0,16"
+                           TextWrapping="Wrap"/>
+
+                <!-- Action Buttons -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" 
+                               Text="virustotal.com üzerinden ücretsiz alabilirsiniz." 
+                               FontSize="11" 
+                               Foreground="#64748B" 
+                               VerticalAlignment="Center"/>
+
+                    <ui:Button Grid.Column="1"
+                               Appearance="Secondary"
+                               Content="İptal"
+                               Padding="16,8"
+                               Command="{Binding CloseApiKeyDialogCommand}"/>
+
+                    <ui:Button Grid.Column="3"
+                               Appearance="Primary"
+                               Content="Doğrula &amp; Kaydet"
+                               Padding="16,8"
+                               Icon="{ui:SymbolIcon Checkmark20}"
+                               Command="{Binding SaveApiKeyCommand}"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Grid>
 </UserControl>
