@@ -1,0 +1,104 @@
+<Application x:Class="Bakım.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:local="clr-namespace:Bakım"
+             xmlns:conv="clr-namespace:Bakım.Converters"
+             StartupUri="LoginWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Wpf.Ui Core Dictionaries -->
+                <ui:ThemesDictionary Theme="Dark"/>
+                <ui:ControlsDictionary/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <conv:BoolToVisConverter x:Key="BoolToVis"/>
+            <conv:BoolToVisConverter x:Key="InverseBoolToVis" Invert="True"/>
+            <conv:InverseBoolConverter x:Key="InverseBool"/>
+            <conv:IntToVisConverter x:Key="IntToVis"/>
+            <conv:PercentageToBrushConverter x:Key="PercentageToBrush"/>
+            <conv:ImpactLevelToBrushConverter x:Key="ImpactLevelToBrush"/>
+            <conv:StringToVisConverter x:Key="StringToVis"/>
+            <conv:StringToVisConverter x:Key="InverseStringToVis" Invert="True"/>
+            <conv:StringToNavAppearanceConverter x:Key="StringToNavAppearance"/>
+            <conv:SafeSymbolConverter x:Key="SafeSymbol"/>
+            <conv:EventLevelToBrushConverter x:Key="EventLevelToBrush"/>
+
+            <!-- Semantic Design System Brushes mapped to Wpf.Ui System Brushes -->
+            <SolidColorBrush x:Key="Brush.Window.Background" Color="#0F172A"/>
+            <SolidColorBrush x:Key="Brush.Surface.Background" Color="#1E293B"/>
+            <SolidColorBrush x:Key="Brush.Surface.Border" Color="#334155"/>
+            <SolidColorBrush x:Key="Brush.Surface.Hover" Color="#273549"/>
+            <SolidColorBrush x:Key="Brush.Text.Primary" Color="#F8FAFC"/>
+            <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#94A3B8"/>
+            <SolidColorBrush x:Key="Brush.Text.Muted" Color="#64748B"/>
+            <SolidColorBrush x:Key="Brush.Primary" Color="#2563EB"/>
+            <SolidColorBrush x:Key="Brush.Accent" Color="#38BDF8"/>
+            <SolidColorBrush x:Key="Brush.Success" Color="#10B981"/>
+            <SolidColorBrush x:Key="Brush.Warning" Color="#F59E0B"/>
+            <SolidColorBrush x:Key="Brush.Danger" Color="#EF4444"/>
+            <SolidColorBrush x:Key="Brush.Danger.Background" Color="#451A1A"/>
+            <SolidColorBrush x:Key="Brush.Danger.Text" Color="#FCA5A5"/>
+            <SolidColorBrush x:Key="Brush.Input.Background" Color="#0F172A"/>
+            <SolidColorBrush x:Key="Brush.Badge.Background" Color="#334155"/>
+            <SolidColorBrush x:Key="Brush.Badge.Border" Color="#475569"/>
+
+            <!-- Interactive Hover Glow & Micro-Lift Style for ui:Card -->
+            <Style x:Key="InteractiveCard" TargetType="{x:Type ui:Card}">
+                <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <TranslateTransform Y="0"/>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                        <Trigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                     To="-2" Duration="0:0:0.15">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.EnterActions>
+                        <Trigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                     To="0" Duration="0:0:0.15">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </Trigger.ExitActions>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- Global FadeInSlideLeft Page Transition Storyboard -->
+            <Storyboard x:Key="FadeInSlideLeft">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 From="0" To="1" Duration="0:0:0.25">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                 From="16" To="0" Duration="0:0:0.25">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

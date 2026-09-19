@@ -1,0 +1,552 @@
+<UserControl x:Class="Bakım.Views.Modules.SettingsModuleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:Bakım.ViewModels"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
+             d:DesignHeight="950" d:DesignWidth="980">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- 0: Title Bar -->
+                <RowDefinition Height="Auto"/> <!-- 1: Appearance & Theme -->
+                <RowDefinition Height="Auto"/> <!-- 2: Performance & Refresh Rate -->
+                <RowDefinition Height="Auto"/> <!-- 3: Startup & Behavior -->
+                <RowDefinition Height="Auto"/> <!-- 4: Security & UAC -->
+                <RowDefinition Height="Auto"/> <!-- 5: Metadata & Maintenance -->
+            </Grid.RowDefinitions>
+
+            <!-- 0. Header Area -->
+            <Grid Grid.Row="0" Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Ayarlar ve Sistem Tercihleri" 
+                               FontSize="24" 
+                               FontWeight="Bold" 
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="Görünüm stili, arka plan performans sıklığı, kalıcı yönetici hakları ve yedekleme yönetimi." 
+                               FontSize="13" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ui:Button Appearance="Secondary" 
+                               Command="{Binding ExportSettingsCommand}"
+                               Padding="12,8"
+                               Margin="0,0,8,0"
+                               Content="Ayarları Yedekle"
+                               Icon="{ui:SymbolIcon ArrowDownload24}"
+                               ToolTip="Ayarları JSON olarak dışa aktar"/>
+                    <ui:Button Appearance="Secondary" 
+                               Command="{Binding ImportSettingsCommand}"
+                               Padding="12,8"
+                               Margin="0,0,8,0"
+                               Content="Yedekten Geri Yükle"
+                               Icon="{ui:SymbolIcon ArrowUpload24}"
+                               ToolTip="JSON yedek dosyasından ayarları içe aktar"/>
+                    <ui:Button Appearance="Secondary" 
+                               Command="{Binding ResetPreferencesCommand}"
+                               Padding="12,8"
+                               Content="Sıfırla"
+                               Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               ToolTip="Varsayılan fabrika ayarlarına dön"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- 1. Section: Appearance & Themes -->
+            <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,14">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="DarkTheme24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Arayüz Görünümü &amp; Tema Seçimi" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                        <TextBlock Text="Windows 11 Mica derinlik efekti ve dinamik renk paleti ile arayüz stilini belirleyin." 
+                                   FontSize="12" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Theme Selection Buttons (3-Column Grid) -->
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Mica Dark Theme Option -->
+                        <ui:Button Grid.Column="0" 
+                                   HorizontalAlignment="Stretch"
+                                   Padding="16,14"
+                                   Command="{Binding SetMicaDarkThemeCommand}"
+                                   Icon="{ui:SymbolIcon DarkTheme24}">
+                            <ui:Button.Content>
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="Mica Koyu" FontWeight="SemiBold" FontSize="13"/>
+                                    <TextBlock Text="Slate koyu zemin &amp; Fluent Mica efekti" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </ui:Button.Content>
+                        </ui:Button>
+
+                        <!-- AMOLED Black Theme Option -->
+                        <ui:Button Grid.Column="2" 
+                                   HorizontalAlignment="Stretch"
+                                   Padding="16,14"
+                                   Command="{Binding SetAmoledThemeCommand}"
+                                   Icon="{ui:SymbolIcon WeatherMoon24}">
+                            <ui:Button.Content>
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="AMOLED Siyah" FontWeight="SemiBold" FontSize="13"/>
+                                    <TextBlock Text="Saf OLED siyahı ve derin kontrast" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </ui:Button.Content>
+                        </ui:Button>
+
+                        <!-- Cyberpunk Purple Theme Option -->
+                        <ui:Button Grid.Column="4" 
+                                   HorizontalAlignment="Stretch"
+                                   Padding="16,14"
+                                   Command="{Binding SetCyberpunkThemeCommand}"
+                                   Icon="{ui:SymbolIcon Color24}">
+                            <ui:Button.Content>
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="Cyberpunk Mor" FontWeight="SemiBold" FontSize="13"/>
+                                    <TextBlock Text="Neon mor zemin ve pembe vurgular" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </ui:Button.Content>
+                        </ui:Button>
+                    </Grid>
+
+                    <!-- Active Theme Status Badge -->
+                    <Border Grid.Row="2" 
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="6" 
+                            Padding="12,8"
+                            Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Checkmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Etkin Durum: " FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{Binding CurrentThemeStatus}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Divider -->
+                    <Border Grid.Row="3" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Mica / Acrylic Depth Effect -->
+                    <Grid Grid.Row="4" Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Windows 11 Mica Arka Plan Derinliği" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Pencere arkasında masaüstü duvar kağıdıyla etkileşimli Mica saydamlık katmanını etkinleştirir." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding IsMicaEnabled, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <!-- 2. Section: Performance & Scan Speed -->
+            <ui:Card Grid.Row="2" Padding="20" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,14">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Performans &amp; Tarama Hızı" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                        <TextBlock Text="Süreç izleme, canlı donanım sayaçları ve otomatik bellek optimizasyon periyotları." 
+                                   FontSize="12" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Item 1: Live Data Refresh Rate -->
+                    <Grid Grid.Row="1" Margin="0,4,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Canlı Veri Yenileme Sıklığı" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="RAM, CPU ve ağ bağlantı listelerinin arka planda güncellenme aralığı." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" 
+                                  SelectedValuePath="Tag"
+                                  SelectedValue="{Binding RefreshIntervalSeconds, Mode=TwoWay}"
+                                  VerticalAlignment="Center"
+                                  Padding="10,6">
+                            <ComboBoxItem Content="Yüksek (1 Saniye)" Tag="1"/>
+                            <ComboBoxItem Content="Normal (2 Saniye)" Tag="2"/>
+                            <ComboBoxItem Content="Düşük (5 Saniye)" Tag="5"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <!-- Divider -->
+                    <Border Grid.Row="2" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 2: Auto RAM Clean Interval -->
+                    <Grid Grid.Row="3" Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="180"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Otomatik RAM Temizleme Aralığı" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Kullanılmayan sistem çalışma havuzlarını periyodik olarak arka planda boşaltır." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" 
+                                  SelectedValuePath="Tag"
+                                  SelectedValue="{Binding AutoRamCleanIntervalMinutes, Mode=TwoWay}"
+                                  VerticalAlignment="Center"
+                                  Padding="10,6">
+                            <ComboBoxItem Content="Devre Dışı (Kapalı)" Tag="0"/>
+                            <ComboBoxItem Content="Her 15 Dakikada" Tag="15"/>
+                            <ComboBoxItem Content="Her 30 Dakikada" Tag="30"/>
+                            <ComboBoxItem Content="Her 60 Dakikada" Tag="60"/>
+                        </ComboBox>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <!-- 3. Section: Startup & Behavior -->
+            <ui:Card Grid.Row="3" Padding="20" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,14">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Settings24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Başlangıç &amp; Sistem Davranışı" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                        <TextBlock Text="Sistem başlangıcı, bellek izleme ve otomatik temizlik davranışları." 
+                                   FontSize="12" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <!-- Item 1: Windows Autostart -->
+                    <Grid Grid.Row="1" Margin="0,8,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Windows ile Birlikte Başlat" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Kayıt defteri (HKCU\Run) üzerinden bilgisayar açıldığında arka planda otomatik çalışır." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding StartWithWindows, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Divider -->
+                    <Border Grid.Row="2" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 2: Minimize to Tray -->
+                    <Grid Grid.Row="3" Margin="0,12,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Kapatıldığında Sistem Tepsisine Küçült" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Uygulama kapatıldığında sonlandırılmak yerine bildirim alanında (System Tray) çalışmaya devam eder." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Divider -->
+                    <Border Grid.Row="4" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 3: High RAM Notification -->
+                    <Grid Grid.Row="5" Margin="0,12,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Yüksek Bellek Tüketim Uyarısı" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Sistem RAM kullanımı %85 eşiğini aştığında optimize önerisi gösterir." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding NotifyOnHighRam, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Divider -->
+                    <Border Grid.Row="6" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 4: Auto Clean on Exit -->
+                    <Grid Grid.Row="7" Margin="0,12,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Uygulama Kapatılırken Temp Dosyalarını Temizle" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Oturum sonlandırılırken Windows kullanıcı geçici dosyalarını güvenle temizler." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding AutoCleanOnExit, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <!-- 4. Section: Security & Administrator Privilege (Permanent Elevation & UAC Bypass) -->
+            <ui:Card Grid.Row="4" Padding="20" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Current Admin Status -->
+                        <RowDefinition Height="1"/>    <!-- Divider -->
+                        <RowDefinition Height="Auto"/> <!-- Item 1: Permanent RunAsAdmin -->
+                        <RowDefinition Height="1"/>    <!-- Divider -->
+                        <RowDefinition Height="Auto"/> <!-- Item 2: Task Scheduler UAC Bypass -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Header & Current Status -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ui:SymbolIcon Grid.Column="0" Symbol="Shield24" FontSize="26" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,14,0" VerticalAlignment="Center"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="Yönetici Yetki Seviyesi (UAC)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Yönetici Ayrıcalıkları Devrede. Kayıt defteri ve sistem servisleri tam yetkiyle yönetilebilir." 
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource SystemFillColorSuccessBrush}" 
+                                       Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}" 
+                                       Margin="0,3,0,0"/>
+                            <TextBlock Text="Standart Kullanıcı Modu. Korumalı sistem alanlarını ve başlangıç kayıtlarını değiştirmek için yükseltme önerilir." 
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}" 
+                                       Visibility="{Binding IsAdmin, Converter={StaticResource InverseBoolToVis}}" 
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
+
+                        <ui:Button Grid.Column="2" 
+                                   Appearance="Primary" 
+                                   Command="{Binding RestartAsAdminCommand}"
+                                   Visibility="{Binding IsAdmin, Converter={StaticResource InverseBoolToVis}}"
+                                   Padding="16,8"
+                                   Content="Yönetici Olarak Başlat"
+                                   Icon="{ui:SymbolIcon ShieldKeyhole20}"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Border Grid.Row="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 1: Permanent RunAsAdmin (AppCompatFlags) -->
+                    <Grid Grid.Row="2" Margin="0,12,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Her Zaman Yönetici Olarak Çalıştır (RUNASADMIN)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Kayıt Defteri Uyumluluk Katmanı (HKCU\...\AppCompatFlags\Layers -> RUNASADMIN) ile uygulama nereden açılırsa açılsın daima Yönetici modunda başlar." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding IsAlwaysRunAsAdmin, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <Border Grid.Row="3" Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1"/>
+
+                    <!-- Item 2: Task Scheduler UAC Bypass -->
+                    <Grid Grid.Row="4" Margin="0,12,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Sistem Açılışında UAC Uyarısız Yönetici Başlat" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Windows Görev Zamanlayıcı (schtasks) üzerinde en yüksek yetkiyle (RunLevel.Highest) sistem açılışında UAC istemini bypass ederek arka planda açılır." 
+                                       FontSize="11" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" 
+                                         IsChecked="{Binding IsTaskSchedulerAutoStart, Mode=TwoWay}"
+                                         VerticalAlignment="Center"/>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <!-- 5. Section: About & System Metadata -->
+            <ui:Card Grid.Row="5" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Header & Actions -->
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Info24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="Uygulama Bilgileri ve Günlük Yönetimi" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </StackPanel>
+                            <TextBlock Text="Bakım yazılımı sürüm detayları ve sistem çekirdek bilgileri." 
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <!-- Actions -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <ui:Button Appearance="Secondary" 
+                                       Command="{Binding CheckForUpdatesCommand}"
+                                       Padding="12,7"
+                                       Margin="0,0,8,0"
+                                       Content="Güncellemeleri Denetle"
+                                       Icon="{ui:SymbolIcon ArrowSync24}"/>
+                            <ui:Button Appearance="Secondary" 
+                                       Command="{Binding OpenLogsFolderCommand}"
+                                       Padding="12,7"
+                                       Content="Log Klasörünü Aç"
+                                       Icon="{ui:SymbolIcon FolderOpen20}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- 4-Column Metadata Grid -->
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Col 0: App Version -->
+                        <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Sürüm" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding AppVersion}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Col 1: Framework -->
+                        <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Çalışma Zamanı" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding FrameworkVersion}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Col 2: Architecture -->
+                        <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Mimari" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding Architecture}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Col 3: Developer -->
+                        <Border Grid.Column="3" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10">
+                            <StackPanel>
+                                <TextBlock Text="Geliştirici" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding DeveloperName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Update Status Banner -->
+                    <Border Grid.Row="2" 
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="6" 
+                            Padding="12,8" 
+                            Margin="0,12,0,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="15" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </ui:Card>
+
+        </Grid>
+    </ScrollViewer>
+</UserControl>

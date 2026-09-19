@@ -1,0 +1,809 @@
+<ui:FluentWindow x:Class="Bakım.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:local="clr-namespace:Bakım"
+        xmlns:vm="clr-namespace:Bakım.ViewModels"
+        xmlns:modules="clr-namespace:Bakım.Views.Modules"
+        xmlns:models="clr-namespace:Bakım.Models"
+        mc:Ignorable="d"
+        Title="Bakım - Sistem Temizlik ve Optimizasyon" 
+        MinWidth="1020" MinHeight="680"
+        Width="1280" Height="840"
+        WindowStartupLocation="CenterScreen"
+        WindowBackdropType="Mica"
+        ExtendsContentIntoTitleBar="True">
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenCommandPaletteCommand}"/>
+        <KeyBinding Gesture="Ctrl+F" Command="{Binding OpenCommandPaletteCommand}"/>
+    </Window.InputBindings>
+
+    <Window.Resources>
+        <!-- Implicit DataTemplates for Modular MVVM View Mapping -->
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+            <modules:DashboardModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CleanerViewModel}">
+            <modules:CleanerModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OptimizerViewModel}">
+            <modules:OptimizerModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StartupViewModel}">
+            <modules:StartupModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SystemInfoViewModel}">
+            <modules:SystemInfoModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:NetworkMonitorViewModel}">
+            <modules:NetworkMonitorModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ServiceManagerViewModel}">
+            <modules:ServiceManagerModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:PrivacyDebloatViewModel}">
+            <modules:PrivacyDebloatModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CrashAnalyzerViewModel}">
+            <modules:CrashAnalyzerModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UninstallerViewModel}">
+            <modules:UninstallerModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WindowsTweakerViewModel}">
+            <modules:WindowsTweakerModuleView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <modules:SettingsModuleView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- TitleBar -->
+            <RowDefinition Height="*"/>    <!-- Main Body (Sidebar + Content Viewport) -->
+        </Grid.RowDefinitions>
+
+        <!-- Wpf.Ui Native Windows 11 TitleBar -->
+        <ui:TitleBar Grid.Row="0" Title="Bakım - Sistem Yönetim Paneli" Icon="{ui:SymbolIcon Shield24}">
+            <ui:TitleBar.TrailingContent>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <!-- Command Palette (Ctrl+K) Button -->
+                    <ui:Button Appearance="Secondary" 
+                               Padding="10,3"
+                               Command="{Binding OpenCommandPaletteCommand}"
+                               Margin="0,0,8,0"
+                               ToolTip="Hızlı Arama &amp; Komut Paleti (Ctrl+K)"
+                               Icon="{ui:SymbolIcon Search20}"
+                               Content="Ara (Ctrl+K)"/>
+
+                    <!-- UAC Admin Badge -->
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Padding="8,3" 
+                            Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Shield20" FontSize="13" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0"/>
+                            <TextBlock Text="Yetki: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Yönetici" 
+                                       FontSize="11" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource SystemFillColorSuccessBrush}"
+                                       Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}"/>
+                            <TextBlock Text="Standart" 
+                                       FontSize="11" 
+                                       FontWeight="SemiBold" 
+                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                       Visibility="{Binding IsAdmin, Converter={StaticResource InverseBoolToVis}}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Elevate to Admin Button (If not admin) -->
+                    <ui:Button Appearance="Secondary" 
+                               Padding="8,3"
+                               Command="{Binding RestartAsAdminCommand}"
+                               Visibility="{Binding IsAdmin, Converter={StaticResource InverseBoolToVis}}"
+                               Margin="0,0,8,0"
+                               Content="Yönetici Ol"
+                               Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
+
+                    <!-- Theme Switcher -->
+                    <ui:Button Appearance="Secondary" 
+                               Padding="8,3"
+                               Command="{Binding ToggleThemeCommand}" 
+                               Margin="0,0,8,0" 
+                               ToolTip="Açık / Koyu Tema"
+                               Icon="{ui:SymbolIcon DarkTheme20}"/>
+
+                    <!-- Eyüp User Badge -->
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            BorderThickness="1" 
+                            CornerRadius="8" 
+                            Padding="8,3" 
+                            Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Person20" FontSize="13" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                            <TextBlock Text="Eyüp" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Logout Button -->
+                    <ui:Button Appearance="Secondary" 
+                               Padding="8,3"
+                               Command="{Binding LogoutCommand}" 
+                               ToolTip="Oturumu Kapat"
+                               Icon="{ui:SymbolIcon SignOut20}"/>
+                </StackPanel>
+            </ui:TitleBar.TrailingContent>
+        </ui:TitleBar>
+
+        <!-- Main Body: Fluent Collapsible Sidebar + Dynamic Content Host -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/> <!-- Collapsible Navigation Sidebar (64px to 260px) -->
+                <ColumnDefinition Width="*"/>   <!-- Active Module Content Viewport -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Navigation Sidebar (Collapsible Drawer with 300ms CubicEaseOut Animation) -->
+            <Border x:Name="NavSidebar"
+                    Grid.Column="0" 
+                    Width="260"
+                    ClipToBounds="True"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                    BorderThickness="0,0,1,0" 
+                    Padding="10,14">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSidebarExpanded}" Value="False">
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Width" 
+                                                             To="64" 
+                                                             Duration="0:0:0.3">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Width" 
+                                                             To="260" 
+                                                             Duration="0:0:0.3">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Hamburger & Brand Header -->
+                        <RowDefinition Height="*"/>    <!-- Scrollable Navigation Items List -->
+                        <RowDefinition Height="Auto"/> <!-- Bottom Status Card -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Top Hamburger & Brand Header -->
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <!-- Hamburger Toggle Button -->
+                        <ui:Button Grid.Column="0" 
+                                   Appearance="Secondary"
+                                   Padding="8,8"
+                                   Width="42" Height="40"
+                                   HorizontalAlignment="Center"
+                                   Command="{Binding ToggleSidebarCommand}"
+                                   ToolTip="Menüyü Daralt / Genişlet"
+                                   Icon="{ui:SymbolIcon Navigation24}"/>
+
+                        <!-- Brand Title (Visible only when Expanded) -->
+                        <Grid Grid.Column="1" 
+                              Margin="10,0,0,0" 
+                              VerticalAlignment="Center"
+                              Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="BAKIM v2.0" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Sistem Optimize &amp; Güvenlik" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Scrollable Navigation Items List -->
+                    <ScrollViewer Grid.Row="1" 
+                                  VerticalScrollBarVisibility="Auto" 
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  Focusable="False">
+                        <StackPanel Margin="0,0,4,0">
+                            <!-- 1. Dashboard Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Dashboard'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Dashboard"
+                                       Icon="{ui:SymbolIcon Home24}"
+                                       ToolTip="Genel Bakış">
+                                <TextBlock Text="Genel Bakış" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 2. Cleaner Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Cleaner'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Cleaner"
+                                       Icon="{ui:SymbolIcon Delete24}"
+                                       ToolTip="Sistem Temizliği">
+                                <TextBlock Text="Sistem Temizliği" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 3. Optimizer Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Optimizer'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Optimizer"
+                                       Icon="{ui:SymbolIcon TopSpeed24}"
+                                       ToolTip="RAM &amp; Süreçler">
+                                <TextBlock Text="RAM &amp; Süreçler" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 4. Startup Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Startup'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Startup"
+                                       Icon="{ui:SymbolIcon Apps24}"
+                                       ToolTip="Başlangıç Programları">
+                                <TextBlock Text="Başlangıç Programları" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 5. System Info Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='SystemInfo'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="SystemInfo"
+                                       Icon="{ui:SymbolIcon Desktop24}"
+                                       ToolTip="Donanım &amp; Disk">
+                                <TextBlock Text="Donanım &amp; Disk" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 6. Network Monitor Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Network'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Network"
+                                       Icon="{ui:SymbolIcon Globe24}"
+                                       ToolTip="Ağ &amp; Port İzleyici">
+                                <TextBlock Text="Ağ &amp; Port İzleyici" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 7. Services & Driver Manager Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='ServiceManager'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="ServiceManager"
+                                       Icon="{ui:SymbolIcon DeveloperBoard24}"
+                                       ToolTip="Hizmet &amp; Sürücüler">
+                                <TextBlock Text="Hizmet &amp; Sürücüler" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 8. Crash Analyzer & Event Logs Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='CrashAnalyzer'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="CrashAnalyzer"
+                                       Icon="{ui:SymbolIcon HeartPulse24}"
+                                       ToolTip="Olay Günlüğü &amp; Sağlık">
+                                <TextBlock Text="Olay Günlüğü &amp; Sağlık" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 10. Smart Uninstaller Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Uninstaller'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Uninstaller"
+                                       Icon="{ui:SymbolIcon Apps24}"
+                                       ToolTip="Program Kaldırıcı">
+                                <TextBlock Text="Program Kaldırıcı" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 11. Windows Tweaker Hierarchical Accordion Item -->
+                            <Grid Margin="0,0,0,4">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Main Tweaker Button with Toggle Chevron -->
+                                <Grid Grid.Row="0">
+                                    <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Tweaker'}"
+                                               HorizontalAlignment="Stretch" 
+                                               HorizontalContentAlignment="Left"
+                                               Padding="10,8" 
+                                               Command="{Binding NavigateCommand}" 
+                                               CommandParameter="Tweaker"
+                                               Icon="{ui:SymbolIcon Wrench24}"
+                                               ToolTip="Windows Tweaker">
+                                        <Grid Margin="6,0,0,0" 
+                                              HorizontalAlignment="Stretch" 
+                                              Width="175"
+                                              Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
+                                            <TextBlock Text="Windows Tweaker" VerticalAlignment="Center" FontSize="12.5"/>
+                                            <ui:Button Appearance="Transparent"
+                                                       Padding="4,2"
+                                                       HorizontalAlignment="Right"
+                                                       VerticalAlignment="Center"
+                                                       Command="{Binding ToggleTweakerMenuCommand}"
+                                                       ToolTip="Kategorileri Aç / Kapat">
+                                                <StackPanel>
+                                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11"
+                                                                   Visibility="{Binding IsTweakerMenuExpanded, Converter={StaticResource BoolToVis}}"/>
+                                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11"
+                                                                   Visibility="{Binding IsTweakerMenuExpanded, Converter={StaticResource InverseBoolToVis}}"/>
+                                                </StackPanel>
+                                            </ui:Button>
+                                        </Grid>
+                                    </ui:Button>
+                                </Grid>
+
+                                <!-- Subcategories Indented List -->
+                                <StackPanel Grid.Row="1" 
+                                            Margin="14,3,0,4"
+                                            Visibility="{Binding CanShowTweakerSubMenu, Converter={StaticResource BoolToVis}}">
+                                    <!-- 1. Tüm Ayarlar -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="All"
+                                               Icon="{ui:SymbolIcon List24}"
+                                               ToolTip="Tüm Ayarlar">
+                                        <TextBlock Text="Tüm Ayarlar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 2. Gizlilik & Debloat -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="PrivacyDebloat"
+                                               Icon="{ui:SymbolIcon ShieldCheckmark24}"
+                                               ToolTip="Gizlilik &amp; Debloat">
+                                        <TextBlock Text="Gizlilik &amp; Debloat" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 3. Windows 11 -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="Windows11"
+                                               Icon="{ui:SymbolIcon AppGeneric20}"
+                                               ToolTip="Windows 11">
+                                        <TextBlock Text="Windows 11" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 3. Görünüm & Tema -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="Appearance"
+                                               Icon="{ui:SymbolIcon Color20}"
+                                               ToolTip="Görünüm &amp; Tema">
+                                        <TextBlock Text="Görünüm &amp; Tema" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 4. Gelişmiş Görünüm -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="AdvancedAppearance"
+                                               Icon="{ui:SymbolIcon FontIncrease20}"
+                                               ToolTip="Gelişmiş Görünüm">
+                                        <TextBlock Text="Gelişmiş Görünüm" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 5. Davranışlar -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="Behavior"
+                                               Icon="{ui:SymbolIcon Wrench20}"
+                                               ToolTip="Sistem Davranışları">
+                                        <TextBlock Text="Davranışlar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 6. Açılış & Oturum -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="BootLogon"
+                                               Icon="{ui:SymbolIcon Power20}"
+                                               ToolTip="Açılış &amp; Oturum">
+                                        <TextBlock Text="Açılış &amp; Oturum" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 7. Masaüstü & Görev Çubuğu -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="DesktopTaskbar"
+                                               Icon="{ui:SymbolIcon Desktop20}"
+                                               ToolTip="Masaüstü &amp; Görev Çubuğu">
+                                        <TextBlock Text="Masaüstü &amp; Görev Çubuğu" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 8. Sağ Tık & Kısayollar -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="ContextMenu"
+                                               Icon="{ui:SymbolIcon Cursor20}"
+                                               ToolTip="Sağ Tık Menüsü">
+                                        <TextBlock Text="Sağ Tık &amp; Kısayollar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 9. Dosya Gezgini -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="FileExplorer"
+                                               Icon="{ui:SymbolIcon Folder20}"
+                                               ToolTip="Dosya Gezgini">
+                                        <TextBlock Text="Dosya Gezgini" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 10. Ayarlar & Denetim Masası -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="SettingsCpl"
+                                               Icon="{ui:SymbolIcon Settings20}"
+                                               ToolTip="Ayarlar &amp; Denetim Masası">
+                                        <TextBlock Text="Ayarlar &amp; Denetim" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 11. Microsoft Edge -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="Edge"
+                                               Icon="{ui:SymbolIcon Globe20}"
+                                               ToolTip="Microsoft Edge">
+                                        <TextBlock Text="Microsoft Edge" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 12. Sistem Araçları -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Margin="0,0,0,2"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="Tools"
+                                               Icon="{ui:SymbolIcon DeveloperBoard20}"
+                                               ToolTip="Sistem Araçları">
+                                        <TextBlock Text="Sistem Araçları" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+
+                                    <!-- 13. Klasik Uygulamalar -->
+                                    <ui:Button Appearance="Transparent"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Left"
+                                               Padding="8,5"
+                                               Command="{Binding NavigateToTweakerCategoryCommand}"
+                                               CommandParameter="ClassicApps"
+                                               Icon="{ui:SymbolIcon Apps20}"
+                                               ToolTip="Klasik Uygulamalar">
+                                        <TextBlock Text="Klasik Uygulamalar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </ui:Button>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 12. Settings Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Settings'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Settings"
+                                       Icon="{ui:SymbolIcon Settings24}"
+                                       ToolTip="Ayarlar">
+                                <TextBlock Text="Ayarlar" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Bottom Security Card (Visible only when Expanded) -->
+                    <ui:Card Grid.Row="2" 
+                             Padding="12,9" 
+                             Margin="0,8,0,0"
+                             Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Checkmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Text="Sistem Koruması: Aktif" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            </StackPanel>
+                            <TextBlock Text="Kritik sistem dosyaları güvende" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </ui:Card>
+                </Grid>
+            </Border>
+
+            <!-- Dynamic Module Content Host (Pure MVVM DataTemplate View Switcher) -->
+            <ContentControl Grid.Column="1" 
+                            Content="{Binding CurrentView}" 
+                            HorizontalContentAlignment="Stretch" 
+                            VerticalContentAlignment="Stretch"/>
+
+            <!-- Floating Toast Notifications Host (Bottom-Right) -->
+            <ItemsControl Grid.Column="1"
+                          ItemsSource="{Binding ActiveToasts}" 
+                          HorizontalAlignment="Right" 
+                          VerticalAlignment="Bottom" 
+                          Margin="0,0,24,24"
+                          Panel.ZIndex="100">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:ToastNotificationItem}">
+                        <ui:Card Padding="14,10" 
+                                 Margin="0,0,0,8" 
+                                 Width="320"
+                                 BorderBrush="{DynamicResource Brush.Accent}"
+                                 BorderThickness="1">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="28"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ui:SymbolIcon Grid.Column="0" 
+                                               Symbol="{Binding IconName, Converter={StaticResource SafeSymbol}}" 
+                                               FontSize="18" 
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                               VerticalAlignment="Center"/>
+
+                                <StackPanel Grid.Column="1" Margin="8,0,8,0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                </StackPanel>
+
+                                <ui:Button Grid.Column="2" 
+                                           Appearance="Transparent" 
+                                           Padding="4"
+                                           Command="{Binding DataContext.DismissToastCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                           CommandParameter="{Binding}"
+                                           Icon="{ui:SymbolIcon Dismiss20}"
+                                           ToolTip="Kapat"/>
+                            </Grid>
+                        </ui:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+
+        <!-- Global Command Palette Modal (Raycast / Spotlight Ctrl+K) -->
+        <Grid Grid.RowSpan="2" 
+              Visibility="{Binding IsCommandPaletteOpen, Converter={StaticResource BoolToVis}}"
+              Background="#99000000"
+              Panel.ZIndex="999">
+            <Grid.InputBindings>
+                <KeyBinding Gesture="Escape" Command="{Binding CloseCommandPaletteCommand}"/>
+            </Grid.InputBindings>
+
+            <!-- Centered Acrylic Card -->
+            <ui:Card Width="600" 
+                     MaxHeight="500"
+                     Padding="0" 
+                     VerticalAlignment="Top" 
+                     Margin="0,90,0,0"
+                     HorizontalAlignment="Center"
+                     BorderBrush="{DynamicResource Brush.Accent}"
+                     BorderThickness="1">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Search Header -->
+                        <RowDefinition Height="*"/>    <!-- Filtered Results List -->
+                        <RowDefinition Height="Auto"/> <!-- Footer with Esc hint -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Search Bar -->
+                    <Grid Grid.Row="0" Margin="14,14,14,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ui:SymbolIcon Grid.Column="0" Symbol="Search24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ui:TextBox Grid.Column="1" 
+                                    PlaceholderText="Bir sayfa, ayar veya sistem eylemi arayın... (Örn: Saniyeleri Göster, RAM)"
+                                    Text="{Binding CommandPaletteQuery, UpdateSourceTrigger=PropertyChanged}"
+                                    ClearButtonEnabled="True"
+                                    FontSize="13"
+                                    Padding="8,8"
+                                    VerticalContentAlignment="Center"/>
+                        <ui:Button Grid.Column="2" 
+                                   Appearance="Transparent"
+                                   Padding="6,4"
+                                   Margin="6,0,0,0"
+                                   Command="{Binding CloseCommandPaletteCommand}"
+                                   Icon="{ui:SymbolIcon Dismiss20}"
+                                   ToolTip="Kapat (Esc)"/>
+                    </Grid>
+
+                    <!-- Results List -->
+                    <ListView Grid.Row="1" 
+                              ItemsSource="{Binding FilteredCommands}"
+                              SelectedItem="{Binding SelectedCommand, Mode=TwoWay}"
+                              MaxHeight="340"
+                              BorderThickness="0"
+                              Background="Transparent"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="10,6"/>
+                                <Setter Property="Margin" Value="6,2"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:CommandPaletteItem}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="32"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:SymbolIcon Grid.Column="0" Symbol="{Binding IconName, Converter={StaticResource SafeSymbol}}" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+
+                                    <StackPanel Grid.Column="1" Margin="6,0,12,0" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="4" Padding="6,1" Margin="8,0,0,0">
+                                                <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <ui:Button Grid.Column="2" 
+                                               Appearance="Primary" 
+                                               Padding="8,3"
+                                               FontSize="11"
+                                               Content="Seç"
+                                               Command="{Binding DataContext.ExecuteCommandCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                               CommandParameter="{Binding}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- Footer -->
+                    <Border Grid.Row="2" Background="{DynamicResource ControlFillColorSecondaryBrush}" Padding="14,8" CornerRadius="0,0,12,12">
+                        <Grid>
+                            <TextBlock Text="Seçmek için Tıkla veya Enter • Kapatmak için Esc" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="Raycast / Spotlight Hızlı Arama" HorizontalAlignment="Right" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </ui:Card>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

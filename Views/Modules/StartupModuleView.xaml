@@ -1,0 +1,231 @@
+<UserControl x:Class="Bakım.Views.Modules.StartupModuleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:Bakım.ViewModels"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:StartupViewModel}"
+             d:DesignHeight="750" d:DesignWidth="950">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="Auto"/> <!-- Search & Filter Toolbar -->
+            <RowDefinition Height="*"/>    <!-- Startup Programs List -->
+        </Grid.RowDefinitions>
+
+        <!-- Top Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Başlangıç Uygulamaları" 
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <TextBlock Text="Windows açılışında otomatik başlatılan uygulamalar." 
+                           FontSize="13" 
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <ui:Button Grid.Column="1" 
+                       Appearance="Secondary" 
+                       Command="{Binding RefreshCommand}"
+                       Padding="14,8"
+                       Content="Yenile"
+                       Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+        </Grid>
+
+        <!-- Search / Filter Toolbar -->
+        <ui:Card Grid.Row="1" Padding="16,12" Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ui:TextBox Grid.Column="0" 
+                            Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" 
+                            PlaceholderText="Uygulama adı veya dosya yolu ile filtrele..." 
+                            ClearButtonEnabled="True" 
+                            VerticalContentAlignment="Center" 
+                            Padding="12,10"
+                            Icon="{ui:SymbolIcon Search24}"/>
+
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding TotalProgramsCount, StringFormat='Toplam Kayıt: {0}'}" 
+                           FontSize="12" 
+                           FontWeight="Medium" 
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                           VerticalAlignment="Center" 
+                           Margin="16,0,0,0"/>
+            </Grid>
+        </ui:Card>
+
+        <!-- Startup Items List -->
+        <ui:Card Grid.Row="2" Padding="18">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Table Column Header (Strictly Matching Row Columns) -->
+                <Border Grid.Row="0" 
+                        Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                        CornerRadius="6" 
+                        Padding="12,8" 
+                        Margin="0,0,0,6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2.5*"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="1.5*"/>
+                            <ColumnDefinition Width="110"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="Uygulama ve Dosya Yolu" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="Açılış Etkisi" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="Kayıt Konumu" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="3" Text="Durum" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="4" Text="Klasör" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <ListView Grid.Row="1" 
+                          ItemsSource="{Binding StartupPrograms}"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.CanContentScroll="True"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling">
+
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="MinHeight" Value="44"/>
+                            <Setter Property="Padding" Value="12,6"/>
+                            <Setter Property="Margin" Value="0,1"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <Border x:Name="RowBorder" 
+                                                Background="{TemplateBinding Background}" 
+                                                CornerRadius="6" 
+                                                Padding="{TemplateBinding Padding}" 
+                                                SnapsToDevicePixels="True">
+                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2.5*"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="110"/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Name & Path -->
+                                <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" 
+                                               Text="{Binding Name}" 
+                                               FontWeight="SemiBold" 
+                                               FontSize="12" 
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
+                                               VerticalAlignment="Center" 
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Row="1" 
+                                               Text="{Binding FilePath}" 
+                                               FontSize="10" 
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                               VerticalAlignment="Center" 
+                                               TextTrimming="CharacterEllipsis" 
+                                               Margin="0,2,0,0"/>
+                                </Grid>
+
+                                <!-- Impact Badge -->
+                                <Border Grid.Column="1" 
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="8,4" 
+                                        HorizontalAlignment="Left" 
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ImpactText}" 
+                                               FontSize="10" 
+                                               FontWeight="SemiBold" 
+                                               Foreground="{Binding ImpactLevel, Converter={StaticResource ImpactLevelToBrush}}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </Border>
+
+                                <!-- Registry Path -->
+                                <TextBlock Grid.Column="2" 
+                                           Text="{Binding RegistryPath}" 
+                                           FontSize="11" 
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                           VerticalAlignment="Center" 
+                                           TextTrimming="CharacterEllipsis" 
+                                           Margin="0,0,12,0"/>
+
+                                <!-- Status ToggleSwitch -->
+                                <ui:ToggleSwitch Grid.Column="3" 
+                                                 IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                 Command="{Binding DataContext.ToggleProgramStateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 CommandParameter="{Binding}"
+                                                 IsEnabled="{Binding IsActionBusy, Converter={StaticResource InverseBool}}"
+                                                 OnContent="Etkin" 
+                                                 OffContent="Devre Dışı"
+                                                 VerticalAlignment="Center"/>
+
+                                <!-- Action: Open File Location -->
+                                <ui:Button Grid.Column="4" 
+                                           Appearance="Secondary" 
+                                           Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                           CommandParameter="{Binding}"
+                                           Padding="6,4" 
+                                           HorizontalAlignment="Right" 
+                                           VerticalAlignment="Center" 
+                                           ToolTip="Dosya Konumunu Aç" 
+                                           Icon="{ui:SymbolIcon FolderOpen20}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </ui:Card>
+    </Grid>
+</UserControl>
