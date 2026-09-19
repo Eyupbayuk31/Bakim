@@ -15,6 +15,8 @@ namespace Bakım.Services
         Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null);
         Task<int> CleanResidualsAsync(IEnumerable<LeftoverItem> leftovers, IProgress<string>? progress = null);
         Task<List<LeftoverItem>> ScanHeuristicResidualsAsync(string targetPathOrExe, string appNameHint);
+        Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, IProgress<string>? progress = null);
+        Task<int> CleanResidualItemsAsync(IEnumerable<ResidualItem> items, IProgress<string>? progress = null);
     }
 
     public class ResidualScannerEngine : IResidualScannerEngine
@@ -525,6 +527,75 @@ namespace Bakım.Services
             if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
             if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
             return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
+        }
+
+        #endregion
+
+        #region ResidualItem Extended API (V42.0)
+
+        public async Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, IProgress<string>? progress = null)
+        {
+            var leftovers = await ScanResidualsAsync(app, progress);
+            return leftovers.Select(l => new ResidualItem
+            {
+                Path = l.Path,
+                Type = l.ItemType switch
+                {
+                    LeftoverType.Folder => ResidualType.Folder,
+                    LeftoverType.File => ResidualType.File,
+                    LeftoverType.RegistryKey => ResidualType.RegistryKey,
+                    _ => ResidualType.Folder
+                },
+                SizeInBytes = l.SizeBytes,
+                Description = l.Description,
+                ConfidenceScore = l.ConfidenceScore,
+                IsSafeToDelete = l.ConfidenceScore >= 80,
+                IsSelected = true
+            }).ToList();
+        }
+
+        public async Task<int> CleanResidualItemsAsync(IEnumerable<ResidualItem> items, IProgress<string>? progress = null)
+        {
+            var mapped = items.Select(r => new LeftoverItem
+            {
+                Path = r.Path,
+                ItemType = r.Type switch
+                {
+                    ResidualType.Folder => LeftoverType.Folder,
+                    ResidualType.File => LeftoverType.File,
+                    ResidualType.RegistryKey => LeftoverType.RegistryKey,
+                    _ => LeftoverType.Folder
+                },
+                SizeBytes = r.SizeInBytes,
+                Description = r.Description,
+                ConfidenceScore = r.ConfidenceScore,
+                IsSelected = r.IsSelected
+            }).ToList();
+
+            int count = await CleanResidualsAsync(mapped, progress);
+
+            foreach (var r in items)
+            {
+                var m = mapped.FirstOrDefault(x => x.Path.Equals(r.Path, StringComparison.OrdinalIgnoreCase));
+                if (m != null && m.IsDeleted)
+                {
+                    r.IsDeleted = true;
+                }
+            }
+
+            return count;
+        }
+
+        public static async Task<List<ResidualItem>> ScanResidualsStaticAsync(string appName, string? publisher = null, string? installLocation = null)
+        {
+            var engine = new ResidualScannerEngine();
+            var app = new InstalledAppItem
+            {
+                DisplayName = appName,
+                Publisher = publisher ?? string.Empty,
+                InstallLocation = installLocation ?? string.Empty
+            };
+            return await engine.ScanResidualItemsAsync(app);
         }
 
         #endregion

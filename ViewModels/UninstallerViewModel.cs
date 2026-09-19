@@ -107,7 +107,7 @@ namespace Bakım.ViewModels
 
         // V30.0 Features
         [ObservableProperty]
-        private bool _isAutoCleanEnabled = true;
+        private bool _isAutoCleanEnabled = false;
 
         [ObservableProperty]
         private int _selectedAppsCount;
@@ -358,8 +358,8 @@ namespace Bakım.ViewModels
                     return;
                 }
 
-                // 3. Post-Uninstall Process Exit -> Auto Residual Engine
-                StatusMessage = "Kaldırma tamamlandı. Revo stili kalıntı taraması yürütülüyor...";
+                // 3. Post-Uninstall Process Exit -> Auto or Interactive Residual Engine (V42.0)
+                StatusMessage = $"{app.DisplayName} kaldırıldı. Kalıntı taraması yürütülüyor...";
 
                 if (IsAutoCleanEnabled)
                 {
@@ -383,7 +383,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    await ScanLeftoversInternalAsync(app);
+                    await ShowResidualCleanupDialogAsync(app);
                 }
             }
             catch (Exception ex)
@@ -699,6 +699,78 @@ namespace Bakım.ViewModels
         #endregion
 
         #region Leftover View & Actions
+
+        [RelayCommand]
+        public async Task ShowResidualCleanupDialogAsync(InstalledAppItem? app)
+        {
+            if (app == null) return;
+
+            StatusMessage = $"{app.DisplayName} için kalıntılar taranıyor...";
+            IsBusy = true;
+
+            try
+            {
+                var residualItems = await _residualScanner.ScanResidualItemsAsync(app);
+
+                if (residualItems.Count > 0)
+                {
+                    bool wasCleaned = false;
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        var dialog = new Bakım.Views.Dialogs.ResidualCleanupDialog(app, residualItems, _residualScanner);
+                        if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
+                        {
+                            dialog.Owner = Application.Current.MainWindow;
+                        }
+                        wasCleaned = dialog.ShowDialog() == true;
+                    });
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Apps.Remove(app);
+                    });
+
+                    UpdateStats();
+                    UpdateSelectedAppsCount();
+
+                    if (wasCleaned)
+                    {
+                        LastAutoCleanReport = $"{app.DisplayName} kaldırıldı ve kalıntıları temizlendi.";
+                        StatusMessage = LastAutoCleanReport;
+                    }
+                    else
+                    {
+                        LastAutoCleanReport = $"{app.DisplayName} kaldırıldı (kalıntılar korundu).";
+                        StatusMessage = LastAutoCleanReport;
+                    }
+                }
+                else
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        Apps.Remove(app);
+                    });
+
+                    UpdateStats();
+                    UpdateSelectedAppsCount();
+
+                    MessageBox.Show(
+                        $"{app.DisplayName} başarıyla kaldırıldı!\nSistemde herhangi bir artık kalıntı tespit edilmedi.",
+                        "Kaldırma Tamamlandı",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"Kalıntı taraması sırasında hata: {ex.Message}";
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
         private async Task ScanLeftoversInternalAsync(InstalledAppItem app)
         {

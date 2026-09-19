@@ -560,6 +560,17 @@
                                             </StackPanel>
                                         </Border>
 
+                                        <!-- Deep Residual Scan Modal Button -->
+                                        <ui:Button Appearance="Secondary" 
+                                                   Icon="{ui:SymbolIcon Search20}"
+                                                   ToolTip="Kalıntıları İncele ve Temizle"
+                                                   Command="{Binding DataContext.ShowResidualCleanupDialogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Padding="10,8"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center"
+                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+
                                         <!-- Standard Uninstall Button -->
                                         <ui:Button Appearance="Primary" 
                                                    Content="Kaldır" 
