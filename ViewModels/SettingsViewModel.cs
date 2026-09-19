@@ -38,7 +38,11 @@ namespace Bakım.ViewModels
         private readonly IGitHubUpdateService _updateService;
         private bool _isInitializing = true;
 
-        public SettingsViewModel(IGitHubUpdateService? updateService = null)
+        public SettingsViewModel() : this(null)
+        {
+        }
+
+        public SettingsViewModel(IGitHubUpdateService? updateService)
         {
             _updateService = updateService ?? new GitHubUpdateService();
             _themeService = new ThemeService();

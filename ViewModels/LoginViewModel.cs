@@ -10,7 +10,11 @@ namespace Bakım.ViewModels
     {
         private readonly IAuthService _authService;
 
-        public LoginViewModel(IAuthService? authService = null)
+        public LoginViewModel() : this(null)
+        {
+        }
+
+        public LoginViewModel(IAuthService? authService)
         {
             _authService = authService ?? new AuthService();
 
