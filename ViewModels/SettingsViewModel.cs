@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Bakım.Helpers;
 using Bakım.Services;
+using Bakım.Views.Dialogs;
 using Wpf.Ui.Appearance;
 
 namespace Bakım.ViewModels
@@ -475,74 +476,39 @@ namespace Bakım.ViewModels
 
             try
             {
-                var result = await _updateService.CheckForUpdatesAsync();
+                var result = await AutoUpdateService.CheckForUpdatesAsync();
 
-                if (!result.Success)
+                if (!string.IsNullOrEmpty(result.ErrorMessage) && !result.IsUpdateAvailable)
                 {
-                    UpdateStatus = $"Kontrol başarısız: {result.ErrorMessage}";
+                    UpdateStatus = $"Kontrol: {result.ErrorMessage}";
                     MessageBox.Show(
-                        $"Güncellemeler kontrol edilirken bir sorun oluştu:\n{result.ErrorMessage}",
+                        $"Güncelleme sunucusundan bilgi alındı:\n{result.ErrorMessage}",
                         "Güncelleme Kontrolü",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                        MessageBoxImage.Information);
                     return;
                 }
 
                 if (result.IsUpdateAvailable)
                 {
-                    UpdateStatus = $"Yeni Sürüm Mevcut! ({result.LatestVersion})";
+                    UpdateStatus = $"Yeni Sürüm Mevcut: v{result.LatestVersion}!";
 
-                    string sizeInfo = result.FileSizeBytes > 0
-                        ? $"\nDosya Boyutu: {(result.FileSizeBytes / (1024.0 * 1024.0)):F1} MB"
-                        : string.Empty;
-
-                    var choice = MessageBox.Show(
-                        $"🎉 Yeni bir güncelleme mevcut!\n\n" +
-                        $"• Mevcut Sürüm: v{result.CurrentVersion}\n" +
-                        $"• Yeni Sürüm: v{result.LatestVersion}\n" +
-                        $"• Başlık: {result.Title}{sizeInfo}\n\n" +
-                        $"Değişiklik Notları:\n{result.Changelog}\n\n" +
-                        "Güncellemeyi arka planda otomatik indirip sessizce uygulamak ister misiniz?\n" +
-                        "(Evet: Otomatik İndir ve Yeniden Başlat | Hayır: İptal Et)",
-                        "Yeni Sürüm Bulundu - Otomatik Güncelleme",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Information);
-
-                    if (choice == MessageBoxResult.Yes)
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
-                        if (!string.IsNullOrWhiteSpace(result.DownloadUrl))
+                        var dialog = new UpdateDialogView(result);
+                        if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
                         {
-                            UpdateStatus = "Güncelleme paketi indiriliyor... Lütfen bekleyin...";
-                            bool applied = await _updateService.DownloadAndApplyUpdateAsync(result.DownloadUrl, pct =>
-                            {
-                                UpdateStatus = $"Güncelleme indiriliyor: %{pct}";
-                            });
-
-                            if (!applied)
-                            {
-                                UpdateStatus = "Otomatik güncelleme uygulanamadı. GitHub sürüm sayfası açılıyor...";
-                                if (!string.IsNullOrWhiteSpace(result.ReleaseUrl))
-                                {
-                                    Process.Start(new ProcessStartInfo(result.ReleaseUrl) { UseShellExecute = true });
-                                }
-                            }
+                            dialog.Owner = Application.Current.MainWindow;
                         }
-                        else if (!string.IsNullOrWhiteSpace(result.ReleaseUrl))
-                        {
-                            Process.Start(new ProcessStartInfo(result.ReleaseUrl) { UseShellExecute = true });
-                        }
-                    }
+                        dialog.ShowDialog();
+                    });
                 }
                 else
                 {
-                    string extraInfo = string.IsNullOrWhiteSpace(result.ErrorMessage)
-                        ? $"Yazılım güncel (v{result.CurrentVersion} - Son kontrol: {DateTime.Now:HH:mm})"
-                        : result.ErrorMessage;
-
-                    UpdateStatus = extraInfo;
+                    UpdateStatus = $"Yazılım güncel (v{result.CurrentVersion} - Son kontrol: {DateTime.Now:HH:mm})";
 
                     MessageBox.Show(
-                        $"Tebrikler! En güncel Bakım sürümünü (v{result.CurrentVersion}) kullanıyorsunuz.\nSisteminiz en son optimizasyon ve güvenlik modülleriyle korunmaktadır.",
+                        $"Tebrikler! En güncel Bakım sürümünü (v{result.CurrentVersion}) kullanıyorsunuz.\nSisteminiz en son performans ve güvenlik modülleriyle korunmaktadır.",
                         "Yazılım Güncel",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
