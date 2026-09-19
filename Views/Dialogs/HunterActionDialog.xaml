@@ -136,35 +136,49 @@
                     </ui:Button.Content>
                 </ui:Button>
 
-                <!-- 2 Column Row for Secondary Actions -->
+                <!-- 3 Column Row for Secondary Actions -->
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="8"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Action 3: Kill Process -->
+                    <!-- Action 3: Threat Analysis -->
                     <ui:Button Grid.Column="0"
                                Appearance="Secondary"
                                HorizontalAlignment="Stretch"
-                               Padding="12,10"
-                               Click="KillProcess_Click"
-                               Icon="{ui:SymbolIcon Stop24}">
+                               Padding="8,10"
+                               Click="ThreatAnalysis_Click"
+                               Icon="{ui:SymbolIcon ShieldKeyhole20}">
                         <ui:Button.Content>
-                            <TextBlock Text="Süreci Sonlandır" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Tehdit Analizi" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8"/>
                         </ui:Button.Content>
                     </ui:Button>
 
-                    <!-- Action 4: Open File Location -->
+                    <!-- Action 4: Kill Process -->
                     <ui:Button Grid.Column="2"
                                Appearance="Secondary"
                                HorizontalAlignment="Stretch"
-                               Padding="12,10"
-                               Click="OpenFileLocation_Click"
-                               Icon="{ui:SymbolIcon FolderOpen24}">
+                               Padding="8,10"
+                               Click="KillProcess_Click"
+                               Icon="{ui:SymbolIcon Stop20}">
                         <ui:Button.Content>
-                            <TextBlock Text="Dosya Konumunu Aç" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                            <TextBlock Text="Süreci Kapat" FontSize="11" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                        </ui:Button.Content>
+                    </ui:Button>
+
+                    <!-- Action 5: Open File Location -->
+                    <ui:Button Grid.Column="4"
+                               Appearance="Secondary"
+                               HorizontalAlignment="Stretch"
+                               Padding="8,10"
+                               Click="OpenFileLocation_Click"
+                               Icon="{ui:SymbolIcon FolderOpen20}">
+                        <ui:Button.Content>
+                            <TextBlock Text="Konumu Aç" FontSize="11" FontWeight="SemiBold" Foreground="#F8FAFC"/>
                         </ui:Button.Content>
                     </ui:Button>
                 </Grid>

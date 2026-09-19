@@ -13,7 +13,8 @@ namespace Bakım.Views.Dialogs
         Uninstall,
         ForceUninstall,
         KillProcess,
-        OpenFileLocation
+        OpenFileLocation,
+        ThreatAnalysis
     }
 
     public partial class HunterActionDialog : Window
@@ -156,6 +157,29 @@ namespace Bakım.Views.Dialogs
             catch (Exception ex)
             {
                 MessageBox.Show($"Dosya konumu açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void ThreatAnalysis_Click(object sender, RoutedEventArgs e)
+        {
+            string exe = TargetInfo.ExecutablePath;
+            if (string.IsNullOrWhiteSpace(exe) || !File.Exists(exe))
+            {
+                MessageBox.Show("Hedef çalıştırılabilir dosyası bulunamadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var analyzer = new Services.FileThreatAnalyzerService();
+                var result = await analyzer.AnalyzeFileAsync(exe);
+                var dialog = new ThreatAnalysisDialog(result, analyzer);
+                dialog.Owner = this;
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Analiz başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

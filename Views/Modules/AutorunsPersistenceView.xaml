@@ -62,6 +62,14 @@
                            Content="🛡️ VT ile Tara"
                            ToolTip="Listedeki dosyaları VirusTotal API ile doğrula ve puanla"/>
 
+                <!-- AI Heuristic File Threat Analyzer Button -->
+                <ui:Button Appearance="Secondary" 
+                           Command="{Binding PickAndAnalyzeFileCommand}"
+                           Padding="12,8"
+                           Margin="0,0,8,0"
+                           Content="🔍 Dosya İncele"
+                           ToolTip="Herhangi bir .exe, .dll veya başlangıç dosyasını sezgisel AI motoruyla analiz et"/>
+
                 <ui:Button Appearance="Secondary" 
                            Command="{Binding ExportReportCsvCommand}"
                            Padding="12,8"
@@ -269,6 +277,27 @@
                                 BorderThickness="1"
                                 CornerRadius="8"
                                 Padding="12,10">
+                            <Border.ContextMenu>
+                                <ContextMenu Background="#1E293B" BorderBrush="#334155">
+                                    <MenuItem Header="🛡️ Sezgisel AI Tehdit Analizi Yap"
+                                              Foreground="#F8FAFC"
+                                              FontWeight="SemiBold"
+                                              Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              CommandParameter="{Binding}"/>
+                                    <MenuItem Header="🔍 VirusTotal API ile Doğrula"
+                                              Foreground="#F8FAFC"
+                                              Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              CommandParameter="{Binding}"/>
+                                    <MenuItem Header="📁 Dosya Konumunu Aç"
+                                              Foreground="#F8FAFC"
+                                              Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              CommandParameter="{Binding}"/>
+                                    <MenuItem Header="📋 SHA-256 Kopyala"
+                                              Foreground="#F8FAFC"
+                                              Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                              CommandParameter="{Binding}"/>
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="StatusCol"/>
@@ -423,6 +452,15 @@
 
                                 <!-- Column 6: Action Buttons (VirusTotal, Open Location, Delete) -->
                                 <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- AI Heuristic Threat Analyzer Button -->
+                                    <ui:Button Appearance="Secondary"
+                                               Padding="8,5"
+                                               Margin="0,0,6,0"
+                                               Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               Icon="{ui:SymbolIcon ShieldKeyhole20}"
+                                               ToolTip="Sezgisel AI Tehdit Analizi Yap (% Risk Skoru &amp; Detaylar)"/>
+
                                     <!-- VirusTotal API Quick Scan Button -->
                                     <ui:Button Appearance="Secondary"
                                                Padding="8,5"

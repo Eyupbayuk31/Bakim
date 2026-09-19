@@ -571,6 +571,17 @@
                                                    VerticalAlignment="Center"
                                                    Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 
+                                        <!-- AI Heuristic Threat Analysis Button -->
+                                        <ui:Button Appearance="Secondary" 
+                                                   Icon="{ui:SymbolIcon ShieldKeyhole20}"
+                                                   ToolTip="Sezgisel Tehdit &amp; Güvenlik Analizi Yap"
+                                                   Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Padding="10,8"
+                                                   Margin="0,0,8,0"
+                                                   VerticalAlignment="Center"
+                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+
                                         <!-- Standard Uninstall Button -->
                                         <ui:Button Appearance="Primary" 
                                                    Content="Kaldır" 

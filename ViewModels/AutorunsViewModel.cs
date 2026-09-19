@@ -20,6 +20,7 @@ namespace Bakım.ViewModels
     {
         private readonly IAutorunsScannerEngine _scannerEngine;
         private readonly IVirusTotalCheckService _virusTotalService;
+        private readonly IFileThreatAnalyzerService _threatAnalyzerService;
         private readonly ICollectionView _filteredView;
 
         public ObservableCollection<PersistenceItem> Items { get; } = new();
@@ -85,10 +86,14 @@ namespace Bakım.ViewModels
 
         #endregion
 
-        public AutorunsViewModel(IAutorunsScannerEngine scannerEngine, IVirusTotalCheckService virusTotalService)
+        public AutorunsViewModel(
+            IAutorunsScannerEngine scannerEngine,
+            IVirusTotalCheckService virusTotalService,
+            IFileThreatAnalyzerService? threatAnalyzerService = null)
         {
             _scannerEngine = scannerEngine;
             _virusTotalService = virusTotalService;
+            _threatAnalyzerService = threatAnalyzerService ?? new FileThreatAnalyzerService(_virusTotalService);
 
             ApiKeyInput = _virusTotalService.ApiKey;
             ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır ✓" : "API Anahtarı Tanımlanmadı";
@@ -540,6 +545,79 @@ namespace Bakım.ViewModels
         }
 
         private static string EscapeCsv(string val) => val.Replace("\"", "\"\"");
+
+        [RelayCommand]
+        public async Task AnalyzeThreatAsync(PersistenceItem? item)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.FilePath)) return;
+
+            ScanStatusText = $"{item.Name} için sezgisel AI tehdit analizi yürütülüyor...";
+            IsScanning = true;
+
+            try
+            {
+                var analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(item.FilePath, item.Arguments, item);
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, _threatAnalyzerService, _scannerEngine);
+                    if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
+                    {
+                        dialog.Owner = Application.Current.MainWindow;
+                    }
+                    dialog.ShowDialog();
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Analiz sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsScanning = false;
+                ScanStatusText = "Analiz tamamlandı.";
+            }
+        }
+
+        [RelayCommand]
+        public async Task PickAndAnalyzeFileAsync()
+        {
+            var ofd = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Sezgisel AI Tehdit Analizi için Dosya Seçin",
+                Filter = "Yürütülebilir ve Sistem Dosyaları (*.exe;*.dll;*.sys;*.bat;*.cmd;*.ps1;*.vbs;*.scr)|*.exe;*.dll;*.sys;*.bat;*.cmd;*.ps1;*.vbs;*.scr|Tüm Dosyalar (*.*)|*.*"
+            };
+
+            if (ofd.ShowDialog() != true) return;
+
+            string selectedFile = ofd.FileName;
+            ScanStatusText = $"{Path.GetFileName(selectedFile)} analiz ediliyor...";
+            IsScanning = true;
+
+            try
+            {
+                var analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(selectedFile);
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, _threatAnalyzerService, _scannerEngine);
+                    if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
+                    {
+                        dialog.Owner = Application.Current.MainWindow;
+                    }
+                    dialog.ShowDialog();
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Analiz sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsScanning = false;
+                ScanStatusText = "Analiz tamamlandı.";
+            }
+        }
 
         #endregion
     }

@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v2.9.0'
+        default: 'v3.0.0'
 
 permissions:
   contents: write
@@ -49,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.9.0" }
+          if (-not $tag) { $tag = "v3.0.0" }
           
           # Rename executable to standard ascii name for distribution
           Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
@@ -64,7 +64,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v2.9.0" }
+          if (-not $tag) { $tag = "v3.0.0" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
@@ -88,23 +88,24 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: Bakım ${{ env.TAG_NAME }} - İnteraktif Kalıntı Temizleyici & Dialog Guard (V42.0)
+          name: Bakım ${{ env.TAG_NAME }} - AI Sezgisel Tehdit Analizörü & Kalıntı Temizleme (V44.0)
           draft: false
           prerelease: false
           make_latest: true
           generate_release_notes: false
           body: |
+            • **AI Sezgisel Dosya Tehdit Analizörü & Açıklama Kalkanı (V44.0)**:
+              - Herhangi bir `.exe`, `.dll`, `.sys`, `.bat` veya Autoruns kaydını derinlemesine inceleyip zararlı olma nedenlerini Türkçe açıklayan modern tehdit analiz motoru eklendi.
+              - **6+1 Katmanlı Güvenlik Vektörü**: WinVerifyTrust Authenticode sertifika doğrulaması, şüpheli çalışma dizini (Temp, Public), sahte System32 taklit tespiti (`svchost.exe` vb.), gizli konsol parametreleri (`-w hidden`, `-enc`), çift uzantı ve Unicode RLO (`\u202E`) tuzağı tespiti.
+              - **Shannon Entropi Analizi**: Dosya bayt dağılımının bilgi yoğunluğunu (0.0 - 8.0) hesaplayarak UPX, Themida, VMProtect veya özel packer/crypter'ları anında yakalama.
+              - **Mark of the Web (MOTW)**: NTFS `:Zone.Identifier` alternatif veri akışı ile dosyanın internetten/tarayıcıdan indirilip doğrudan başlangıca yerleştiğini tespit etme.
+              - **Aktif Süreç Tespiti & Aksiyon Paketi**: Dosya bellekte çalışıyorsa tek tıkla "Süreci Sonlandır" (Process Tree Kill), başlangıçtan devre dışı bırakma, sahiplik alıp zorla parçalayarak silme (Shred) ve Markdown formatında teknik analiz raporu kopyalama.
+              - Autoruns, Program Kaldırıcı ve Avcı Modu üzerinden tek tıkla dosya inceleme ve serbest dosya seçici ("Dosya İncele") entegrasyonu.
             • **İnteraktif Kalıntı Temizleme Modalı (Residual Cleanup Dialog - V42.0)**:
-              - Standart uninstaller veya MSIExec işlemi biter bitmez otomatik tetiklenen Revo stili modern kalıntı temizleme modalı eklendi.
-              - Disk ve kayıt defterinde kalan artık klasör, dosya ve registry anahtarları kategorize edilmiş interaktif listede gösterilir.
-              - Kategori filtreleme (Tümü, Klasörler, Dosyalar, Kayıt Defteri), toplu seçim, güvenlik rozeti (%100 Güvenli / İnceleyin) ve dinamik boyut hesaplama desteği.
-              - Sağ tık menüsü ile Windows Gezgini'nde doğrudan konumu açma ve yolu kopyalama özellikleri eklendi.
-              - Yüklü programlar listesindeki her öğeye tek tıkla doğrudan kalıntı analizi ve temizleme butonu entegre edildi.
-            • **Sysinternals Autoruns & Persistence Analyzer (V41.0) & VirusTotal API v3**:
-              - 8 Kalıcılık Vektörü, WinVerifyTrust Authenticode ve Catalog imza denetimi.
-              - Ayarlar menüsünden VirusTotal API v3 anahtar kaydı, anında format/bakiye doğrulaması ve toplu hash taraması.
-            • **Avcı Modu Saydamlık ve Kırpılma Düzeltmeleri**:
-              - %100 opak Slate Dark `#1E293B` panel, sıfır arka plan sızması ve kırpılmayan form alanları.
+              - Standart kaldırma işlemi biter bitmez otomatik açılan Revo stili kalıntı temizleme modalı.
+              - Kategori filtreleme (Tümü, Klasörler, Dosyalar, Kayıt Defteri), master seçim kutusu ve canlı boyut hesaplama.
+            • **Sysinternals Autoruns (V41.0) & VirusTotal API v3 Entegrasyonu**:
+              - 8 Kalıcılık Vektörü, tek tıkla toplu VirusTotal taraması ve kalıcı API anahtarı yönetimi.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

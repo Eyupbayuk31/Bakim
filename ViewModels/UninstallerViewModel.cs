@@ -772,6 +772,69 @@ namespace Bakım.ViewModels
             }
         }
 
+        [RelayCommand]
+        public async Task AnalyzeThreatAsync(InstalledAppItem? app)
+        {
+            if (app == null) return;
+
+            string targetFile = string.Empty;
+            if (!string.IsNullOrWhiteSpace(app.DisplayIconPath))
+            {
+                string cleanIcon = app.DisplayIconPath.Split(',')[0].Trim('\"', ' ');
+                if (File.Exists(cleanIcon) && cleanIcon.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+                {
+                    targetFile = cleanIcon;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(targetFile) && !string.IsNullOrWhiteSpace(app.InstallLocation) && Directory.Exists(app.InstallLocation))
+            {
+                try
+                {
+                    var exe = Directory.GetFiles(app.InstallLocation, "*.exe", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                    if (!string.IsNullOrWhiteSpace(exe))
+                    {
+                        targetFile = exe;
+                    }
+                }
+                catch { }
+            }
+
+            if (string.IsNullOrWhiteSpace(targetFile) || !File.Exists(targetFile))
+            {
+                MessageBox.Show($"{app.DisplayName} için incelenecek bir çalıştırılabilir (.exe) dosyası bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            StatusMessage = $"{app.DisplayName} için sezgisel AI tehdit analizi yürütülüyor...";
+            IsBusy = true;
+
+            try
+            {
+                var analyzer = new FileThreatAnalyzerService();
+                var analysisResult = await analyzer.AnalyzeFileAsync(targetFile);
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, analyzer);
+                    if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
+                    {
+                        dialog.Owner = Application.Current.MainWindow;
+                    }
+                    dialog.ShowDialog();
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Tehdit analizi sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+                StatusMessage = "Analiz tamamlandı.";
+            }
+        }
+
         private async Task ScanLeftoversInternalAsync(InstalledAppItem app)
         {
             var foundLeftovers = await _residualScanner.ScanResidualsAsync(app);
