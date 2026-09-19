@@ -9,8 +9,8 @@
         xmlns:vm="clr-namespace:Bakım.ViewModels"
         mc:Ignorable="d"
         Title="Bakım - Giriş ve Yetkilendirme" 
-        MinWidth="440" MinHeight="620"
-        Width="460" Height="660"
+        MinWidth="800" MinHeight="540"
+        Width="860" Height="580"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
@@ -27,221 +27,355 @@
         </Grid.RowDefinitions>
 
         <!-- 1. Native Windows 11 Fluent TitleBar -->
-        <ui:TitleBar Grid.Row="0" Title="Bakım Sistemi" ShowMaximize="False"/>
+        <ui:TitleBar Grid.Row="0" Title="Bakım v3.0.1 PRO" ShowMaximize="False"/>
 
-        <!-- 2. Center Card Container -->
-        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="28,10,28,24" MaxWidth="390">
-            <ui:Card Padding="28,24">
+        <!-- 2. Split-View Body Container -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.15*"/> <!-- Left Showcase Panel -->
+                <ColumnDefinition Width="1*"/>    <!-- Right Auth Form Panel -->
+            </Grid.ColumnDefinitions>
+
+            <!-- ================================================================= -->
+            <!-- SOL PANEL: MARKA & SİSTEM YETENEK VİTRİNİ                         -->
+            <!-- ================================================================= -->
+            <Border Grid.Column="0" 
+                    Background="#0B132B"
+                    BorderBrush="#334155" 
+                    BorderThickness="0,0,1,0" 
+                    Padding="32,24,28,24">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Header & App Icon -->
-                        <RowDefinition Height="Auto"/> <!-- Segmented Mode Switcher -->
-                        <RowDefinition Height="Auto"/> <!-- Status Messages (Error / Success) -->
-                        <RowDefinition Height="Auto"/> <!-- Form Fields -->
-                        <RowDefinition Height="Auto"/> <!-- Submit Button -->
-                        <RowDefinition Height="Auto"/> <!-- Footer Theme Button -->
+                        <RowDefinition Height="Auto"/> <!-- Brand Header -->
+                        <RowDefinition Height="*"/>    <!-- 4 Feature Cards -->
+                        <RowDefinition Height="Auto"/> <!-- System Telemetry Footer -->
                     </Grid.RowDefinitions>
 
-                    <!-- Row 0: App Brand & Icon Header -->
-                    <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,18">
-                        <Border Width="56" Height="56"
+                    <!-- Row 0: App Brand & Badge Header -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,22">
+                        <Border Width="48" Height="48"
                                 CornerRadius="12"
-                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                Background="#1E293B"
+                                BorderBrush="#38BDF8"
                                 BorderThickness="1.5"
-                                HorizontalAlignment="Center"
-                                Margin="0,0,0,10">
+                                Margin="0,0,14,0"
+                                VerticalAlignment="Center">
                             <Image Source="pack://application:,,,/Assets/app.png" 
-                                   Width="38" Height="38" 
+                                   Width="32" Height="32" 
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Border>
-
-                        <TextBlock Text="BAKIM SİSTEMİ" 
-                                   FontSize="18" 
-                                   FontWeight="Bold" 
-                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                                   HorizontalAlignment="Center"/>
-
-                        <TextBlock Text="Güvenli Yönetim ve Optimizasyon Paneli" 
-                                   FontSize="11" 
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
-                                   Margin="0,2,0,0" 
-                                   HorizontalAlignment="Center"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="BAKIM" 
+                                           FontSize="20" 
+                                           FontWeight="Bold" 
+                                           Foreground="#F8FAFC" 
+                                           Margin="0,0,8,0"/>
+                                <Border Background="#2563EB" 
+                                        CornerRadius="4" 
+                                        Padding="6,2" 
+                                        VerticalAlignment="Center">
+                                    <TextBlock Text="PRO v3.0.1" 
+                                               FontSize="10" 
+                                               FontWeight="Bold" 
+                                               Foreground="#FFFFFF"/>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Text="Sistem Bakım &amp; Tehdit Analizörü" 
+                                       FontSize="11.5" 
+                                       Foreground="#94A3B8" 
+                                       Margin="0,3,0,0"/>
+                        </StackPanel>
                     </StackPanel>
 
-                    <!-- Row 1: Fluent Segmented Mode Switcher (Giriş Yap / Kayıt Ol) -->
-                    <Border Grid.Row="1" 
-                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                            BorderThickness="1" 
-                            CornerRadius="8" 
-                            Padding="3" 
-                            Margin="0,0,0,16">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Giriş Yap Sekmesi -->
-                            <ui:Button Grid.Column="0" 
-                                       Command="{Binding SwitchToLoginCommand}" 
-                                       HorizontalAlignment="Stretch"
-                                       VerticalContentAlignment="Center"
-                                       Padding="0,7"
-                                       CornerRadius="6">
-                                <ui:Button.Style>
-                                    <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                        <Setter Property="Appearance" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRegisterMode}" Value="False">
-                                                <Setter Property="Appearance" Value="Primary"/>
-                                                <Setter Property="Foreground" Value="#0F172A"/>
-                                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ui:Button.Style>
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon Symbol="PersonKey20" FontSize="14" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Giriş Yap" FontSize="12"/>
+                    <!-- Row 1: 4 Core Capabilities Preview Cards -->
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                        <!-- Card 1: RAM & Disk -->
+                        <Border Background="#131F33"
+                                BorderBrush="#253549"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,9"
+                                Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0" Symbol="Flash24" FontSize="18" Foreground="#38BDF8" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Sistem &amp; Bellek Temizliği" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="RAM boşaltma ve derin disk önbellek optimizasyonu" FontSize="10.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
                                 </StackPanel>
-                            </ui:Button>
+                            </Grid>
+                        </Border>
 
-                            <!-- Kayıt Ol Sekmesi -->
-                            <ui:Button Grid.Column="1" 
-                                       Command="{Binding SwitchToRegisterCommand}" 
-                                       HorizontalAlignment="Stretch"
-                                       VerticalContentAlignment="Center"
-                                       Padding="0,7"
-                                       CornerRadius="6">
-                                <ui:Button.Style>
-                                    <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                        <Setter Property="Appearance" Value="Transparent"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsRegisterMode}" Value="True">
-                                                <Setter Property="Appearance" Value="Primary"/>
-                                                <Setter Property="Foreground" Value="#0F172A"/>
-                                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ui:Button.Style>
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon Symbol="PersonAdd20" FontSize="14" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Kayıt Ol" FontSize="12"/>
+                        <!-- Card 2: Autoruns -->
+                        <Border Background="#131F33"
+                                BorderBrush="#253549"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,9"
+                                Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0" Symbol="ShieldTask24" FontSize="18" Foreground="#38BDF8" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Autoruns &amp; Kalıcılık Analizi" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Başlangıç ögeleri ve dijital imza denetimi" FontSize="10.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
                                 </StackPanel>
-                            </ui:Button>
-                        </Grid>
-                    </Border>
+                            </Grid>
+                        </Border>
 
-                    <!-- Row 2: Status Messages (Error / Success InfoBars) -->
-                    <StackPanel Grid.Row="2" Margin="0,0,0,12">
-                        <!-- Hata Mesajı -->
-                        <ui:InfoBar IsOpen="{Binding HasError}" 
-                                    Severity="Error" 
-                                    Title="İşlem Başarısız" 
-                                    Message="{Binding ErrorMessage}"/>
+                        <!-- Card 3: AI Threat Detector -->
+                        <Border Background="#131F33"
+                                BorderBrush="#253549"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,9"
+                                Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0" Symbol="Bug24" FontSize="18" Foreground="#38BDF8" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Sezgisel Tehdit Dedektörü" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Shannon entropi ve VirusTotal istihbaratı" FontSize="10.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
 
-                        <!-- Başarı Mesajı -->
-                        <ui:InfoBar IsOpen="{Binding IsSuccess}" 
-                                    Severity="Success" 
-                                    Title="Başarılı" 
-                                    Message="{Binding SuccessMessage}"/>
+                        <!-- Card 4: Hunter Mode -->
+                        <Border Background="#131F33"
+                                BorderBrush="#253549"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12,9">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0" Symbol="Target24" FontSize="18" Foreground="#38BDF8" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Avcı Modu &amp; Kalıntı Temizliği" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                    <TextBlock Text="Pencere hedefleme ve kalıntı bırakmayan uninstaller" FontSize="10.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </StackPanel>
 
-                    <!-- Row 3: Form Input Fields -->
-                    <StackPanel Grid.Row="3" Margin="0,0,0,16">
-                        <!-- 1. Kullanıcı Adı -->
-                        <TextBlock Text="Kullanıcı Adı" 
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                   FontSize="11.5" 
-                                   FontWeight="Medium" 
-                                   Margin="0,0,0,6"/>
-                        <ui:TextBox x:Name="TxtUser"
-                                    PlaceholderText="Kullanıcı adınızı girin"
-                                    Icon="{ui:SymbolIcon Person24}"
-                                    ClearButtonEnabled="True"
+                    <!-- Row 2: Live System Specs Footer -->
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,18,0,0">
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="8,4" Margin="0,0,8,0">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Desktop20" FontSize="13" Foreground="#94A3B8" Margin="0,0,6,0"/>
+                                <TextBlock Text="{Binding OsVersionInfo}" FontSize="10.5" Foreground="#CBD5E1"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="8,4">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="13" Foreground="#10B981" Margin="0,0,6,0"/>
+                                <TextBlock Text="{Binding AdminStatusText}" FontSize="10.5" Foreground="#CBD5E1"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ================================================================= -->
+            <!-- SAĞ PANEL: İNTERAKTİF GİRİŞ & KAYIT FORMU                         -->
+            <!-- ================================================================= -->
+            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="34,16,34,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Title & Subtitle -->
+                    <RowDefinition Height="Auto"/> <!-- Segmented Mode Switcher -->
+                    <RowDefinition Height="Auto"/> <!-- Status InfoBars -->
+                    <RowDefinition Height="Auto"/> <!-- Form Fields -->
+                    <RowDefinition Height="Auto"/> <!-- Submit Button -->
+                    <RowDefinition Height="Auto"/> <!-- Footer Theme Switcher -->
+                </Grid.RowDefinitions>
+
+                <!-- Row 0: Contextual Heading -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                    <TextBlock Text="{Binding FormTitle}" 
+                               FontSize="22" 
+                               FontWeight="Bold" 
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Text="{Binding FormSubtitle}" 
+                               FontSize="11.5" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+
+                <!-- Row 1: Fluent Segmented Mode Switcher -->
+                <Border Grid.Row="1" 
+                        Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                        BorderThickness="1" 
+                        CornerRadius="8" 
+                        Padding="3" 
+                        Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Giriş Yap Sekmesi -->
+                        <ui:Button Grid.Column="0" 
+                                   Command="{Binding SwitchToLoginCommand}" 
+                                   HorizontalAlignment="Stretch"
+                                   VerticalContentAlignment="Center"
+                                   Padding="0,7"
+                                   CornerRadius="6">
+                            <ui:Button.Style>
+                                <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                    <Setter Property="Appearance" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRegisterMode}" Value="False">
+                                            <Setter Property="Appearance" Value="Primary"/>
+                                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="PersonKey20" FontSize="14" Margin="0,0,6,0"/>
+                                <TextBlock Text="Giriş Yap" FontSize="12"/>
+                            </StackPanel>
+                        </ui:Button>
+
+                        <!-- Kayıt Ol Sekmesi -->
+                        <ui:Button Grid.Column="1" 
+                                   Command="{Binding SwitchToRegisterCommand}" 
+                                   HorizontalAlignment="Stretch"
+                                   VerticalContentAlignment="Center"
+                                   Padding="0,7"
+                                   CornerRadius="6">
+                            <ui:Button.Style>
+                                <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                    <Setter Property="Appearance" Value="Transparent"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRegisterMode}" Value="True">
+                                            <Setter Property="Appearance" Value="Primary"/>
+                                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ui:Button.Style>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="PersonAdd20" FontSize="14" Margin="0,0,6,0"/>
+                                <TextBlock Text="Kayıt Ol" FontSize="12"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </Grid>
+                </Border>
+
+                <!-- Row 2: Status Messages (InfoBars) -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                    <ui:InfoBar IsOpen="{Binding HasError}" 
+                                Severity="Error" 
+                                Title="Hata" 
+                                Message="{Binding ErrorMessage}"/>
+
+                    <ui:InfoBar IsOpen="{Binding IsSuccess}" 
+                                Severity="Success" 
+                                Title="Başarılı" 
+                                Message="{Binding SuccessMessage}"/>
+                </StackPanel>
+
+                <!-- Row 3: Input Form Fields -->
+                <StackPanel Grid.Row="3" Margin="0,0,0,14">
+                    <!-- Kullanıcı Adı -->
+                    <TextBlock Text="Kullanıcı Adı" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                               FontSize="11.5" 
+                               FontWeight="Medium" 
+                               Margin="0,0,0,5"/>
+                    <ui:TextBox x:Name="TxtUser"
+                                PlaceholderText="Kullanıcı adınızı girin"
+                                Icon="{ui:SymbolIcon Person24}"
+                                ClearButtonEnabled="True"
+                                VerticalContentAlignment="Center"
+                                Padding="12,9"
+                                Margin="0,0,0,12"
+                                Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <!-- Şifre -->
+                    <TextBlock Text="Şifre" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                               FontSize="11.5" 
+                               FontWeight="Medium" 
+                               Margin="0,0,0,5"/>
+                    <ui:PasswordBox x:Name="TxtPassword"
+                                    PlaceholderText="Şifrenizi girin"
+                                    Icon="{ui:SymbolIcon Key24}"
                                     VerticalContentAlignment="Center"
                                     Padding="12,9"
-                                    Margin="0,0,0,12"
-                                    Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+                                    Margin="0,0,0,12"/>
 
-                        <!-- 2. Şifre -->
-                        <TextBlock Text="Şifre" 
+                    <!-- Şifre Tekrarı (Yalnızca Kayıt Ol Modunda) -->
+                    <StackPanel Visibility="{Binding IsRegisterMode, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="Şifre Tekrarı" 
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                    FontSize="11.5" 
                                    FontWeight="Medium" 
-                                   Margin="0,0,0,6"/>
-                        <ui:PasswordBox x:Name="TxtPassword"
-                                        PlaceholderText="Şifrenizi girin"
-                                        Icon="{ui:SymbolIcon Key24}"
+                                   Margin="0,0,0,5"/>
+                        <ui:PasswordBox x:Name="TxtConfirmPassword"
+                                        PlaceholderText="Şifrenizi doğrulayın"
+                                        Icon="{ui:SymbolIcon CheckmarkCircle24}"
                                         VerticalContentAlignment="Center"
                                         Padding="12,9"
                                         Margin="0,0,0,12"/>
-
-                        <!-- 3. Şifre Tekrarı (Sadece Kayıt Ol Modunda Görünür) -->
-                        <StackPanel Visibility="{Binding IsRegisterMode, Converter={StaticResource BoolToVis}}">
-                            <TextBlock Text="Şifre Tekrarı" 
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                       FontSize="11.5" 
-                                       FontWeight="Medium" 
-                                       Margin="0,0,0,6"/>
-                            <ui:PasswordBox x:Name="TxtConfirmPassword"
-                                            PlaceholderText="Şifrenizi doğrulayın"
-                                            Icon="{ui:SymbolIcon CheckmarkCircle24}"
-                                            VerticalContentAlignment="Center"
-                                            Padding="12,9"
-                                            Margin="0,0,0,12"/>
-                        </StackPanel>
-
-                        <!-- 4. Beni Hatırla (Sadece Giriş Yap Modunda Görünür) -->
-                        <Grid Visibility="{Binding IsRegisterMode, Converter={StaticResource InverseBoolToVis}}" Margin="2,0,0,4">
-                            <CheckBox Content="Beni Hatırla (Windows DPAPI Korumalı)" 
-                                      IsChecked="{Binding RememberMe}"
-                                      FontSize="11.5"
-                                      Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </Grid>
                     </StackPanel>
 
-                    <!-- Row 4: Submit Button -->
-                    <ui:Button Grid.Row="4" 
-                               Appearance="Primary"
-                               HorizontalAlignment="Stretch"
-                               VerticalContentAlignment="Center"
-                               Padding="16,11"
-                               Command="{Binding SubmitCommand}" 
-                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                               IsDefault="True">
-                        <ui:Button.Style>
-                            <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Content" Value="Giriş Yap"/>
-                                <Setter Property="Icon" Value="{ui:SymbolIcon ArrowRight24}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsRegisterMode}" Value="True">
-                                        <Setter Property="Content" Value="Hesap Oluştur ve Kaydol"/>
-                                        <Setter Property="Icon" Value="{ui:SymbolIcon PersonAdd24}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-
-                    <!-- Row 5: Footer (Theme Switcher) -->
-                    <Grid Grid.Row="5" Margin="0,16,0,0">
-                        <ui:Button Appearance="Transparent" 
-                                   HorizontalAlignment="Center" 
-                                   VerticalContentAlignment="Center"
-                                   Padding="12,6"
-                                   Icon="{ui:SymbolIcon DarkTheme24}"
-                                   Content="Temayı Değiştir"
-                                   Command="{Binding ToggleThemeCommand}"
-                                   FontSize="11"/>
+                    <!-- Beni Hatırla (Yalnızca Giriş Modunda - Sade & Net) -->
+                    <Grid Visibility="{Binding IsRegisterMode, Converter={StaticResource InverseBoolToVis}}" Margin="2,0,0,0">
+                        <CheckBox Content="Beni Hatırla" 
+                                  IsChecked="{Binding RememberMe}"
+                                  FontSize="11.5"
+                                  Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </Grid>
+                </StackPanel>
+
+                <!-- Row 4: Submit Button -->
+                <ui:Button Grid.Row="4" 
+                           Appearance="Primary"
+                           HorizontalAlignment="Stretch"
+                           VerticalContentAlignment="Center"
+                           Padding="16,10"
+                           Command="{Binding SubmitCommand}" 
+                           IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                           IsDefault="True">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ui:ProgressRing Width="16" Height="16" IsIndeterminate="True" Margin="0,0,8,0"
+                                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
+                        <TextBlock Text="{Binding SubmitButtonText}" FontSize="13" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <!-- Row 5: Footer (Theme Switcher) -->
+                <Grid Grid.Row="5" Margin="0,14,0,0">
+                    <ui:Button Appearance="Transparent" 
+                               HorizontalAlignment="Center" 
+                               VerticalContentAlignment="Center"
+                               Padding="10,5"
+                               Icon="{ui:SymbolIcon DarkTheme24}"
+                               Content="Temayı Değiştir"
+                               Command="{Binding ToggleThemeCommand}"
+                               FontSize="11"/>
                 </Grid>
-            </ui:Card>
+            </Grid>
         </Grid>
     </Grid>
 </ui:FluentWindow>

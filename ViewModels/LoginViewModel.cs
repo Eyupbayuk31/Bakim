@@ -25,6 +25,21 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isRegisterMode = false;
 
+        partial void OnIsRegisterModeChanged(bool value)
+        {
+            OnPropertyChanged(nameof(FormTitle));
+            OnPropertyChanged(nameof(FormSubtitle));
+            OnPropertyChanged(nameof(SubmitButtonText));
+        }
+
+        public string FormTitle => IsRegisterMode ? "Hesap Oluştur" : "Hoş Geldiniz";
+        public string FormSubtitle => IsRegisterMode ? "Kullanıcı profilinizi oluşturun" : "Devam etmek için giriş yapın";
+        public string SubmitButtonText => IsRegisterMode ? "Kayıt Ol" : "Giriş Yap";
+
+        public string OsVersionInfo => $"Windows {(Environment.OSVersion.Version.Major >= 10 ? "11" : "10")} ({(Environment.Is64BitOperatingSystem ? "64-bit" : "32-bit")})";
+        public bool IsAdminUser => Bakım.Helpers.UacHelper.IsAdministrator();
+        public string AdminStatusText => IsAdminUser ? "Yönetici İzni: Aktif" : "Standart Kullanıcı";
+
         [ObservableProperty]
         private string _username = string.Empty;
 
