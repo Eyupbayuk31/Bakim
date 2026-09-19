@@ -700,7 +700,7 @@
         <!-- Global Command Palette Modal (Raycast / Linear Ctrl+K) -->
         <Grid Grid.RowSpan="2"
               Visibility="{Binding IsCommandPaletteOpen, Converter={StaticResource BoolToVis}}"
-              Background="#88000000"
+              Background="#CC000000"
               Panel.ZIndex="999">
             <Grid.InputBindings>
                 <KeyBinding Gesture="Escape" Command="{Binding CloseCommandPaletteCommand}"/>
@@ -715,7 +715,7 @@
                      HorizontalAlignment="Center"
                      BorderBrush="{DynamicResource Brush.Accent}"
                      BorderThickness="1">
-                <Grid>
+                <Grid Background="{DynamicResource ApplicationPageBackgroundThemeBrush}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>  <!-- Search Header -->
                         <RowDefinition Height="Auto"/>  <!-- Separator -->
@@ -774,6 +774,11 @@
                               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                               VirtualizingStackPanel.IsVirtualizing="True"
                               VirtualizingStackPanel.VirtualizationMode="Recycling">
+                        <ListView.InputBindings>
+                            <KeyBinding Key="Return"
+                                        Command="{Binding DataContext.ExecuteCommandCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding DataContext.SelectedCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                        </ListView.InputBindings>
 
                         <!-- Full custom item container — no default WPF chrome -->
                         <ListView.ItemContainerStyle>
@@ -822,6 +827,11 @@
                         <ListView.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:CommandPaletteItem}">
                                 <Grid>
+                                    <Grid.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick"
+                                                      Command="{Binding DataContext.ExecuteCommandCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                      CommandParameter="{Binding}"/>
+                                    </Grid.InputBindings>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>  <!-- Colored Icon Box -->
                                         <ColumnDefinition Width="*"/>     <!-- Title + Desc -->
