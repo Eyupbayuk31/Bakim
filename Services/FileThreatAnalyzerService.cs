@@ -472,6 +472,17 @@ namespace Bakım.Services
                                 ScoreImpact = 0
                             });
                         }
+                        else if (total == 0 && (msg.Contains("VT Kaydı Yok") || msg.Contains("Bulunamadı")))
+                        {
+                            score += 10;
+                            result.Factors.Add(new ThreatFactor
+                            {
+                                Title = "VirusTotal Veritabanında Kaydı Yok (Nadir / İlk Kez Görülen Dosya)",
+                                Description = "Bu dosya dünyada daha önce VirusTotal'e hiç gönderilmemiş veya taranmamış. Meşru yazılımların büyük çoğunluğu küresel VT veritabanında yer alır. Kaydın olmaması, dosyanın çok yeni derlendiğini, nadir olduğunu veya özel üretilmiş bir zararlı/dropper olabileceğine işaret eder.",
+                                Severity = ThreatSeverity.Warning,
+                                ScoreImpact = 10
+                            });
+                        }
                     }
                     catch { }
                 }

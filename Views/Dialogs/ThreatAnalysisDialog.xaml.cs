@@ -13,10 +13,11 @@ namespace Bakım.Views.Dialogs
         public ThreatAnalysisDialog(
             ThreatAnalysisResult result,
             IFileThreatAnalyzerService? analyzerService = null,
-            IAutorunsScannerEngine? autorunsEngine = null)
+            IAutorunsScannerEngine? autorunsEngine = null,
+            IVirusTotalCheckService? virusTotalService = null)
         {
             InitializeComponent();
-            ViewModel = new ThreatAnalysisViewModel(result, analyzerService, autorunsEngine);
+            ViewModel = new ThreatAnalysisViewModel(result, analyzerService, autorunsEngine, virusTotalService);
             DataContext = ViewModel;
 
             ViewModel.RequestClose += () =>

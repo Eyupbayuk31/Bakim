@@ -15,6 +15,7 @@ namespace Bakım.ViewModels
     {
         private readonly IFileThreatAnalyzerService _analyzerService;
         private readonly IAutorunsScannerEngine? _autorunsEngine;
+        private readonly IVirusTotalCheckService _virusTotalService;
 
         [ObservableProperty]
         private ThreatAnalysisResult _result = new();
@@ -37,6 +38,14 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isWhitelisted;
 
+        [ObservableProperty]
+        private bool _isUploadingToVt;
+
+        partial void OnIsUploadingToVtChanged(bool value)
+        {
+            OnPropertyChanged(nameof(VtButtonText));
+        }
+
         public event Action? RequestClose;
 
         public string FileName => Result.FileName;
@@ -53,14 +62,20 @@ namespace Bakım.ViewModels
 
         public bool CanDisableStartup => Result.OriginAutorunItem != null && !IsStartupDisabled;
 
+        public bool HasVtRecord => Result.VirusTotalTotal > 0;
+        public string VtButtonText => IsUploadingToVt ? "Yükleniyor..." : (HasVtRecord ? $"VirusTotal ({Result.VirusTotalMalicious}/{Result.VirusTotalTotal})" : "VT'ye Gönder ve Tara");
+        public string VtButtonIcon => HasVtRecord ? "Globe20" : "ArrowUpload20";
+
         public ThreatAnalysisViewModel(
             ThreatAnalysisResult result,
             IFileThreatAnalyzerService? analyzerService = null,
-            IAutorunsScannerEngine? autorunsEngine = null)
+            IAutorunsScannerEngine? autorunsEngine = null,
+            IVirusTotalCheckService? virusTotalService = null)
         {
             _result = result;
             _analyzerService = analyzerService ?? new FileThreatAnalyzerService();
             _autorunsEngine = autorunsEngine;
+            _virusTotalService = virusTotalService ?? new VirusTotalCheckService();
 
             StatusText = $"Analiz tamamlandı. Risk Skoru: %{result.RiskScore} ({result.RiskLevelText})";
         }
@@ -178,24 +193,94 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
-        public void OpenVirusTotal()
+        public async Task OpenVirusTotalAsync()
         {
-            if (string.IsNullOrWhiteSpace(Result.Sha256))
+            if (string.IsNullOrWhiteSpace(FilePath) || !File.Exists(FilePath))
             {
-                MessageBox.Show("SHA-256 özeti hesaplanamadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (!string.IsNullOrWhiteSpace(Result.Sha256))
+                {
+                    _virusTotalService.SmartOpenInBrowser(string.Empty, Result.Sha256, Result.VirusTotalTotal);
+                }
                 return;
             }
 
-            try
+            // If file already has a known record on VirusTotal, open the report directly
+            if (HasVtRecord)
             {
-                string url = $"https://www.virustotal.com/gui/file/{Result.Sha256}";
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = url,
-                    UseShellExecute = true
-                });
+                _virusTotalService.OpenInBrowser(Result.Sha256);
+                return;
             }
-            catch { }
+
+            // File has NO record on VirusTotal (404 item not found)
+            bool hasKey = _virusTotalService.HasApiKey;
+            long size = Result.FileSizeBytes;
+
+            if (hasKey && size <= 32 * 1024 * 1024)
+            {
+                var ask = MessageBox.Show(
+                    $"Bu dosya daha önce VirusTotal'e hiç gönderilmemiş (VT veritabanında kaydı yok).\n\n" +
+                    $"Dosyayı VirusTotal API üzerinden doğrudan yükleyip 70 antivirüs motoruyla taratmak ister misiniz?\n\n" +
+                    $"(Dosya Boyutu: {Result.FileSizeFormatted})",
+                    "VirusTotal'e Gönder ve Tara",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Question);
+
+                if (ask == MessageBoxResult.Yes)
+                {
+                    try
+                    {
+                        IsUploadingToVt = true;
+                        StatusText = "Dosya VirusTotal sunucularına yükleniyor...";
+
+                        var progress = new Progress<string>(p => StatusText = p);
+                        var uploadRes = await _virusTotalService.UploadFileAsync(FilePath, progress);
+
+                        if (uploadRes.Success && !string.IsNullOrWhiteSpace(uploadRes.StatusUrl))
+                        {
+                            StatusText = "Yükleme başarılı! VirusTotal analiz sayfası açılıyor...";
+                            MessageBox.Show(
+                                "Dosya VirusTotal bulutuna başarıyla yüklendi!\n\nTarama kuyruğa alındı, analiz sonuç sayfası tarayıcınızda açılıyor.",
+                                "Yükleme Tamamlandı",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+
+                            _virusTotalService.OpenInBrowser(uploadRes.StatusUrl);
+                        }
+                        else
+                        {
+                            StatusText = $"Yükleme başarısız: {uploadRes.ErrorMessage}";
+                            var fallback = MessageBox.Show(
+                                $"API ile yükleme başarısız oldu: {uploadRes.ErrorMessage}\n\nVirusTotal web yükleme sayfası açılsın mı? (Dosya yolu panoya kopyalanıp Explorer açılacaktır)",
+                                "Alternatif Yükleme",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Warning);
+
+                            if (fallback == MessageBoxResult.Yes)
+                            {
+                                _virusTotalService.OpenUploadPage(FilePath);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        StatusText = $"Yükleme hatası: {ex.Message}";
+                    }
+                    finally
+                    {
+                        IsUploadingToVt = false;
+                    }
+                    return;
+                }
+                else if (ask == MessageBoxResult.No)
+                {
+                    _virusTotalService.OpenUploadPage(FilePath);
+                    return;
+                }
+                return;
+            }
+
+            // No API key or size > 32 MB -> Open Web upload assist
+            _virusTotalService.OpenUploadPage(FilePath);
         }
 
         [RelayCommand]

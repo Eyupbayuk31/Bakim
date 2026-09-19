@@ -361,9 +361,11 @@
                                Margin="0,0,6,0"/>
 
                     <ui:Button Appearance="Secondary"
-                               Content="VirusTotal"
+                               Content="{Binding VtButtonText}"
                                Icon="{ui:SymbolIcon Globe20}"
+                               ToolTip="Dosyayı VirusTotal'de incele veya yükleyip 70 antivirüs motoruyla tarat"
                                Command="{Binding OpenVirusTotalCommand}"
+                               IsEnabled="{Binding IsUploadingToVt, Converter={StaticResource InverseBool}}"
                                Padding="10,6"
                                Margin="0,0,6,0"/>
 
@@ -373,6 +375,16 @@
                                Command="{Binding CopyReportCommand}"
                                Padding="10,6"/>
                 </StackPanel>
+
+                <!-- Center Status / Progress -->
+                <TextBlock Grid.Column="1"
+                           Text="{Binding StatusText}"
+                           FontSize="11"
+                           Foreground="#94A3B8"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"
+                           Margin="10,0"/>
 
                 <!-- Right Remediation Actions: Başlangıçtan Kaldır, Zorla Sil, Kapat -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">

@@ -172,13 +172,16 @@ namespace Bakım.Services
             return (-1, -1, "Bilinmiyor");
         }
 
-        public void OpenInBrowser(string sha256Hash)
+        public void OpenInBrowser(string sha256OrUrl)
         {
-            if (string.IsNullOrWhiteSpace(sha256Hash)) return;
+            if (string.IsNullOrWhiteSpace(sha256OrUrl)) return;
 
             try
             {
-                string url = $"https://www.virustotal.com/gui/file/{sha256Hash}";
+                string url = sha256OrUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                    ? sha256OrUrl
+                    : $"https://www.virustotal.com/gui/file/{sha256OrUrl}";
+
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = url,
@@ -186,6 +189,141 @@ namespace Bakım.Services
                 });
             }
             catch { }
+        }
+
+        public void OpenUploadPage(string filePath)
+        {
+            try
+            {
+                // 1. Copy path to clipboard
+                if (!string.IsNullOrWhiteSpace(filePath))
+                {
+                    try { System.Windows.Clipboard.SetText(filePath); } catch { }
+
+                    // 2. Highlight in Explorer for easy drag & drop
+                    if (File.Exists(filePath))
+                    {
+                        try
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "explorer.exe",
+                                Arguments = $"/select,\"{filePath}\"",
+                                UseShellExecute = true
+                            });
+                        }
+                        catch { }
+                    }
+                }
+
+                // 3. Open VT Upload Page
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://www.virustotal.com/gui/home/upload",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+
+        public void SmartOpenInBrowser(string filePath, string sha256Hash, int totalDetections)
+        {
+            // If totalDetections == 0 specifically, we verified that there is no record on VirusTotal (404)
+            if (totalDetections == 0)
+            {
+                OpenUploadPage(filePath);
+            }
+            else
+            {
+                OpenInBrowser(sha256Hash);
+            }
+        }
+
+        public async Task<VirusTotalUploadResult> UploadFileAsync(string filePath, IProgress<string>? progress = null)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+            {
+                return new VirusTotalUploadResult { Success = false, ErrorMessage = "Dosya bulunamadı." };
+            }
+
+            var fi = new FileInfo(filePath);
+            if (fi.Length > 32 * 1024 * 1024)
+            {
+                return new VirusTotalUploadResult
+                {
+                    Success = false,
+                    ErrorMessage = "Dosya boyutu 32 MB'tan büyük. Lütfen web arayüzünden yükleyin."
+                };
+            }
+
+            string key = !string.IsNullOrWhiteSpace(ApiKey) ? ApiKey : LoadApiKey();
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return new VirusTotalUploadResult
+                {
+                    Success = false,
+                    ErrorMessage = "VirusTotal API anahtarı tanımlanmamış."
+                };
+            }
+
+            try
+            {
+                progress?.Report("Dosya VirusTotal sunucularına yükleniyor...");
+
+                using var content = new MultipartFormDataContent();
+                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var streamContent = new StreamContent(fileStream);
+                streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+                content.Add(streamContent, "file", Path.GetFileName(filePath));
+
+                using var request = new HttpRequestMessage(HttpMethod.Post, "https://www.virustotal.com/api/v3/files");
+                request.Headers.Add("x-apikey", key.Trim());
+                request.Content = content;
+
+                using var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new VirusTotalUploadResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"Yükleme başarısız oldu (HTTP {(int)response.StatusCode})"
+                    };
+                }
+
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty("data", out var data) &&
+                    data.TryGetProperty("id", out var idProp))
+                {
+                    string analysisId = idProp.GetString() ?? string.Empty;
+                    string statusUrl = $"https://www.virustotal.com/gui/file-analysis/{analysisId}";
+
+                    progress?.Report("Dosya başarıyla yüklendi! Canlı analiz başlatılıyor...");
+
+                    return new VirusTotalUploadResult
+                    {
+                        Success = true,
+                        AnalysisId = analysisId,
+                        StatusUrl = statusUrl
+                    };
+                }
+
+                return new VirusTotalUploadResult
+                {
+                    Success = false,
+                    ErrorMessage = "Analiz yanıtı çözümlenemedi."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new VirusTotalUploadResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Hata: {ex.Message}"
+                };
+            }
         }
     }
 }

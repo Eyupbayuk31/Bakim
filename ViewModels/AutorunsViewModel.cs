@@ -323,7 +323,8 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            _virusTotalService.OpenInBrowser(item.Sha256Hash);
+            int recordStatus = item.TotalScanners; // 0 means 404 not found, > 0 means record found, -1 means unscanned
+            _virusTotalService.SmartOpenInBrowser(item.FilePath, item.Sha256Hash, recordStatus);
         }
 
         [RelayCommand]

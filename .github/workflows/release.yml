@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v3.0.0'
+        default: 'v3.0.1'
 
 permissions:
   contents: write
@@ -49,7 +49,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.0.0" }
+          if (-not $tag) { $tag = "v3.0.1" }
           
           # Rename executable to standard ascii name for distribution
           Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
@@ -64,7 +64,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.0.0" }
+          if (-not $tag) { $tag = "v3.0.1" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
