@@ -721,13 +721,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v380 = new ReleaseChangelogItem
+            {
+                Version = "v3.8.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Sistem Temizliği Fluent 2, 20 Temizlik Hedefi, Canlı Disk Röntgeni & Teftiş Çekmecesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "20 Genişletilmiş Temizlik Hedefi: Windows Sistem Kalıntıları (Teslim İyileştirme, Shader, WER, CBS/DISM Logları, Thumbnail DB), Web Tarayıcıları (Edge, Chrome, Firefox, Brave, Discord, Telegram) ve Oyun/Medya/Dev (Steam, Spotify, Epic, NuGet/npm/pip) kategorilerine kavuşturuldu.",
+                    "Canlı C: Sürücüsü Sağlık & Doluluk Röntgeni: 4. KPI kartı olarak anlık disk doluluk çubuğu, toplam boyut, boş alan ve potansiyel temizlik ferahlığı göstergesi eklendi.",
+                    "Akıllı Hızlı Temizlik Profilleri: 🛡️ Hızlı & Güvenli, 🚀 Kapsamlı Derin, 🎮 Oyun & Medya profilleri ile tek tıkla hedef belirleme sağlandı.",
+                    "Taranan Dosyalar Canlı Arama & Boyut Filtresi: Binlerce dosya arasında anlık isim/uzantı araması (.log, .tmp, .dmp) ve >1MB, >10MB, >100MB boyut filtreleme butonları eklendi.",
+                    "Sağ Teftiş Çekmecesi (Inspection Drawer): Seçilen dosyanın tam yolu, dizini, değiştirilme tarihi, Explorer'da açma, yolu kopyalama ve tek tıkla 'Temizlikten Muaf Tut' (Hariç Bırak) yeteneği sisteme kazandırıldı."
+                }
+            };
+
             var v370 = new ReleaseChangelogItem
             {
                 Version = "v3.7.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Başlangıç Uygulamaları Fluent 2, KPI Kartları, Win32 İkon Çıkarma & Açılış Hızlandırma",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Windows 11 Fluent 2 Başlangıç Röntgeni: 4 adet etkileşimli KPI istatistik kartı (Toplam Başlatıcı, Etkin, Devre Dışı, Tahmini Boot Gecikmesi) ve modern pill filtreleme çubuğu.",
@@ -860,8 +877,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v370;
+            LatestRelease = v380;
 
+            ReleaseHistory.Add(v380);
             ReleaseHistory.Add(v370);
             ReleaseHistory.Add(v360);
             ReleaseHistory.Add(v350);

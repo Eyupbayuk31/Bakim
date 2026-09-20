@@ -5,6 +5,7 @@ namespace Bakım.Services
     public interface ISystemCleanService
     {
         List<CleanCategory> GetDefaultCategories();
+        DriveInfoItem GetSystemDriveInfo();
         Task<(List<CleanFileItem> items, long totalBytes)> ScanCategoryAsync(CleanCategory category, IProgress<string> progress, CancellationToken ct);
         Task<CleanResult> CleanItemsAsync(IEnumerable<CleanFileItem> items, IProgress<(string file, int percent)> progress, CancellationToken ct);
         Task<SystemStats> GetSystemStatsAsync();

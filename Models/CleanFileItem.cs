@@ -6,7 +6,10 @@ namespace Bakım.Models
     {
         public string FileName { get; set; } = string.Empty;
         public string FilePath { get; set; } = string.Empty;
+        public string DirectoryPath { get; set; } = string.Empty;
+        public string Extension { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
+        public DateTime LastModified { get; set; }
         public long SizeBytes { get; set; }
         public string FormattedSize => CleanCategory.FormatBytes(SizeBytes);
 
@@ -15,5 +18,8 @@ namespace Bakım.Models
 
         [ObservableProperty]
         private bool _isDeleted;
+
+        [ObservableProperty]
+        private bool _isExcluded;
     }
 }

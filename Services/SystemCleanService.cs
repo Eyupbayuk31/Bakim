@@ -33,16 +33,68 @@ namespace Bakım.Services
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
 
+        public DriveInfoItem GetSystemDriveInfo()
+        {
+            try
+            {
+                string sysPath = Environment.SystemDirectory;
+                string? driveRoot = Path.GetPathRoot(sysPath);
+                if (string.IsNullOrEmpty(driveRoot)) driveRoot = "C:\\";
+
+                var dInfo = new DriveInfo(driveRoot);
+                if (dInfo.IsReady)
+                {
+                    double totalGb = Math.Round(dInfo.TotalSize / (1024.0 * 1024.0 * 1024.0), 1);
+                    double freeGb = Math.Round(dInfo.AvailableFreeSpace / (1024.0 * 1024.0 * 1024.0), 1);
+                    double usedGb = Math.Round(totalGb - freeGb, 1);
+                    int usagePct = totalGb > 0 ? (int)((usedGb / totalGb) * 100) : 0;
+
+                    return new DriveInfoItem
+                    {
+                        Name = dInfo.Name.TrimEnd('\\'),
+                        VolumeLabel = string.IsNullOrWhiteSpace(dInfo.VolumeLabel) ? "Yerel Disk" : dInfo.VolumeLabel,
+                        DriveFormat = dInfo.DriveFormat,
+                        TotalGb = totalGb,
+                        FreeGb = freeGb,
+                        UsedGb = usedGb,
+                        UsagePercentage = usagePct
+                    };
+                }
+            }
+            catch { }
+
+            return new DriveInfoItem
+            {
+                Name = "C:",
+                VolumeLabel = "Yerel Disk",
+                DriveFormat = "NTFS",
+                TotalGb = 256.0,
+                FreeGb = 100.0,
+                UsedGb = 156.0,
+                UsagePercentage = 60
+            };
+        }
+
         public List<CleanCategory> GetDefaultCategories()
         {
-            var list = new List<CleanCategory>
+            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string localApp = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string roamingApp = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string progFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+            string progData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+
+            return new List<CleanCategory>
             {
+                // ==================== GRUP 1: WINDOWS & SİSTEM ====================
                 new CleanCategory
                 {
                     Id = "user_temp",
                     Name = "Kullanıcı Geçici Dosyaları (%TEMP%)",
-                    Description = "Uygulamaların geride bıraktığı geçici çalışma ve log kalıntıları.",
+                    Description = "Uygulamaların geride bıraktığı geçici çalışma ve oturum kalıntıları.",
                     TargetPath = Path.GetTempPath(),
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "Folder24",
                     RequiresAdmin = false,
                     IsSelected = true
                 },
@@ -51,16 +103,32 @@ namespace Bakım.Services
                     Id = "windows_temp",
                     Name = "Windows Sistem Temp",
                     Description = "Windows sistem hizmetlerinin oluşturduğu genel geçici dosyalar.",
-                    TargetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp"),
+                    TargetPath = Path.Combine(winDir, "Temp"),
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "FolderZip24",
                     RequiresAdmin = true,
                     IsSelected = true
                 },
                 new CleanCategory
                 {
                     Id = "software_distribution",
-                    Name = "Windows Update İndirme Önbelleği",
+                    Name = "Windows Update İndirme Deposu",
                     Description = "Daha önce yüklenmiş Windows güncellemelerinden kalan kurulum paketleri.",
-                    TargetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "SoftwareDistribution", "Download"),
+                    TargetPath = Path.Combine(winDir, "SoftwareDistribution", "Download"),
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "ArrowDownload24",
+                    RequiresAdmin = true,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "delivery_optimization",
+                    Name = "Windows Teslim İyileştirme Önbelleği",
+                    Description = "Ağ üzerinden paylaşılan güncelleme parçacıkları ve önbellekleri.",
+                    TargetPath = Path.Combine(winDir, "SoftwareDistribution", "DeliveryOptimization", "Cache"),
+                    AdditionalPaths = new List<string> { Path.Combine(localApp, "Microsoft", "Windows", "DeliveryOptimization") },
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "CloudDownload24",
                     RequiresAdmin = true,
                     IsSelected = true
                 },
@@ -68,35 +136,23 @@ namespace Bakım.Services
                 {
                     Id = "prefetch",
                     Name = "Windows Prefetch Önbelleği",
-                    Description = "Eski ve artık kullanılmayan uygulama açılış önbellekleri.",
-                    TargetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Prefetch"),
+                    Description = "Eski ve artık sistemde bulunmayan uygulama açılış izleri.",
+                    TargetPath = Path.Combine(winDir, "Prefetch"),
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "Flash24",
                     RequiresAdmin = true,
+                    IsDeepClean = true,
                     IsSelected = false
                 },
                 new CleanCategory
                 {
-                    Id = "edge_cache",
-                    Name = "Microsoft Edge Web Önbelleği",
-                    Description = "Web sayfaları ve medya içeriklerinin tarayıcı önbellek dosyaları.",
-                    TargetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Edge", "User Data", "Default", "Cache"),
-                    RequiresAdmin = false,
-                    IsSelected = true
-                },
-                new CleanCategory
-                {
-                    Id = "chrome_cache",
-                    Name = "Google Chrome Web Önbelleği",
-                    Description = "Chrome tarayıcısının diskte sakladığı geçici internet verileri.",
-                    TargetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "User Data", "Default", "Cache"),
-                    RequiresAdmin = false,
-                    IsSelected = true
-                },
-                new CleanCategory
-                {
                     Id = "crash_dumps",
-                    Name = "Uygulama Çökme Dökümleri (Crash Dumps)",
-                    Description = "Daha önce çöken uygulamaların diske bıraktığı bellek döküm dosyaları.",
-                    TargetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CrashDumps"),
+                    Name = "Bellek ve Çökme Dökümleri (Crash Dumps)",
+                    Description = "Çöken uygulamaların ve sistemin diske bıraktığı bellek dökümleri.",
+                    TargetPath = Path.Combine(localApp, "CrashDumps"),
+                    AdditionalPaths = new List<string> { Path.Combine(winDir, "Minidump") },
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "DocumentError24",
                     RequiresAdmin = false,
                     IsSelected = true
                 },
@@ -104,14 +160,192 @@ namespace Bakım.Services
                 {
                     Id = "wer_reports",
                     Name = "Windows Hata Raporlama Kalıntıları (WER)",
-                    Description = "İşletim sistemi hata raporlama kuyrukları ve arşiv kalıntıları.",
-                    TargetPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Windows", "WER"),
+                    Description = "İşletim sistemi hata bildirim kuyrukları ve arşiv kalıntıları.",
+                    TargetPath = Path.Combine(localApp, "Microsoft", "Windows", "WER"),
+                    AdditionalPaths = new List<string> { Path.Combine(progData, "Microsoft", "Windows", "WER") },
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "ShieldAlert24",
                     RequiresAdmin = false,
+                    IsSelected = false
+                },
+                new CleanCategory
+                {
+                    Id = "thumb_cache",
+                    Name = "Küçük Resim (Thumbnail) Önbelleği",
+                    Description = "Dosya Gezgini'nin resim ve videolar için oluşturduğu veritabanı kalıntıları.",
+                    TargetPath = Path.Combine(localApp, "Microsoft", "Windows", "Explorer"),
+                    FilePattern = "thumbcache_*.db",
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "Image24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "system_logs",
+                    Name = "Eski Windows & CBS Günlükleri",
+                    Description = "Windows ve bileşen yükleyicisi tarafından üretilmiş eski log dosyaları.",
+                    TargetPath = Path.Combine(winDir, "Logs"),
+                    AdditionalPaths = new List<string> { Path.Combine(winDir, "Panther") },
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "DocumentBulletList24",
+                    RequiresAdmin = true,
+                    IsDeepClean = true,
+                    IsSelected = false
+                },
+                new CleanCategory
+                {
+                    Id = "directx_shader",
+                    Name = "DirectX Shader & GPU Önbelleği",
+                    Description = "Ekran kartı ve DirectX API'sinin derlenmiş gölgelendirici önbellekleri.",
+                    TargetPath = Path.Combine(localApp, "D3DSCache"),
+                    AdditionalPaths = new List<string>
+                    {
+                        Path.Combine(localApp, "NVIDIA", "DXCache"),
+                        Path.Combine(localApp, "AMD", "DxCache")
+                    },
+                    GroupName = "Windows & Sistem",
+                    IconSymbol = "Sparkle24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+
+                // ==================== GRUP 2: WEB TARAYICILARI & İLETİŞİM ====================
+                new CleanCategory
+                {
+                    Id = "edge_cache",
+                    Name = "Microsoft Edge Web Önbelleği",
+                    Description = "Edge web tarayıcısının geçici internet verileri ve GPU önbellekleri.",
+                    TargetPath = Path.Combine(localApp, "Microsoft", "Edge", "User Data", "Default", "Cache"),
+                    AdditionalPaths = new List<string>
+                    {
+                        Path.Combine(localApp, "Microsoft", "Edge", "User Data", "Default", "Code Cache")
+                    },
+                    GroupName = "Web Tarayıcıları",
+                    IconSymbol = "Globe24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "chrome_cache",
+                    Name = "Google Chrome Web Önbelleği",
+                    Description = "Chrome tarayıcısının diskte biriktirdiği geçici web ve medya verileri.",
+                    TargetPath = Path.Combine(localApp, "Google", "Chrome", "User Data", "Default", "Cache"),
+                    AdditionalPaths = new List<string>
+                    {
+                        Path.Combine(localApp, "Google", "Chrome", "User Data", "Default", "Code Cache")
+                    },
+                    GroupName = "Web Tarayıcıları",
+                    IconSymbol = "Globe24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "firefox_cache",
+                    Name = "Mozilla Firefox Önbelleği",
+                    Description = "Firefox profil dizinindeki HTTP ve medya önbellek kalıntıları.",
+                    TargetPath = Path.Combine(localApp, "Mozilla", "Firefox", "Profiles"),
+                    GroupName = "Web Tarayıcıları",
+                    IconSymbol = "Globe24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "brave_cache",
+                    Name = "Brave Tarayıcı Önbelleği",
+                    Description = "Brave Browser web ve render önbellek dosyaları.",
+                    TargetPath = Path.Combine(localApp, "BraveSoftware", "Brave-Browser", "User Data", "Default", "Cache"),
+                    GroupName = "Web Tarayıcıları",
+                    IconSymbol = "Globe24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "discord_cache",
+                    Name = "Discord Medya & Kod Önbelleği",
+                    Description = "Discord istemcisinin önbelleğe aldığı görseller, sesler ve kod blokları.",
+                    TargetPath = Path.Combine(roamingApp, "discord", "Cache"),
+                    AdditionalPaths = new List<string>
+                    {
+                        Path.Combine(roamingApp, "discord", "Code Cache")
+                    },
+                    GroupName = "Web Tarayıcıları",
+                    IconSymbol = "Chat24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "telegram_cache",
+                    Name = "Telegram Masaüstü Medya Önbelleği",
+                    Description = "Telegram Desktop üzerinden indirilen geçici medya ve çıkartma önbellekleri.",
+                    TargetPath = Path.Combine(roamingApp, "Telegram Desktop", "tdata", "user_data", "cache"),
+                    GroupName = "Web Tarayıcıları",
+                    IconSymbol = "Send24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+
+                // ==================== GRUP 3: OYUNLAR & MEDYA / GELİŞTİRİCİ ====================
+                new CleanCategory
+                {
+                    Id = "steam_cache",
+                    Name = "Steam İstemci & Web Önbelleği",
+                    Description = "Steam istemcisinin mağaza ve topluluk sayfaları için tuttuğu web önbellekleri.",
+                    TargetPath = Path.Combine(progFilesX86, "Steam", "appcache", "httpcache"),
+                    AdditionalPaths = new List<string>
+                    {
+                        Path.Combine(localApp, "Steam", "htmlcache")
+                    },
+                    GroupName = "Oyunlar & Medya",
+                    IconSymbol = "Games24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "spotify_cache",
+                    Name = "Spotify Akış & Şarkı Deposu",
+                    Description = "Spotify masaüstü uygulamasının diske indirdiği çevrimdışı ve akış önbellekleri.",
+                    TargetPath = Path.Combine(localApp, "Spotify", "Storage"),
+                    GroupName = "Oyunlar & Medya",
+                    IconSymbol = "MusicNote224",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "epic_cache",
+                    Name = "Epic Games Başlatıcı Önbelleği",
+                    Description = "Epic Games Launcher web ve arayüz önbellek kalıntıları.",
+                    TargetPath = Path.Combine(localApp, "EpicGamesLauncher", "Saved", "webcache"),
+                    GroupName = "Oyunlar & Medya",
+                    IconSymbol = "Games24",
+                    RequiresAdmin = false,
+                    IsSelected = true
+                },
+                new CleanCategory
+                {
+                    Id = "nuget_npm_cache",
+                    Name = "Geliştirici Paket Önbellekleri (NuGet/npm/pip)",
+                    Description = "Yazılım geliştirme ortamlarının paket depolarından arta kalan geçici indirmeler.",
+                    TargetPath = Path.Combine(userProfile, ".nuget", "packages", ".cache"),
+                    AdditionalPaths = new List<string>
+                    {
+                        Path.Combine(roamingApp, "npm-cache"),
+                        Path.Combine(localApp, "pip", "cache")
+                    },
+                    GroupName = "Oyunlar & Medya",
+                    IconSymbol = "Code24",
+                    RequiresAdmin = false,
+                    IsDeepClean = true,
                     IsSelected = false
                 }
             };
-
-            return list;
         }
 
         public async Task<(List<CleanFileItem> items, long totalBytes)> ScanCategoryAsync(
@@ -124,57 +358,72 @@ namespace Bakım.Services
                 var resultItems = new List<CleanFileItem>();
                 long categoryBytes = 0;
 
-                if (!Directory.Exists(category.TargetPath))
+                var pathsToScan = new List<string>();
+                if (!string.IsNullOrWhiteSpace(category.TargetPath))
+                    pathsToScan.Add(category.TargetPath);
+
+                if (category.AdditionalPaths != null && category.AdditionalPaths.Count > 0)
                 {
-                    return (resultItems, 0);
-                }
-
-                try
-                {
-                    var dirInfo = new DirectoryInfo(category.TargetPath);
-                    var enumOptions = new EnumerationOptions
+                    foreach (var p in category.AdditionalPaths)
                     {
-                        IgnoreInaccessible = true,
-                        RecurseSubdirectories = true,
-                        ReturnSpecialDirectories = false
-                    };
-
-                    foreach (var file in dirInfo.EnumerateFiles("*", enumOptions))
-                    {
-                        ct.ThrowIfCancellationRequested();
-
-                        // Güvenlik: Asla kritik sistem dosyalarını tarama listesine alma
-                        if (!IsSafeTarget(file.FullName))
-                        {
-                            continue;
-                        }
-
-                        try
-                        {
-                            long len = file.Length;
-                            categoryBytes += len;
-                            resultItems.Add(new CleanFileItem
-                            {
-                                FileName = file.Name,
-                                FilePath = file.FullName,
-                                CategoryName = category.Name,
-                                SizeBytes = len,
-                                Status = "Taranıyor / Hazır"
-                            });
-
-                            progress.Report(file.FullName);
-                        }
-                        catch (UnauthorizedAccessException) { /* Dosya metaverisine erişilemediğinde atla */ }
-                        catch (IOException) { /* Kilitli dosya boyutu okunamadığında atla */ }
+                        if (!string.IsNullOrWhiteSpace(p) && !pathsToScan.Contains(p, StringComparer.OrdinalIgnoreCase))
+                            pathsToScan.Add(p);
                     }
                 }
-                catch (UnauthorizedAccessException)
+
+                var enumOptions = new EnumerationOptions
                 {
-                    // Dizin erişim engeli
-                }
-                catch (Exception)
+                    IgnoreInaccessible = true,
+                    RecurseSubdirectories = true,
+                    ReturnSpecialDirectories = false
+                };
+
+                string pattern = string.IsNullOrWhiteSpace(category.FilePattern) ? "*" : category.FilePattern;
+
+                foreach (var path in pathsToScan)
                 {
-                    // Diğer beklenmeyen dosya sistemi hataları
+                    ct.ThrowIfCancellationRequested();
+
+                    if (!Directory.Exists(path))
+                        continue;
+
+                    try
+                    {
+                        var dirInfo = new DirectoryInfo(path);
+                        foreach (var file in dirInfo.EnumerateFiles(pattern, enumOptions))
+                        {
+                            ct.ThrowIfCancellationRequested();
+
+                            // Güvenlik: Asla kritik sistem dosyalarını tarama listesine alma
+                            if (!IsSafeTarget(file.FullName))
+                            {
+                                continue;
+                            }
+
+                            try
+                            {
+                                long len = file.Length;
+                                categoryBytes += len;
+                                resultItems.Add(new CleanFileItem
+                                {
+                                    FileName = file.Name,
+                                    FilePath = file.FullName,
+                                    DirectoryPath = file.DirectoryName ?? string.Empty,
+                                    Extension = file.Extension.ToLowerInvariant(),
+                                    LastModified = file.LastWriteTime,
+                                    CategoryName = category.Name,
+                                    SizeBytes = len,
+                                    Status = "Taranıyor / Hazır"
+                                });
+
+                                progress.Report(file.FullName);
+                            }
+                            catch (UnauthorizedAccessException) { /* Dosya metaverisine erişilemediğinde atla */ }
+                            catch (IOException) { /* Kilitli dosya boyutu okunamadığında atla */ }
+                        }
+                    }
+                    catch (UnauthorizedAccessException) { }
+                    catch (Exception) { }
                 }
 
                 return (resultItems, categoryBytes);
@@ -203,6 +452,14 @@ namespace Bakım.Services
                     if (processed % 10 == 0)
                     {
                         Thread.Sleep(3);
+                    }
+
+                    // 0. Kullanıcı Tarafından Hariç Tutulan Dosyalar
+                    if (item.IsExcluded)
+                    {
+                        item.Status = "Muaf Tutuldu (Atlandı)";
+                        result.TotalFilesSkipped++;
+                        continue;
                     }
 
                     // 1. Kritik Sistem Koruması Kontrolü
@@ -428,15 +685,19 @@ namespace Bakım.Services
                 return false;
             }
 
-            // Sadece bilinen güvenli önbellek/temp/dump dizinleri altındaki dosyalar silinebilir
+            // Sadece bilinen güvenli önbellek/temp/dump/log dizinleri altındaki dosyalar silinebilir
             bool isUnderTemp = normalized.Contains(@"\temp\") || normalized.Contains(@"\tmp\");
-            bool isUnderSoftwareDist = normalized.Contains(@"\softwaredistribution\download\");
+            bool isUnderSoftwareDist = normalized.Contains(@"\softwaredistribution\download\") || normalized.Contains(@"\deliveryoptimization\");
             bool isUnderPrefetch = normalized.Contains(@"\windows\prefetch\");
-            bool isUnderCache = normalized.Contains(@"\cache\") || normalized.Contains(@"\code cache\");
-            bool isUnderCrashDumps = normalized.Contains(@"\crashdumps\");
+            bool isUnderCache = normalized.Contains(@"\cache\") || normalized.Contains(@"\code cache\") || normalized.Contains(@"\appcache\") || normalized.Contains(@"\webcache\") || normalized.Contains(@"\htmlcache\");
+            bool isUnderCrashDumps = normalized.Contains(@"\crashdumps\") || normalized.Contains(@"\minidump\");
             bool isUnderWer = normalized.Contains(@"\microsoft\windows\wer\");
+            bool isUnderExplorer = normalized.Contains(@"\microsoft\windows\explorer\") && normalized.Contains("thumbcache_");
+            bool isUnderLogs = normalized.Contains(@"\windows\logs\") || normalized.Contains(@"\windows\panther\");
+            bool isUnderShader = normalized.Contains(@"\d3dscache\") || normalized.Contains(@"\dxcache\");
+            bool isUnderAppStorage = normalized.Contains(@"\spotify\storage\") || normalized.Contains(@"\telegram desktop\") || normalized.Contains(@"\npm-cache\") || normalized.Contains(@"\pip\cache\") || normalized.Contains(@"\.nuget\packages\.cache\");
 
-            return isUnderTemp || isUnderSoftwareDist || isUnderPrefetch || isUnderCache || isUnderCrashDumps || isUnderWer;
+            return isUnderTemp || isUnderSoftwareDist || isUnderPrefetch || isUnderCache || isUnderCrashDumps || isUnderWer || isUnderExplorer || isUnderLogs || isUnderShader || isUnderAppStorage;
         }
     }
 }

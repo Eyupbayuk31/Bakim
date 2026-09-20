@@ -1,4 +1,14 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
@@ -16,10 +26,38 @@ namespace Bakım.ViewModels
             _cleanService = cleanService;
             Categories = new ObservableCollection<CleanCategory>(_cleanService.GetDefaultCategories());
             ScannedFiles = new ObservableCollection<CleanFileItem>();
+
+            FilteredCategoriesView = CollectionViewSource.GetDefaultView(Categories);
+            FilteredCategoriesView.Filter = FilterCategoryPredicate;
+
+            FilteredFilesView = CollectionViewSource.GetDefaultView(ScannedFiles);
+            FilteredFilesView.Filter = FilterFilePredicate;
+
+            RefreshDriveInfo();
         }
 
         public ObservableCollection<CleanCategory> Categories { get; }
         public ObservableCollection<CleanFileItem> ScannedFiles { get; }
+        public ICollectionView FilteredCategoriesView { get; }
+        public ICollectionView FilteredFilesView { get; }
+
+        #region Drive & Health Metrics
+
+        [ObservableProperty]
+        private DriveInfoItem _systemDrive = new();
+
+        public void RefreshDriveInfo()
+        {
+            try
+            {
+                SystemDrive = _cleanService.GetSystemDriveInfo();
+            }
+            catch { }
+        }
+
+        #endregion
+
+        #region Operational State Properties
 
         [ObservableProperty]
         private bool _isScanning;
@@ -59,7 +97,6 @@ namespace Bakım.ViewModels
 
         public string FormattedFoundBytes => CleanCategory.FormatBytes(TotalFoundBytes);
         public string FormattedFreedBytes => CleanCategory.FormatBytes(TotalFreedBytes);
-        // Alias used in animated scan status bar XAML binding
         public string TotalFoundBytesFormatted => CleanCategory.FormatBytes(TotalFoundBytes);
 
         partial void OnTotalFoundBytesChanged(long value)
@@ -68,17 +105,234 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(FormattedFoundBytes));
         }
 
+        #endregion
+
+        #region Presets & Filter Chips
+
+        [ObservableProperty]
+        private string _activePreset = "quick";
+
+        [ObservableProperty]
+        private string _categoryGroupFilter = "Tümü";
+
+        partial void OnCategoryGroupFilterChanged(string value)
+        {
+            FilteredCategoriesView.Refresh();
+        }
+
+        private bool FilterCategoryPredicate(object obj)
+        {
+            if (obj is not CleanCategory cat) return false;
+            if (string.IsNullOrEmpty(CategoryGroupFilter) || CategoryGroupFilter == "Tümü")
+                return true;
+
+            return string.Equals(cat.GroupName, CategoryGroupFilter, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [RelayCommand]
+        public void ApplyPreset(string preset)
+        {
+            ActivePreset = preset;
+            switch (preset?.ToLowerInvariant())
+            {
+                case "quick":
+                    foreach (var c in Categories)
+                    {
+                        c.IsSelected = !c.IsDeepClean;
+                    }
+                    StatusText = "Hızlı & Güvenli profil uygulandı (Risksiz temp ve önbellekler seçildi).";
+                    break;
+                case "deep":
+                    foreach (var c in Categories)
+                    {
+                        c.IsSelected = true;
+                    }
+                    StatusText = "Kapsamlı Derin Temizlik profili uygulandı (Tüm 20 hedef seçildi).";
+                    break;
+                case "browsers":
+                    foreach (var c in Categories)
+                    {
+                        c.IsSelected = c.GroupName == "Web Tarayıcıları";
+                    }
+                    StatusText = "Web Tarayıcıları profili uygulandı.";
+                    break;
+                case "gaming":
+                    foreach (var c in Categories)
+                    {
+                        c.IsSelected = c.GroupName == "Oyunlar & Medya" || c.Id == "directx_shader" || c.Id == "user_temp";
+                    }
+                    StatusText = "Oyunlar & Medya profili uygulandı (Steam, Spotify, Epic, Shader seçildi).";
+                    break;
+                case "all":
+                    foreach (var c in Categories) c.IsSelected = true;
+                    StatusText = "Tüm hedefler seçildi.";
+                    break;
+                case "none":
+                    foreach (var c in Categories) c.IsSelected = false;
+                    StatusText = "Tüm seçimler kaldırıldı.";
+                    break;
+            }
+        }
+
+        [RelayCommand]
+        public void SetCategoryGroup(string group)
+        {
+            CategoryGroupFilter = group;
+        }
+
         [RelayCommand]
         public void SelectAllCategories()
         {
-            foreach (var cat in Categories) cat.IsSelected = true;
+            ApplyPreset("all");
         }
 
         [RelayCommand]
         public void DeselectAllCategories()
         {
-            foreach (var cat in Categories) cat.IsSelected = false;
+            ApplyPreset("none");
         }
+
+        #endregion
+
+        #region Scanned Files Search & Filters
+
+        [ObservableProperty]
+        private string _searchFileQuery = string.Empty;
+
+        [ObservableProperty]
+        private string _sizeFilter = "All";
+
+        partial void OnSearchFileQueryChanged(string value)
+        {
+            FilteredFilesView.Refresh();
+        }
+
+        partial void OnSizeFilterChanged(string value)
+        {
+            FilteredFilesView.Refresh();
+        }
+
+        [RelayCommand]
+        public void SetSizeFilter(string filter)
+        {
+            SizeFilter = filter;
+        }
+
+        private bool FilterFilePredicate(object obj)
+        {
+            if (obj is not CleanFileItem item) return false;
+
+            // Search query
+            if (!string.IsNullOrWhiteSpace(SearchFileQuery))
+            {
+                string q = SearchFileQuery.Trim();
+                bool match = item.FileName.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                             item.FilePath.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                             item.CategoryName.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                             item.Extension.Contains(q, StringComparison.OrdinalIgnoreCase);
+
+                if (!match) return false;
+            }
+
+            // Size filter
+            switch (SizeFilter)
+            {
+                case "1MB":
+                    if (item.SizeBytes < 1024 * 1024) return false;
+                    break;
+                case "10MB":
+                    if (item.SizeBytes < 10 * 1024 * 1024) return false;
+                    break;
+                case "100MB":
+                    if (item.SizeBytes < 100 * 1024 * 1024) return false;
+                    break;
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Master-Detail Drawer & Actions
+
+        [ObservableProperty]
+        private CleanFileItem? _selectedFile;
+
+        [ObservableProperty]
+        private bool _isDrawerOpen;
+
+        partial void OnSelectedFileChanged(CleanFileItem? value)
+        {
+            IsDrawerOpen = value != null;
+        }
+
+        [RelayCommand]
+        public void CloseDrawer()
+        {
+            IsDrawerOpen = false;
+            SelectedFile = null;
+        }
+
+        [RelayCommand]
+        public void OpenFileLocation(CleanFileItem? item)
+        {
+            var target = item ?? SelectedFile;
+            if (target == null || string.IsNullOrWhiteSpace(target.FilePath)) return;
+
+            try
+            {
+                if (File.Exists(target.FilePath))
+                {
+                    Process.Start("explorer.exe", $"/select,\"{target.FilePath}\"");
+                }
+                else if (Directory.Exists(target.DirectoryPath))
+                {
+                    Process.Start("explorer.exe", $"\"{target.DirectoryPath}\"");
+                }
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public void CopyFilePath(CleanFileItem? item)
+        {
+            var target = item ?? SelectedFile;
+            if (target == null || string.IsNullOrWhiteSpace(target.FilePath)) return;
+
+            try
+            {
+                Clipboard.SetText(target.FilePath);
+                StatusText = $"Kopyalandı: {target.FileName}";
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public void ExcludeFile(CleanFileItem? item)
+        {
+            var target = item ?? SelectedFile;
+            if (target == null) return;
+
+            target.IsExcluded = !target.IsExcluded;
+            if (target.IsExcluded)
+            {
+                target.Status = "Muaf Tutuldu (Atlandı)";
+                TotalFoundBytes = Math.Max(0, TotalFoundBytes - target.SizeBytes);
+            }
+            else
+            {
+                target.Status = "Bulundu";
+                TotalFoundBytes += target.SizeBytes;
+            }
+
+            OnPropertyChanged(nameof(FormattedFoundBytes));
+            OnPropertyChanged(nameof(TotalFoundBytesFormatted));
+            FilteredFilesView.Refresh();
+        }
+
+        #endregion
+
+        #region Scanning & Cleaning Workflow
 
         [RelayCommand]
         public void Cancel()
@@ -103,6 +357,8 @@ namespace Bakım.ViewModels
             TotalFoundBytes = 0;
             TotalFilesFound = 0;
             ScannedFiles.Clear();
+            SelectedFile = null;
+            IsDrawerOpen = false;
 
             _cts = new CancellationTokenSource();
 
@@ -144,8 +400,8 @@ namespace Bakım.ViewModels
                     cat.IsScanning = true;
                     StatusText = $"Taranıyor: {cat.Name}...";
 
-                    // Teşhis görsel kadansı (her kategori için hissedilir başlangıç)
-                    await Task.Delay(90, _cts.Token);
+                    // Teşhis görsel kadansı
+                    await Task.Delay(50, _cts.Token);
 
                     var (items, bytes) = await _cleanService.ScanCategoryAsync(cat, scanProgress, _cts.Token);
                     cat.TotalBytes = bytes;
@@ -153,8 +409,7 @@ namespace Bakım.ViewModels
 
                     if (items.Count > 0)
                     {
-                        // Öğeleri mikro-batch halinde (15-35'lik paketler) akıcı şekilde ekle
-                        int batchSize = Math.Max(15, items.Count / 8);
+                        int batchSize = Math.Max(20, items.Count / 8);
                         for (int i = 0; i < items.Count; i += batchSize)
                         {
                             _cts.Token.ThrowIfCancellationRequested();
@@ -176,13 +431,12 @@ namespace Bakım.ViewModels
                             double catProgress = (double)(i + take) / items.Count;
                             ProgressPercent = Math.Min(98, (int)(((currentCatIndex + catProgress) / totalCats) * 100));
 
-                            // Akıcı gözlem gecikmesi
-                            await Task.Delay(20, _cts.Token);
+                            await Task.Delay(15, _cts.Token);
                         }
                     }
                     else
                     {
-                        await Task.Delay(70, _cts.Token);
+                        await Task.Delay(40, _cts.Token);
                     }
 
                     cat.IsScanning = false;
@@ -197,6 +451,7 @@ namespace Bakım.ViewModels
                 ProgressPercent = 100;
                 StatusText = $"Tarama tamamlandı! Toplam {TotalFilesFound} dosya ({FormattedFoundBytes}) temizlenebilir.";
                 CurrentScanningFile = string.Empty;
+                RefreshDriveInfo();
             }
             catch (OperationCanceledException)
             {
@@ -220,10 +475,10 @@ namespace Bakım.ViewModels
         {
             if (IsBusy) return;
 
-            var itemsToClean = ScannedFiles.Where(f => !f.IsDeleted).ToList();
+            var itemsToClean = ScannedFiles.Where(f => !f.IsDeleted && !f.IsExcluded).ToList();
             if (itemsToClean.Count == 0)
             {
-                StatusText = "Temizlenecek öğe bulunamadı. Önce tarama yapın.";
+                StatusText = "Temizlenecek öğe bulunamadı. Önce tarama yapın veya muafiyetleri kaldırın.";
                 return;
             }
 
@@ -256,9 +511,10 @@ namespace Bakım.ViewModels
                 }
 
                 HasResultBanner = true;
-                OperationResultBanner = $"Başarıyla {result.TotalFilesDeleted} dosya silindi ve {result.FormattedBytesFreed} alan kazanıldı! ({result.TotalFilesSkipped} dosya kilitli/korumalı olduğu için atlandı)";
+                OperationResultBanner = $"Başarıyla {result.TotalFilesDeleted} dosya silindi ve {result.FormattedBytesFreed} alan kazanıldı! ({result.TotalFilesSkipped} dosya kilitli/korumalı olduğu için güvenle atlandı)";
                 StatusText = "Temizlik operasyonu tamamlandı.";
                 CurrentScanningFile = string.Empty;
+                RefreshDriveInfo();
             }
             catch (OperationCanceledException)
             {
@@ -274,5 +530,7 @@ namespace Bakım.ViewModels
                 IsBusy = false;
             }
         }
+
+        #endregion
     }
 }

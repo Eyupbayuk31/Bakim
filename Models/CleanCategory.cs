@@ -8,7 +8,12 @@ namespace Bakım.Models
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string TargetPath { get; set; } = string.Empty;
+        public List<string> AdditionalPaths { get; set; } = new();
+        public string FilePattern { get; set; } = "*";
+        public string GroupName { get; set; } = "Windows & Sistem";
+        public string IconSymbol { get; set; } = "Folder24";
         public bool RequiresAdmin { get; set; }
+        public bool IsDeepClean { get; set; }
 
         [ObservableProperty]
         private bool _isSelected = true;
