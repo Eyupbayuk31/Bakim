@@ -26,3 +26,9 @@ Bu proje genelindeki tüm arayüz geliştirmelerinde **Wpf.Ui (Fluent UI for WPF
 4. **Tema & Renk Paleti:**
    - `Wpf.Ui.Appearance.ApplicationThemeManager` kullanılır.
    - Tüm renkler kütüphanenin dinamik semantik fırçalarından çekilir (`ThemeResourceDictionary`, `CardBackgroundFillColorDefaultBrush`, `TextFillColorPrimaryBrush`, `AccentTextFillColorPrimaryBrush` vb.).
+
+5. **Sıfır AI Hissiyatı & Kurumsal Profesyonellik (Anti-AI Aesthetic):**
+   - **Saçma Sapan İkon Yasağı:** Arayüzde rastgele, uyumsuz, çocuksu veya yapay zeka yapımı olduğu bağıran emojiler ve saçma ikonlar KESİNLİKLE KULLANILAMAZ.
+   - **Yalnızca Resmi Fluent/Windows Sembolleri:** Sadece Windows 11 yerel tasarım diline ait `ui:SymbolIcon` (Fluent 2 sembol kütüphanesi) veya `Segoe MDL2 Assets` font sembolleri kullanılır. İkon boyutları standart ve dengeli (16, 20 veya 24) tutulur.
+   - **Tasarım Dili:** Tüm görünüm Microsoft'un kendi üst düzey mühendislerinin elinden çıkmış gibi ciddi, kurumsal, koyu slate temasıyla tam uyumlu ve profesyonel olmak zorundadır.
+
