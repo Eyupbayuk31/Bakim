@@ -214,6 +214,7 @@ namespace Bakım
             services.AddTransient<UninstallerViewModel>();
             services.AddTransient<AutorunsViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
+            services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<LoginViewModel>();
 

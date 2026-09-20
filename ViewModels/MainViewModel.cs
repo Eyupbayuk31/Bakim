@@ -385,20 +385,28 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public void NavigateToTweakerCategory(string categoryKey)
         {
-            CurrentTweakerCategory = categoryKey;
-            TweakerCategories.SetSelectedCategorySilent(categoryKey);
+            try
+            {
+                CurrentTweakerCategory = categoryKey;
+                TweakerCategories.SetSelectedCategorySilent(categoryKey);
 
-            if (string.Equals(categoryKey, "PrivacyDebloat", StringComparison.OrdinalIgnoreCase))
-            {
-                Navigate("PrivacyDebloat");
+                if (string.Equals(categoryKey, "PrivacyDebloat", StringComparison.OrdinalIgnoreCase))
+                {
+                    Navigate("PrivacyDebloat");
+                }
+                else
+                {
+                    WindowsTweaker.SwitchCategory(categoryKey);
+                    Navigate("Tweaker");
+                }
+
+                if (IsSidebarExpanded) IsTweakerMenuExpanded = true;
             }
-            else
+            catch (Exception ex)
             {
-                WindowsTweaker.SwitchCategory(categoryKey);
+                _log.Error($"Tweaker kategorisine geçiş sırasında hata oluştu: {categoryKey}", ex, nameof(MainViewModel));
                 Navigate("Tweaker");
             }
-
-            if (IsSidebarExpanded) IsTweakerMenuExpanded = true;
         }
 
         [RelayCommand]

@@ -896,7 +896,27 @@
 
                 <Grid Grid.Row="0" Margin="0,0,0,12">
                     <TextBlock Text="Sistemdeki Aktif Ağ Arayüzleri ve IP Yapılandırması" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                    <ui:Button HorizontalAlignment="Right" Appearance="Secondary" Command="{Binding RefreshCommand}" Content="Ağ Kartlarını Yenile" Icon="{ui:SymbolIcon ArrowClockwise20}" Padding="12,8"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <ui:Button Appearance="Secondary" 
+                                   Command="{Binding FlushDnsFromAdaptersCommand}" 
+                                   Content="DNS Sıfırla" 
+                                   Icon="{ui:SymbolIcon Broom20}" 
+                                   Padding="12,8" 
+                                   Margin="0,0,8,0"
+                                   ToolTip="Windows DNS Çözümleyici Önbelleğini Temizle (Flush DNS)"/>
+                        <ui:Button Appearance="Secondary" 
+                                   Command="{Binding RenewIpFromAdaptersCommand}" 
+                                   Content="IP Yenile" 
+                                   Icon="{ui:SymbolIcon ArrowClockwise20}" 
+                                   Padding="12,8" 
+                                   Margin="0,0,8,0"
+                                   ToolTip="DHCP Kira Süresini ve IP Adresini Yenile (ipconfig /renew)"/>
+                        <ui:Button Appearance="Primary" 
+                                   Command="{Binding RefreshCommand}" 
+                                   Content="Yenile" 
+                                   Icon="{ui:SymbolIcon ArrowSync20}" 
+                                   Padding="12,8"/>
+                    </StackPanel>
                 </Grid>
 
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">

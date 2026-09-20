@@ -94,35 +94,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: Bakım ${{ env.TAG_NAME }} - Tasarım Sistemi, Güvenlik Sertleştirme ve Mimari Yenileme
+          name: Bakım ${{ env.TAG_NAME }}
           draft: false
           prerelease: false
           make_latest: true
           generate_release_notes: false
-          body: |
-            • **Güvenlik Sertleştirme**:
-              - Kaynağa gömülü yönetici parolası tamamen kaldırıldı.
-              - Hesap veritabanı artık yalnızca yereldir; uzak sunucudan kullanıcı çekilmez.
-              - Parola türetme OWASP 2023 önerisine yükseltildi (PBKDF2-SHA256, 210.000 tur). Eski hesaplar ilk girişte sessizce güçlendirilir.
-              - Kaba kuvvet denemeleri artan bekleme süresiyle frenlenir; yerel kilidi unutanlar için kurtarma yolu eklendi.
-              - Güncelleme paketi çalıştırılmadan önce kaynak adresi, Authenticode imzası ve SHA-256 özeti denetlenir.
-              - VirusTotal API anahtarı düz metin yerine DPAPI ile şifrelenerek saklanır (mevcut anahtar otomatik taşınır).
-            • **Tasarım Sistemi**:
-              - Dört tema: Mica Koyu, AMOLED Saf Siyah, Cyberpunk Neon Mor ve **yeni Fluent Açık**.
-              - Tema değişimi artık arayüzün tamamını boyuyor; seçilen tema açılışta geri yükleniyor.
-              - Arayüzdeki 194 sabit renk kodu anlamsal tasarım token'larına taşındı; tipografi ve boşluk ölçeği tanımlandı.
-              - Yeniden kullanılabilir bileşen kütüphanesi (başlık, metrik kapsülü, durum rozeti, KPI kartı, boş durum).
-              - 90 erişilebilirlik etiketi eklendi; durum rozetleri anlamı yalnızca renkle taşımıyor.
-              - Per-Monitor V2 DPI farkındalığı: çoklu monitörde arayüz bulanıklaşmıyor.
-            • **Çalışmayan Ayarlar Gerçek Oldu**:
-              - Sistem tepsisine küçültme (tepsi menüsü ve hızlı RAM temizleme ile).
-              - Zamanlanmış otomatik RAM temizliği ve yüksek bellek uyarısı.
-              - Çıkışta otomatik temizlik, Mica efekti anahtarı ve telemetri yenileme aralığı.
-            • **Performans & Kararlılık**:
-              - Modüller ilk açılışta değil, ilk gezinmede yükleniyor.
-              - Canlı telemetri yalnızca görünen modülde çalışıyor; arka planda sistem sorgusu atılmıyor.
-              - Dosya tabanlı günlükleme eklendi (Ayarlar → Log Klasörünü Aç), ayrıntılı günlük anahtarıyla.
-              - Ayar dosyası atomik yazılıyor; bozuk dosya karantinaya alınıp varsayılanlara dönülüyor.
+          body_path: CHANGELOG_LATEST.md
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

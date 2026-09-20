@@ -47,7 +47,8 @@ public class DependencyInjectionTests
         typeof(NetworkMonitorViewModel), typeof(ServiceManagerViewModel),
         typeof(PrivacyDebloatViewModel), typeof(CrashAnalyzerViewModel),
         typeof(UninstallerViewModel), typeof(AutorunsViewModel),
-        typeof(WindowsTweakerViewModel), typeof(SettingsViewModel), typeof(LoginViewModel),
+        typeof(WindowsTweakerViewModel), typeof(TweakerCategoriesViewModel),
+        typeof(SettingsViewModel), typeof(LoginViewModel),
     };
 
     [Theory]
@@ -58,6 +59,34 @@ public class DependencyInjectionTests
         Bakım.App.ConfigureServices(services, NullLogService.Instance, new StubSettingsService());
 
         Assert.Contains(services, d => d.ServiceType == vmType);
+    }
+
+    [Fact]
+    public void AllConcreteViewModels_MustBeRegisteredInContainer()
+    {
+        var services = new ServiceCollection();
+        Bakım.App.ConfigureServices(services, NullLogService.Instance, new StubSettingsService());
+
+        var registeredTypes = services.Select(s => s.ServiceType).ToHashSet();
+
+        // Diyalog fabrika ViewModel'leri (çalışma zamanı parametresiyle new'lenenler) hariç
+        var skipDialogFactories = new HashSet<string>
+        {
+            "ResidualCleanupViewModel",
+            "ThreatAnalysisViewModel"
+        };
+
+        var viewModels = typeof(MainViewModel).Assembly.GetTypes()
+            .Where(t => t.Namespace == "Bakım.ViewModels"
+                        && t.Name.EndsWith("ViewModel")
+                        && !t.IsAbstract
+                        && !skipDialogFactories.Contains(t.Name))
+            .ToList();
+
+        var missing = viewModels.Where(vm => !registeredTypes.Contains(vm)).Select(vm => vm.Name).ToList();
+
+        Assert.True(missing.Count == 0,
+            "DI konteynerine kaydedilmesi unutulmus ViewModel'ler tespit edildi: " + string.Join(", ", missing));
     }
 
     [Fact]

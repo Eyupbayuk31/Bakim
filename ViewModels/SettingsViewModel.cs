@@ -721,13 +721,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v360 = new ReleaseChangelogItem
+            {
+                Version = "v3.6.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Ağ Röntgeni Seçim Kilidi, Sanal Adaptör Filtresi & DI Sertleştirmesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Ağ Röntgeni Kesintisiz İnceleme (Sticky Inspection): Canlı izleme esnasında arka plan yenilemelerinde seçili soketin ve teftiş çekmecesinin anında kapanıp sıfırlanma sorunu kökten çözüldü.",
+                    "Akıllı Ağ Donanım Filtresi: NDIS filtre sürücüleri (QoS Packet Scheduler, WFP LightWeight Filters) ve IP atanmamış alt arayüzler gizlenerek yalnızca gerçek, aktif Ethernet ve Wi-Fi kartları listelendi.",
+                    "Tek Tıkla Ağ Onarım Araçları: Ağ Adaptörleri sekmesine doğrudan DNS Sıfırlama (Flush DNS) ve IP Yenileme (ipconfig /renew) butonları eklendi.",
+                    "Windows Tweaker Çökme Çözümü & DI Bütünlüğü: TweakerCategoriesViewModel bağımlılık enjeksiyonuna bağlandı ve gelecekte hiçbir ViewModel'in unutulamayacağı dinamik reflection kalkanı kuruldu."
+                }
+            };
+
             var v350 = new ReleaseChangelogItem
             {
                 Version = "v3.5.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Ağ Operasyon Merkezi Fluent 2 Arayüz Kusursuzlaştırması & Tema Kontrastı",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Windows 11 Fluent Segmente Sekme Çubuğu: Katı renkli blok butonlar yerine yükseltilmiş kart yüzeyi ve pürüzsüz geçişli pill kontrolü.",
@@ -827,8 +843,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v350;
+            LatestRelease = v360;
 
+            ReleaseHistory.Add(v360);
             ReleaseHistory.Add(v350);
             ReleaseHistory.Add(v340);
             ReleaseHistory.Add(v330);

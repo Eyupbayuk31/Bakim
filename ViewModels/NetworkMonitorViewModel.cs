@@ -122,8 +122,12 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isDrawerOpen;
 
+        private bool _isRefreshingList = false;
+
         partial void OnSelectedConnectionChanged(NetworkConnectionItem? value)
         {
+            if (_isRefreshingList) return;
+
             if (value != null)
             {
                 IsDrawerOpen = true;
@@ -209,14 +213,38 @@ namespace Bakım.ViewModels
                 _allConnections = connections;
                 Stats = stats;
 
+                var previousSelected = SelectedConnection;
+                bool wasDrawerOpen = IsDrawerOpen;
+
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Connections.Clear();
-                    foreach (var conn in connections)
+                    _isRefreshingList = true;
+                    try
                     {
-                        Connections.Add(conn);
+                        Connections.Clear();
+                        foreach (var conn in connections)
+                        {
+                            Connections.Add(conn);
+                        }
+                        _filteredView.Refresh();
+
+                        // Seçili öğeyi ve açık olan röntgeni koru (Sticky Selection)
+                        if (wasDrawerOpen && previousSelected != null)
+                        {
+                            var match = connections.FirstOrDefault(c =>
+                                c.ProcessId == previousSelected.ProcessId &&
+                                c.LocalEndpoint == previousSelected.LocalEndpoint &&
+                                c.RemoteEndpoint == previousSelected.RemoteEndpoint &&
+                                c.Protocol == previousSelected.Protocol);
+
+                            SelectedConnection = match ?? previousSelected;
+                            IsDrawerOpen = true;
+                        }
                     }
-                    _filteredView.Refresh();
+                    finally
+                    {
+                        _isRefreshingList = false;
+                    }
                 });
 
                 StatusMessage = $"{stats.TotalConnections} Bağlantı Aktif (ESTABLISHED: {stats.EstablishedCount}, Dinleme: {stats.ListeningCount})";
@@ -390,6 +418,47 @@ namespace Bakım.ViewModels
                 });
             }
             catch { }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task FlushDnsFromAdaptersAsync()
+        {
+            IsBusy = true;
+            try
+            {
+                var ok = await _networkService.FlushDnsCacheAsync();
+                MessageBox.Show(ok 
+                    ? "DNS önbelleği başarıyla temizlendi (Flush DNS)." 
+                    : "DNS önbelleği temizlenirken bir sorun oluştu.",
+                    "DNS Önbelleği", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task RenewIpFromAdaptersAsync()
+        {
+            IsBusy = true;
+            try
+            {
+                var ok = await _networkService.RenewIpAddressAsync();
+                if (ok)
+                {
+                    await LoadAdaptersAsync();
+                    MessageBox.Show("IP adresi başarıyla yenilendi (ipconfig /renew).", "IP Yapılandırması", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("IP adresi yenilenemedi.", "IP Yapılandırması", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
             finally
             {
                 IsBusy = false;

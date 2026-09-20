@@ -18,6 +18,7 @@ namespace Bakım.Services
         Task<List<NetworkAdapterItem>> GetNetworkAdaptersAsync();
         Task<PingResultItem> PingHostAsync(string host, int timeoutMs = 2000);
         Task<bool> FlushDnsCacheAsync();
+        Task<bool> RenewIpAddressAsync();
         Task<PortCheckResult> CheckPortAsync(string host, int port, int timeoutMs = 2500);
         Task RunSpeedTestAsync(IProgress<SpeedTestProgress> progress, CancellationToken ct);
         Task<bool> BlockProcessInFirewallAsync(NetworkConnectionItem item);
@@ -629,8 +630,17 @@ namespace Bakım.Services
                 {
                     foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
                     {
-                        // Skip loopback and tunnel interfaces if desired, but keep virtual / real cards
-                        if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                        // 1. Loopback ve Tunnel (Teredo vb.) arayüzlerini tamamen atla
+                        if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback ||
+                            nic.NetworkInterfaceType == NetworkInterfaceType.Tunnel)
+                            continue;
+
+                        // 2. Yalnızca fiilen çalışır durumda (Up) olan aktif bağlantıları göster
+                        if (nic.OperationalStatus != OperationalStatus.Up)
+                            continue;
+
+                        // 3. Sanal / NDIS Filtre / Paket Zamanlayıcı / WFP sürücülerini ele
+                        if (IsVirtualOrFilterAdapter(nic))
                             continue;
 
                         var ipProps = nic.GetIPProperties();
@@ -648,6 +658,10 @@ namespace Bakım.Services
                                 break;
                             }
                         }
+
+                        // 4. Geçerli bir IPv4 adresi olmayan (internetsiz sahte/alt arayüz) kartları ele
+                        if (ipv4 == "-" || string.IsNullOrWhiteSpace(ipv4))
+                            continue;
 
                         // Gateway
                         string gateway = "-";
@@ -707,6 +721,42 @@ namespace Bakım.Services
 
                 return list.OrderByDescending(x => x.IsUp).ThenBy(x => x.Name).ToList();
             });
+        }
+
+        private static bool IsVirtualOrFilterAdapter(NetworkInterface nic)
+        {
+            string name = nic.Name ?? string.Empty;
+            string desc = nic.Description ?? string.Empty;
+            string combined = (name + " " + desc).ToLowerInvariant();
+
+            string[] blacklistedKeywords = new[]
+            {
+                "packet scheduler",
+                "lightweight filter",
+                "wfp 802.3",
+                "wfp native",
+                "filter-0",
+                "filter driver",
+                "qos",
+                "npcap",
+                "tap-windows",
+                "hyper-v",
+                "vethernet",
+                "virtualbox",
+                "vmware",
+                "teredo",
+                "isatap",
+                "pseudo-interface",
+                "bluetooth device (personal area",
+                "wan miniport"
+            };
+
+            foreach (var kw in blacklistedKeywords)
+            {
+                if (combined.Contains(kw)) return true;
+            }
+
+            return false;
         }
 
         private static string FormatSpeed(long speedBits)
@@ -974,6 +1024,30 @@ namespace Bakım.Services
                     using var proc = Process.Start(psi);
                     proc?.WaitForExit(3000);
 
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+        }
+
+        public async Task<bool> RenewIpAddressAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "ipconfig",
+                        Arguments = "/renew",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    using var proc = Process.Start(psi);
+                    proc?.WaitForExit(6000);
                     return true;
                 }
                 catch

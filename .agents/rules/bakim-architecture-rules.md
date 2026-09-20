@@ -60,3 +60,11 @@ Bu proje, aşağıdaki temel depo ve beceri standartlarını referans alarak gel
 3. **Koruyucu Kod (Defensive Programming):**
    - Null-check (`?.`, `??`), güvenli casting (`as`), sınır kontrolleri ve kapsamlı `try-catch` blokları eklenir.
    - UI thread güvenliği (`Dispatcher.Invoke`) ve küresel çökme engelleyiciler (`DispatcherUnhandledException`, `TaskScheduler.UnobservedTaskException`) uygulanır.
+
+---
+
+## MODULE 6: RELEASE & CHANGELOG MANAGEMENT (Sürüm & Güncelleme Notu Disiplini)
+- **Yalnızca En Son Değişiklikler Kuralı:** Güncelleme penceresi (UpdateDialogView) ve GitHub Release notlarında ASLA eski sürümlerin metinleri veya hardcoded şablonlar yer alamaz.
+- **Dinamik Sürüm Notu:** Her yeni güncelleme ve dağıtımda (deploy), yalnızca o sürümde yapılan taze değişiklikler (`CHANGELOG_LATEST.md`) yayınlanır.
+- **Sürüm Bütünlüğü:** Sürüm değiştiğinde (`Bakım.csproj`, `app.manifest`, `AutoUpdateService.cs`, `MainWindow.xaml`, `Bakim_Setup.iss`, `SettingsViewModel.cs`) tüm meta veriler eksiksiz güncellenir ve git tag'i ile otomatik deploy edilir.
+

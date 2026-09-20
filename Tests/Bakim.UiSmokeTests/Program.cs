@@ -125,6 +125,24 @@ internal static class Program
 
             var main = provider.GetRequiredService<Bakım.MainWindow>();
             Console.WriteLine($"  GECTI  | MainWindow cozuldu (DataContext: {main.DataContext?.GetType().Name})");
+
+            var mainVm = (Bakım.ViewModels.MainViewModel)main.DataContext!;
+            _ = mainVm.Dashboard;
+            _ = mainVm.Cleaner;
+            _ = mainVm.Optimizer;
+            _ = mainVm.Startup;
+            _ = mainVm.SystemInfo;
+            _ = mainVm.NetworkMonitor;
+            _ = mainVm.ServiceManager;
+            _ = mainVm.PrivacyDebloat;
+            _ = mainVm.CrashAnalyzer;
+            _ = mainVm.Uninstaller;
+            _ = mainVm.Autoruns;
+            _ = mainVm.WindowsTweaker;
+            _ = mainVm.TweakerCategories;
+            _ = mainVm.Settings;
+            Console.WriteLine("  GECTI  | MainViewModel 14 alt modulu (TweakerCategories dahil) basariyla cozuldu");
+
             main.Close();
 
             provider.Dispose();
