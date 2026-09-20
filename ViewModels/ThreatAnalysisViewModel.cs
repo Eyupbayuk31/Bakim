@@ -39,6 +39,9 @@ namespace Bakım.ViewModels
         private bool _isWhitelisted;
 
         [ObservableProperty]
+        private int _selectedTabIndex; // 0: Genel Bakış, 1: PE Röntgeni & Kalkanlar, 2: İçe Aktarılan API'ler, 3: Hash & VirusTotal
+
+        [ObservableProperty]
         private bool _isUploadingToVt;
 
         partial void OnIsUploadingToVtChanged(bool value)
@@ -52,8 +55,15 @@ namespace Bakım.ViewModels
         public string FilePath => Result.FilePath;
         public int RiskScore => Result.RiskScore;
         public string RiskLevelText => Result.RiskLevelText;
-        public string RiskColor => Result.RiskColor;
-        public string RiskBackgroundBrush => Result.RiskBackgroundBrush;
+        /// <summary>
+        /// Risk seviyesinin anlamsal tonu. Renk kodu taşımaz: XAML trigger'ları
+        /// bunu tema fırçalarına çevirir, böylece dört temada da doğru görünür.
+        /// </summary>
+        public Intent RiskIntent => Result.RiskIntent;
+
+        /// <summary>Renk körü kullanıcılar için renkten bağımsız risk göstergesi.</summary>
+        public string RiskIconSymbol => Result.RiskIconSymbol;
+
         public string Recommendation => Result.Recommendation;
 
         public bool HasActiveProcess => Result.IsActiveProcess && !IsProcessKilled;
@@ -65,6 +75,22 @@ namespace Bakım.ViewModels
         public bool HasVtRecord => Result.VirusTotalTotal > 0;
         public string VtButtonText => IsUploadingToVt ? "Yükleniyor..." : (HasVtRecord ? $"VirusTotal ({Result.VirusTotalMalicious}/{Result.VirusTotalTotal})" : "VT'ye Gönder ve Tara");
         public string VtButtonIcon => HasVtRecord ? "Globe20" : "ArrowUpload20";
+
+        // PE Binary Röntgen Properties
+        public bool HasPeAnalysis => Result.HasPeAnalysis;
+        public PeHeaderInfo? PeHeader => Result.PeHeader;
+        public ExploitMitigationMatrix? Mitigations => Result.Mitigations;
+        public List<PeSectionItem> Sections => Result.Sections;
+        public bool HasSections => Result.Sections.Count > 0;
+        public List<ImportedDllGroup> ImportedDlls => Result.ImportedDlls;
+        public bool HasImportedDlls => Result.ImportedDlls.Count > 0;
+        public int TotalSuspiciousApisCount => Result.TotalSuspiciousApisCount;
+
+        // Hash Properties
+        public string Sha256 => Result.Sha256;
+        public string Md5 => Result.Md5;
+        public string Sha1 => Result.Sha1;
+        public string ImpHash => Result.ImpHash;
 
         public ThreatAnalysisViewModel(
             ThreatAnalysisResult result,
@@ -284,19 +310,114 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
+        public void CopyHash(string? hashValue)
+        {
+            if (string.IsNullOrWhiteSpace(hashValue)) return;
+            try
+            {
+                Clipboard.SetText(hashValue);
+                StatusText = $"Hash panoya kopyalandı: {hashValue.Substring(0, Math.Min(16, hashValue.Length))}...";
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public void CopyAllHashes()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine($"Dosya: {FileName}");
+            sb.AppendLine($"SHA-256: {Sha256}");
+            sb.AppendLine($"MD5:     {Md5}");
+            sb.AppendLine($"SHA-1:   {Sha1}");
+            if (!string.IsNullOrWhiteSpace(ImpHash))
+                sb.AppendLine($"ImpHash: {ImpHash}");
+
+            try
+            {
+                Clipboard.SetText(sb.ToString());
+                StatusText = "Tüm hash değerleri panoya kopyalandı.";
+                MessageBox.Show("Tüm kriptografik hash değerleri panoya kopyalandı!", "Hash Değerleri Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public void OpenVirusTotalWeb()
+        {
+            if (string.IsNullOrWhiteSpace(Sha256)) return;
+            try
+            {
+                _virusTotalService.SmartOpenInBrowser(string.Empty, Sha256, Result.VirusTotalTotal);
+            }
+            catch { }
+        }
+
+        [RelayCommand]
         public void CopyReport()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"# Bakım Sezgisel Tehdit Analiz Raporu");
+            sb.AppendLine($"# Bakım Sezgisel Tehdit & PE Röntgen Analiz Raporu");
             sb.AppendLine($"**Dosya Adı:** {FileName}");
             sb.AppendLine($"**Tam Yol:** {FilePath}");
             sb.AppendLine($"**Risk Skoru:** %{RiskScore} ({RiskLevelText})");
             sb.AppendLine($"**Boyut:** {Result.FileSizeFormatted}");
             sb.AppendLine($"**SHA-256:** `{Result.Sha256}`");
+            if (!string.IsNullOrWhiteSpace(Md5)) sb.AppendLine($"**MD5:** `{Md5}`");
+            if (!string.IsNullOrWhiteSpace(Sha1)) sb.AppendLine($"**SHA-1:** `{Sha1}`");
+            if (!string.IsNullOrWhiteSpace(ImpHash)) sb.AppendLine($"**ImpHash:** `{ImpHash}`");
             sb.AppendLine($"**Dijital İmza:** {Result.DigitalSignatureText}");
             sb.AppendLine($"**Entropi:** {Result.EntropyText}");
             sb.AppendLine($"**VirusTotal:** {Result.VirusTotalSummary}");
             sb.AppendLine();
+
+            if (HasPeAnalysis && PeHeader != null)
+            {
+                sb.AppendLine($"## PE Binary Röntgeni");
+                sb.AppendLine($"- **Mimari:** {PeHeader.MachineArchitecture}");
+                sb.AppendLine($"- **Alt Sistem:** {PeHeader.Subsystem}");
+                sb.AppendLine($"- **Derleme Zamanı:** {PeHeader.CompileTimeUtc}");
+                sb.AppendLine($"- **Entry Point:** {PeHeader.EntryPointHex}");
+                sb.AppendLine($"- **Bölüm Sayısı:** {PeHeader.SectionCount}");
+
+                if (Mitigations != null)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"### Exploit Koruma Kalkanları (Mitigations)");
+                    sb.AppendLine($"- **ASLR (Adres Rastgeleleştirme):** {(Mitigations.HasAslr ? "AKTİF" : "DEVRE DIŞI")}");
+                    sb.AppendLine($"- **DEP / NX (Veri Yürütme Koruması):** {(Mitigations.HasDep ? "AKTİF" : "DEVRE DIŞI")}");
+                    sb.AppendLine($"- **CFG (Control Flow Guard):** {(Mitigations.HasCfg ? "AKTİF" : "DEVRE DIŞI")}");
+                    sb.AppendLine($"- **High Entropy VA (64-bit ASLR):** {(Mitigations.HasHighEntropyVa ? "AKTİF" : "DEVRE DIŞI")}");
+                    sb.AppendLine($"- **SafeSEH / SEH:** {(Mitigations.HasSafeSeh ? "AKTİF" : "DEVRE DIŞI")}");
+                    sb.AppendLine($"- **Genel Koruma Seviyesi:** {Mitigations.SecurityGrade} ({Mitigations.MitigationScoreText})");
+                }
+
+                if (Sections.Count > 0)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"### PE Bölüm (Section) Tablosu");
+                    foreach (var sec in Sections)
+                    {
+                        string packerTag = sec.IsSuspiciousPacker ? " [ŞÜPHELİ / PACKER]" : "";
+                        sb.AppendLine($"- **{sec.Name}**: Sanal: {sec.VirtualSizeFormatted}, Ham: {sec.RawSizeFormatted}, Entropi: {sec.EntropyFormatted}, Yetki: {sec.PermissionsText}{packerTag}");
+                    }
+                }
+
+                if (TotalSuspiciousApisCount > 0)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine($"### Şüpheli Win32 API Çağrıları ({TotalSuspiciousApisCount} Adet)");
+                    foreach (var dll in ImportedDlls.Where(d => d.HasSuspicious))
+                    {
+                        sb.AppendLine($"- **{dll.DllName}**:");
+                        foreach (var fn in dll.Functions.Where(f => f.IsSuspicious))
+                        {
+                            sb.AppendLine($"  - `{fn.Name}`: {fn.Category} ({fn.Description})");
+                        }
+                    }
+                }
+                sb.AppendLine();
+            }
+
             sb.AppendLine($"## Tespit Edilen Güvenlik Faktörleri");
             foreach (var f in Result.Factors)
             {
@@ -311,7 +432,7 @@ namespace Bakım.ViewModels
             {
                 Clipboard.SetText(sb.ToString());
                 StatusText = "Rapor panoya kopyalandı.";
-                MessageBox.Show("Analiz raporu panoya kopyalandı!", "Rapor Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Kapsamlı analiz raporu panoya kopyalandı!", "Rapor Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch { }
         }
@@ -322,6 +443,16 @@ namespace Bakım.ViewModels
             IsWhitelisted = true;
             StatusText = "Dosya bu oturumda güvenli olarak işaretlendi.";
             MessageBox.Show($"'{FileName}' güvenli listeye eklendi.", "Güvenli İşaretlendi", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        /// <summary>Segmented sekme çubuğundan sekme değiştirir.</summary>
+        [RelayCommand]
+        public void SelectTab(string? index)
+        {
+            if (int.TryParse(index, out int value) && value is >= 0 and <= 3)
+            {
+                SelectedTabIndex = value;
+            }
         }
 
         [RelayCommand]

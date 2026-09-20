@@ -582,7 +582,7 @@
                                     <ui:Button Grid.Column="2"
                                                Appearance="Primary"
                                                Command="{Binding SaveAndTestVirusTotalKeyCommand}"
-                                               IsEnabled="{Binding IsTestingVirusTotalKey, Converter={StaticResource InverseBoolToVis}}"
+                                               IsEnabled="{Binding IsTestingVirusTotalKey, Converter={StaticResource InverseBool}}"
                                                Padding="16,10"
                                                Content="Doğrula &amp; Kaydet"
                                                Icon="{ui:SymbolIcon Checkmark20}"/>

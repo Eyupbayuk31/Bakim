@@ -1,4 +1,4 @@
-namespace Bakım.Controls
+namespace Bakım.Models
 {
     /// <summary>
     /// Bir öğenin anlamsal tonu. Renk seçimini çağrı yerinden alıp tasarım sistemine taşır:

@@ -1,12 +1,20 @@
-using System;
-using System.Windows;
 using Bakım.Models;
 using Bakım.Services;
 using Bakım.ViewModels;
+using Wpf.Ui.Controls;
 
 namespace Bakım.Views.Dialogs
 {
-    public partial class ThreatAnalysisDialog : Window
+    /// <summary>
+    /// Dosya röntgeni penceresi.
+    ///
+    /// v3.11'de <see cref="System.Windows.Window"/> + AllowsTransparency yerine
+    /// <see cref="FluentWindow"/> kullanılır. Eski kurulum Mica ile uyumsuzdu,
+    /// WPF'i yazılım render'a düşürüyor ve pencereyi uygulamanın geri kalanından
+    /// görsel olarak kopuk bırakıyordu. Ayrıca elle DragMove() gerekiyordu;
+    /// ui:TitleBar bunu yerleşik olarak sağlar.
+    /// </summary>
+    public partial class ThreatAnalysisDialog : FluentWindow
     {
         public ThreatAnalysisViewModel ViewModel { get; }
 
@@ -17,21 +25,11 @@ namespace Bakım.Views.Dialogs
             IVirusTotalCheckService? virusTotalService = null)
         {
             InitializeComponent();
+
             ViewModel = new ThreatAnalysisViewModel(result, analyzerService, autorunsEngine, virusTotalService);
             DataContext = ViewModel;
 
-            ViewModel.RequestClose += () =>
-            {
-                Close();
-            };
-
-            MouseDown += (s, e) =>
-            {
-                if (e.ChangedButton == System.Windows.Input.MouseButton.Left)
-                {
-                    try { DragMove(); } catch { }
-                }
-            };
+            ViewModel.RequestClose += Close;
         }
     }
 }

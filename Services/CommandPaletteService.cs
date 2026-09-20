@@ -218,13 +218,13 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Kalıcılık & Başlangıç Analizi (Autoruns)",
+                    Title = "Analizör — Kalıcılık & Dosya Röntgeni",
                     Category = "Sayfa Navigasyonu",
                     Description = "Sysinternals seviyesinde 8 kalıcılık noktası, WinVerifyTrust ve VirusTotal taraması.",
                     IconName = "ShieldCheckmark24",
                     ActionKind = CommandActionKind.Navigate,
-                    TargetParameter = "Autoruns",
-                    KeyboardShortcut = "Autoruns"
+                    TargetParameter = "Analyzer",
+                    KeyboardShortcut = "Analizör"
                 },
                 new()
                 {

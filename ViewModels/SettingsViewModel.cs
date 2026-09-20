@@ -723,7 +723,7 @@ namespace Bakım.ViewModels
 
             var v3100 = new ReleaseChangelogItem
             {
-                Version = "v3.10.0",
+                Version = "v3.11.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Sistem Tepsisinde Kesintisiz Nöbet (Close-to-Tray), Sessiz Başlangıç & Ultra Oyun Modu",
                 IsLatest = true,

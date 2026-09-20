@@ -345,6 +345,7 @@
                                     <!-- CheckBox -->
                                     <CheckBox Grid.Column="0" 
                                               IsChecked="{Binding IsSelected}" 
+                                              AutomationProperties.Name="{Binding FileName}"
                                               Cursor="Hand"
                                               VerticalAlignment="Center"
                                               Margin="0,0,8,0"/>
@@ -697,6 +698,7 @@
                                    Appearance="Secondary"
                                    Padding="6,4"
                                    Command="{Binding DataContext.CloseDrawerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                   AutomationProperties.Name="Ayrıntı panelini kapat"
                                    Icon="{ui:SymbolIcon Dismiss20}"/>
                     </Grid>
 

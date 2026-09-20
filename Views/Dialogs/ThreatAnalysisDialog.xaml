@@ -1,414 +1,1248 @@
-<Window x:Class="Bakım.Views.Dialogs.ThreatAnalysisDialog"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        xmlns:models="clr-namespace:Bakım.Models"
-        Title="Sezgisel AI Tehdit &amp; Risk Analizörü"
-        Width="780" Height="700"
-        MinWidth="700" MinHeight="580"
-        WindowStartupLocation="CenterScreen"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
-        Topmost="True">
+<ui:FluentWindow x:Class="Bakım.Views.Dialogs.ThreatAnalysisDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:models="clr-namespace:Bakım.Models"
+                 xmlns:vm="clr-namespace:Bakım.ViewModels"
+                 xmlns:c="clr-namespace:Bakım.Controls"
+                 mc:Ignorable="d"
+                 d:DataContext="{d:DesignInstance Type=vm:ThreatAnalysisViewModel}"
+                 Title="Analizör — Dosya Röntgeni"
+                 Width="940" Height="780"
+                 MinWidth="820" MinHeight="640"
+                 WindowStartupLocation="CenterOwner"
+                 WindowBackdropType="Mica"
+                 ExtendsContentIntoTitleBar="True"
+                 Icon="pack://application:,,,/Bakim;component/Assets/app.ico">
 
-    <!-- 100% Solid, Fully Opaque Slate Dark Surface (Zero Background Bleed) -->
-    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
-            BorderThickness="1.5"
-            CornerRadius="14"
-            Padding="22">
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="36" ShadowDepth="6" Opacity="0.9" Color="{DynamicResource Color.Shadow}"/>
-        </Border.Effect>
+    <!--
+        v3.11 yeniden yazım notları
+        ===========================
+        • Eski sürüm `Window` + AllowsTransparency="True" kullanıyordu. Bu, Mica
+          arka planıyla birlikte ÇALIŞMAZ ve WPF'i yazılım render'a düşürür —
+          ekran görüntüsündeki kopuk mor çerçevenin sebebi buydu.
+          Artık ui:FluentWindow + Mica, uygulamanın geri kalanıyla aynı dil.
+        • Alt buton çubuğu 6 sabit butondan oluşuyordu ve "Kapat" pencere
+          kenarından taşıp kırpılıyordu. Artık 3 birincil buton + taşma menüsü.
+        • Tüm renkler tema token'larından gelir; hiçbir hex kod yoktur.
+    -->
 
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Header -->
-                <RowDefinition Height="Auto"/> <!-- Risk Score & Overview Card -->
-                <RowDefinition Height="Auto"/> <!-- Active Process Alert Banner -->
-                <RowDefinition Height="*"/>    <!-- Detailed Analysis Factors -->
-                <RowDefinition Height="Auto"/> <!-- Recommendation Box -->
-                <RowDefinition Height="Auto"/> <!-- Footer Actions -->
-            </Grid.RowDefinitions>
+    <Window.Resources>
 
-            <!-- 0. Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,16">
+        <!-- Meta bilgi kartı: etiket + değer -->
+        <Style x:Key="MetaCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+            <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+            <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}"/>
+            <Setter Property="Padding" Value="{StaticResource Pad.Row}"/>
+        </Style>
+
+        <!-- Tek sütunlu okuma satırı (hash, PE alanı) -->
+        <Style x:Key="DataRow" TargetType="Border" BasedOn="{StaticResource MetaCard}">
+            <Setter Property="Margin" Value="{StaticResource Gap.Bottom.SM}"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{StaticResource Font.Micro}"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+        </Style>
+
+        <Style x:Key="FieldValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+            <Setter Property="Margin" Value="{StaticResource Gap.Top.XS}"/>
+        </Style>
+
+        <Style x:Key="MonoValue" TargetType="TextBlock" BasedOn="{StaticResource FieldValue}">
+            <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
+        </Style>
+
+        <!--
+            Tehdit faktörü satırı. Renk seçimi Intent üzerinden TRIGGER ile yapılır;
+            converter kullanılmaz çünkü converter tema değişiminde yeniden değerlenmez.
+        -->
+        <Style x:Key="FactorCard" TargetType="Border">
+            <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+            <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}"/>
+            <Setter Property="Padding" Value="{StaticResource Pad.Row}"/>
+            <Setter Property="Margin" Value="{StaticResource Gap.Bottom.SM}"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Success">
+                    <Setter Property="Background" Value="{DynamicResource Brush.Success.Subtle}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Caution">
+                    <Setter Property="Background" Value="{DynamicResource Brush.Caution.Subtle}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Critical">
+                    <Setter Property="Background" Value="{DynamicResource Brush.Critical.Subtle}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Accent">
+                    <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="FactorIcon" TargetType="ui:SymbolIcon">
+            <Setter Property="FontSize" Value="{StaticResource Icon.MD}"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,1,10,0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Success">
+                    <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Caution">
+                    <Setter Property="Foreground" Value="{DynamicResource Brush.Caution.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Critical">
+                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SeverityIntent}" Value="Accent">
+                    <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Bölüm entropisi çubuğu: 7.3 üstü kritik -->
+        <Style x:Key="EntropyBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="4"/>
+            <Setter Property="Minimum" Value="0"/>
+            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding EntropyIntent}" Value="Caution">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding EntropyIntent}" Value="Critical">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Kalkan (mitigation) rozeti -->
+        <Style x:Key="ShieldChip" TargetType="Border">
+            <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+            <Setter Property="CornerRadius" Value="{StaticResource Radius.SM}"/>
+            <Setter Property="Padding" Value="{StaticResource Pad.Row}"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Başlık çubuğu -->
+            <RowDefinition Height="Auto"/> <!-- 1: Dosya kimliği + risk -->
+            <RowDefinition Height="Auto"/> <!-- 2: Sekme çubuğu -->
+            <RowDefinition Height="*"/>    <!-- 3: Sekme içeriği -->
+            <RowDefinition Height="Auto"/> <!-- 4: Eylem çubuğu -->
+        </Grid.RowDefinitions>
+
+        <!-- ============ 0. BAŞLIK ÇUBUĞU ============ -->
+        <ui:TitleBar Grid.Row="0"
+                     Title="Analizör — Dosya Röntgeni"
+                     ShowMaximize="True"
+                     ShowMinimize="False"
+                     Icon="{ui:SymbolIcon ShieldTask24}"/>
+
+        <!-- ============ 1. DOSYA KİMLİĞİ & RİSK ============ -->
+        <Border Grid.Row="1"
+                Margin="20,4,20,0"
+                Padding="{StaticResource Pad.Card}"
+                CornerRadius="{StaticResource Radius.MD}"
+                BorderThickness="{StaticResource Stroke.Thin}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding RiskIntent}" Value="Success">
+                            <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding RiskIntent}" Value="Caution">
+                            <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding RiskIntent}" Value="Critical">
+                            <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/> <!-- Risk halkası -->
+                    <ColumnDefinition Width="*"/>    <!-- Dosya bilgisi -->
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0"
-                        Width="44" Height="44"
-                        CornerRadius="10"
-                        Background="{DynamicResource ApplicationBackgroundBrush}"
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        Margin="0,0,14,0"
-                        VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Shield24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
+                <!-- Risk göstergesi: halka + simge (anlam yalnızca renge bağlı değil) -->
+                <Grid Grid.Column="0" Width="92" Height="92" Margin="0,0,20,0" VerticalAlignment="Center">
+                    <ui:ProgressRing Width="92" Height="92"
+                                     IsIndeterminate="False"
+                                     Progress="{Binding RiskScore}"
+                                     AutomationProperties.Name="Risk skoru göstergesi">
+                        <ui:ProgressRing.Style>
+                            <Style TargetType="ui:ProgressRing">
+                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RiskIntent}" Value="Caution">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding RiskIntent}" Value="Critical">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:ProgressRing.Style>
+                    </ui:ProgressRing>
+
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding RiskScore, StringFormat='%{0}'}"
+                                   FontSize="{StaticResource Font.Title}"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="RİSK"
+                                   FontSize="{StaticResource Font.Micro}"
+                                   FontWeight="Medium"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                    </StackPanel>
+                </Grid>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Sezgisel Tehdit &amp; Güvenlik Analizi"
-                                   FontSize="16"
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="{StaticResource Gap.Bottom.XS}">
+                        <TextBlock Text="{Binding FileName}"
+                                   FontSize="{StaticResource Font.Title}"
                                    FontWeight="Bold"
+                                   TextTrimming="CharacterEllipsis"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text=" • AI Heuristic Engine"
-                                   FontSize="14"
-                                   FontWeight="Medium"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
-                                   Margin="6,1,0,0"/>
-                    </StackPanel>
-                    <TextBlock Text="{Binding FilePath}"
-                               FontSize="11.5"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                               TextTrimming="CharacterEllipsis"
-                               Margin="0,3,0,0"
-                               ToolTip="{Binding FilePath}"/>
-                </StackPanel>
 
-                <ui:Button Grid.Column="2"
-                           Appearance="Transparent"
-                           Padding="6,4"
-                           Command="{Binding CloseCommand}"
-                           Icon="{ui:SymbolIcon Dismiss20}"
-                           ToolTip="Kapat" AutomationProperties.Name="Kapat"/>
-            </Grid>
+                        <!-- Risk seviyesi rozeti: simge + metin, renkten bağımsız okunur -->
+                        <Border Margin="12,0,0,0"
+                                VerticalAlignment="Center"
+                                BorderThickness="{StaticResource Stroke.Thin}"
+                                CornerRadius="{StaticResource Radius.XS}"
+                                Padding="{StaticResource Pad.Badge}">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="{DynamicResource Brush.Success.Subtle}"/>
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding RiskIntent}" Value="Caution">
+                                            <Setter Property="Background" Value="{DynamicResource Brush.Caution.Subtle}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding RiskIntent}" Value="Critical">
+                                            <Setter Property="Background" Value="{DynamicResource Brush.Critical.Subtle}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
 
-            <!-- 1. Risk Score & Overview Card -->
-            <Border Grid.Row="1"
-                    Background="{DynamicResource ApplicationBackgroundBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="10"
-                    Padding="16"
-                    Margin="0,0,0,12">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="{Binding RiskIconSymbol, Converter={StaticResource SafeSymbol}}"
+                                               FontSize="{StaticResource Icon.XS}"
+                                               Margin="{StaticResource Gap.IconText}"
+                                               VerticalAlignment="Center">
+                                    <ui:SymbolIcon.Style>
+                                        <Style TargetType="ui:SymbolIcon">
+                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RiskIntent}" Value="Caution">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Caution.Text}"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding RiskIntent}" Value="Critical">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ui:SymbolIcon.Style>
+                                </ui:SymbolIcon>
 
-                    <!-- Risk Gauge / Meter Box -->
-                    <Border Grid.Column="0"
-                            MinWidth="150" MinHeight="100"
-                            CornerRadius="10"
-                            Background="{Binding RiskBackgroundBrush}"
-                            BorderBrush="{Binding RiskColor}"
-                            BorderThickness="2"
-                            Padding="12"
-                            Margin="0,0,18,0">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="RİSK SKORU"
-                                       FontSize="10"
-                                       FontWeight="Bold"
-                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                       HorizontalAlignment="Center"/>
-                            <TextBlock Text="{Binding RiskScore, StringFormat='%{0}'}"
-                                       FontSize="30"
-                                       FontWeight="Black"
-                                       Foreground="{Binding RiskColor}"
-                                       HorizontalAlignment="Center"
-                                       Margin="0,2,0,2"/>
-                            <Border CornerRadius="4"
-                                    Background="{DynamicResource Brush.Muted.Subtle}"
-                                    Padding="6,2"
-                                    HorizontalAlignment="Center">
                                 <TextBlock Text="{Binding RiskLevelText}"
-                                           FontSize="10.5"
+                                           FontSize="{StaticResource Font.Caption}"
                                            FontWeight="SemiBold"
-                                           Foreground="{Binding RiskColor}"/>
-                            </Border>
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RiskIntent}" Value="Caution">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Caution.Text}"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding RiskIntent}" Value="Critical">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding FilePath}"
+                               FontSize="{StaticResource Font.Caption}"
+                               FontFamily="Cascadia Mono, Consolas, Courier New"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding FilePath}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+
+                    <TextBlock Text="{Binding StatusText}"
+                               FontSize="{StaticResource Font.Caption}"
+                               TextWrapping="Wrap"
+                               Margin="{StaticResource Gap.Top.XS}"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ============ 2. SEGMENTED SEKME ÇUBUĞU ============ -->
+        <Border Grid.Row="2"
+                Margin="20,14,20,0"
+                Padding="4"
+                CornerRadius="{StaticResource Radius.MD}"
+                BorderThickness="{StaticResource Stroke.Thin}"
+                Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+            <UniformGrid Rows="1">
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="0"
+                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=0}"
+                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                           Icon="{ui:SymbolIcon ShieldTask24}"
+                           Content="Genel Bakış"
+                           AutomationProperties.Name="Genel bakış sekmesi"/>
+
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="1"
+                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=1}"
+                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                           Icon="{ui:SymbolIcon Layer24}"
+                           Content="PE &amp; Kalkanlar"
+                           AutomationProperties.Name="PE ikili yapı ve güvenlik kalkanları sekmesi"/>
+
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="2"
+                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=2}"
+                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                           Icon="{ui:SymbolIcon Code24}"
+                           Content="API Çağrıları"
+                           AutomationProperties.Name="İçe aktarılan API çağrıları sekmesi"/>
+
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="3"
+                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=3}"
+                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                           Icon="{ui:SymbolIcon Fingerprint24}"
+                           Content="Kimlik &amp; Hash"
+                           AutomationProperties.Name="Kriptografik kimlik ve VirusTotal sekmesi"/>
+            </UniformGrid>
+        </Border>
+
+        <!-- ============ 3. SEKME İÇERİĞİ ============ -->
+        <Grid Grid.Row="3" Margin="20,14,20,0">
+
+            <!-- ========== SEKME 0: GENEL BAKIŞ ========== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToVis}, ConverterParameter=0}">
+                <StackPanel>
+
+                    <!-- Aktif süreç uyarısı -->
+                    <Border Visibility="{Binding HasActiveProcess, Converter={StaticResource BoolToVis}}"
+                            Background="{DynamicResource Brush.Critical.Subtle}"
+                            BorderBrush="{DynamicResource SystemFillColorCriticalBrush}"
+                            BorderThickness="{StaticResource Stroke.Thin}"
+                            CornerRadius="{StaticResource Radius.SM}"
+                            Padding="{StaticResource Pad.Row}"
+                            Margin="{StaticResource Gap.Bottom.MD}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <ui:SymbolIcon Grid.Column="0" Symbol="Warning24"
+                                           FontSize="{StaticResource Icon.MD}"
+                                           Margin="0,0,10,0" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource Brush.Critical.Text}"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="Bu dosya şu anda bellekte çalışıyor"
+                                           FontSize="{StaticResource Font.BodyLarge}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource Brush.Critical.Text}"/>
+                                <TextBlock FontSize="{StaticResource Font.Caption}"
+                                           Margin="{StaticResource Gap.Top.XS}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                    <Run Text="Süreç Kimliği (PID):"/>
+                                    <Run Text="{Binding ActiveProcessId, Mode=OneWay}" FontWeight="SemiBold"/>
+                                    <Run Text="  •  Bellek:"/>
+                                    <Run Text="{Binding ActiveProcessMemory, Mode=OneWay}" FontWeight="SemiBold"/>
+                                </TextBlock>
+                            </StackPanel>
+
+                            <ui:Button Grid.Column="2" Appearance="Danger"
+                                       Command="{Binding KillProcessCommand}"
+                                       Padding="{StaticResource Pad.Control}"
+                                       VerticalAlignment="Center"
+                                       Icon="{ui:SymbolIcon Dismiss24}"
+                                       Content="Süreci Sonlandır"
+                                       AutomationProperties.Name="Çalışan süreci sonlandır"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Temel meta kartları -->
+                    <UniformGrid Columns="2" Margin="{StaticResource Gap.Bottom.MD}">
+                        <Border Style="{StaticResource MetaCard}" Margin="0,0,6,6">
+                            <StackPanel>
+                                <TextBlock Text="Dijital Sertifika" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Result.DigitalSignatureText}" Style="{StaticResource FieldValue}"
+                                           ToolTip="{Binding Result.SignatureCatalogPath}"/>
+                                <TextBlock Text="{Binding Result.SignatureSourceText}"
+                                           FontSize="{StaticResource Font.Micro}"
+                                           Margin="0,2,0,0"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource MetaCard}" Margin="6,0,0,6">
+                            <StackPanel>
+                                <TextBlock Text="VirusTotal Taraması" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Result.VirusTotalSummary}" Style="{StaticResource FieldValue}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
+                            <StackPanel>
+                                <TextBlock Text="Shannon Entropi" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Result.EntropyText}" Style="{StaticResource FieldValue}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Boyut &amp; Mimari" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Style="{StaticResource FieldValue}">
+                                    <Run Text="{Binding Result.FileSizeFormatted, Mode=OneWay}"/>
+                                    <Run Text="{Binding PeHeader.MachineArchitecture, Mode=OneWay}"
+                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- Mark of the Web -->
+                    <Border Style="{StaticResource DataRow}"
+                            Visibility="{Binding Result.HasMarkOfTheWeb, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Globe24" FontSize="{StaticResource Icon.XS}"
+                                               Margin="{StaticResource Gap.IconText}"
+                                               Foreground="{DynamicResource Brush.Caution.Text}"/>
+                                <TextBlock Text="İnternetten İndirilmiş (Mark-of-the-Web)" Style="{StaticResource FieldLabel}"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding Result.ZoneSourceUrl}" Style="{StaticResource MonoValue}"
+                                       TextWrapping="Wrap"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Technical Overview Grid -->
-                    <Grid Grid.Column="1" VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Dijital İmza -->
-                        <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,8">
-                            <StackPanel>
-                                <TextBlock Text="Dijital Sertifika" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                <TextBlock Text="{Binding Result.DigitalSignatureText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- VirusTotal -->
-                        <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,0,8">
-                            <StackPanel>
-                                <TextBlock Text="VirusTotal Taraması" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                <TextBlock Text="{Binding Result.VirusTotalSummary}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Entropi -->
-                        <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
-                            <StackPanel>
-                                <TextBlock Text="Shannon Entropi" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                <TextBlock Text="{Binding Result.EntropyText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Dosya Boyutu & Hash -->
-                        <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6">
-                            <StackPanel>
-                                <TextBlock Text="Boyut &amp; Mimari" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                <TextBlock Text="{Binding Result.FileSizeFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-                </Grid>
-            </Border>
-
-            <!-- 2. Active Process Alert Banner (Visible only if process is running) -->
-            <Border Grid.Row="2"
-                    Background="{DynamicResource Brush.Critical.Subtle}"
-                    BorderBrush="{DynamicResource SystemFillColorCriticalBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="12,8"
-                    Margin="0,0,0,12"
-                    Visibility="{Binding HasActiveProcess, Converter={StaticResource BoolToVis}}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <ui:SymbolIcon Grid.Column="0" Symbol="Warning20" FontSize="18" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
-
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="DİKKAT: Bu dosya şu anda sistem belleğinde aktif olarak çalışıyor!"
-                                   FontSize="12"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
-                        <TextBlock Text="{Binding ActiveProcessId, StringFormat='Süreç Kimliği (PID): {0}'}"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource Brush.Critical.Text}"
-                                   Margin="0,2,0,0"/>
-                    </StackPanel>
-
-                    <ui:Button Grid.Column="2"
-                               Appearance="Danger"
-                               Content="Süreci Sonlandır"
-                               Icon="{ui:SymbolIcon Dismiss20}"
-                               Command="{Binding KillProcessCommand}"
-                               Padding="12,6"
-                               VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
-
-            <!-- 3. Detailed Analysis Factors List -->
-            <Border Grid.Row="3"
-                    Background="{DynamicResource ApplicationBackgroundBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="6">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <TextBlock Grid.Row="0"
-                               Text="Neden Tehdit Olabilir? (Tespit Edilen Güvenlik Faktörleri)"
-                               FontSize="12.5"
+                    <!-- Tespit edilen faktörler -->
+                    <TextBlock Text="Neden Tehdit Olabilir? (Tespit Edilen Güvenlik Faktörleri)"
+                               FontSize="{StaticResource Font.SectionTitle}"
                                FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                               Margin="8,6,8,8"/>
+                               Margin="0,6,0,10"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
-                    <ListBox Grid.Row="1"
-                             ItemsSource="{Binding Result.Factors}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             VirtualizingStackPanel.IsVirtualizing="True"
-                             VirtualizingStackPanel.VirtualizationMode="Recycling">
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="Padding" Value="8,6"/>
-                                <Setter Property="Margin" Value="2,2"/>
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="ListBoxItem">
-                                            <Border Background="{TemplateBinding Background}"
-                                                    CornerRadius="6"
-                                                    Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                        <ListBox.ItemTemplate>
+                    <ItemsControl ItemsSource="{Binding Result.Factors}">
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:ThreatFactor}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource FactorCard}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                    <!-- Severity Badge -->
-                                    <Border Grid.Column="0"
-                                            CornerRadius="6"
-                                            Background="{Binding SeverityBackground}"
-                                            BorderBrush="{Binding SeverityColor}"
-                                            BorderThickness="1"
-                                            Padding="6,3"
-                                            Margin="0,0,10,0"
-                                            VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding SeverityBadgeText}"
-                                                   FontSize="10"
-                                                   FontWeight="Bold"
-                                                   Foreground="{Binding SeverityColor}"/>
-                                    </Border>
+                                        <ui:SymbolIcon Grid.Column="0"
+                                                       Style="{StaticResource FactorIcon}"
+                                                       Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}"/>
 
-                                    <!-- Title & Description -->
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,10,0">
-                                        <TextBlock Text="{Binding Title}"
-                                                   FontSize="12.5"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <TextBlock Text="{Binding Description}"
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,2,0,0"/>
-                                    </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <StackPanel Orientation="Horizontal">
+                                                <Border CornerRadius="{StaticResource Radius.XS}"
+                                                        Padding="6,1" Margin="0,0,8,0"
+                                                        VerticalAlignment="Center"
+                                                        Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                                                    <TextBlock Text="{Binding SeverityBadgeText}"
+                                                               FontSize="{StaticResource Font.Micro}"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontSize="{StaticResource Font.BodyLarge}"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            </StackPanel>
 
-                                    <!-- Score Impact -->
-                                    <Border Grid.Column="2"
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="4"
-                                            Padding="6,2"
-                                            VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding ScoreImpact, StringFormat='+%{0} Risk'}"
-                                                   FontSize="10.5"
-                                                   FontWeight="Medium"
-                                                   Foreground="{Binding SeverityColor}"/>
-                                    </Border>
-                                </Grid>
+                                            <TextBlock Text="{Binding Description}"
+                                                       FontSize="{StaticResource Font.Caption}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="{StaticResource Gap.Top.XS}"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        </StackPanel>
+
+                                        <Border Grid.Column="2"
+                                                CornerRadius="{StaticResource Radius.XS}"
+                                                Padding="8,3" Margin="10,0,0,0"
+                                                VerticalAlignment="Top"
+                                                Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                                            <TextBlock Text="{Binding ScoreImpact, StringFormat='+%{0} Risk'}"
+                                                       FontSize="{StaticResource Font.Micro}"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Grid>
-            </Border>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-            <!-- 4. Recommendation Box -->
-            <Border Grid.Row="4"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="12,10"
-                    Margin="0,10,0,0">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    <!-- Sistem tavsiyesi -->
+                    <Border Background="{DynamicResource Brush.Accent.Subtle}"
+                            BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            BorderThickness="{StaticResource Stroke.Thin}"
+                            CornerRadius="{StaticResource Radius.SM}"
+                            Padding="{StaticResource Pad.Row}"
+                            Margin="0,6,0,10">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Lightbulb24" FontSize="{StaticResource Icon.MD}"
+                                           Margin="0,1,10,0" VerticalAlignment="Top"
+                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <StackPanel>
+                                <TextBlock Text="Sistem Güvenlik Tavsiyesi"
+                                           FontSize="{StaticResource Font.BodyLarge}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding Recommendation}"
+                                           FontSize="{StaticResource Font.Caption}"
+                                           TextWrapping="Wrap"
+                                           Margin="{StaticResource Gap.Top.XS}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
 
-                    <ui:SymbolIcon Grid.Column="0" Symbol="Info20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+            <!-- ========== SEKME 1: PE & KALKANLAR ========== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToVis}, ConverterParameter=1}">
+                <StackPanel>
 
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Sistem Güvenlik Tavsiyesi:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="{Binding Recommendation}" FontSize="11.5" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                    <c:EmptyState Icon="DocumentQuestionMark24"
+                                  Title="Bu dosya bir PE ikilisi değil"
+                                  Description="İkili yapı analizi yalnızca .exe, .dll, .sys gibi Windows çalıştırılabilir dosyalarında yapılabilir."
+                                  Visibility="{Binding HasPeAnalysis, Converter={StaticResource InverseBoolToVis}}"/>
+
+                    <StackPanel Visibility="{Binding HasPeAnalysis, Converter={StaticResource BoolToVis}}">
+
+                        <!-- PE başlık röntgeni -->
+                        <TextBlock Text="PE Başlık Bilgisi"
+                                   FontSize="{StaticResource Font.SectionTitle}"
+                                   FontWeight="SemiBold"
+                                   Margin="{StaticResource Gap.Bottom.SM}"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                        <UniformGrid Columns="3" Margin="{StaticResource Gap.Bottom.MD}">
+                            <Border Style="{StaticResource MetaCard}" Margin="0,0,6,6">
+                                <StackPanel>
+                                    <TextBlock Text="Mimari" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.MachineArchitecture}" Style="{StaticResource FieldValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="6,0,6,6">
+                                <StackPanel>
+                                    <TextBlock Text="Alt Sistem" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.Subsystem}" Style="{StaticResource FieldValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="6,0,0,6">
+                                <StackPanel>
+                                    <TextBlock Text="Derleme Zamanı (UTC)" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.CompileTimeUtc}" Style="{StaticResource FieldValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Giriş Noktası (RVA)" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.EntryPointHex}" Style="{StaticResource MonoValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="6,6,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Image Base" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.ImageBaseHex}" Style="{StaticResource MonoValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="Bölüm Sayısı" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.SectionCount}" Style="{StaticResource FieldValue}"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Bellek koruma kalkanları -->
+                        <Grid Margin="{StaticResource Gap.Bottom.SM}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="Bellek Koruma Kalkanları (Exploit Mitigations)"
+                                       FontSize="{StaticResource Font.SectionTitle}"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                            <Border Grid.Column="1"
+                                    BorderThickness="{StaticResource Stroke.Thin}"
+                                    CornerRadius="{StaticResource Radius.XS}"
+                                    Padding="{StaticResource Pad.Badge}"
+                                    VerticalAlignment="Center">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{DynamicResource Brush.Success.Subtle}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Mitigations.SecurityGradeIntent}" Value="Accent">
+                                                <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Mitigations.SecurityGradeIntent}" Value="Caution">
+                                                <Setter Property="Background" Value="{DynamicResource Brush.Caution.Subtle}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Mitigations.SecurityGradeIntent}" Value="Critical">
+                                                <Setter Property="Background" Value="{DynamicResource Brush.Critical.Subtle}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                    <Run Text="{Binding Mitigations.SecurityGrade, Mode=OneWay}"/>
+                                    <Run Text="  •  "/>
+                                    <Run Text="{Binding Mitigations.MitigationScoreText, Mode=OneWay}"/>
+                                </TextBlock>
+                            </Border>
+                        </Grid>
+
+                        <UniformGrid Columns="5" Margin="{StaticResource Gap.Bottom.MD}">
+                            <Border Style="{StaticResource ShieldChip}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon FontSize="{StaticResource Icon.XS}" Margin="{StaticResource Gap.IconText}">
+                                            <ui:SymbolIcon.Style>
+                                                <Style TargetType="ui:SymbolIcon">
+                                                    <Setter Property="Symbol" Value="DismissCircle24"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Mitigations.HasAslr}" Value="True">
+                                                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:SymbolIcon.Style>
+                                        </ui:SymbolIcon>
+                                        <TextBlock Text="ASLR" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Adres rastgeleleştirme" FontSize="{StaticResource Font.Micro}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource ShieldChip}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon FontSize="{StaticResource Icon.XS}" Margin="{StaticResource Gap.IconText}">
+                                            <ui:SymbolIcon.Style>
+                                                <Style TargetType="ui:SymbolIcon">
+                                                    <Setter Property="Symbol" Value="DismissCircle24"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Mitigations.HasDep}" Value="True">
+                                                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:SymbolIcon.Style>
+                                        </ui:SymbolIcon>
+                                        <TextBlock Text="DEP / NX" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Veride kod yürütme engeli" FontSize="{StaticResource Font.Micro}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource ShieldChip}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon FontSize="{StaticResource Icon.XS}" Margin="{StaticResource Gap.IconText}">
+                                            <ui:SymbolIcon.Style>
+                                                <Style TargetType="ui:SymbolIcon">
+                                                    <Setter Property="Symbol" Value="DismissCircle24"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Mitigations.HasCfg}" Value="True">
+                                                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:SymbolIcon.Style>
+                                        </ui:SymbolIcon>
+                                        <TextBlock Text="CFG" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Denetim akışı koruması" FontSize="{StaticResource Font.Micro}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource ShieldChip}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon FontSize="{StaticResource Icon.XS}" Margin="{StaticResource Gap.IconText}">
+                                            <ui:SymbolIcon.Style>
+                                                <Style TargetType="ui:SymbolIcon">
+                                                    <Setter Property="Symbol" Value="DismissCircle24"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Mitigations.HasHighEntropyVa}" Value="True">
+                                                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:SymbolIcon.Style>
+                                        </ui:SymbolIcon>
+                                        <TextBlock Text="High Entropy VA" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="64-bit geniş adres alanı" FontSize="{StaticResource Font.Micro}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource ShieldChip}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon FontSize="{StaticResource Icon.XS}" Margin="{StaticResource Gap.IconText}">
+                                            <ui:SymbolIcon.Style>
+                                                <Style TargetType="ui:SymbolIcon">
+                                                    <Setter Property="Symbol" Value="DismissCircle24"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Mitigations.HasSafeSeh}" Value="True">
+                                                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Mitigations.IsDotNet}" Value="True">
+                                                            <Setter Property="Symbol" Value="CheckmarkCircle24"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Success.Text}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:SymbolIcon.Style>
+                                        </ui:SymbolIcon>
+                                        <TextBlock Text="SafeSEH" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="İstisna işleme koruması" FontSize="{StaticResource Font.Micro}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Bölüm tablosu -->
+                        <TextBlock Text="Bölümler (Sections) &amp; Bölüm Başına Entropi"
+                                   FontSize="{StaticResource Font.SectionTitle}"
+                                   FontWeight="SemiBold"
+                                   Margin="{StaticResource Gap.Bottom.SM}"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                        <ItemsControl ItemsSource="{Binding Sections}" Margin="0,0,0,10">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:PeSectionItem}">
+                                    <Border Style="{StaticResource DataRow}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" MinWidth="80"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0"
+                                                       Text="{Binding Name}"
+                                                       FontFamily="Cascadia Mono, Consolas"
+                                                       FontSize="{StaticResource Font.Body}"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="1"
+                                                       FontSize="{StaticResource Font.Caption}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="10,0,0,0"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="Sanal:"/>
+                                                <Run Text="{Binding VirtualSizeFormatted, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                <Run Text="  •  Ham:"/>
+                                                <Run Text="{Binding RawSizeFormatted, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                <Run Text="  •  "/>
+                                                <Run Text="{Binding VirtualAddressHex, Mode=OneWay}" FontFamily="Cascadia Mono, Consolas"/>
+                                            </TextBlock>
+
+                                            <Border Grid.Row="0" Grid.Column="2"
+                                                    CornerRadius="{StaticResource Radius.XS}"
+                                                    Padding="6,2" Margin="8,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Background="{DynamicResource ControlFillColorSecondaryBrush}">
+                                                <TextBlock Text="{Binding PermissionsText}"
+                                                           FontFamily="Cascadia Mono, Consolas"
+                                                           FontSize="{StaticResource Font.Micro}"
+                                                           FontWeight="Bold"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </Border>
+
+                                            <Border Grid.Row="0" Grid.Column="3"
+                                                    CornerRadius="{StaticResource Radius.XS}"
+                                                    Padding="6,2" Margin="6,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Visibility="{Binding IsSuspiciousPacker, Converter={StaticResource BoolToVis}}"
+                                                    Background="{DynamicResource Brush.Critical.Subtle}"
+                                                    BorderBrush="{DynamicResource SystemFillColorCriticalBrush}"
+                                                    BorderThickness="{StaticResource Stroke.Thin}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="LockClosed24" FontSize="11"
+                                                                   Margin="0,0,4,0"
+                                                                   Foreground="{DynamicResource Brush.Critical.Text}"/>
+                                                    <TextBlock Text="PACKER"
+                                                               FontSize="{StaticResource Font.Micro}"
+                                                               FontWeight="Bold"
+                                                               Foreground="{DynamicResource Brush.Critical.Text}"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <Grid Grid.Row="1" Grid.ColumnSpan="4" Margin="0,8,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ProgressBar Grid.Column="0"
+                                                             Style="{StaticResource EntropyBar}"
+                                                             VerticalAlignment="Center"
+                                                             Value="{Binding Entropy, Converter={StaticResource EntropyToPercent}, Mode=OneWay}"/>
+                                                <TextBlock Grid.Column="1"
+                                                           Text="{Binding EntropyFormatted}"
+                                                           FontSize="{StaticResource Font.Micro}"
+                                                           FontFamily="Cascadia Mono, Consolas"
+                                                           Margin="10,0,0,0"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            </Grid>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
-                </Grid>
-            </Border>
+                </StackPanel>
+            </ScrollViewer>
 
-            <!-- 5. Footer Actions -->
-            <Grid Grid.Row="5" Margin="0,14,0,0">
+            <!-- ========== SEKME 2: API ÇAĞRILARI ========== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToVis}, ConverterParameter=2}">
+                <StackPanel>
+
+                    <c:EmptyState Icon="Code24"
+                                  Title="İçe aktarma tablosu okunamadı"
+                                  Description="Dosya PE formatında değil, import tablosu taşımıyor ya da paketlenmiş olabilir."
+                                  Visibility="{Binding HasImportedDlls, Converter={StaticResource InverseBoolToVis}}"/>
+
+                    <StackPanel Visibility="{Binding HasImportedDlls, Converter={StaticResource BoolToVis}}">
+
+                        <Border Background="{DynamicResource Brush.Caution.Subtle}"
+                                BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                                BorderThickness="{StaticResource Stroke.Thin}"
+                                CornerRadius="{StaticResource Radius.SM}"
+                                Padding="{StaticResource Pad.Row}"
+                                Margin="{StaticResource Gap.Bottom.MD}"
+                                Visibility="{Binding TotalSuspiciousApisCount, Converter={StaticResource IntToVis}}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="Warning24" FontSize="{StaticResource Icon.MD}"
+                                               Margin="0,0,10,0" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource Brush.Caution.Text}"/>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource Brush.Caution.Text}">
+                                        <Run Text="{Binding TotalSuspiciousApisCount, Mode=OneWay}"/>
+                                        <Run Text="şüpheli Win32 API çağrısı saptandı"/>
+                                    </TextBlock>
+                                    <TextBlock Text="Bu çağrılar tek başına zararlı olduğu anlamına gelmez; meşru yazılımlar da kullanır. Dosyanın imzası ve kaynağıyla birlikte değerlendirin."
+                                               FontSize="{StaticResource Font.Caption}"
+                                               TextWrapping="Wrap"
+                                               Margin="{StaticResource Gap.Top.XS}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <ItemsControl ItemsSource="{Binding ImportedDlls}" Margin="0,0,0,10">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:ImportedDllGroup}">
+                                    <Expander Margin="{StaticResource Gap.Bottom.SM}"
+                                              IsExpanded="{Binding HasSuspicious, Mode=OneTime}">
+                                        <Expander.Header>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <ui:SymbolIcon Symbol="Library24" FontSize="{StaticResource Icon.XS}"
+                                                               Margin="{StaticResource Gap.IconText}"
+                                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding DllName}"
+                                                           FontFamily="Cascadia Mono, Consolas"
+                                                           FontSize="{StaticResource Font.Body}"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding SummaryText}"
+                                                           FontSize="{StaticResource Font.Caption}"
+                                                           Margin="10,0,0,0"
+                                                           VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            </StackPanel>
+                                        </Expander.Header>
+
+                                        <ItemsControl ItemsSource="{Binding Functions}" Margin="24,8,0,4">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type models:ImportedApiFunction}">
+                                                    <Grid Margin="0,0,0,4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto" MinWidth="200"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <ui:SymbolIcon Grid.Column="0"
+                                                                       FontSize="{StaticResource Icon.XS}"
+                                                                       Margin="{StaticResource Gap.IconText}"
+                                                                       VerticalAlignment="Center"
+                                                                       Symbol="{Binding CategoryIcon, Converter={StaticResource SafeSymbol}}">
+                                                            <ui:SymbolIcon.Style>
+                                                                <Style TargetType="ui:SymbolIcon">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding CategoryIntent}" Value="Caution">
+                                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Caution.Text}"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding CategoryIntent}" Value="Critical">
+                                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Critical.Text}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </ui:SymbolIcon.Style>
+                                                        </ui:SymbolIcon>
+
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding Name}"
+                                                                   FontFamily="Cascadia Mono, Consolas"
+                                                                   FontSize="{StaticResource Font.Caption}"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding Description}"
+                                                                   FontSize="{StaticResource Font.Micro}"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   ToolTip="{Binding Description}"
+                                                                   Margin="12,0,0,0"
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ========== SEKME 3: KİMLİK & HASH ========== -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          Visibility="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToVis}, ConverterParameter=3}">
+                <StackPanel>
+
+                    <TextBlock Text="Kriptografik Parmak İzleri"
+                               FontSize="{StaticResource Font.SectionTitle}"
+                               FontWeight="SemiBold"
+                               Margin="{StaticResource Gap.Bottom.SM}"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                    <Border Style="{StaticResource DataRow}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="SHA-256" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Sha256}" Style="{StaticResource MonoValue}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,6" Margin="10,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Command="{Binding CopyHashCommand}" CommandParameter="{Binding Sha256}"
+                                       Icon="{ui:SymbolIcon Copy20}"
+                                       AutomationProperties.Name="SHA-256 özetini panoya kopyala"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource DataRow}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="MD5" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Md5}" Style="{StaticResource MonoValue}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,6" Margin="10,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Command="{Binding CopyHashCommand}" CommandParameter="{Binding Md5}"
+                                       Icon="{ui:SymbolIcon Copy20}"
+                                       AutomationProperties.Name="MD5 özetini panoya kopyala"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource DataRow}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="SHA-1" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Sha1}" Style="{StaticResource MonoValue}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,6" Margin="10,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Command="{Binding CopyHashCommand}" CommandParameter="{Binding Sha1}"
+                                       Icon="{ui:SymbolIcon Copy20}"
+                                       AutomationProperties.Name="SHA-1 özetini panoya kopyala"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource DataRow}"
+                            Visibility="{Binding ImpHash, Converter={StaticResource StringToVis}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="ImpHash (İçe Aktarma Tablosu Parmak İzi)" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding ImpHash}" Style="{StaticResource MonoValue}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,6" Margin="10,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Command="{Binding CopyHashCommand}" CommandParameter="{Binding ImpHash}"
+                                       Icon="{ui:SymbolIcon Copy20}"
+                                       AutomationProperties.Name="ImpHash değerini panoya kopyala"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- İmza ayrıntısı -->
+                    <TextBlock Text="İmza Ayrıntısı"
+                               FontSize="{StaticResource Font.SectionTitle}"
+                               FontWeight="SemiBold"
+                               Margin="0,10,0,8"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                    <UniformGrid Columns="2" Margin="0,0,0,10">
+                        <Border Style="{StaticResource MetaCard}" Margin="0,0,6,6">
+                            <StackPanel>
+                                <TextBlock Text="İmzalayan" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Result.SignerName}" Style="{StaticResource FieldValue}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetaCard}" Margin="6,0,0,6">
+                            <StackPanel>
+                                <TextBlock Text="İmza Kaynağı" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Result.SignatureSourceText}" Style="{StaticResource FieldValue}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
+                            <StackPanel>
+                                <TextBlock Text="Sertifika Bitişi" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Result.CertificateExpiry, StringFormat='{}{0:dd.MM.yyyy}', TargetNullValue='—'}"
+                                           Style="{StaticResource FieldValue}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Ürün / Sürüm" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Style="{StaticResource FieldValue}">
+                                    <Run Text="{Binding Result.ProductName, Mode=OneWay}"/>
+                                    <Run Text="{Binding Result.FileVersion, Mode=OneWay}"
+                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <!-- VirusTotal -->
+                    <Border Background="{DynamicResource Brush.Accent.Subtle}"
+                            BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                            BorderThickness="{StaticResource Stroke.Thin}"
+                            CornerRadius="{StaticResource Radius.SM}"
+                            Padding="{StaticResource Pad.Row}"
+                            Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="VirusTotal" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="{Binding Result.VirusTotalSummary}" Style="{StaticResource FieldValue}"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="1" Appearance="Secondary"
+                                       Command="{Binding OpenVirusTotalWebCommand}"
+                                       Padding="{StaticResource Pad.Control}"
+                                       VerticalAlignment="Center"
+                                       Icon="{ui:SymbolIcon Globe20}"
+                                       Content="Tarayıcıda Aç"
+                                       AutomationProperties.Name="VirusTotal analiz sayfasını tarayıcıda aç"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ============ 4. EYLEM ÇUBUĞU ============ -->
+        <!--
+            Eski sürümde 6 buton sağa yığılıyor, "Kapat" pencere kenarından
+            taşıp kırpılıyordu. Artık ikincil eylemler taşma menüsünde;
+            sol grup esner, sağ grup sabit kalır, hiçbir koşulda taşma olmaz.
+        -->
+        <Border Grid.Row="4"
+                Margin="0,14,0,0"
+                Padding="20,14"
+                Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0">
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left Helper Actions: Konum, VT, Kopyala -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button Appearance="Secondary"
-                               ToolTip="Dosyayı Windows Gezgininde Göster"
-                               Icon="{ui:SymbolIcon Folder20}"
-                               Command="{Binding OpenLocationCommand}"
-                               Padding="10,6"
-                               Margin="0,0,6,0" AutomationProperties.Name="Dosyayı Windows Gezgininde Göster"/>
+                <!-- Sol: ikincil eylemler taşma menüsünde -->
+                <ui:DropDownButton Grid.Column="0"
+                                   Appearance="Secondary"
+                                   Padding="{StaticResource Pad.Control}"
+                                   Icon="{ui:SymbolIcon MoreHorizontal24}"
+                                   Content="Daha Fazla"
+                                   AutomationProperties.Name="Ek inceleme eylemleri">
+                    <ui:DropDownButton.Flyout>
+                        <ContextMenu>
+                            <MenuItem Header="Dosya Konumunu Aç"
+                                      Command="{Binding OpenLocationCommand}"
+                                      Icon="{ui:SymbolIcon FolderOpen20}"/>
+                            <MenuItem Header="Teknik Raporu Kopyala"
+                                      Command="{Binding CopyReportCommand}"
+                                      Icon="{ui:SymbolIcon DocumentCopy20}"/>
+                            <MenuItem Header="Tüm Hash'leri Kopyala"
+                                      Command="{Binding CopyAllHashesCommand}"
+                                      Icon="{ui:SymbolIcon Fingerprint20}"/>
+                            <Separator/>
+                            <MenuItem Header="Başlangıçtan Kaldır"
+                                      Command="{Binding DisableStartupCommand}"
+                                      IsEnabled="{Binding CanDisableStartup}"
+                                      Icon="{ui:SymbolIcon PlugDisconnected20}"/>
+                            <MenuItem Header="Güvenli Olarak İşaretle"
+                                      Command="{Binding WhitelistCommand}"
+                                      Icon="{ui:SymbolIcon ShieldCheckmark20}"/>
+                        </ContextMenu>
+                    </ui:DropDownButton.Flyout>
+                </ui:DropDownButton>
 
+                <!-- Sağ: birincil eylemler -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <ui:Button Appearance="Secondary"
-                               Content="{Binding VtButtonText}"
-                               Icon="{ui:SymbolIcon Globe20}"
-                               ToolTip="Dosyayı VirusTotal'de incele veya yükleyip 70 antivirüs motoruyla tarat"
                                Command="{Binding OpenVirusTotalCommand}"
                                IsEnabled="{Binding IsUploadingToVt, Converter={StaticResource InverseBool}}"
-                               Padding="10,6"
-                               Margin="0,0,6,0"/>
-
-                    <ui:Button Appearance="Secondary"
-                               Content="Raporu Kopyala"
-                               Icon="{ui:SymbolIcon Copy20}"
-                               Command="{Binding CopyReportCommand}"
-                               Padding="10,6"/>
-                </StackPanel>
-
-                <!-- Center Status / Progress -->
-                <TextBlock Grid.Column="1"
-                           Text="{Binding StatusText}"
-                           FontSize="11"
-                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                           TextTrimming="CharacterEllipsis"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Center"
-                           Margin="10,0"/>
-
-                <!-- Right Remediation Actions: Başlangıçtan Kaldır, Zorla Sil, Kapat -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button Appearance="Secondary"
-                               Content="Başlangıçtan Kaldır"
-                               Icon="{ui:SymbolIcon Power20}"
-                               Command="{Binding DisableStartupCommand}"
-                               Visibility="{Binding CanDisableStartup, Converter={StaticResource BoolToVis}}"
-                               Padding="12,6"
-                               Margin="0,0,6,0"/>
+                               Padding="{StaticResource Pad.Control}"
+                               Margin="{StaticResource Gap.Right.SM}"
+                               Icon="{Binding VtButtonIcon, Converter={StaticResource SafeSymbol}}"
+                               Content="{Binding VtButtonText}"
+                               AutomationProperties.Name="VirusTotal taraması"/>
 
                     <ui:Button Appearance="Danger"
-                               Content="Zorla Sil &amp; Sahiplik Al"
-                               Icon="{ui:SymbolIcon Delete20}"
                                Command="{Binding DeleteFileCommand}"
-                               Padding="12,6"
-                               Margin="0,0,8,0"/>
+                               IsEnabled="{Binding IsFileDeleted, Converter={StaticResource InverseBool}}"
+                               Padding="{StaticResource Pad.Control}"
+                               Margin="{StaticResource Gap.Right.SM}"
+                               Icon="{ui:SymbolIcon Delete24}"
+                               Content="Zorla Sil"
+                               AutomationProperties.Name="Dosyayı sahiplik alarak zorla sil"/>
 
                     <ui:Button Appearance="Primary"
-                               Content="Kapat"
                                Command="{Binding CloseCommand}"
-                               Padding="18,6"/>
+                               Padding="18,7"
+                               Icon="{ui:SymbolIcon Dismiss24}"
+                               Content="Kapat"
+                               AutomationProperties.Name="Analiz penceresini kapat"/>
                 </StackPanel>
             </Grid>
-        </Grid>
-    </Border>
-</Window>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

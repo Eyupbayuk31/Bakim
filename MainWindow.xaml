@@ -55,8 +55,8 @@
         <DataTemplate DataType="{x:Type vm:UninstallerViewModel}">
             <modules:UninstallerModuleView/>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:AutorunsViewModel}">
-            <modules:AutorunsPersistenceView/>
+        <DataTemplate DataType="{x:Type vm:AnalyzerViewModel}">
+            <modules:AnalyzerView/>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:WindowsTweakerViewModel}">
             <modules:WindowsTweakerModuleView/>
@@ -256,7 +256,7 @@
                                VerticalAlignment="Center"
                                Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
                              <StackPanel>
-                                 <TextBlock Text="BAKIM v3.10" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                 <TextBlock Text="BAKIM v3.11" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                  <TextBlock Text="Sistem Optimize &amp; Güvenlik" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                              </StackPanel>
                          </Grid>
@@ -412,17 +412,17 @@
                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
                             </ui:Button>
 
-                            <!-- 11. Autoruns & Persistence Analyzer Module Button -->
-                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Autoruns'}"
+                            <!-- 11. Analizör — Kalıcılık & Dosya Röntgeni Modülü -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Analyzer'}"
                                        HorizontalAlignment="Stretch" 
                                        HorizontalContentAlignment="Left"
                                        Padding="10,8" 
                                        Margin="0,0,0,4"
                                        Command="{Binding NavigateCommand}" 
-                                       CommandParameter="Autoruns"
-                                       Icon="{ui:SymbolIcon ShieldCheckmark24}"
-                                       ToolTip="Kalıcılık &amp; Autoruns">
-                                <TextBlock Text="Kalıcılık &amp; Autoruns" 
+                                       CommandParameter="Analyzer"
+                                       Icon="{ui:SymbolIcon ShieldTask24}"
+                                       ToolTip="Analizör — Kalıcılık &amp; Dosya Röntgeni">
+                                <TextBlock Text="Analizör" 
                                            Margin="6,0,0,0" 
                                            VerticalAlignment="Center" 
                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>

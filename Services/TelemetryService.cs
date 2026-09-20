@@ -221,25 +221,25 @@ namespace Bakım.Services
             if (score >= 88)
             {
                 breakdown.ScoreText = "Mükemmel - Sistem Hızlı ve Stabil";
-                breakdown.ScoreColorHex = "#10B981"; // Emerald
+                breakdown.ScoreIntent = Intent.Success;
                 breakdown.ScoreStatusBrush = "SystemFillColorSuccessBrush";
             }
             else if (score >= 70)
             {
                 breakdown.ScoreText = "İyi Durumda - Düzenli Bakım Önerilir";
-                breakdown.ScoreColorHex = "#38BDF8"; // Cyan
+                breakdown.ScoreIntent = Intent.Accent;
                 breakdown.ScoreStatusBrush = "AccentTextFillColorPrimaryBrush";
             }
             else if (score >= 50)
             {
                 breakdown.ScoreText = "Orta Seviye - Optimizasyon Gerekiyor";
-                breakdown.ScoreColorHex = "#F59E0B"; // Amber
+                breakdown.ScoreIntent = Intent.Caution;
                 breakdown.ScoreStatusBrush = "SystemFillColorCautionBrush";
             }
             else
             {
                 breakdown.ScoreText = "Kritik Yük - Tek Tıkla Optimize Edin";
-                breakdown.ScoreColorHex = "#EF4444"; // Red
+                breakdown.ScoreIntent = Intent.Critical;
                 breakdown.ScoreStatusBrush = "SystemFillColorCriticalBrush";
             }
 

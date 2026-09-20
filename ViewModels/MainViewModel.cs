@@ -42,7 +42,7 @@ namespace Bakım.ViewModels
         private readonly Lazy<PrivacyDebloatViewModel> _privacyDebloat;
         private readonly Lazy<CrashAnalyzerViewModel> _crashAnalyzer;
         private readonly Lazy<UninstallerViewModel> _uninstaller;
-        private readonly Lazy<AutorunsViewModel> _autoruns;
+        private readonly Lazy<AnalyzerViewModel> _analyzer;
         private readonly Lazy<WindowsTweakerViewModel> _windowsTweaker;
         private readonly Lazy<SettingsViewModel> _settings;
         private readonly Lazy<TweakerCategoriesViewModel> _tweakerCategories;
@@ -95,7 +95,7 @@ namespace Bakım.ViewModels
             _privacyDebloat = Lazy(_services.GetRequiredService<PrivacyDebloatViewModel>);
             _crashAnalyzer = Lazy(_services.GetRequiredService<CrashAnalyzerViewModel>);
             _uninstaller = Lazy(_services.GetRequiredService<UninstallerViewModel>);
-            _autoruns = Lazy(_services.GetRequiredService<AutorunsViewModel>);
+            _analyzer = Lazy(_services.GetRequiredService<AnalyzerViewModel>);
             _windowsTweaker = Lazy(_services.GetRequiredService<WindowsTweakerViewModel>);
             _settings = Lazy(_services.GetRequiredService<SettingsViewModel>);
             _tweakerCategories = Lazy(_services.GetRequiredService<TweakerCategoriesViewModel>);
@@ -131,7 +131,7 @@ namespace Bakım.ViewModels
         public PrivacyDebloatViewModel PrivacyDebloat => _privacyDebloat.Value;
         public CrashAnalyzerViewModel CrashAnalyzer => _crashAnalyzer.Value;
         public UninstallerViewModel Uninstaller => _uninstaller.Value;
-        public AutorunsViewModel Autoruns => _autoruns.Value;
+        public AnalyzerViewModel Analyzer => _analyzer.Value;
         public WindowsTweakerViewModel WindowsTweaker => _windowsTweaker.Value;
         public SettingsViewModel Settings => _settings.Value;
         public TweakerCategoriesViewModel TweakerCategories => _tweakerCategories.Value;
@@ -441,9 +441,21 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public void ToggleTweakerMenu() => IsTweakerMenuExpanded = !IsTweakerMenuExpanded;
 
+        /// <summary>
+        /// Yeniden giriş koruması: bir alt ViewModel kurulurken navigasyon
+        /// olayı yayınlarsa bu metot tekrar çağrılır ve henüz kurulmakta olan
+        /// Lazy&lt;T&gt; örneğine erişmeye çalışır. .NET bunu deadlock riski
+        /// sayıp InvalidOperationException fırlatır. Dıştaki çağrı zaten
+        /// doğru kategoriye gideceği için içteki çağrı güvenle yok sayılır.
+        /// </summary>
+        private bool _isSwitchingTweakerCategory;
+
         [RelayCommand]
         public void NavigateToTweakerCategory(string categoryKey)
         {
+            if (_isSwitchingTweakerCategory) return;
+            _isSwitchingTweakerCategory = true;
+
             try
             {
                 CurrentTweakerCategory = categoryKey;
@@ -465,6 +477,10 @@ namespace Bakım.ViewModels
             {
                 _log.Error($"Tweaker kategorisine geçiş sırasında hata oluştu: {categoryKey}", ex, nameof(MainViewModel));
                 Navigate("Tweaker");
+            }
+            finally
+            {
+                _isSwitchingTweakerCategory = false;
             }
         }
 
@@ -499,7 +515,7 @@ namespace Bakım.ViewModels
                 AppModule.PrivacyDebloat => PrivacyDebloat,
                 AppModule.CrashAnalyzer => CrashAnalyzer,
                 AppModule.Uninstaller => Uninstaller,
-                AppModule.Autoruns => Autoruns,
+                AppModule.Analyzer => Analyzer,
                 AppModule.WindowsTweaker => WindowsTweaker,
                 AppModule.Settings => Settings,
                 _ => Dashboard

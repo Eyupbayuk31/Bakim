@@ -51,7 +51,8 @@ namespace Bakım.Models
         };
 
         public string RiskBadgeText => IsSafeToDelete ? "%100 Güvenli" : "İnceleyin";
-        public string RiskBadgeBrush => IsSafeToDelete ? "#10B981" : "#F59E0B";
+        /// <summary>Kalıntının silinme güvenliğinin anlamsal tonu.</summary>
+        public Intent RiskIntent => IsSafeToDelete ? Intent.Success : Intent.Caution;
         public string RiskBadgeBackground => IsSafeToDelete ? "#1510B981" : "#15F59E0B";
     }
 }

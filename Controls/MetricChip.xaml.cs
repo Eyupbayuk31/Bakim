@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using Bakım.Models;
 
 namespace Bakım.Controls
 {
@@ -49,7 +50,7 @@ namespace Bakım.Controls
 
         public static readonly DependencyProperty IntentProperty =
             DependencyProperty.Register(nameof(Intent), typeof(Intent), typeof(MetricChip),
-                new PropertyMetadata(Controls.Intent.Neutral));
+                new PropertyMetadata(Models.Intent.Neutral));
 
         public Intent Intent
         {

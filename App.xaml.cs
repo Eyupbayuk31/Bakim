@@ -236,7 +236,7 @@ namespace Bakım
             services.AddTransient<PrivacyDebloatViewModel>();
             services.AddTransient<CrashAnalyzerViewModel>();
             services.AddTransient<UninstallerViewModel>();
-            services.AddTransient<AutorunsViewModel>();
+            services.AddTransient<AnalyzerViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();

@@ -51,7 +51,12 @@ namespace Bakım.Models
         public int TotalScore { get; set; } = 95;
         public string ScoreTitle { get; set; } = "%95 Sistem Sağlığı";
         public string ScoreText { get; set; } = "Mükemmel - Sistem Hızlı";
-        public string ScoreColorHex { get; set; } = "#10B981"; // Emerald green
+        /// <summary>
+        /// Sağlık skorunun anlamsal tonu. Model katmanı renk kodu taşımaz:
+        /// renk seçimi XAML trigger'larında tema fırçalarıyla yapılır, böylece
+        /// dört temada da doğru ve erişilebilir görünür.
+        /// </summary>
+        public Intent ScoreIntent { get; set; } = Intent.Success;
         public string ScoreStatusBrush { get; set; } = "SystemFillColorSuccessBrush";
         public int RamDeduction { get; set; }
         public int TempDeduction { get; set; }

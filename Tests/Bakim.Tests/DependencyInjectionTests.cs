@@ -46,7 +46,7 @@ public class DependencyInjectionTests
         typeof(OptimizerViewModel), typeof(StartupViewModel), typeof(SystemInfoViewModel),
         typeof(NetworkMonitorViewModel), typeof(ServiceManagerViewModel),
         typeof(PrivacyDebloatViewModel), typeof(CrashAnalyzerViewModel),
-        typeof(UninstallerViewModel), typeof(AutorunsViewModel),
+        typeof(UninstallerViewModel), typeof(AnalyzerViewModel),
         typeof(WindowsTweakerViewModel), typeof(TweakerCategoriesViewModel),
         typeof(SettingsViewModel), typeof(LoginViewModel),
     };

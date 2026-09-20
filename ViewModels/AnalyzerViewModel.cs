@@ -16,7 +16,7 @@ using Bakım.Services;
 
 namespace Bakım.ViewModels
 {
-    public partial class AutorunsViewModel : ObservableObject
+    public partial class AnalyzerViewModel : ObservableObject
     {
         private readonly IAutorunsScannerEngine _scannerEngine;
         private readonly IVirusTotalCheckService _virusTotalService;
@@ -53,6 +53,25 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private int _unsignedCount;
 
+        /// <summary>Son 7 günde eklenmiş kalıcılık girdisi sayısı (zaman çizelgesi sinyali).</summary>
+        [ObservableProperty]
+        private int _recentlyAddedCount;
+
+        /// <summary>Risk skoru 60 ve üzeri girdi sayısı.</summary>
+        [ObservableProperty]
+        private int _highRiskCount;
+
+        /// <summary>Filtre sonucu boş ve tarama sürmüyor: boş durum yüzeyi gösterilir.</summary>
+        [ObservableProperty]
+        private bool _hasNoResults;
+
+        /// <summary>Toplu derin analiz ilerlemesi.</summary>
+        [ObservableProperty]
+        private bool _isDeepAnalyzing;
+
+        [ObservableProperty]
+        private string _deepAnalysisProgress = string.Empty;
+
         [ObservableProperty]
         private int _verifiedCount;
 
@@ -86,7 +105,7 @@ namespace Bakım.ViewModels
 
         #endregion
 
-        public AutorunsViewModel(
+        public AnalyzerViewModel(
             IAutorunsScannerEngine scannerEngine,
             IVirusTotalCheckService virusTotalService,
             IFileThreatAnalyzerService threatAnalyzerService)
@@ -194,6 +213,52 @@ namespace Bakım.ViewModels
             UnsignedCount = visible.Count(i => i.Signature != SignatureStatus.Verified);
             VerifiedCount = visible.Count(i => i.Signature == SignatureStatus.Verified);
             DisabledCount = visible.Count(i => !i.IsEnabled);
+
+            // Zaman çizelgesi sinyali: son 7 günde eklenen kalıcılık girdileri.
+            // "Dün ne değişti?" sorusunun cevabı bulaşma tespitinde en hızlı yoldur.
+            RecentlyAddedCount = visible.Count(i => i.IsRecentlyAdded);
+            HighRiskCount = visible.Count(i => i.RiskScore >= 60);
+
+            HasNoResults = visible.Count == 0 && !IsScanning;
+        }
+
+        /// <summary>
+        /// Girdilerin dosya zaman damgalarını doldurur. Tarama motoruna değil
+        /// buraya konuldu: motor 36 KB'lık kritik bir dosya ve bu bilgi
+        /// yalnızca arayüzün zaman çizelgesi için gerekli.
+        /// </summary>
+        private static void PopulateTimestamps(IEnumerable<PersistenceItem> items)
+        {
+            foreach (var item in items)
+            {
+                if (item.FileCreatedUtc.HasValue) continue;
+                if (string.IsNullOrWhiteSpace(item.FilePath)) continue;
+
+                try
+                {
+                    if (File.Exists(item.FilePath))
+                    {
+                        item.FileCreatedUtc = File.GetCreationTimeUtc(item.FilePath);
+                    }
+                }
+                catch
+                {
+                    // Erişim reddi veya bozuk yol: zaman çizelgesi bu girdi için boş kalır
+                }
+            }
+        }
+
+        /// <summary>Listeyi risk skoruna göre sıralar: en tehlikeli en üstte.</summary>
+        private void ApplyRiskSorting()
+        {
+            var ordered = Items
+                .OrderByDescending(i => i.RiskScore)
+                .ThenByDescending(i => i.IsRecentlyAdded)
+                .ThenBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase)
+                .ToList();
+
+            Items.Clear();
+            foreach (var item in ordered) Items.Add(item);
         }
 
         #endregion
@@ -224,7 +289,13 @@ namespace Bakım.ViewModels
                     });
                 }
 
-                ScanStatusText = $"Tarama tamamlandı. {Items.Count} kalıcılık noktası listelendi.";
+                PopulateTimestamps(Items);
+                ApplyRiskSorting();
+
+                int risky = Items.Count(i => i.RiskScore >= 60);
+                ScanStatusText = risky > 0
+                    ? $"Tarama tamamlandı. {Items.Count} kalıcılık noktası — {risky} tanesi yüksek riskli, listenin en üstünde."
+                    : $"Tarama tamamlandı. {Items.Count} kalıcılık noktası listelendi, yüksek riskli girdi yok.";
             }
             catch (Exception ex)
             {
@@ -520,7 +591,7 @@ namespace Bakım.ViewModels
             {
                 var sfd = new Microsoft.Win32.SaveFileDialog
                 {
-                    FileName = $"Bakim_Autoruns_Report_{DateTime.Now:yyyyMMdd_HHmm}.csv",
+                    FileName = $"Bakim_Analizor_Raporu_{DateTime.Now:yyyyMMdd_HHmm}.csv",
                     Filter = "CSV Dosyası (*.csv)|*.csv|Tüm Dosyalar (*.*)|*.*",
                     DefaultExt = ".csv"
                 };
@@ -577,6 +648,81 @@ namespace Bakım.ViewModels
             {
                 IsScanning = false;
                 ScanStatusText = "Analiz tamamlandı.";
+            }
+        }
+
+        /// <summary>
+        /// Görünen tüm girdileri PE + imza motorundan geçirir ve risk skorlarını
+        /// tazeler. Tek tek "Dosya İncele" yapmak yerine listenin tamamını
+        /// bir seferde derinlemesine değerlendirir.
+        ///
+        /// İşlem arka plan thread'inde yürür; arayüz donmaz ve kullanıcı
+        /// istediği an başka sekmeye geçebilir.
+        /// </summary>
+        [RelayCommand]
+        public async Task DeepAnalyzeAllAsync()
+        {
+            if (IsDeepAnalyzing || IsScanning) return;
+
+            var targets = Items.Where(FilterItem)
+                               .Where(i => i.HasValidFile)
+                               .ToList();
+
+            if (targets.Count == 0)
+            {
+                ScanStatusText = "Derin analiz için geçerli dosya yolu olan girdi bulunamadı.";
+                return;
+            }
+
+            IsDeepAnalyzing = true;
+            int analyzed = 0, elevated = 0;
+
+            try
+            {
+                foreach (var item in targets)
+                {
+                    DeepAnalysisProgress = $"Derin analiz: {analyzed + 1} / {targets.Count} — {item.Name}";
+
+                    try
+                    {
+                        var report = await _threatAnalyzerService.AnalyzeFileAsync(
+                            item.FilePath, item.Arguments, item);
+
+                        // İmza sonucunu girdiye geri yaz: liste artık katalog
+                        // imzalarını da doğru gösterir.
+                        item.Signature = report.IsSigned
+                            ? SignatureStatus.Verified
+                            : (report.DigitalSignatureText.Contains("GEÇERSİZ", StringComparison.OrdinalIgnoreCase)
+                                ? SignatureStatus.InvalidOrTampered
+                                : SignatureStatus.Unsigned);
+
+                        if (!string.IsNullOrWhiteSpace(report.SignerName))
+                            item.SignatureSignerName = report.SignerName;
+
+                        if (!string.IsNullOrWhiteSpace(report.Sha256))
+                            item.Sha256Hash = report.Sha256;
+
+                        if (report.RiskScore >= 60) elevated++;
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLog.Warning($"Derin analiz başarısız: {item.FilePath}", ex, nameof(AnalyzerViewModel));
+                    }
+
+                    analyzed++;
+                }
+
+                ApplyRiskSorting();
+                UpdateStats();
+
+                ScanStatusText = elevated > 0
+                    ? $"Derin analiz tamamlandı: {analyzed} girdi incelendi, {elevated} tanesi yüksek riskli çıktı."
+                    : $"Derin analiz tamamlandı: {analyzed} girdi incelendi, yüksek riskli girdi saptanmadı.";
+            }
+            finally
+            {
+                IsDeepAnalyzing = false;
+                DeepAnalysisProgress = string.Empty;
             }
         }
 

@@ -309,4 +309,64 @@ namespace Bakım.Converters
             throw new NotImplementedException();
         }
     }
+
+    /// <summary>
+    /// Sekme seçimi: bağlanan int, ConverterParameter ile eşleşirse görünür.
+    /// TabControl yerine segmented düğme + ContentControl deseninde kullanılır.
+    /// </summary>
+    public class IntEqualsToVisConverter : IValueConverter
+    {
+        public bool Invert { get; set; }
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool match = value is int actual
+                         && parameter != null
+                         && int.TryParse(parameter.ToString(), out int expected)
+                         && actual == expected;
+
+            if (Invert) match = !match;
+            return match ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>
+    /// Seçili sekme düğmesini vurgular: eşleşen indeks Primary, diğerleri Transparent.
+    /// </summary>
+    public class IntEqualsToAppearanceConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            bool match = value is int actual
+                         && parameter != null
+                         && int.TryParse(parameter.ToString(), out int expected)
+                         && actual == expected;
+
+            return match
+                ? Wpf.Ui.Controls.ControlAppearance.Primary
+                : Wpf.Ui.Controls.ControlAppearance.Transparent;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>
+    /// Entropi değerini (0.0 - 8.0) yüzdeye çevirir; ilerleme çubuğu doldurmak için.
+    /// </summary>
+    public class EntropyToPercentConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            double entropy = value is double d ? d : 0;
+            return Math.Clamp(entropy / 8.0 * 100.0, 0, 100);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
+    }
+
 }

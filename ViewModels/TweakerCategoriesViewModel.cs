@@ -56,7 +56,13 @@ namespace Bakım.ViewModels
                 new() { Key = "Tools", Title = "Sistem Araçları", IconName = "DeveloperBoard24", ToolTip = "Gelişmiş Windows Araçları" }
             };
 
-            SelectCategory("All");
+            // Yapıcı metot uygulama geneli navigasyon YAYINLAMAZ.
+            // SelectCategory() navigasyon olayı tetikler; bu olay MainViewModel'e
+            // döner, o da TweakerCategories özelliğini okur — ama bu ViewModel
+            // hâlâ Lazy<T> fabrikası içinde kurulmaktadır. Sonuç:
+            // "ValueFactory attempted to access the Value property of this instance".
+            // Sessiz varyant yalnızca iç durumu ayarlar, olay yaymaz.
+            SetSelectedCategorySilent("All");
         }
 
         [RelayCommand]

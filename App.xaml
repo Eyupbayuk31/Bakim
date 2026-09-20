@@ -43,6 +43,10 @@
             <conv:EventLevelToBrushConverter x:Key="EventLevelToBrush"/>
             <conv:CategoryToForegroundConverter x:Key="CategoryToForeground"/>
             <conv:CategoryToBackgroundConverter x:Key="CategoryToBackground"/>
+            <conv:IntEqualsToVisConverter x:Key="IntEqualsToVis"/>
+            <conv:IntEqualsToVisConverter x:Key="InverseIntEqualsToVis" Invert="True"/>
+            <conv:IntEqualsToAppearanceConverter x:Key="IntEqualsToAppearance"/>
+            <conv:EntropyToPercentConverter x:Key="EntropyToPercent"/>
 
 
             <!--

@@ -144,22 +144,40 @@ namespace Bakım.Services
                 result.FileSizeBytes = fileInfo.Length;
                 result.FileSizeFormatted = FormatBytes(fileInfo.Length);
 
-                // 0. Calculate SHA-256 Hash
+                // 0. Calculate Hashes
                 result.Sha256 = _virusTotalService.ComputeSha256(filePath);
+                result.Md5 = ComputeFileMd5(filePath);
+                result.Sha1 = ComputeFileSha1(filePath);
 
                 // Check Active Running Processes
                 CheckActiveRunningProcess(filePath, result);
 
                 // =========================================================================
+                // VEKTÖR 0: PE BINARY & EXPLOIT MITIGATION RÖNTGENİ
+                // =========================================================================
+                ParsePeBinary(filePath, result, ref score);
+
+                // =========================================================================
                 // VEKTÖR 1: DİJİTAL İMZA & YAYINCI DOĞRULAMASI (%25)
                 // =========================================================================
-                var (sigStatus, signerName) = VerifyFileSignature(filePath);
+                // Gömülü İMZA + WINDOWS KATALOĞU denetimi.
+                // Yalnızca gömülü imzaya bakmak, katalogla imzalanan Windows
+                // bileşenlerini (svchost.exe, birçok sürücü) "imzasız" gösterip
+                // meşru sistem dosyalarına haksız risk puanı yazıyordu.
+                var signature = Helpers.SignatureInspector.Inspect(filePath);
+                var sigStatus = signature.Status;
+                string signerName = signature.Signer;
+
                 result.SignerName = signerName;
+                result.IsCatalogSigned = signature.IsCatalogSigned;
+                result.SignatureCatalogPath = signature.CatalogPath;
+                result.CertificateExpiry = signature.CertificateExpiry;
+                result.IsCertificateExpired = signature.IsCertificateExpired;
 
                 if (sigStatus == SignatureStatus.Verified)
                 {
                     result.IsSigned = true;
-                    result.DigitalSignatureText = $"Geçerli ({signerName})";
+                    result.DigitalSignatureText = signature.Describe();
 
                     bool isTrustedVendor = KnownTrustedPublishers.Any(p => signerName.Contains(p, StringComparison.OrdinalIgnoreCase));
                     if (isTrustedVendor)
@@ -176,9 +194,26 @@ namespace Bakım.Services
                     {
                         result.Factors.Add(new ThreatFactor
                         {
-                            Title = "Geçerli Dijital Sertifika",
-                            Description = $"Dosyanın Authenticode imzası geçerli. İmzacı: {signerName}",
+                            Title = signature.IsCatalogSigned
+                                ? "Windows Kataloğu ile İmzalı"
+                                : "Geçerli Dijital Sertifika",
+                            Description = signature.IsCatalogSigned
+                                ? $"Dosya bir Windows güvenlik kataloğu tarafından doğrulandı (imzacı: {signerName}). Sistem bileşenlerinde beklenen ve güvenli bir durumdur."
+                                : $"Dosyanın Authenticode imzası geçerli. İmzacı: {signerName}",
                             Severity = ThreatSeverity.Clean,
+                            ScoreImpact = 0
+                        });
+                    }
+
+                    // Süresi dolmuş sertifika: imza zaman damgalıysa dosya hâlâ
+                    // geçerlidir, bu yüzden risk puanı yazılmaz — yalnızca bilgi verilir.
+                    if (signature.IsCertificateExpired)
+                    {
+                        result.Factors.Add(new ThreatFactor
+                        {
+                            Title = "Sertifika Süresi Dolmuş",
+                            Description = $"İmzalama sertifikasının geçerliliği {signature.CertificateExpiry:dd.MM.yyyy} tarihinde sona ermiş. İmza zaman damgalıysa dosya yine de meşrudur.",
+                            Severity = ThreatSeverity.Info,
                             ScoreImpact = 0
                         });
                     }
@@ -639,55 +674,629 @@ namespace Bakım.Services
             });
         }
 
-        private static (SignatureStatus Status, string Signer) VerifyFileSignature(string filePath)
+        private static string ComputeFileMd5(string filePath)
         {
             try
             {
-                using var fileInfo = new WINTRUST_FILE_INFO(filePath);
-                using var trustData = new WINTRUST_DATA(fileInfo);
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var md5 = System.Security.Cryptography.MD5.Create();
+                byte[] hash = md5.ComputeHash(stream);
+                return Convert.ToHexString(hash).ToLowerInvariant();
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
 
-                uint result = WinVerifyTrust(IntPtr.Zero, WINTRUST_ACTION_GENERIC_VERIFY_V2, trustData);
+        private static string ComputeFileSha1(string filePath)
+        {
+            try
+            {
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var sha1 = System.Security.Cryptography.SHA1.Create();
+                byte[] hash = sha1.ComputeHash(stream);
+                return Convert.ToHexString(hash).ToLowerInvariant();
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
 
-                string signer = string.Empty;
+        private static readonly Dictionary<string, (string Category, string Description)> SuspiciousApiCatalog = new(StringComparer.OrdinalIgnoreCase)
+        {
+            // Process Injection & Memory Corruption
+            { "VirtualAllocEx", ("Bellek Enjeksiyonu", "Hedef sürecin bellek alanında dinamik bellek ayırır (Process Hollowing / Shellcode enjeksiyonu göstergesi).") },
+            { "WriteProcessMemory", ("Bellek Enjeksiyonu", "Başka bir sürecin bellek sayfalarına kod/veri yazar.") },
+            { "CreateRemoteThread", ("Process Hollowing", "Uzak süreç içinde yabancı thread başlatarak enjekte edilen kodu çalıştırır.") },
+            { "RtlCreateUserThread", ("Process Hollowing", "Düşük seviyeli native API ile uzak süreçte gizli thread başlatır.") },
+            { "NtUnmapViewOfSection", ("Process Hollowing", "Meşru bir sürecin kod bölümünü bellekten unmap edip zararlı payload ile doldurur.") },
+            { "ZwUnmapViewOfSection", ("Process Hollowing", "Kernel düzeyinde süreç belleği boşaltma rutini.") },
+            { "QueueUserAPC", ("Bellek Enjeksiyonu", "Uzak thread APC kuyruğuna shellcode yerleştirir (Early Bird APC Enjeksiyonu).") },
+            { "SetThreadContext", ("Bellek Enjeksiyonu", "Thread CPU yazmaçlarını (RIP/EIP) değiştirerek kod akışını kaçırır.") },
+            { "VirtualProtectEx", ("Bellek Enjeksiyonu", "Hedef sürecin bellek sayfalarını çalıştırılabilir (PAGE_EXECUTE_READWRITE) hale getirir.") },
+
+            // Process & Token Manipulation
+            { "OpenProcess", ("Süreç / Token Manipülasyonu", "Diğer çalışan süreçlerin tanıtıcılarını (handle) açar.") },
+            { "AdjustTokenPrivileges", ("Süreç / Token Manipülasyonu", "SeDebugPrivilege gibi kritik sistem ayrıcalıklarını etkinleştirir.") },
+            { "DuplicateTokenEx", ("Süreç / Token Manipülasyonu", "Sistem belirteçlerini çoğaltarak yetki yükseltir.") },
+            { "ImpersonateLoggedOnUser", ("Süreç / Token Manipülasyonu", "Oturum açmış kullanıcının kimliğine bürünür.") },
+
+            // Spyware, Keylogging & Screen Capture
+            { "SetWindowsHookEx", ("Klavye / Casusluk", "Küresel Windows kancası kurarak tüm klavye/fare hareketlerini yakalar.") },
+            { "SetWindowsHookExA", ("Klavye / Casusluk", "Küresel Windows kancası kurarak tuş basımlarını yakalar.") },
+            { "SetWindowsHookExW", ("Klavye / Casusluk", "Küresel Windows kancası kurarak tuş basımlarını yakalar.") },
+            { "GetAsyncKeyState", ("Klavye / Casusluk", "Arka planda basılan klavye tuşlarını gizlice dinler (Keylogger).") },
+            { "GetKeyState", ("Klavye / Casusluk", "Klavye tuş durumunu sorgular.") },
+            { "GetClipboardData", ("Klavye / Casusluk", "Panodaki (kopyalanan metin/şifre) verileri çeker.") },
+
+            // C2 & Network Communication
+            { "InternetOpenUrlA", ("Ağ / C2 İletişimi", "Uzak C2 sunucusuna HTTP/HTTPS bağlantısı açar.") },
+            { "InternetOpenUrlW", ("Ağ / C2 İletişimi", "Uzak C2 sunucusuna HTTP/HTTPS bağlantısı açar.") },
+            { "HttpSendRequestA", ("Ağ / C2 İletişimi", "Uzak sunucuya veri/telemetri gönderir.") },
+            { "HttpSendRequestW", ("Ağ / C2 İletişimi", "Uzak sunucuya veri/telemetri gönderir.") },
+            { "URLDownloadToFileA", ("Ağ / C2 İletişimi", "İnternetten gizlice ikincil zararlı dosya indirir.") },
+            { "URLDownloadToFileW", ("Ağ / C2 İletişimi", "İnternetten gizlice ikincil zararlı dosya indirir.") },
+
+            // Persistence & Registry Tampering
+            { "RegSetValueExA", ("Kalıcılık / Registry", "Kayıt defterine başlangıç veya sistem yapılandırma değeri yazar.") },
+            { "RegSetValueExW", ("Kalıcılık / Registry", "Kayıt defterine başlangıç veya sistem yapılandırma değeri yazar.") },
+            { "RegCreateKeyExA", ("Kalıcılık / Registry", "Kayıt defterinde kalıcılık anahtarı oluşturur.") },
+            { "RegCreateKeyExW", ("Kalıcılık / Registry", "Kayıt defterinde kalıcılık anahtarı oluşturur.") }
+        };
+
+        private static void ParsePeBinary(string filePath, ThreatAnalysisResult result, ref int score)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(filePath);
+                if (fileInfo.Length < 64) return;
+
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var reader = new BinaryReader(stream, System.Text.Encoding.ASCII, leaveOpen: true);
+
+                // 1. DOS Header
+                ushort e_magic = reader.ReadUInt16();
+                if (e_magic != 0x5A4D) return; // 'MZ' signature
+
+                stream.Position = 0x3C;
+                int e_lfanew = reader.ReadInt32();
+                if (e_lfanew <= 0 || e_lfanew + 24 > stream.Length) return;
+
+                // 2. NT Signature
+                stream.Position = e_lfanew;
+                uint ntSignature = reader.ReadUInt32();
+                if (ntSignature != 0x00004550) return; // 'PE\0\0'
+
+                // 3. File Header (20 bytes)
+                ushort machine = reader.ReadUInt16();
+                ushort numberOfSections = reader.ReadUInt16();
+
+                // GÜVENLİK: Bu ayrıştırıcı GÜVENİLMEYEN dosyaları okur.
+                // PE spesifikasyonu en fazla 96 bölüme izin verir; uydurma bir
+                // NumberOfSections (ör. 65535) döngüyü gereksiz yere şişirir ve
+                // bellek tüketir. Sınırın üstü bozuk kabul edilir.
+                const int MaxPeSections = 96;
+                if (numberOfSections > MaxPeSections)
+                {
+                    AppLog.Warning(
+                        $"PE bölüm sayısı makul sınırın üstünde ({numberOfSections}); dosya bozuk veya kasıtlı hatalı: {filePath}",
+                        null, nameof(FileThreatAnalyzerService));
+                    return;
+                }
+                uint timeDateStamp = reader.ReadUInt32();
+                reader.ReadUInt32(); // PointerToSymbolTable
+                reader.ReadUInt32(); // NumberOfSymbols
+                ushort sizeOfOptionalHeader = reader.ReadUInt16();
+                ushort characteristics = reader.ReadUInt16();
+
+                bool is64Bit = machine == 0x8664 || machine == 0xAA64;
+                string archName = machine switch
+                {
+                    0x8664 => "x64 (AMD64)",
+                    0x014C => "x86 (i386)",
+                    0xAA64 => "ARM64",
+                    0x01C0 => "ARM",
+                    _ => $"0x{machine:X4}"
+                };
+
+                string compileTimeStr;
                 try
                 {
-#pragma warning disable SYSLIB0057
-                    var cert = X509Certificate.CreateFromSignedFile(filePath);
-#pragma warning restore SYSLIB0057
-                    if (cert != null)
+                    compileTimeStr = DateTimeOffset.FromUnixTimeSeconds(timeDateStamp).UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'");
+                }
+                catch
+                {
+                    compileTimeStr = "Geçersiz Zaman Damgası";
+                }
+
+                var peHeader = new PeHeaderInfo
+                {
+                    IsPeFile = true,
+                    MachineArchitecture = archName,
+                    SectionCount = numberOfSections,
+                    CompileTimeUtc = compileTimeStr,
+                    Is64Bit = is64Bit
+                };
+
+                var mitigations = new ExploitMitigationMatrix();
+                uint entryPointRva = 0;
+                ulong imageBase = 0;
+                ushort subsystem = 0;
+                ushort dllCharacteristics = 0;
+                uint importDirRva = 0;
+                uint importDirSize = 0;
+                bool isDotNet = false;
+
+                // 4. Optional Header
+                if (sizeOfOptionalHeader > 0)
+                {
+                    long optionalHeaderStart = stream.Position;
+                    ushort magic = reader.ReadUInt16(); // 0x10B = PE32, 0x20B = PE32+
+                    peHeader.Is64Bit = magic == 0x20B;
+
+                    reader.ReadByte(); // MajorLinkerVersion
+                    reader.ReadByte(); // MinorLinkerVersion
+                    reader.ReadUInt32(); // SizeOfCode
+                    reader.ReadUInt32(); // SizeOfInitializedData
+                    reader.ReadUInt32(); // SizeOfUninitializedData
+                    entryPointRva = reader.ReadUInt32();
+                    reader.ReadUInt32(); // BaseOfCode
+
+                    if (magic == 0x10B) // PE32 (32-bit)
                     {
-                        string subject = cert.Subject;
-                        int cnIdx = subject.IndexOf("CN=", StringComparison.OrdinalIgnoreCase);
-                        if (cnIdx >= 0)
+                        reader.ReadUInt32(); // BaseOfData
+                        imageBase = reader.ReadUInt32();
+                        reader.ReadUInt32(); // SectionAlignment
+                        reader.ReadUInt32(); // FileAlignment
+                        // HATA DÜZELTMESİ: Sürüm bloğu 12 BAYTTIR, 16 değil.
+                        // MajorOS+MinorOS+MajorImage+MinorImage+MajorSubsystem+MinorSubsystem
+                        // = 6 x ushort = 12 bayt. 16 atlamak Subsystem ve
+                        // DllCharacteristics alanlarını 4 bayt kaydırıyor ve
+                        // tüm exploit kalkanları (ASLR/DEP/CFG) yanlış okunuyordu —
+                        // notepad.exe bile "0/5 kalkan" görünüyordu.
+                        stream.Position += 12; // OS, Image, Subsystem versions (6 x ushort)
+                        reader.ReadUInt32(); // Win32VersionValue
+                        reader.ReadUInt32(); // SizeOfImage
+                        reader.ReadUInt32(); // SizeOfHeaders
+                        reader.ReadUInt32(); // CheckSum
+                        subsystem = reader.ReadUInt16();
+                        dllCharacteristics = reader.ReadUInt16();
+                        stream.Position += 16; // SizeOfStack/Heap Reserve/Commit (32-bit: 4 * 4 = 16 bytes)
+                        reader.ReadUInt32(); // LoaderFlags
+                        uint numRva = reader.ReadUInt32();
+
+                        // Data Directories
+                        for (int d = 0; d < numRva && d < 16; d++)
                         {
-                            int commaIdx = subject.IndexOf(',', cnIdx);
-                            signer = commaIdx > 0 ? subject.Substring(cnIdx + 3, commaIdx - (cnIdx + 3)) : subject.Substring(cnIdx + 3);
-                        }
-                        else
-                        {
-                            signer = subject;
+                            uint va = reader.ReadUInt32();
+                            uint sz = reader.ReadUInt32();
+                            if (d == 1) { importDirRva = va; importDirSize = sz; }
+                            if (d == 14 && va > 0) { isDotNet = true; } // CLR Runtime Header
                         }
                     }
-                }
-                catch { }
+                    else if (magic == 0x20B) // PE32+ (64-bit)
+                    {
+                        imageBase = reader.ReadUInt64();
+                        reader.ReadUInt32(); // SectionAlignment
+                        reader.ReadUInt32(); // FileAlignment
+                        // HATA DÜZELTMESİ: Sürüm bloğu 12 BAYTTIR, 16 değil.
+                        // MajorOS+MinorOS+MajorImage+MinorImage+MajorSubsystem+MinorSubsystem
+                        // = 6 x ushort = 12 bayt. 16 atlamak Subsystem ve
+                        // DllCharacteristics alanlarını 4 bayt kaydırıyor ve
+                        // tüm exploit kalkanları (ASLR/DEP/CFG) yanlış okunuyordu —
+                        // notepad.exe bile "0/5 kalkan" görünüyordu.
+                        stream.Position += 12; // OS, Image, Subsystem versions (6 x ushort)
+                        reader.ReadUInt32(); // Win32VersionValue
+                        reader.ReadUInt32(); // SizeOfImage
+                        reader.ReadUInt32(); // SizeOfHeaders
+                        reader.ReadUInt32(); // CheckSum
+                        subsystem = reader.ReadUInt16();
+                        dllCharacteristics = reader.ReadUInt16();
+                        stream.Position += 32; // SizeOfStack/Heap Reserve/Commit (64-bit: 4 * 8 = 32 bytes)
+                        reader.ReadUInt32(); // LoaderFlags
+                        uint numRva = reader.ReadUInt32();
 
-                if (result == 0)
-                {
-                    return (SignatureStatus.Verified, signer);
+                        // Data Directories
+                        for (int d = 0; d < numRva && d < 16; d++)
+                        {
+                            uint va = reader.ReadUInt32();
+                            uint sz = reader.ReadUInt32();
+                            if (d == 1) { importDirRva = va; importDirSize = sz; }
+                            if (d == 14 && va > 0) { isDotNet = true; } // CLR Runtime Header
+                        }
+                    }
+
+                    stream.Position = optionalHeaderStart + sizeOfOptionalHeader;
                 }
-                else if (result == 0x800B0100) // TRUST_E_NOSIGNATURE
+
+                peHeader.EntryPointRva = entryPointRva;
+                peHeader.ImageBase = imageBase;
+                peHeader.Subsystem = subsystem switch
                 {
-                    return (SignatureStatus.Unsigned, string.Empty);
+                    1 => "Native Sürücü",
+                    2 => "Windows GUI (Arayüz)",
+                    3 => "Windows CUI (Konsol)",
+                    7 => "POSIX CUI",
+                    9 => "Windows CE GUI",
+                    10 => "EFI Uygulaması",
+                    _ => $"Diğer ({subsystem})"
+                };
+
+                // Parse Exploit Mitigations
+                mitigations.HasHighEntropyVa = (dllCharacteristics & 0x0020) != 0;
+                mitigations.HasAslr = (dllCharacteristics & 0x0040) != 0;
+                mitigations.HasDep = (dllCharacteristics & 0x0100) != 0;
+                mitigations.HasSafeSeh = (dllCharacteristics & 0x0400) != 0;
+                mitigations.HasCfg = (dllCharacteristics & 0x4000) != 0;
+                mitigations.IsDotNet = isDotNet;
+
+                result.PeHeader = peHeader;
+                result.Mitigations = mitigations;
+
+                // Mitigation Risk Scoring
+                if (!mitigations.HasAslr && !isDotNet)
+                {
+                    score += 10;
+                    result.Factors.Add(new ThreatFactor
+                    {
+                        Title = "ASLR Kalkanı Devre Dışı",
+                        Description = "Dosya bellek adresi rastgeleleştirme (ASLR) olmadan derlenmiş. Bellek taşması açıklarına karşı savunmasızdır.",
+                        Severity = ThreatSeverity.Warning,
+                        ScoreImpact = 10
+                    });
                 }
-                else
+
+                if (!mitigations.HasDep && !isDotNet)
                 {
-                    return (SignatureStatus.InvalidOrTampered, !string.IsNullOrWhiteSpace(signer) ? $"{signer} (Geçersiz)" : "Bozulmuş İmza");
+                    score += 10;
+                    result.Factors.Add(new ThreatFactor
+                    {
+                        Title = "DEP / NX Kalkanı Devre Dışı",
+                        Description = "Veri alanında kod yürütme engeli (Data Execution Prevention) aktif değil. Yığın/Heap üzerinde kod çalıştırma riskine açıktır.",
+                        Severity = ThreatSeverity.Warning,
+                        ScoreImpact = 10
+                    });
+                }
+
+                // 5. Section Headers & Section Entropies
+                var rawSectionTuples = new List<(uint VirtualAddress, uint VirtualSize, uint RawPointer, uint RawSize)>();
+                var sectionsList = new List<PeSectionItem>();
+
+                bool foundSuspiciousPacker = false;
+                bool foundWxSection = false;
+
+                for (int i = 0; i < numberOfSections; i++)
+                {
+                    // Bölüm başlığı 40 bayttır; dosya biterse sessizce dur
+                    if (stream.Position + 40 > stream.Length) break;
+
+                    byte[] nameBytes = reader.ReadBytes(8);
+                    if (nameBytes.Length < 8) break;
+                    string rawName = System.Text.Encoding.ASCII.GetString(nameBytes).TrimEnd('\0', ' ');
+
+                    uint secVirtualSize = reader.ReadUInt32();
+                    uint secVirtualAddress = reader.ReadUInt32();
+                    uint secRawSize = reader.ReadUInt32();
+                    uint secRawPointer = reader.ReadUInt32();
+
+                    reader.ReadUInt32(); // PointerToRelocations
+                    reader.ReadUInt32(); // PointerToLinenumbers
+                    reader.ReadUInt16(); // NumberOfRelocations
+                    reader.ReadUInt16(); // NumberOfLinenumbers
+                    uint secCharacteristics = reader.ReadUInt32();
+
+                    bool isExec = (secCharacteristics & 0x20000000) != 0;
+                    bool isRead = (secCharacteristics & 0x40000000) != 0;
+                    bool isWrite = (secCharacteristics & 0x80000000) != 0;
+
+                    rawSectionTuples.Add((secVirtualAddress, secVirtualSize, secRawPointer, secRawSize));
+
+                    // Calculate section entropy
+                    double secEntropy = 0.0;
+                    if (secRawPointer > 0 && secRawSize > 0 && secRawPointer + secRawSize <= stream.Length)
+                    {
+                        long savedPos = stream.Position;
+                        try
+                        {
+                            stream.Position = secRawPointer;
+                            int readLen = (int)Math.Min(secRawSize, 2 * 1024 * 1024);
+                            byte[] secBuf = reader.ReadBytes(readLen);
+                            secEntropy = CalculateBufferEntropy(secBuf);
+                        }
+                        catch { }
+                        finally
+                        {
+                            stream.Position = savedPos;
+                        }
+                    }
+
+                    // Packer check
+                    string lowerSec = rawName.ToLowerInvariant();
+                    bool isPackerName = lowerSec.Contains("upx") || lowerSec.Contains("themida") || lowerSec.Contains("vmp") ||
+                                       lowerSec.Contains("aspack") || lowerSec.Contains("pecompact") || lowerSec.Contains("nspack");
+                    bool isHighEntropyCode = isExec && secEntropy >= 7.3;
+
+                    bool isSuspiciousSec = isPackerName || isHighEntropyCode;
+                    if (isSuspiciousSec) foundSuspiciousPacker = true;
+
+                    if (isExec && isWrite) foundWxSection = true;
+
+                    sectionsList.Add(new PeSectionItem
+                    {
+                        Name = string.IsNullOrWhiteSpace(rawName) ? $"Section_{i}" : rawName,
+                        VirtualAddress = secVirtualAddress,
+                        VirtualSize = secVirtualSize,
+                        RawSize = secRawSize,
+                        Entropy = secEntropy,
+                        IsExecutable = isExec,
+                        IsWritable = isWrite,
+                        IsSuspiciousPacker = isSuspiciousSec
+                    });
+                }
+
+                result.Sections = sectionsList;
+
+                if (foundSuspiciousPacker)
+                {
+                    score += 20;
+                    result.Factors.Add(new ThreatFactor
+                    {
+                        Title = "PE Bölüm Röntgeni: Şüpheli Paketleyici (Packer) İmzası",
+                        Description = "Bölüm tablosunda bilinen packer isimleri (UPX/Themida/VMP) veya yüksek entropili (>7.3) şifreli kod bölümleri tespit edildi.",
+                        Severity = ThreatSeverity.Warning,
+                        ScoreImpact = 20
+                    });
+                }
+
+                if (foundWxSection)
+                {
+                    score += 25;
+                    result.Factors.Add(new ThreatFactor
+                    {
+                        Title = "W+X Bölümü (Hem Yazılabilir Hem Çalıştırılabilir Bellek)",
+                        Description = "Binary'de aynı anda hem yazma hem çalıştırma yetkisine sahip bellek bölümü bulundu! Self-modifying kod veya bellek enjeksiyonu tekniğidir.",
+                        Severity = ThreatSeverity.Critical,
+                        ScoreImpact = 25
+                    });
+                }
+
+                // 6. Import Directory & Suspicious Win32 APIs
+                //
+                // Çok büyük dosyalarda import yürüyüşü uzun sürebilir ve bu metot
+                // analiz zincirini bekletir. 256 MB üstünde bu adım atlanır;
+                // header, bölümler ve kalkanlar yine de raporlanır.
+                const long MaxImportWalkBytes = 256L * 1024 * 1024;
+                if (fileInfo.Length > MaxImportWalkBytes)
+                {
+                    AppLog.Info(
+                        $"Dosya {FormatBytes(fileInfo.Length)} — import tablosu analizi atlandı: {filePath}",
+                        nameof(FileThreatAnalyzerService));
+                }
+                else if (importDirRva > 0 && importDirSize > 0)
+                {
+                    uint importOffset = RvaToOffset(importDirRva, rawSectionTuples);
+                    if (importOffset > 0 && importOffset < stream.Length)
+                    {
+                        stream.Position = importOffset;
+                        var dllGroups = new List<ImportedDllGroup>();
+                        var normalizedImports = new List<string>();
+
+                        int dllCount = 0;
+                        while (dllCount < 100 && stream.Position + 20 <= stream.Length)
+                        {
+                            uint origFirstThunk = reader.ReadUInt32();
+                            uint timeStamp = reader.ReadUInt32();
+                            uint forwarderChain = reader.ReadUInt32();
+                            uint nameRva = reader.ReadUInt32();
+                            uint firstThunk = reader.ReadUInt32();
+
+                            // Terminating null descriptor
+                            if (origFirstThunk == 0 && nameRva == 0 && firstThunk == 0) break;
+                            dllCount++;
+
+                            long nextDescPos = stream.Position;
+
+                            uint dllNameOffset = RvaToOffset(nameRva, rawSectionTuples);
+                            string dllName = ReadNullTerminatedString(stream, dllNameOffset);
+                            if (string.IsNullOrWhiteSpace(dllName))
+                            {
+                                stream.Position = nextDescPos;
+                                continue;
+                            }
+
+                            var dllGroup = new ImportedDllGroup
+                            {
+                                DllName = dllName
+                            };
+
+                            uint thunkRva = origFirstThunk != 0 ? origFirstThunk : firstThunk;
+                            uint thunkOffset = RvaToOffset(thunkRva, rawSectionTuples);
+
+                            if (thunkOffset > 0 && thunkOffset < stream.Length)
+                            {
+                                stream.Position = thunkOffset;
+                                int funcCount = 0;
+
+                                while (funcCount < 500 && stream.Position < stream.Length)
+                                {
+                                    funcCount++;
+                                    string funcName;
+
+                                    if (peHeader.Is64Bit)
+                                    {
+                                        if (stream.Position + 8 > stream.Length) break;
+                                        ulong thunkVal = reader.ReadUInt64();
+                                        if (thunkVal == 0) break;
+
+                                        if ((thunkVal & 0x8000000000000000UL) != 0)
+                                        {
+                                            ushort ordinal = (ushort)(thunkVal & 0xFFFF);
+                                            funcName = $"ord{ordinal}";
+                                        }
+                                        else
+                                        {
+                                            uint hintRva = (uint)(thunkVal & 0x7FFFFFFF);
+                                            uint hintOffset = RvaToOffset(hintRva, rawSectionTuples);
+                                            funcName = ReadNullTerminatedString(stream, hintOffset + 2);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (stream.Position + 4 > stream.Length) break;
+                                        uint thunkVal = reader.ReadUInt32();
+                                        if (thunkVal == 0) break;
+
+                                        if ((thunkVal & 0x80000000U) != 0)
+                                        {
+                                            ushort ordinal = (ushort)(thunkVal & 0xFFFF);
+                                            funcName = $"ord{ordinal}";
+                                        }
+                                        else
+                                        {
+                                            uint hintOffset = RvaToOffset(thunkVal, rawSectionTuples);
+                                            funcName = ReadNullTerminatedString(stream, hintOffset + 2);
+                                        }
+                                    }
+
+                                    if (!string.IsNullOrWhiteSpace(funcName))
+                                    {
+                                        bool isSuspicious = SuspiciousApiCatalog.TryGetValue(funcName, out var apiMeta);
+
+                                        dllGroup.Functions.Add(new ImportedApiFunction
+                                        {
+                                            Name = funcName,
+                                            IsSuspicious = isSuspicious,
+                                            Category = isSuspicious ? apiMeta.Category : string.Empty,
+                                            Description = isSuspicious ? apiMeta.Description : string.Empty
+                                        });
+
+                                        string cleanDll = Path.GetFileNameWithoutExtension(dllName).ToLowerInvariant();
+                                        normalizedImports.Add($"{cleanDll}.{funcName.ToLowerInvariant()}");
+                                    }
+                                }
+                            }
+
+                            if (dllGroup.Functions.Count > 0)
+                            {
+                                dllGroups.Add(dllGroup);
+                            }
+
+                            stream.Position = nextDescPos;
+                        }
+
+                        result.ImportedDlls = dllGroups;
+
+                        // Calculate ImpHash
+                        if (normalizedImports.Count > 0)
+                        {
+                            try
+                            {
+                                string joined = string.Join(",", normalizedImports);
+                                byte[] impBytes = System.Security.Cryptography.MD5.HashData(System.Text.Encoding.ASCII.GetBytes(joined));
+                                result.ImpHash = Convert.ToHexString(impBytes).ToLowerInvariant();
+                            }
+                            catch { }
+                        }
+
+                        // Evaluate Suspicious API Findings
+                        var allSuspicious = dllGroups.SelectMany(g => g.Functions).Where(f => f.IsSuspicious).ToList();
+                        if (allSuspicious.Any())
+                        {
+                            bool hasInjection = allSuspicious.Any(f => f.Category == "Bellek Enjeksiyonu" || f.Category == "Process Hollowing");
+                            bool hasSpyware = allSuspicious.Any(f => f.Category == "Klavye / Casusluk");
+
+                            if (hasInjection)
+                            {
+                                score += 30;
+                                string injectNames = string.Join(", ", allSuspicious.Where(f => f.Category == "Bellek Enjeksiyonu" || f.Category == "Process Hollowing").Select(f => f.Name).Distinct().Take(4));
+                                result.Factors.Add(new ThreatFactor
+                                {
+                                    Title = "Kritik Win32 Süreç & Bellek Enjeksiyon API'leri",
+                                    Description = $"Dosya, başka süreçlerin belleğine sızma ve kod enjekte etme fonksiyonlarını içe aktarmaktadır ({injectNames}).",
+                                    Severity = ThreatSeverity.Critical,
+                                    ScoreImpact = 30
+                                });
+                            }
+
+                            if (hasSpyware)
+                            {
+                                score += 20;
+                                string spyNames = string.Join(", ", allSuspicious.Where(f => f.Category == "Klavye / Casusluk").Select(f => f.Name).Distinct().Take(3));
+                                result.Factors.Add(new ThreatFactor
+                                {
+                                    Title = "Klavye Dinleme (Keylogger) ve Kanca API'leri",
+                                    Description = $"Tuş vuruşlarını izleme veya panoyu ele geçirme API'leri bulundu ({spyNames}).",
+                                    Severity = ThreatSeverity.Warning,
+                                    ScoreImpact = 20
+                                });
+                            }
+                        }
+                    }
                 }
             }
             catch
             {
-                return (SignatureStatus.Unsigned, string.Empty);
+                // Silently fallback if PE is corrupt or malformed
             }
+        }
+
+        private static uint RvaToOffset(uint rva, List<(uint VirtualAddress, uint VirtualSize, uint RawPointer, uint RawSize)> sections)
+        {
+            foreach (var sec in sections)
+            {
+                uint size = Math.Max(sec.VirtualSize, sec.RawSize);
+                if (rva >= sec.VirtualAddress && rva < sec.VirtualAddress + size)
+                {
+                    return (rva - sec.VirtualAddress) + sec.RawPointer;
+                }
+            }
+            return 0;
+        }
+
+        private static string ReadNullTerminatedString(Stream stream, uint offset, int maxLen = 128)
+        {
+            if (offset <= 0 || offset >= stream.Length) return string.Empty;
+            long origPos = stream.Position;
+            try
+            {
+                stream.Position = offset;
+                var bytes = new List<byte>();
+                for (int i = 0; i < maxLen && stream.Position < stream.Length; i++)
+                {
+                    int b = stream.ReadByte();
+                    if (b <= 0) break;
+                    if (b >= 32 && b <= 126) bytes.Add((byte)b);
+                }
+                return System.Text.Encoding.ASCII.GetString(bytes.ToArray());
+            }
+            catch
+            {
+                return string.Empty;
+            }
+            finally
+            {
+                try { stream.Position = origPos; } catch { }
+            }
+        }
+
+        private static double CalculateBufferEntropy(byte[] buffer)
+        {
+            if (buffer == null || buffer.Length == 0) return 0.0;
+            int[] map = new int[256];
+            for (int i = 0; i < buffer.Length; i++) map[buffer[i]]++;
+            double entropy = 0.0;
+            double len = buffer.Length;
+            for (int i = 0; i < 256; i++)
+            {
+                if (map[i] > 0)
+                {
+                    double p = map[i] / len;
+                    entropy -= p * Math.Log2(p);
+                }
+            }
+            return Math.Round(entropy, 2);
         }
 
         private static string FormatBytes(long bytes)

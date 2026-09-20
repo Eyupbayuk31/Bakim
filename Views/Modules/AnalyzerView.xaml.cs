@@ -2,9 +2,9 @@ using System.Windows.Controls;
 
 namespace Bakım.Views.Modules
 {
-    public partial class AutorunsPersistenceView : UserControl
+    public partial class AnalyzerView : UserControl
     {
-        public AutorunsPersistenceView()
+        public AnalyzerView()
         {
             InitializeComponent();
         }

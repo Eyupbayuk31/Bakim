@@ -23,7 +23,7 @@ namespace Bakım.ViewModels
         PrivacyDebloat,
         CrashAnalyzer,
         Uninstaller,
-        Autoruns,
+        Analyzer,
         WindowsTweaker,
         Settings
     }
@@ -45,8 +45,12 @@ namespace Bakım.ViewModels
                 ["PrivacyDebloat"] = AppModule.PrivacyDebloat,
                 ["CrashAnalyzer"] = AppModule.CrashAnalyzer,
                 ["Uninstaller"] = AppModule.Uninstaller,
-                ["Autoruns"] = AppModule.Autoruns,
-                ["Persistence"] = AppModule.Autoruns,
+                ["Analyzer"] = AppModule.Analyzer,
+                // Eski anahtarlar alias olarak korunur: kayıtlı durum, komut
+                // paleti kısayolları ve dış bağlantılar kırılmasın.
+                ["Autoruns"] = AppModule.Analyzer,
+                ["Persistence"] = AppModule.Analyzer,
+                ["Analizor"] = AppModule.Analyzer,
                 ["Tweaker"] = AppModule.WindowsTweaker,
                 ["WindowsTweaker"] = AppModule.WindowsTweaker,
                 ["Settings"] = AppModule.Settings,

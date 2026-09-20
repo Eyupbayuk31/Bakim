@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Bakım.Controls;
+using Bakım.Models;
 using Bakım.Services;
 using Bakım.Views.Modules;
 
@@ -73,6 +74,7 @@ internal static class Program
         RunViewChecks();
         RunThemeChecks(app);
         RunContainerChecks();
+        RunDialogChecks();
 
         Console.WriteLine();
 
@@ -137,7 +139,7 @@ internal static class Program
             _ = mainVm.PrivacyDebloat;
             _ = mainVm.CrashAnalyzer;
             _ = mainVm.Uninstaller;
-            _ = mainVm.Autoruns;
+            _ = mainVm.Analyzer;
             _ = mainVm.WindowsTweaker;
             _ = mainVm.TweakerCategories;
             _ = mainVm.Settings;
@@ -145,7 +147,10 @@ internal static class Program
 
             main.Close();
 
-            provider.Dispose();
+            RunTweakerNavigationChecks(provider);
+
+            // NOT: provider bilerek dispose EDILMEZ — sonraki diyalog kontrolu
+            // App.Services uzerinden ayni konteyneri kullanir.
         }
         catch (Exception ex)
         {
@@ -153,6 +158,215 @@ internal static class Program
             Console.WriteLine($"  COKTU  | {ex.GetType().Name}: {ex.Message}");
             if (ex.InnerException != null)
                 Console.WriteLine($"           ic istisna: {ex.InnerException.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Diyalog pencerelerinin gerçekten yüklendiğini ve TÜM SEKMELERİNİN
+    /// render olduğunu doğrular. Sekmeler Visibility ile gizlendiği için
+    /// yalnızca açılışta görüneni test etmek yetmez — gizli sekmedeki bozuk
+    /// bir binding ya da eksik kaynak fark edilmeden kalırdı.
+    /// </summary>
+    private static void RunDialogChecks()
+    {
+        Console.WriteLine();
+        Console.WriteLine("DIYALOG PENCERELERI");
+        Console.WriteLine("===================");
+
+        try
+        {
+            var sample = BuildSampleAnalysis();
+
+            var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(
+                sample,
+                Bakım.App.GetService<IFileThreatAnalyzerService>(),
+                null,
+                Bakım.App.GetService<IVirusTotalCheckService>());
+
+            dialog.ShowActivated = false;
+            dialog.ShowInTaskbar = false;
+
+            // Dört sekmenin her birini etkinleştirip düzen geçişini zorla
+            string[] tabNames = { "Genel Bakis", "PE & Kalkanlar", "API Cagrilari", "Kimlik & Hash" };
+
+            for (int i = 0; i < 4; i++)
+            {
+                int before = ResourceErrors.Count;
+
+                dialog.ViewModel.SelectedTabIndex = i;
+
+                dialog.Measure(new Size(940, 780));
+                dialog.Arrange(new Rect(0, 0, 940, 780));
+                dialog.UpdateLayout();
+
+                // Dar pencere: eylem cubugu tasmiyor mu
+                dialog.Measure(new Size(820, 640));
+                dialog.Arrange(new Rect(0, 0, 820, 640));
+                dialog.UpdateLayout();
+
+                int added = ResourceErrors.Count - before;
+                if (added == 0)
+                {
+                    Console.WriteLine($"  GECTI  | ThreatAnalysisDialog / sekme {i} ({tabNames[i]})");
+                }
+                else
+                {
+                    Console.WriteLine($"  KALDI  | sekme {i} ({tabNames[i]}) — {added} kaynak hatasi");
+                    Failures.Add($"dialog-tab-{i}");
+                }
+            }
+
+            dialog.Close();
+        }
+        catch (Exception ex)
+        {
+            Failures.Add("ThreatAnalysisDialog");
+            Console.WriteLine($"  COKTU  | ThreatAnalysisDialog -> {ex.GetType().Name}: {ex.Message}");
+            if (ex.InnerException != null)
+                Console.WriteLine($"           ic istisna: {ex.InnerException.Message}");
+        }
+    }
+
+    /// <summary>Dört sekmenin de dolu görüneceği sentetik analiz sonucu.</summary>
+    private static ThreatAnalysisResult BuildSampleAnalysis()
+    {
+        return new ThreatAnalysisResult
+        {
+            FileName = "ornek.exe",
+            FilePath = @"C:\Program Files\Ornek\ornek.exe",
+            FileSizeFormatted = "5,51 MB",
+            FileSizeBytes = 5_777_408,
+            Sha256 = new string('a', 64),
+            Md5 = new string('b', 32),
+            Sha1 = new string('c', 40),
+            ImpHash = new string('d', 32),
+            EntropyScore = 6.82,
+            EntropyText = "Normal Entropi (6,82 / 8.0)",
+            RiskScore = 45,
+            IsSigned = true,
+            SignerName = "Ornek Yazilim A.S.",
+            DigitalSignatureText = "Geçerli (Ornek Yazilim A.S.)",
+            IsCatalogSigned = true,
+            SignatureCatalogPath = @"C:\Windows\System32\CatRoot\ornek.cat",
+            CertificateExpiry = DateTime.Now.AddYears(1),
+            ProductName = "Ornek Urun",
+            FileVersion = "1.2.3.4",
+            HasMarkOfTheWeb = true,
+            ZoneSourceUrl = "https://ornek.example/indir/ornek.exe",
+            VirusTotalSummary = "3/70 Supheli",
+            VirusTotalMalicious = 3,
+            VirusTotalTotal = 70,
+            IsActiveProcess = true,
+            ActiveProcessId = 8152,
+            ActiveProcessMemory = "128 MB",
+            Recommendation = "Dosya imzali ancak internetten indirilmis. Kaynagini dogrulayin.",
+            PeHeader = new PeHeaderInfo
+            {
+                IsPeFile = true,
+                MachineArchitecture = "x64 (AMD64)",
+                Subsystem = "Windows GUI",
+                CompileTimeUtc = "2024-03-12 14:22:01 UTC",
+                EntryPointRva = 0x1234,
+                ImageBase = 0x140000000,
+                SectionCount = 3,
+                Is64Bit = true
+            },
+            Mitigations = new ExploitMitigationMatrix
+            {
+                HasAslr = true, HasDep = true, HasCfg = false,
+                HasHighEntropyVa = true, HasSafeSeh = false, IsDotNet = false
+            },
+            Sections =
+            {
+                new PeSectionItem { Name = ".text", VirtualAddress = 0x1000, VirtualSize = 0x5000,
+                                    RawSize = 0x5000, Entropy = 6.1, IsExecutable = true },
+                new PeSectionItem { Name = ".rdata", VirtualAddress = 0x7000, VirtualSize = 0x2000,
+                                    RawSize = 0x2000, Entropy = 4.9 },
+                new PeSectionItem { Name = ".packed", VirtualAddress = 0x9000, VirtualSize = 0x9000,
+                                    RawSize = 0x9000, Entropy = 7.8, IsExecutable = true,
+                                    IsWritable = true, IsSuspiciousPacker = true },
+            },
+            ImportedDlls =
+            {
+                new ImportedDllGroup
+                {
+                    DllName = "kernel32.dll",
+                    Functions =
+                    {
+                        new ImportedApiFunction { Name = "VirtualAllocEx", IsSuspicious = true,
+                            Category = "Bellek Enjeksiyonu", Description = "Baska surecte bellek ayirir." },
+                        new ImportedApiFunction { Name = "CreateFileW", Description = "Dosya acar." },
+                    }
+                },
+                new ImportedDllGroup
+                {
+                    DllName = "ws2_32.dll",
+                    Functions =
+                    {
+                        new ImportedApiFunction { Name = "connect", IsSuspicious = true,
+                            Category = "Ağ / C2 İletişimi", Description = "Uzak sunucuya baglanir." },
+                    }
+                },
+            },
+            Factors =
+            {
+                new ThreatFactor { Title = "Güvenilir Yayıncı İmzası", Severity = ThreatSeverity.Clean,
+                                   Description = "Dosya meşru bir üretici tarafından imzalanmış.", ScoreImpact = 0 },
+                new ThreatFactor { Title = "İnternetten İndirilmiş", Severity = ThreatSeverity.Warning,
+                                   Description = "Mark-of-the-Web işareti taşıyor.", ScoreImpact = 15 },
+                new ThreatFactor { Title = "Yüksek Entropili Bölüm", Severity = ThreatSeverity.Critical,
+                                   Description = ".packed bölümü sıkıştırılmış/şifrelenmiş olabilir.", ScoreImpact = 30 },
+                new ThreatFactor { Title = "Bilgi", Severity = ThreatSeverity.Info,
+                                   Description = "Ek bilgi satırı.", ScoreImpact = 0 },
+            }
+        };
+    }
+
+    /// <summary>
+    /// Tweaker kategori gezinmesi. Günlükte "Tweaker kategorisine geçiş
+    /// sırasında hata oluştu: All" satırı görüldü; hata try/catch içinde
+    /// yutuluyordu. Bu kontrol her kategori anahtarını gerçek konteyner
+    /// üzerinden deneyip istisnayı görünür kılar.
+    /// </summary>
+    private static void RunTweakerNavigationChecks(IServiceProvider provider)
+    {
+        Console.WriteLine();
+        Console.WriteLine("TWEAKER KATEGORI GEZINMESI");
+        Console.WriteLine("==========================");
+
+        string[] keys =
+        {
+            "All", "Appearance", "Behavior", "BootLogon", "ClassicApps",
+            "ContextMenu", "DesktopTaskbar", "Edge", "FileExplorer",
+            "SettingsCpl", "Tools", "AdvancedAppearance", "PrivacyDebloat",
+        };
+
+        try
+        {
+            var main = provider.GetRequiredService<Bakım.ViewModels.MainViewModel>();
+
+            foreach (var key in keys)
+            {
+                try
+                {
+                    main.NavigateToTweakerCategory(key);
+                    Console.WriteLine($"  GECTI  | {key}");
+                }
+                catch (Exception ex)
+                {
+                    Failures.Add($"tweaker:{key}");
+                    Console.WriteLine($"  COKTU  | {key} -> {ex.GetType().Name}: {ex.Message}");
+                    if (ex.InnerException != null)
+                        Console.WriteLine($"           ic: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Failures.Add("tweaker-nav");
+            Console.WriteLine($"  COKTU  | MainViewModel cozulemedi -> {ex.GetType().Name}: {ex.Message}");
+            if (ex.InnerException != null)
+                Console.WriteLine($"           ic: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
         }
     }
 
@@ -170,7 +384,7 @@ internal static class Program
             ("PrivacyDebloatModuleView", () => new PrivacyDebloatModuleView()),
             ("CrashAnalyzerModuleView",  () => new CrashAnalyzerModuleView()),
             ("UninstallerModuleView",    () => new UninstallerModuleView()),
-            ("AutorunsPersistenceView",  () => new AutorunsPersistenceView()),
+            ("AnalyzerView",  () => new AnalyzerView()),
             ("WindowsTweakerModuleView", () => new WindowsTweakerModuleView()),
             ("SettingsModuleView",       () => new SettingsModuleView()),
 
