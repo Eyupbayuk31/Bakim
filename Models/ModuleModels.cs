@@ -1,3 +1,4 @@
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Bakım.Models
@@ -6,8 +7,14 @@ namespace Bakım.Models
     {
         public string Name { get; set; } = string.Empty;
         public string FilePath { get; set; } = string.Empty;
+        public string CleanExePath { get; set; } = string.Empty;
         public string RegistryPath { get; set; } = string.Empty;
+        public string LocationType { get; set; } = "Kayıt Defteri"; // HKCU, HKLM, WOW6432, Folder, CommonFolder
+        public string Publisher { get; set; } = "Bilinmeyen Yayıncı";
         public bool IsCurrentUser { get; set; }
+        public bool FileExists { get; set; } = true;
+        public ImageSource? IconSource { get; set; }
+        public string EstimatedDelayText { get; set; } = "~0.3 sn";
 
         [ObservableProperty]
         private bool _isEnabled = true;
@@ -26,6 +33,16 @@ namespace Bakım.Models
 
         [ObservableProperty]
         private bool _isActionBusy;
+    }
+
+    public class StartupSummaryStats
+    {
+        public int TotalCount { get; set; }
+        public int EnabledCount { get; set; }
+        public int DisabledCount { get; set; }
+        public int HighImpactCount { get; set; }
+        public double EstimatedBootDelaySeconds { get; set; }
+        public string FormattedBootDelay => $"~{EstimatedBootDelaySeconds:F1} sn";
     }
 
     public class DriveInfoItem

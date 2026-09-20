@@ -721,13 +721,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v370 = new ReleaseChangelogItem
+            {
+                Version = "v3.7.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Başlangıç Uygulamaları Fluent 2, KPI Kartları, Win32 İkon Çıkarma & Açılış Hızlandırma",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Windows 11 Fluent 2 Başlangıç Röntgeni: 4 adet etkileşimli KPI istatistik kartı (Toplam Başlatıcı, Etkin, Devre Dışı, Tahmini Boot Gecikmesi) ve modern pill filtreleme çubuğu.",
+                    "Yüksek Çözünürlüklü Yerel İkon & Yayıncı Çıkarıcı: Discord, Steam, Spotify, Chrome ve Riot gibi uygulamaların gerçek simgeleri Win32 GDI API'si ile bellek sızıntısız arayüze aktarıldı.",
+                    "Genişletilmiş 5 Noktalı Kayıt & Klasör Taraması: Standart Run anahtarlarının yanı sıra 64-bit/32-bit WOW6432Node kayıtları, Kullanıcı Başlangıç Klasörü ve Ortak Sistem Başlangıç Klasörü tam denetime alındı.",
+                    "Tek Tıkla Açılışı Hızlandır (Boot Optimizer): Sistemi yavaşlatan yüksek etkili arka plan başlatıcıları tek tıkla analiz edilerek güvenle devre dışı bırakma optimizasyonu sağlandı.",
+                    "Başlangıç Uygulaması Ekleme & Kalıcı Silme: Yeni program veya kısayol ekleme, kayıt defterinden veya diskten kalıcı temizleme ve sağ detay teftiş paneli eklendi."
+                }
+            };
+
             var v360 = new ReleaseChangelogItem
             {
                 Version = "v3.6.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Ağ Röntgeni Seçim Kilidi, Sanal Adaptör Filtresi & DI Sertleştirmesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Ağ Röntgeni Kesintisiz İnceleme (Sticky Inspection): Canlı izleme esnasında arka plan yenilemelerinde seçili soketin ve teftiş çekmecesinin anında kapanıp sıfırlanma sorunu kökten çözüldü.",
@@ -843,8 +860,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v360;
+            LatestRelease = v370;
 
+            ReleaseHistory.Add(v370);
             ReleaseHistory.Add(v360);
             ReleaseHistory.Add(v350);
             ReleaseHistory.Add(v340);

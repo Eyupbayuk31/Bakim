@@ -1,5 +1,16 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Bakım.Models;
 
@@ -9,11 +20,18 @@ namespace Bakım.Services
     {
         Task<List<StartupProgramItem>> GetStartupProgramsAsync();
         Task<bool> SetStartupProgramStateAsync(StartupProgramItem item, bool enable);
+        Task<bool> DeleteStartupProgramAsync(StartupProgramItem item);
+        Task<bool> AddNewStartupProgramAsync(string name, string executablePath);
         void OpenFileLocation(string rawFilePath);
     }
 
     public class StartupService : IStartupService
     {
+        [DllImport("gdi32.dll", SetLastError = true)]
+        private static extern bool DeleteObject(IntPtr hObject);
+
+        private static readonly ConcurrentDictionary<string, ImageSource?> _iconCache = new(StringComparer.OrdinalIgnoreCase);
+
         public async Task<List<StartupProgramItem>> GetStartupProgramsAsync()
         {
             return await Task.Run(() =>
@@ -21,15 +39,21 @@ namespace Bakım.Services
                 var list = new List<StartupProgramItem>();
 
                 // 1. HKCU Run Registry Key
-                ReadRegistryKey(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Run", true, list);
+                ReadRegistryKey(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Run", true, "Kayıt Defteri (HKCU)", list);
 
-                // 2. HKLM Run Registry Key
-                ReadRegistryKey(Registry.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\Run", false, list);
+                // 2. HKLM Run Registry Key (64-Bit)
+                ReadRegistryKey(Registry.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\Run", false, "Kayıt Defteri (HKLM)", list);
 
-                // 3. User Startup Folder (.lnk / executable shortcuts)
-                ReadStartupFolder(list);
+                // 3. HKLM WOW6432Node Run Key (32-Bit apps on 64-Bit Windows)
+                ReadRegistryKey(Registry.LocalMachine, @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", false, "32-Bit Kayıt Defteri (WOW64)", list);
 
-                // Açılış Etkisi Sıralaması: En yüksek etkiden düşüğe doğru sırala
+                // 4. User Startup Folder
+                ReadStartupFolder(Environment.GetFolderPath(Environment.SpecialFolder.Startup), "Kullanıcı Başlangıç Klasörü", true, list);
+
+                // 5. Common Startup Folder (All Users)
+                ReadStartupFolder(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), "Ortak Başlangıç Klasörü", false, list);
+
+                // Sıralama: En yüksek açılış etkisinden düşüğe ve isme göre
                 return list.OrderByDescending(p => p.ImpactLevel).ThenBy(p => p.Name).ToList();
             });
         }
@@ -41,7 +65,7 @@ namespace Bakım.Services
                 try
                 {
                     // 1. Başlangıç Klasörü Kontrolü
-                    if (item.RegistryPath.Contains("Klasör") || item.RegistryPath.Contains("Startup Folder"))
+                    if (item.LocationType.Contains("Klasör") || item.RegistryPath.Contains("Klasör"))
                     {
                         string currentPath = item.FilePath;
                         if (enable)
@@ -70,7 +94,9 @@ namespace Bakım.Services
 
                     // 2. Kayıt Defteri (StartupApproved\Run)
                     RegistryKey root = item.IsCurrentUser ? Registry.CurrentUser : Registry.LocalMachine;
-                    string approvedKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+                    string approvedKeyPath = item.RegistryPath.Contains("WOW6432Node", StringComparison.OrdinalIgnoreCase)
+                        ? @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+                        : @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
 
                     using var approvedKey = root.OpenSubKey(approvedKeyPath, true) ?? root.CreateSubKey(approvedKeyPath);
                     if (approvedKey != null)
@@ -90,16 +116,87 @@ namespace Bakım.Services
                         return true;
                     }
                 }
-                catch (UnauthorizedAccessException)
-                {
-                    // Yetki yetersiz (UAC)
-                }
-                catch (Exception)
-                {
-                    // Savunmacı programlama
-                }
+                catch (UnauthorizedAccessException) { }
+                catch (Exception) { }
 
                 return false;
+            });
+        }
+
+        public async Task<bool> DeleteStartupProgramAsync(StartupProgramItem item)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    // 1. Başlangıç klasörü ise doğrudan kısayolu sil
+                    if (item.LocationType.Contains("Klasör") || item.RegistryPath.Contains("Klasör"))
+                    {
+                        if (File.Exists(item.FilePath))
+                        {
+                            File.Delete(item.FilePath);
+                            return true;
+                        }
+                        if (File.Exists(item.FilePath + ".disabled"))
+                        {
+                            File.Delete(item.FilePath + ".disabled");
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    // 2. Kayıt Defteri ise Run anahtarından sil
+                    RegistryKey root = item.IsCurrentUser ? Registry.CurrentUser : Registry.LocalMachine;
+                    string subKeyPath = item.RegistryPath.Replace($"{root.Name}\\", "");
+
+                    using (var key = root.OpenSubKey(subKeyPath, true))
+                    {
+                        key?.DeleteValue(item.Name, false);
+                    }
+
+                    // Onay anahtarından da temizle
+                    string approvedKeyPath = item.RegistryPath.Contains("WOW6432Node", StringComparison.OrdinalIgnoreCase)
+                        ? @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+                        : @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+
+                    using (var approvedKey = root.OpenSubKey(approvedKeyPath, true))
+                    {
+                        approvedKey?.DeleteValue(item.Name, false);
+                    }
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+        }
+
+        public async Task<bool> AddNewStartupProgramAsync(string name, string executablePath)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath))
+                        return false;
+
+                    using var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
+                    if (key == null) return false;
+
+                    key.SetValue(name, $"\"{executablePath}\"");
+
+                    string approvedKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+                    using var approvedKey = Registry.CurrentUser.OpenSubKey(approvedKeyPath, true) ?? Registry.CurrentUser.CreateSubKey(approvedKeyPath);
+                    approvedKey?.SetValue(name, new byte[] { 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, RegistryValueKind.Binary);
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             });
         }
 
@@ -130,56 +227,67 @@ namespace Bakım.Services
                     });
                 }
             }
-            catch (Exception)
-            {
-                // Explorer açılamazsa sessizce geç
-            }
+            catch { }
         }
 
-        private static void ReadStartupFolder(List<StartupProgramItem> list)
+        private static void ReadStartupFolder(string folderPath, string locationType, bool isCurrentUser, List<StartupProgramItem> list)
         {
             try
             {
-                string startupFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-                if (Directory.Exists(startupFolder))
+                if (!Directory.Exists(folderPath)) return;
+
+                var dir = new DirectoryInfo(folderPath);
+                foreach (var file in dir.EnumerateFiles())
                 {
-                    var dir = new DirectoryInfo(startupFolder);
-                    foreach (var file in dir.EnumerateFiles())
+                    if (file.Name.Equals("desktop.ini", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    bool isDisabled = file.Extension.Equals(".disabled", StringComparison.OrdinalIgnoreCase);
+                    string realName = isDisabled
+                        ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Name))
+                        : Path.GetFileNameWithoutExtension(file.Name);
+
+                    string cleanTarget = CleanExecutablePath(file.FullName);
+                    bool exists = File.Exists(cleanTarget) || File.Exists(file.FullName);
+
+                    var (level, text, brush, delay) = CalculateImpact(realName, file.FullName);
+                    var icon = GetFileIcon(cleanTarget);
+                    var publisher = GetPublisher(cleanTarget);
+
+                    list.Add(new StartupProgramItem
                     {
-                        bool isDisabled = file.Extension.Equals(".disabled", StringComparison.OrdinalIgnoreCase);
-                        string realName = isDisabled 
-                            ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Name)) 
-                            : Path.GetFileNameWithoutExtension(file.Name);
-
-                        var (level, text, brush) = CalculateImpact(realName, file.FullName);
-
-                        list.Add(new StartupProgramItem
-                        {
-                            Name = realName,
-                            FilePath = file.FullName,
-                            RegistryPath = "Başlangıç Klasörü",
-                            IsCurrentUser = true,
-                            IsEnabled = !isDisabled,
-                            StatusText = isDisabled ? "Devre Dışı" : "Etkin",
-                            ImpactLevel = level,
-                            ImpactText = text,
-                            ImpactBadgeBrush = brush
-                        });
-                    }
+                        Name = realName,
+                        FilePath = file.FullName,
+                        CleanExePath = cleanTarget,
+                        RegistryPath = locationType,
+                        LocationType = locationType,
+                        Publisher = publisher,
+                        IsCurrentUser = isCurrentUser,
+                        IsEnabled = !isDisabled,
+                        FileExists = exists,
+                        IconSource = icon,
+                        StatusText = isDisabled ? "Devre Dışı" : "Etkin",
+                        ImpactLevel = level,
+                        ImpactText = text,
+                        ImpactBadgeBrush = brush,
+                        EstimatedDelayText = delay
+                    });
                 }
             }
-            catch (Exception) { }
+            catch { }
         }
 
-        private static void ReadRegistryKey(RegistryKey root, string subKey, bool isCurrentUser, List<StartupProgramItem> list)
+        private static void ReadRegistryKey(RegistryKey root, string subKey, bool isCurrentUser, string locationType, List<StartupProgramItem> list)
         {
             try
             {
                 using var key = root.OpenSubKey(subKey, false);
                 if (key == null) return;
 
-                // StartupApproved key üzerinden aktiflik durumunu oku
-                string approvedKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+                string approvedKeyPath = subKey.Contains("WOW6432Node", StringComparison.OrdinalIgnoreCase)
+                    ? @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
+                    : @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
+
                 using var approvedKey = root.OpenSubKey(approvedKeyPath, false);
 
                 foreach (var valueName in key.GetValueNames())
@@ -194,34 +302,97 @@ namespace Bakım.Services
                         var binVal = approvedKey.GetValue(valueName) as byte[];
                         if (binVal != null && binVal.Length > 0)
                         {
-                            // 0x02 = Etkin, 0x03 veya farklıysa = Devre Dışı
                             isEnabled = (binVal[0] == 0x02);
                         }
                     }
 
-                    var (level, text, brush) = CalculateImpact(valueName, command);
+                    string cleanPath = CleanExecutablePath(command);
+                    bool exists = File.Exists(cleanPath);
+
+                    var (level, text, brush, delay) = CalculateImpact(valueName, command);
+                    var icon = GetFileIcon(cleanPath);
+                    var publisher = GetPublisher(cleanPath);
 
                     list.Add(new StartupProgramItem
                     {
                         Name = valueName,
                         FilePath = command,
+                        CleanExePath = cleanPath,
                         RegistryPath = $"{root.Name}\\{subKey}",
+                        LocationType = locationType,
+                        Publisher = publisher,
                         IsCurrentUser = isCurrentUser,
                         IsEnabled = isEnabled,
+                        FileExists = exists,
+                        IconSource = icon,
                         StatusText = isEnabled ? "Etkin" : "Devre Dışı",
                         ImpactLevel = level,
                         ImpactText = text,
-                        ImpactBadgeBrush = brush
+                        ImpactBadgeBrush = brush,
+                        EstimatedDelayText = delay
                     });
                 }
             }
-            catch (Exception) { }
+            catch { }
         }
 
-        /// <summary>
-        /// Sysinternals / Windows Task Manager kurallarına göre başlangıç etkisini hesaplar.
-        /// </summary>
-        private static (int level, string text, string brush) CalculateImpact(string name, string filePath)
+        private static ImageSource? GetFileIcon(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                return null;
+
+            if (_iconCache.TryGetValue(filePath, out var cached))
+                return cached;
+
+            try
+            {
+                using var sysIcon = System.Drawing.Icon.ExtractAssociatedIcon(filePath);
+                if (sysIcon != null)
+                {
+                    using var bitmap = sysIcon.ToBitmap();
+                    var hBitmap = bitmap.GetHbitmap();
+                    try
+                    {
+                        var wpfBmp = Imaging.CreateBitmapSourceFromHBitmap(
+                            hBitmap,
+                            IntPtr.Zero,
+                            Int32Rect.Empty,
+                            BitmapSizeOptions.FromEmptyOptions());
+                        wpfBmp.Freeze();
+                        _iconCache[filePath] = wpfBmp;
+                        return wpfBmp;
+                    }
+                    finally
+                    {
+                        DeleteObject(hBitmap);
+                    }
+                }
+            }
+            catch { }
+
+            _iconCache[filePath] = null;
+            return null;
+        }
+
+        private static string GetPublisher(string filePath)
+        {
+            if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                return "Bilinmeyen Yayıncı";
+
+            try
+            {
+                var vi = FileVersionInfo.GetVersionInfo(filePath);
+                if (!string.IsNullOrWhiteSpace(vi.CompanyName))
+                    return vi.CompanyName.Trim();
+                if (!string.IsNullOrWhiteSpace(vi.ProductName))
+                    return vi.ProductName.Trim();
+            }
+            catch { }
+
+            return "Bilinmeyen Yayıncı";
+        }
+
+        private static (int level, string text, string brush, string delay) CalculateImpact(string name, string filePath)
         {
             string combined = $"{name} {filePath}".ToLowerInvariant();
 
@@ -230,14 +401,15 @@ namespace Bakım.Services
             {
                 "discord", "spotify", "steam", "epic", "teams", "slack", "chrome",
                 "firefox", "edge", "onedrive", "adobe", "creative cloud", "dropbox",
-                "zoom", "torrent", "skype", "viber", "riot", "battle.net", "origin"
+                "zoom", "torrent", "skype", "viber", "riot", "battle.net", "origin",
+                "overwolf", "blitz", "medal", "curseforge"
             };
 
             foreach (var kw in highImpactKeywords)
             {
                 if (combined.Contains(kw))
                 {
-                    return (3, "Yüksek Etki (>1000ms)", "SystemFillColorCriticalBrush");
+                    return (3, "Yüksek Etki (>1000ms)", "SystemFillColorCriticalBrush", "~1.5 sn");
                 }
             }
 
@@ -245,19 +417,20 @@ namespace Bakım.Services
             string[] mediumImpactKeywords =
             {
                 "realtek", "nvidia", "amd", "intel", "logitech", "razer", "corsair",
-                "security", "defender", "antivirus", "service", "host", "audio", "sound"
+                "security", "defender", "antivirus", "service", "host", "audio", "sound",
+                "rtkaud", "noisesuppression"
             };
 
             foreach (var kw in mediumImpactKeywords)
             {
                 if (combined.Contains(kw))
                 {
-                    return (2, "Orta Etki (300-1000ms)", "SystemFillColorCautionBrush");
+                    return (2, "Orta Etki (300-1000ms)", "SystemFillColorCautionBrush", "~0.6 sn");
                 }
             }
 
             // Düşük Etki
-            return (1, "Düşük Etki (<300ms)", "SystemFillColorSuccessBrush");
+            return (1, "Düşük Etki (<300ms)", "SystemFillColorSuccessBrush", "~0.2 sn");
         }
 
         private static string CleanExecutablePath(string raw)
@@ -265,7 +438,6 @@ namespace Bakım.Services
             if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
             string s = raw.Trim();
 
-            // Tırnak içindeyse tırnakları ayıkla
             if (s.StartsWith("\""))
             {
                 int endQuote = s.IndexOf('"', 1);
@@ -275,11 +447,16 @@ namespace Bakım.Services
                 }
             }
 
-            // .exe'den sonrasındaki parametreleri temizle
             int exeIdx = s.IndexOf(".exe", StringComparison.OrdinalIgnoreCase);
             if (exeIdx > 0)
             {
                 return s.Substring(0, exeIdx + 4).Trim('\"');
+            }
+
+            int lnkIdx = s.IndexOf(".lnk", StringComparison.OrdinalIgnoreCase);
+            if (lnkIdx > 0)
+            {
+                return s.Substring(0, lnkIdx + 4).Trim('\"');
             }
 
             return s.Split(' ')[0].Trim('\"');
