@@ -33,10 +33,10 @@ namespace Bakım.Services
         private readonly ILogService _log;
 
         private Forms.NotifyIcon? _notifyIcon;
-        private Forms.ToolStripMenuItem? _gameModeItem;
         private Window? _window;
         private bool _balloonShown;
         private bool _disposed;
+        private Views.Windows.TrayFlyoutWindow? _flyoutWindow;
 
         public TrayIconService(
             IAppSettingsService settings,
@@ -71,11 +71,10 @@ namespace Bakım.Services
                 {
                     Icon = LoadAppIcon(),
                     Text = "Bakım - Sistem Yönetim Paneli",
-                    Visible = true,
-                    ContextMenuStrip = BuildMenu()
+                    Visible = true
                 };
 
-                _notifyIcon.DoubleClick += (_, _) => RestoreWindow();
+                _notifyIcon.MouseUp += OnNotifyIconMouseUp;
 
                 _log.Info("Sistem tepsisi simgesi oluşturuldu ve pencereye bağlandı.", nameof(TrayIconService));
             }
@@ -84,6 +83,44 @@ namespace Bakım.Services
                 _log.Error("Sistem tepsisi simgesi oluşturulamadı.", ex, nameof(TrayIconService));
                 _notifyIcon = null;
             }
+        }
+
+        private void OnNotifyIconMouseUp(object? sender, Forms.MouseEventArgs e)
+        {
+            if (e.Button == Forms.MouseButtons.Left || e.Button == Forms.MouseButtons.Right)
+            {
+                Application.Current?.Dispatcher.Invoke(() => ShowFlyoutWindow());
+            }
+        }
+
+        private void ShowFlyoutWindow()
+        {
+            if (_flyoutWindow == null)
+            {
+                _flyoutWindow = new Views.Windows.TrayFlyoutWindow(this, _gameModeService, _cleanService, _navigationService);
+            }
+
+            _flyoutWindow.UpdateState();
+
+            // Ekran çalışma alanını ve farenin pozisyonunu al
+            var workArea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
+            var mousePos = System.Windows.Forms.Cursor.Position;
+
+            // X ve Y pozisyonunu çalışma alanının sağ alt köşesine hizala
+            // Margin vs payı bırakalım
+            double x = workArea.Right - _flyoutWindow.Width - 10;
+            double y = workArea.Bottom - _flyoutWindow.Height - 10;
+
+            // Eğer taskbar üstte veya soldaysa diye fare pozisyonuna göre de şekillenebilir, ama standart sağ alt daha şıktır.
+            // Fare X'i çok soldaysa sola açılabilir.
+            if (mousePos.X < workArea.Right / 2)
+                x = mousePos.X;
+
+            _flyoutWindow.Left = x;
+            _flyoutWindow.Top = y;
+
+            _flyoutWindow.Show();
+            _flyoutWindow.Activate();
         }
 
         public void Detach()
@@ -101,7 +138,7 @@ namespace Bakım.Services
                 try
                 {
                     _notifyIcon.Visible = false;
-                    _notifyIcon.ContextMenuStrip?.Dispose();
+                    _notifyIcon.MouseUp -= OnNotifyIconMouseUp;
                     _notifyIcon.Dispose();
                 }
                 catch (Exception ex)
@@ -110,7 +147,12 @@ namespace Bakım.Services
                 }
 
                 _notifyIcon = null;
-                _gameModeItem = null;
+            }
+
+            if (_flyoutWindow != null)
+            {
+                _flyoutWindow.Close();
+                _flyoutWindow = null;
             }
         }
 
@@ -154,7 +196,6 @@ namespace Bakım.Services
             if (_window == null) return;
             if (_window.WindowState != WindowState.Minimized) return;
 
-            // Tercih kapalıysa normal simge durumunda küçültme davranışı korunur.
             if (!_settings.Current.MinimizeToTray) return;
 
             _window.Hide();
@@ -163,7 +204,7 @@ namespace Bakım.Services
             {
                 _balloonShown = true;
                 ShowBalloon("Bakım arka planda çalışıyor",
-                    "Pencereyi geri getirmek için tepsi simgesine çift tıklayın.");
+                    "Pencereyi geri getirmek için tepsi simgesine tıklayın.");
             }
 
             _log.Debug("Pencere sistem tepsisine küçültüldü.", nameof(TrayIconService));
@@ -176,62 +217,20 @@ namespace Bakım.Services
                 e.Cancel = true;
                 _window?.Hide();
                 ShowBalloon("Bakım Arka Planda Çalışıyor",
-                    "Uygulama arka planda nöbet tutmaya devam ediyor. Açmak için çift tıklayın.");
+                    "Uygulama arka planda nöbet tutmaya devam ediyor. Açmak için simgeye tıklayın.");
                 _log.Info("Çarpı (X) butonuna basıldı: Pencere arka plana küçültüldü (Close-to-Tray).", nameof(TrayIconService));
             }
         }
 
         private void OnWindowClosed(object? sender, EventArgs e) => Detach();
 
-        private Forms.ContextMenuStrip BuildMenu()
-        {
-            var menu = new Forms.ContextMenuStrip();
-
-            var showItem = new Forms.ToolStripMenuItem("🖥️ Bakım'ı Göster");
-            showItem.Font = new System.Drawing.Font(showItem.Font, System.Drawing.FontStyle.Bold);
-            showItem.Click += (_, _) => RestoreWindow();
-
-            _gameModeItem = new Forms.ToolStripMenuItem(GetGameModeMenuText());
-            _gameModeItem.Click += async (_, _) => await ToggleGameModeFromTrayAsync();
-
-            var boostItem = new Forms.ToolStripMenuItem("⚡ Hızlı RAM Temizle");
-            boostItem.Click += async (_, _) => await QuickBoostAsync();
-
-            var settingsItem = new Forms.ToolStripMenuItem("⚙️ Ayarlar");
-            settingsItem.Click += (_, _) =>
-            {
-                RestoreWindow();
-                _navigationService.Navigate("Settings");
-            };
-
-            var exitItem = new Forms.ToolStripMenuItem("❌ Çıkış (Uygulamayı Kapat)");
-            exitItem.Click += (_, _) => ShutdownApplication();
-
-            menu.Items.Add(showItem);
-            menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add(_gameModeItem);
-            menu.Items.Add(boostItem);
-            menu.Items.Add(settingsItem);
-            menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add(exitItem);
-
-            return menu;
-        }
-
-        private string GetGameModeMenuText()
-        {
-            return _gameModeService.IsGameModeActive
-                ? "🎮 Oyun Modu: [AÇIK] (Kapat)"
-                : "🎮 Oyun Modu: [KAPALI] (Aç)";
-        }
-
         private void OnGameModeChanged(bool isActive)
         {
             Application.Current?.Dispatcher.BeginInvoke(() =>
             {
-                if (_gameModeItem != null)
+                if (_flyoutWindow != null)
                 {
-                    _gameModeItem.Text = GetGameModeMenuText();
+                    _flyoutWindow.UpdateState();
                 }
 
                 if (_notifyIcon != null)
@@ -243,70 +242,18 @@ namespace Bakım.Services
             });
         }
 
-        private async System.Threading.Tasks.Task ToggleGameModeFromTrayAsync()
-        {
-            try
-            {
-                long freed = await _gameModeService.ToggleGameModeAsync();
-                bool isActive = _gameModeService.IsGameModeActive;
-
-                if (isActive)
-                {
-                    ShowBalloon("🎮 Ultra Oyun Modu Aktif!",
-                        $"Arka plan servisleri donduruldu. {Models.CleanCategory.FormatBytes(freed)} bellek serbest bırakıldı.");
-                }
-                else
-                {
-                    ShowBalloon("Oyun Modu Kapatıldı", "Arka plan servisleri normale döndü.");
-                }
-            }
-            catch (Exception ex)
-            {
-                _log.Error("Tepsiden Oyun Modu değiştirilirken hata.", ex, nameof(TrayIconService));
-            }
-        }
-
-        private async System.Threading.Tasks.Task QuickBoostAsync()
-        {
-            try
-            {
-                long freed = await _cleanService.AutoTrimWorkingSetsAsync();
-
-                ShowBalloon("RAM Temizlendi",
-                    $"{Models.CleanCategory.FormatBytes(freed)} bellek geri kazanıldı.");
-
-                _log.Info($"Tepsiden hızlı RAM temizliği: {Models.CleanCategory.FormatBytes(freed)}", nameof(TrayIconService));
-            }
-            catch (Exception ex)
-            {
-                _log.Error("Tepsiden RAM temizliği başarısız.", ex, nameof(TrayIconService));
-            }
-        }
-
-        private void ShutdownApplication()
-        {
-            try
-            {
-                MainWindow.IsExplicitExit = true;
-                Detach();
-                Application.Current?.Shutdown();
-            }
-            catch (Exception ex)
-            {
-                _log.Error("Tepsiden çıkış başarısız.", ex, nameof(TrayIconService));
-            }
-        }
-
         private static System.Drawing.Icon LoadAppIcon()
         {
             try
             {
-                var resource = Application.GetResourceStream(
+                var resource = Application.Current.Resources;
+                // GetResourceStream might fail if Application.Current is null
+                var res = Application.GetResourceStream(
                     new Uri("pack://application:,,,/Bakim;component/Assets/app.ico", UriKind.Absolute));
 
-                if (resource?.Stream != null)
+                if (res?.Stream != null)
                 {
-                    using var stream = resource.Stream;
+                    using var stream = res.Stream;
                     return new System.Drawing.Icon(stream);
                 }
             }

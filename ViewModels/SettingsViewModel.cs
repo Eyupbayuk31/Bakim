@@ -721,13 +721,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
-            var v3100 = new ReleaseChangelogItem
+            var v3120 = new ReleaseChangelogItem
+            {
+                Version = "v3.12.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Fluent Tray Flyout & Ghost Mode (Görünmez Başlangıç) Entegrasyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "WPF Fluent Tray Flyout: Eski ve hantal sağ tık (WinForms) menüsü kaldırılarak, Windows 11 Action Center hissiyatında animasyonlu ve gölgeli özel WPF menüsü tasarlandı.",
+                    "Ghost Mode (Görünmez Başlangıç): Windows ile başla denildiğinde uygulama ekranda belirmek yerine `--autostart` parametresiyle tamamen arka planda çalışmaya başlıyor.",
+                    "Deep Freeze Game Mode İyileştirmeleri: Oyun modu açıldığında, artık sadece güç planı değişmekle kalmıyor, arka plandaki tüm RAM denetim döngüleri de duraklatılarak %0 CPU tüketimi sağlanıyor.",
+                    "Memory Leak & Dispose Koruması: Eski sistem tepsisi menüsünden kaynaklı NullReferenceException ve bellek sızıntıları giderildi."
+                }
+            };
+
+            var v3111 = new ReleaseChangelogItem
             {
                 Version = "v3.11.1",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Sistem Tepsisinde Kesintisiz Nöbet (Close-to-Tray), Sessiz Başlangıç & Ultra Oyun Modu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Sistem Tepsisinde Kesintisiz Nöbet (Close-to-Tray): Çarpı (X) butonuna tıklandığında uygulama kapanmak yerine sistem tepsisine küçülür ve arka planda bilgisayarı korumaya devam eder; tamamen kapatmak için tepsiden 'Çıkış' seçilir.",
@@ -909,9 +925,10 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3100;
+            LatestRelease = v3120;
 
-            ReleaseHistory.Add(v3100);
+            ReleaseHistory.Add(v3120);
+            ReleaseHistory.Add(v3111);
             ReleaseHistory.Add(v390);
             ReleaseHistory.Add(v380);
             ReleaseHistory.Add(v370);

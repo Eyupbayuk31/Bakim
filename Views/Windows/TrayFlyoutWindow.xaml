@@ -1,0 +1,62 @@
+<Window x:Class="Bakım.Views.Windows.TrayFlyoutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="Sistem Tepsisi" Height="360" Width="300"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize"
+        Deactivated="Window_Deactivated">
+    
+    <Window.Resources>
+        <!-- Fluent Design Standartları -->
+        <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="#EE1E293B" />
+    </Window.Resources>
+
+    <!-- Ana Çerçeve & Drop Shadow -->
+    <Border Background="{DynamicResource ApplicationBackgroundBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Margin="12">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="15" ShadowDepth="4" Opacity="0.4" Direction="270" Color="Black"/>
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="*"/>    <!-- Content -->
+                <RowDefinition Height="Auto"/> <!-- Footer -->
+            </Grid.RowDefinitions>
+            
+            <!-- Header -->
+            <Border Grid.Row="0" Padding="16,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:SymbolIcon Symbol="ShieldTask24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Bakım Yönetim Paneli" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock x:Name="StatusText" Text="🛡️ Sistem Nöbette (Arka Plan Aktif)" FontSize="11" Margin="0,2,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+            
+            <!-- Content -->
+            <StackPanel Grid.Row="1" Margin="16,14">
+                <ui:Button x:Name="BtnShowMainWindow" Appearance="Primary" HorizontalAlignment="Stretch" Margin="0,0,0,8" Padding="10" Icon="{ui:SymbolIcon Desktop24}" Content="Ana Ekranı Aç" Click="BtnShowMainWindow_Click"/>
+                <ui:Button x:Name="BtnQuickBoost" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,8" Padding="10" Icon="{ui:SymbolIcon Flash24}" Content="Hızlı RAM Temizle" Click="BtnQuickBoost_Click"/>
+                <ui:Button x:Name="BtnGameMode" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,14" Padding="10" Icon="{ui:SymbolIcon XboxConsole24}" Content="Oyun Modunu Aç" Click="BtnGameMode_Click"/>
+                <ui:Button x:Name="BtnSettings" Appearance="Secondary" HorizontalAlignment="Stretch" Padding="10" Icon="{ui:SymbolIcon Settings24}" Content="Ayarlar" Click="BtnSettings_Click"/>
+            </StackPanel>
+            
+            <!-- Footer -->
+            <Border Grid.Row="2" Padding="16,12" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" CornerRadius="0,0,12,12">
+                <Grid>
+                    <ui:Button x:Name="BtnExit" Appearance="Danger" HorizontalAlignment="Right" Padding="12,6" Icon="{ui:SymbolIcon Dismiss24}" Content="Çıkış" Click="BtnExit_Click"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
