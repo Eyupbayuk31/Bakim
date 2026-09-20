@@ -61,6 +61,8 @@ namespace Bakım.ViewModels
             OemInfo = new OemInfoData();
             Metrics = new WindowMetricsData();
 
+            InitializeCategories();
+
             _filteredTweaks = CollectionViewSource.GetDefaultView(AllTweaks);
             _filteredTweaks.Filter = FilterTweakItem;
 
@@ -71,6 +73,7 @@ namespace Bakım.ViewModels
 
         public ObservableCollection<SystemTweakItem> AllTweaks { get; }
         public ObservableCollection<ClassicAppItem> ClassicTools { get; }
+        public ObservableCollection<TweakerCategoryModel> CategoryList { get; } = new();
         public ICollectionView FilteredTweaks => _filteredTweaks;
 
         [ObservableProperty]
@@ -84,6 +87,20 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private string _activeCategory = "All"; // All, Windows11, Behavior, BootLogon, DesktopTaskbar, ContextMenu, Appearance, AdvancedAppearance, FileExplorer, SettingsCpl, Edge, Tools, ClassicApps
+
+        partial void OnActiveCategoryChanged(string value)
+        {
+            foreach (var cat in CategoryList)
+            {
+                cat.IsSelected = cat.Key == value;
+            }
+            OnPropertyChanged(nameof(ActiveCategoryDisplayName));
+            OnPropertyChanged(nameof(IsTweaksListVisible));
+            OnPropertyChanged(nameof(IsToolsTabVisible));
+            OnPropertyChanged(nameof(IsClassicAppsTabVisible));
+            OnPropertyChanged(nameof(IsAdvancedAppearanceTabVisible));
+            _filteredTweaks.Refresh();
+        }
 
         public bool IsTweaksListVisible => !string.IsNullOrWhiteSpace(SearchText) || (ActiveCategory != "Tools" && ActiveCategory != "ClassicApps" && ActiveCategory != "AdvancedAppearance");
         public bool IsToolsTabVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "Tools";
@@ -158,16 +175,6 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private string _elevatedShortcutName = string.Empty;
-
-        partial void OnActiveCategoryChanged(string value)
-        {
-            OnPropertyChanged(nameof(IsTweaksListVisible));
-            OnPropertyChanged(nameof(IsToolsTabVisible));
-            OnPropertyChanged(nameof(IsClassicAppsTabVisible));
-            OnPropertyChanged(nameof(IsAdvancedAppearanceTabVisible));
-            OnPropertyChanged(nameof(ActiveCategoryDisplayName));
-            _filteredTweaks.Refresh();
-        }
 
         partial void OnSearchTextChanged(string value)
         {
@@ -975,6 +982,191 @@ namespace Bakım.ViewModels
                 ToolsCount = 4,
                 ClassicAppsCount = ClassicTools.Count
             };
+            UpdateCategoryCounts();
+        }
+
+        private void InitializeCategories()
+        {
+            CategoryList.Clear();
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "All",
+                DisplayName = "Tüm İnce Ayarlar",
+                IconSymbol = "AppsList24",
+                ShortDescription = "Sistemdeki tüm Windows ince ayarları ve optimizasyon seçenekleri.",
+                BenefitSummary = "Tüm kategorilerdeki ayarları tek bir liste üzerinden inceleyip yönetebilirsiniz.",
+                IsSelected = true
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "Windows11",
+                DisplayName = "Windows 11",
+                IconSymbol = "Desktop24",
+                ShortDescription = "Windows 11'e özgü modern arayüz ve özellik ayarları.",
+                BenefitSummary = "Yeni başlat menüsü, görev çubuğu ve modern deneyimleri sadeleştirip hızlandırır."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "Appearance",
+                DisplayName = "Görünüm & Tema",
+                IconSymbol = "Color24",
+                ShortDescription = "Pencereler, animasyonlar ve tema özelleştirmeleri.",
+                BenefitSummary = "Gereksiz görsel efektleri ve animasyonları kapatıp arayüz tepkisini hızlandırır."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "AdvancedAppearance",
+                DisplayName = "Gelişmiş Görünüm",
+                IconSymbol = "SlideGrid24",
+                ShortDescription = "Pencere kenarlık boyutları, başlık yükseklikleri ve simge aralıkları.",
+                BenefitSummary = "Masaüstü ve pencere metriklerini piksel hassasiyetiyle ekranınıza göre optimize eder."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "Behavior",
+                DisplayName = "Sistem Davranışları",
+                IconSymbol = "Settings24",
+                ShortDescription = "Hata bildirimleri, bekleme süreleri ve arka plan davranışları.",
+                BenefitSummary = "Sistemin donma ve yanıt vermeme sürelerini düşürür, arka plan yükünü hafifletir."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "BootLogon",
+                DisplayName = "Açılış & Oturum",
+                IconSymbol = "Power24",
+                ShortDescription = "Bilgisayar açılışı, kilit ekranı ve oturum kontrolleri.",
+                BenefitSummary = "Açılış hızını artırır, kilit ekranındaki gereksiz bekleme sürelerini kaldırır."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "DesktopTaskbar",
+                DisplayName = "Masaüstü & Görev Çubuğu",
+                IconSymbol = "Grid24",
+                ShortDescription = "Görev çubuğu öğeleri, bildirim alanı ve masaüstü kısayolları.",
+                BenefitSummary = "Çalışma alanınızı temiz tutar ve sık kullanılan işlevlere erişimi kolaylaştırır."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "ContextMenu",
+                DisplayName = "Sağ Tık Menüsü",
+                IconSymbol = "CursorHover24",
+                ShortDescription = "Masaüstü ve dosya sağ tık (içerik) menüsü seçenekleri.",
+                BenefitSummary = "Sağ tık menüsünü hızlandırır, kalabalığı azaltır ve pratik yönetim araçları ekler."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "FileExplorer",
+                DisplayName = "Dosya Gezgini",
+                IconSymbol = "Folder24",
+                ShortDescription = "Dosya uzantıları, gizli öğeler ve gezgin gezinti bölmesi.",
+                BenefitSummary = "Dosyaları daha hızlı bulmanızı ve tam sistem hakimiyetiyle yönetmenizi sağlar."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "SettingsCpl",
+                DisplayName = "Ayarlar & Denetim Masası",
+                IconSymbol = "Wrench24",
+                ShortDescription = "Windows ayarlar sayfası ve klasik denetim masası denetimleri.",
+                BenefitSummary = "Gereksiz ayar sayfalarını gizler ve kritik yönetim panellerine doğrudan erişim verir."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "Edge",
+                DisplayName = "Microsoft Edge",
+                IconSymbol = "Globe24",
+                ShortDescription = "Edge tarayıcı başlangıç, telemetri ve yan panel ayarları.",
+                BenefitSummary = "Arka planda Edge'in sistem kaynaklarını ve RAM tüketimini engeller."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "Tools",
+                DisplayName = "Sistem Araçları",
+                IconSymbol = "Repair24",
+                ShortDescription = "Önbellek temizleme, TrustedInstaller terminali ve OEM bilgileri.",
+                BenefitSummary = "Simge önbelleği bozulmalarını onarır ve derin sistem müdahalelerini kolaylaştırır."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "ClassicApps",
+                DisplayName = "Klasik Uygulamalar",
+                IconSymbol = "WindowApps24",
+                ShortDescription = "Eski Windows Fotoğraf Görüntüleyici ve klasik sistem konsolları.",
+                BenefitSummary = "Hızlı ve kararlı klasik Windows yardımcı araçlarını tek tıkla geri getirir."
+            });
+            CategoryList.Add(new TweakerCategoryModel
+            {
+                Key = "PrivacyDebloat",
+                DisplayName = "Gizlilik & Debloat",
+                IconSymbol = "Shield24",
+                ShortDescription = "Telemetri, veri toplama ve yerleşik gereksiz uygulamaların kaldırılması.",
+                BenefitSummary = "Arka plandaki telemetriyi keserek tam gizlilik ve performans modülü sayfasına yönlendirir."
+            });
+        }
+
+        private void UpdateCategoryCounts()
+        {
+            foreach (var cat in CategoryList)
+            {
+                switch (cat.Key)
+                {
+                    case "All":
+                        cat.TotalCount = AllTweaks.Count;
+                        cat.ActiveCount = AllTweaks.Count(t => t.IsEnabled);
+                        break;
+                    case "Windows11":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Windows 11"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Windows 11") && t.IsEnabled);
+                        break;
+                    case "Appearance":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Görünüm"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Görünüm") && t.IsEnabled);
+                        break;
+                    case "AdvancedAppearance":
+                        cat.TotalCount = 7;
+                        cat.ActiveCount = 7;
+                        break;
+                    case "Behavior":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Davranışlar"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Davranışlar") && t.IsEnabled);
+                        break;
+                    case "BootLogon":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Açılış"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Açılış") && t.IsEnabled);
+                        break;
+                    case "DesktopTaskbar":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Masaüstü"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Masaüstü") && t.IsEnabled);
+                        break;
+                    case "ContextMenu":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Sağ Tık"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Sağ Tık") && t.IsEnabled);
+                        break;
+                    case "FileExplorer":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Dosya Gezgini"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Dosya Gezgini") && t.IsEnabled);
+                        break;
+                    case "SettingsCpl":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Ayarlar"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Ayarlar") && t.IsEnabled);
+                        break;
+                    case "Edge":
+                        cat.TotalCount = AllTweaks.Count(t => t.Category.Contains("Edge"));
+                        cat.ActiveCount = AllTweaks.Count(t => t.Category.Contains("Edge") && t.IsEnabled);
+                        break;
+                    case "Tools":
+                        cat.TotalCount = 4;
+                        cat.ActiveCount = 4;
+                        break;
+                    case "ClassicApps":
+                        cat.TotalCount = ClassicTools.Count;
+                        cat.ActiveCount = ClassicTools.Count(c => c.IsActivated);
+                        break;
+                    case "PrivacyDebloat":
+                        cat.TotalCount = 0;
+                        cat.ActiveCount = 0;
+                        break;
+                }
+            }
         }
     }
 }

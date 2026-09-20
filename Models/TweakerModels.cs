@@ -72,6 +72,64 @@ namespace Bakım.Models
         };
 
         public string RestartNotice => RequiresRestart ? "Yeniden başlatma gerektirir" : "Anında aktif";
+
+        public string UserBenefitText => !string.IsNullOrWhiteSpace(Description)
+            ? Description
+            : "Bu ayar sistem kararlılığını ve kullanıcı deneyimini iyileştirir.";
+
+        public string SafetyNotice => IsRecommended
+            ? "Herkes için güvenli ve önerilen temel sistem ayarıdır."
+            : "Kişisel tercihe bağlı gelişmiş sistem özelleştirmesidir.";
+
+        public string ExecutionNotice => RequiresRestart
+            ? "Etkili olması için bilgisayarın veya oturumun yeniden başlatılması gerekir."
+            : "Anında geçerli olur (yeniden başlatma gerektirmez).";
+
+        public string RevertNotice => "İstediğiniz zaman bu ayarı kapatıp Windows'un orijinal varsayılan haline dönebilirsiniz.";
+    }
+
+    public class TweakerCategoryModel : ObservableObject
+    {
+        public string Key { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public string IconSymbol { get; set; } = "Wrench24";
+        public string ShortDescription { get; set; } = string.Empty;
+        public string BenefitSummary { get; set; } = string.Empty;
+
+        private int _totalCount;
+        public int TotalCount
+        {
+            get => _totalCount;
+            set
+            {
+                if (SetProperty(ref _totalCount, value))
+                {
+                    OnPropertyChanged(nameof(CountBadge));
+                }
+            }
+        }
+
+        private int _activeCount;
+        public int ActiveCount
+        {
+            get => _activeCount;
+            set
+            {
+                if (SetProperty(ref _activeCount, value))
+                {
+                    OnPropertyChanged(nameof(CountBadge));
+                }
+            }
+        }
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
+        }
+
+        public string CountBadge => $"{ActiveCount}/{TotalCount}";
     }
 
     public partial class WindowMetricsData : ObservableObject

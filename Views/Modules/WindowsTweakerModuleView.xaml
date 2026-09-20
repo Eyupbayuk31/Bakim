@@ -16,8 +16,7 @@
             <RowDefinition Height="Auto"/> <!-- 0: Header & Top Actions -->
             <RowDefinition Height="Auto"/> <!-- 1: Result Banner -->
             <RowDefinition Height="Auto"/> <!-- 2: Metric Cards -->
-            <RowDefinition Height="Auto"/> <!-- 3: Filter & Search Bar -->
-            <RowDefinition Height="*"/>    <!-- 4: Active Viewport Content -->
+            <RowDefinition Height="*"/>    <!-- 3: Master-Detail Workspace -->
         </Grid.RowDefinitions>
 
         <!-- 0. Header & Top Action Buttons -->
@@ -160,287 +159,173 @@
             </ui:Card>
         </Grid>
 
-        <!-- 3. Category Quick Jump Toolbar & Global Smart Search Bar -->
-        <Grid Grid.Row="3" Margin="0,0,0,16">
+        <!-- 3. Master-Detail Workspace -->
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="18"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left: Quick Jump Popover Button & Primary Category Pills -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- 1. Quick Jump Popover Toggle Button -->
-                <ui:Button x:Name="QuickJumpButton" 
-                           Appearance="Primary"
-                           Content="Tüm Kategoriler (13)" 
-                           Icon="{ui:SymbolIcon Grid24}"
-                           Command="{Binding ToggleCategoryPickerCommand}"
-                           Padding="12,8" 
-                           Margin="0,0,8,0"
-                           ToolTip="Tüm 13 kategoriyi ızgara görünümünde açar"/>
+            <!-- Left Pane: Category Navigation Rail (Column 0) -->
+            <Border Grid.Column="0" 
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="8,12">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                <!-- Category Popover / Flyout Grid -->
-                <Popup IsOpen="{Binding IsCategoryPickerOpen, Mode=TwoWay}"
-                       StaysOpen="False"
-                       Placement="Bottom"
-                       PlacementTarget="{Binding ElementName=QuickJumpButton}"
-                       AllowsTransparency="True"
-                       PopupAnimation="Slide">
-                    <Border Background="{DynamicResource Brush.Surface.Background}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="10"
-                            Padding="16"
-                            Margin="0,4,0,0"
-                            MaxWidth="580"
-                            SnapsToDevicePixels="True">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.35" Color="{DynamicResource Color.Shadow}"/>
-                        </Border.Effect>
+                    <!-- Category Rail Header -->
+                    <Border Grid.Row="0" Padding="10,4,10,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
                         <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/> <!-- Popover Header -->
-                                <RowDefinition Height="*"/>    <!-- 3-Column Grid -->
-                            </Grid.RowDefinitions>
-
-                            <!-- Popover Header -->
-                            <Grid Grid.Row="0" Margin="0,0,0,12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ui:SymbolIcon Symbol="Grid20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Kategori Hızlı Erişim (13 Kategori)" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                </StackPanel>
-                                <ui:Button Grid.Column="1" 
-                                           Appearance="Transparent" 
-                                           Padding="4"
-                                           Command="{Binding ToggleCategoryPickerCommand}"
-                                           Icon="{ui:SymbolIcon Dismiss20}"
-                                           ToolTip="Kapat" AutomationProperties.Name="Kapat"/>
-                            </Grid>
-
-                            <!-- 3-Column Category Tiles Grid -->
-                            <UniformGrid Grid.Row="1" Columns="3">
-                                <!-- 1. Tümü -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="All"
-                                           Icon="{ui:SymbolIcon List24}"
-                                           Content="Tüm Ayarlar"/>
-
-                                <!-- 2. Gizlilik & Debloat -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="PrivacyDebloat"
-                                           Icon="{ui:SymbolIcon ShieldCheckmark24}"
-                                           Content="Gizlilik &amp; Debloat"/>
-
-                                <!-- 3. Windows 11 -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="Windows11"
-                                           Icon="{ui:SymbolIcon AppGeneric24}"
-                                           Content="Windows 11"/>
-
-                                <!-- 3. Görünüm & Tema -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="Appearance"
-                                           Icon="{ui:SymbolIcon Color24}"
-                                           Content="Görünüm &amp; Tema"/>
-
-                                <!-- 4. Gelişmiş Görünüm -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="AdvancedAppearance"
-                                           Icon="{ui:SymbolIcon FontIncrease24}"
-                                           Content="Gelişmiş Görünüm"/>
-
-                                <!-- 5. Davranışlar -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="Behavior"
-                                           Icon="{ui:SymbolIcon Wrench24}"
-                                           Content="Davranışlar"/>
-
-                                <!-- 6. Açılış & Oturum -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="BootLogon"
-                                           Icon="{ui:SymbolIcon Power24}"
-                                           Content="Açılış &amp; Oturum"/>
-
-                                <!-- 7. Masaüstü & Görev Çubuğu -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="DesktopTaskbar"
-                                           Icon="{ui:SymbolIcon Desktop24}"
-                                           Content="Masaüstü &amp; Bar"/>
-
-                                <!-- 8. Sağ Tık & Kısayollar -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="ContextMenu"
-                                           Icon="{ui:SymbolIcon CursorClick24}"
-                                           Content="Sağ Tık Menüsü"/>
-
-                                <!-- 9. Dosya Gezgini -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="FileExplorer"
-                                           Icon="{ui:SymbolIcon Folder24}"
-                                           Content="Dosya Gezgini"/>
-
-                                <!-- 10. Ayarlar & Denetim Masası -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="SettingsCpl"
-                                           Icon="{ui:SymbolIcon Settings24}"
-                                           Content="Ayarlar &amp; Denetim"/>
-
-                                <!-- 11. Microsoft Edge -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="Edge"
-                                           Icon="{ui:SymbolIcon Globe24}"
-                                           Content="Microsoft Edge"/>
-
-                                <!-- 12. Sistem Araçları -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="Tools"
-                                           Icon="{ui:SymbolIcon DeveloperBoard24}"
-                                           Content="Sistem Araçları"/>
-
-                                <!-- 13. Klasik Uygulamalar -->
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalContentAlignment="Left"
-                                           Margin="3" Padding="10,8"
-                                           Command="{Binding SelectCategoryAndClosePickerCommand}"
-                                           CommandParameter="ClassicApps"
-                                           Icon="{ui:SymbolIcon Apps24}"
-                                           Content="Klasik Araçlar"/>
-                            </UniformGrid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon Grid.Column="0" Symbol="Grid24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="KATEGORİLER" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                            <Border Grid.Column="2" CornerRadius="10" Padding="6,2" Background="{DynamicResource SubtleFillColorTertiaryBrush}">
+                                <TextBlock Text="14" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            </Border>
                         </Grid>
                     </Border>
-                </Popup>
 
-                <!-- Active Category Pill Badge -->
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                        BorderThickness="1" 
-                        CornerRadius="6" 
-                        Padding="10,6" 
-                        Margin="0,0,8,0">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Kategori: " FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding ActiveCategoryDisplayName}" 
-                                   FontSize="11" 
-                                   FontWeight="SemiBold" 
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    <!-- Scrollable Categories List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,8,0,0">
+                        <ItemsControl ItemsSource="{Binding CategoryList}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:TweakerCategoryModel}">
+                                    <ui:Button Appearance="{Binding IsSelected, Converter={StaticResource BoolToNavAppearance}}"
+                                               HorizontalAlignment="Stretch"
+                                               HorizontalContentAlignment="Stretch"
+                                               Command="{Binding DataContext.SwitchCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding Key}"
+                                               Margin="0,0,0,4"
+                                               Padding="10,8"
+                                               ToolTipService.InitialShowDelay="150"
+                                               ToolTipService.ShowDuration="20000"
+                                               ToolTipService.BetweenShowDelay="100">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ui:SymbolIcon Grid.Column="0" Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" FontSize="15" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            <Border Grid.Column="2" CornerRadius="8" Padding="6,2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" VerticalAlignment="Center" Margin="6,0,0,0">
+                                                <TextBlock Text="{Binding CountBadge}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </Border>
+                                        </Grid>
+
+                                        <!-- Rich Category Hover ToolTip -->
+                                        <ui:Button.ToolTip>
+                                            <ToolTip Background="{DynamicResource Brush.Surface.Background}"
+                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                                     BorderThickness="1"
+                                                     Padding="14,12"
+                                                     HasDropShadow="True">
+                                                <StackPanel MaxWidth="320">
+                                                    <!-- Header -->
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                        <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+
+                                                    <!-- Short Description -->
+                                                    <TextBlock Text="{Binding ShortDescription}" 
+                                                               FontSize="12" 
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                                               TextWrapping="Wrap" 
+                                                               Margin="0,0,0,8"/>
+
+                                                    <Border Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,0,8"/>
+
+                                                    <!-- Benefit / Utility -->
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                                        <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="13" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,6,0" VerticalAlignment="Top"/>
+                                                        <TextBlock Text="{Binding BenefitSummary}" 
+                                                                   FontSize="11" 
+                                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+
+                                                    <!-- Category Stats Note -->
+                                                    <TextBlock Margin="0,4,0,0" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}">
+                                                        <Run Text="Mevcut Durum: "/>
+                                                        <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                        <Run Text=" ayar listeleniyor, "/>
+                                                        <Run Text="{Binding ActiveCount, Mode=OneWay}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                        <Run Text=" ayar devrede."/>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </ToolTip>
+                                        </ui:Button.ToolTip>
+                                    </ui:Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Right Workspace Pane (Column 2) -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Search & Active Category Header Bar -->
+                    <RowDefinition Height="*"/>    <!-- Viewport Content -->
+                </Grid.RowDefinitions>
+
+                <!-- Row 0: Search & Active Category Header Bar -->
+                <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Active Category Title & Hint -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border CornerRadius="6" Padding="8,4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" Margin="0,0,10,0">
+                            <TextBlock Text="{Binding ActiveCategoryDisplayName}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </Border>
+                        <TextBlock Text="Seçili kategorideki ince ayarları yapılandırabilir veya filtreleyebilirsiniz." 
+                                   FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Border>
 
-                <!-- Primary Category Pills (Quick Access - No scroll needed) -->
-                <ui:Button Content="Tümü" 
-                           Appearance="Secondary"
-                           Command="{Binding SwitchCategoryCommand}" 
-                           CommandParameter="All"
-                           Padding="10,6" 
-                           Margin="0,0,4,0"/>
+                    <!-- Global Smart Search Box with Results Badge -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{DynamicResource Brush.Badge.Background}"
+                                BorderBrush="{DynamicResource Brush.Badge.Border}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Padding="8,4"
+                                Margin="0,0,8,0"
+                                Visibility="{Binding IsSearchActive, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Search20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                                <TextBlock Text="{Binding SearchResultsText}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            </StackPanel>
+                        </Border>
 
-                <ui:Button Content="Windows 11" 
-                           Icon="{ui:SymbolIcon AppGeneric24}"
-                           Appearance="Secondary"
-                           Command="{Binding SwitchCategoryCommand}" 
-                           CommandParameter="Windows11"
-                           Padding="10,6" 
-                           Margin="0,0,4,0"/>
-
-                <ui:Button Content="Davranışlar" 
-                           Icon="{ui:SymbolIcon Wrench24}"
-                           Appearance="Secondary"
-                           Command="{Binding SwitchCategoryCommand}" 
-                           CommandParameter="Behavior"
-                           Padding="10,6" 
-                           Margin="0,0,4,0"/>
-
-                <ui:Button Content="Görünüm" 
-                           Icon="{ui:SymbolIcon Color24}"
-                           Appearance="Secondary"
-                           Command="{Binding SwitchCategoryCommand}" 
-                           CommandParameter="Appearance"
-                           Padding="10,6" 
-                           Margin="0,0,4,0"/>
-
-                <ui:Button Content="Dosya Gezgini" 
-                           Icon="{ui:SymbolIcon Folder24}"
-                           Appearance="Secondary"
-                           Command="{Binding SwitchCategoryCommand}" 
-                           CommandParameter="FileExplorer"
-                           Padding="10,6" 
-                           Margin="0,0,4,0"/>
-            </StackPanel>
-
-            <!-- Right: Global Smart Search Box with Ctrl+F Hint & Result Badge -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Search Result Badge (Shown when searching) -->
-                <Border Background="{DynamicResource Brush.Badge.Background}"
-                        BorderBrush="{DynamicResource Brush.Badge.Border}"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="8,5"
-                        Margin="0,0,8,0"
-                        Visibility="{Binding IsSearchActive, Converter={StaticResource BoolToVis}}">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Search20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                        <TextBlock Text="{Binding SearchResultsText}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <ui:AutoSuggestBox x:Name="TweakerSearchBox" 
+                                           PlaceholderText="Ayar veya özellik ara... (Ctrl + F)" 
+                                           Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                           Icon="{ui:SymbolIcon Search24}"
+                                           VerticalContentAlignment="Center"
+                                           MinWidth="240" MaxWidth="340"/>
                     </StackPanel>
-                </Border>
+                </Grid>
 
-                <!-- Smart AutoSuggestBox -->
-                <ui:AutoSuggestBox x:Name="TweakerSearchBox" 
-                                   PlaceholderText="Tüm sistemde ara... (Ctrl + F)" 
-                                   Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                   Icon="{ui:SymbolIcon Search24}"
-                                   VerticalContentAlignment="Center"
-                                   MinWidth="200" MaxWidth="320"
-                                   HorizontalAlignment="Stretch"/>
-            </StackPanel>
-        </Grid>
-
-        <!-- 4.1. Viewport: Virtualized Standard Tweaks List (All, Behavior, BootLogon, DesktopTaskbar, ContextMenu) -->
-        <ListView Grid.Row="4" 
-                  ItemsSource="{Binding FilteredTweaks}"
-                  Visibility="{Binding IsTweaksListVisible, Converter={StaticResource BoolToVis}}"
+                <!-- 4.1. Viewport: Virtualized Standard Tweaks List (All, Behavior, BootLogon, DesktopTaskbar, ContextMenu) -->
+                <ListView Grid.Row="1" 
+                          ItemsSource="{Binding FilteredTweaks}"
+                          Visibility="{Binding IsTweaksListVisible, Converter={StaticResource BoolToVis}}"
                   BorderThickness="0"
                   Background="Transparent"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -468,7 +353,78 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:SystemTweakItem}">
-                    <ui:Card Padding="18,14" ClipToBounds="False">
+                    <ui:Card Padding="18,14" ClipToBounds="False"
+                             ToolTipService.InitialShowDelay="200"
+                             ToolTipService.ShowDuration="30000"
+                             ToolTipService.BetweenShowDelay="100">
+                        <!-- Rich Hover Card for Tweak (Human-readable, No registry jargon) -->
+                        <ui:Card.ToolTip>
+                            <ToolTip Background="{DynamicResource Brush.Surface.Background}"
+                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                     BorderThickness="1"
+                                     Padding="16,14"
+                                     HasDropShadow="True">
+                                <StackPanel MaxWidth="380">
+                                    <!-- Header: Title + Category Badge -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
+                                        <Border Grid.Column="1" CornerRadius="4" Padding="6,2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" Margin="8,0,0,0">
+                                            <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- 1. Ne İşe Yarar / Kullanıcı Faydası -->
+                                    <TextBlock Text="Bu Ayar Ne İşe Yarar?" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,0,3"/>
+                                    <TextBlock Text="{Binding UserBenefitText}" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+                                    <Border Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,0,10"/>
+
+                                    <!-- 2. Güvenlik Durumu -->
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ui:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,8,0" VerticalAlignment="Top"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Güvenlik &amp; Uyumluluk" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding SafetyNotice}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 3. Uygulanma Şekli -->
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ui:SymbolIcon Grid.Column="0" Symbol="ArrowClockwise20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,8,0" VerticalAlignment="Top"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Uygulanma Şekli" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding ExecutionNotice}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 4. Geri Alınabilirlik -->
+                                    <Grid Margin="0,0,0,2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ui:SymbolIcon Grid.Column="0" Symbol="ArrowCounterclockwise20" FontSize="14" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,8,0" VerticalAlignment="Top"/>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Geri Alınabilirlik" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding RevertNotice}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </ToolTip>
+                        </ui:Card.ToolTip>
+
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -503,9 +459,13 @@
                                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                             BorderThickness="1"
+                                            Margin="0,0,8,0"
                                             Visibility="{Binding RequiresAdmin, Converter={StaticResource BoolToVis}}">
                                         <TextBlock Text="Yönetici Yetkisi" FontSize="10" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
                                     </Border>
+
+                                    <!-- Hover Info Icon -->
+                                    <ui:SymbolIcon Symbol="Info20" FontSize="13" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" ToolTip="Detaylı bilgi için fareyi kartın üzerinde tutun"/>
                                 </StackPanel>
 
                                 <!-- Title -->
@@ -569,7 +529,7 @@
         </ListView>
 
         <!-- 4.2. Viewport: Tools & Utilities Tab Content -->
-        <ScrollViewer Grid.Row="4" 
+        <ScrollViewer Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding IsToolsTabVisible, Converter={StaticResource BoolToVis}}">
@@ -769,7 +729,7 @@
         </ScrollViewer>
 
         <!-- 4.3. Viewport: Classic Apps Tab Content -->
-        <ScrollViewer Grid.Row="4" 
+        <ScrollViewer Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding IsClassicAppsTabVisible, Converter={StaticResource BoolToVis}}">
@@ -842,7 +802,7 @@
         </ScrollViewer>
 
         <!-- 4.4. Viewport: Advanced Appearance & Window Metrics Tab Content -->
-        <ScrollViewer Grid.Row="4" 
+        <ScrollViewer Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding IsAdvancedAppearanceTabVisible, Converter={StaticResource BoolToVis}}">
@@ -999,5 +959,7 @@
                 </ui:Card>
             </StackPanel>
         </ScrollViewer>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>

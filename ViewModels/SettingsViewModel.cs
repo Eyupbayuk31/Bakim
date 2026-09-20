@@ -721,13 +721,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3140 = new ReleaseChangelogItem
+            {
+                Version = "v3.14.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Windows Tweaker Master-Detail Mimarisi & Zengin Bilgilendirici Hover Kartları",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Tekil ve Temiz Kategori Yönetimi: Sol menüdeki 13 alt butonluk akordiyon kalabalığı, sayfa içi açılır pencere (popup) ve 5'li hap buton karmaşası tamamen kaldırılarak tek merkezli Master-Detail dikey kategori rayına dönüştürüldü.",
+                    "Zengin Kategori Hover Kartları: Her kategorinin üzerine gelindiğinde ne işe yaradığı, sisteme katkısı ve aktif/toplam ayar durumunu gösteren modern bilgilendirme pencereleri eklendi.",
+                    "Anlaşılır İnce Ayar Hover Kartları: Teknik Kayıt Defteri (Registry) kodları ve REG_DWORD karmaşası yerine kullanıcıya ayarın gerçekte ne yaptığı, güvenlik durumu, yeniden başlatma gerekip gerekmediği ve nasıl geri alınacağını açıklayan Türkçe yardım kartları eklendi.",
+                    "Anti-AI & Profesyonel Tasarım Standartları: Arayüzdeki yapay zeka hissi veren tüm ögeler temizlendi, tamamen yerel Windows 11 Fluent tasarım dili ve resmi simgelerle kurumsal seviyeye getirildi."
+                }
+            };
+
             var v3130 = new ReleaseChangelogItem
             {
                 Version = "v3.13.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Bellek & Süreçler V2.0: Segmente RAM Barı, Sysinternals RAMMap & Teftiş Çekmecesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Çok Katmanlı Segmente Bellek Barı: Windows 11 Görev Yöneticisi mimarisinde Kullanımda, Değiştirilmiş, Bekleme Listesi (Önbellek) ve Boş RAM oransal renkli gösterimi.",
@@ -942,8 +958,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3130;
+            LatestRelease = v3140;
 
+            ReleaseHistory.Add(v3140);
             ReleaseHistory.Add(v3130);
             ReleaseHistory.Add(v3120);
             ReleaseHistory.Add(v3111);

@@ -256,7 +256,7 @@
                                VerticalAlignment="Center"
                                Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
                              <StackPanel>
-                                 <TextBlock Text="BAKIM v3.13" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                 <TextBlock Text="BAKIM v3.14" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                  <TextBlock Text="Sistem Optimize &amp; Güvenlik" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                              </StackPanel>
                          </Grid>
@@ -428,230 +428,21 @@
                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
                             </ui:Button>
 
-                            <!-- 12. Windows Tweaker Hierarchical Accordion Item -->
-                            <Grid Margin="0,0,0,4">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <!-- Main Tweaker Button with Toggle Chevron -->
-                                <Grid Grid.Row="0">
-                                    <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Tweaker'}"
-                                               HorizontalAlignment="Stretch" 
-                                               HorizontalContentAlignment="Left"
-                                               Padding="10,8" 
-                                               Command="{Binding NavigateCommand}" 
-                                               CommandParameter="Tweaker"
-                                               Icon="{ui:SymbolIcon Wrench24}"
-                                               ToolTip="Windows Tweaker">
-                                        <Grid Margin="6,0,0,0"
-                                              HorizontalAlignment="Stretch"
-                                              Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
-                                            <TextBlock Text="Windows Tweaker" VerticalAlignment="Center" FontSize="12.5"/>
-                                            <ui:Button Appearance="Transparent"
-                                                       Padding="4,2"
-                                                       HorizontalAlignment="Right"
-                                                       VerticalAlignment="Center"
-                                                       Command="{Binding ToggleTweakerMenuCommand}"
-                                                       ToolTip="Kategorileri Aç / Kapat">
-                                                <StackPanel>
-                                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11"
-                                                                   Visibility="{Binding IsTweakerMenuExpanded, Converter={StaticResource BoolToVis}}"/>
-                                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11"
-                                                                   Visibility="{Binding IsTweakerMenuExpanded, Converter={StaticResource InverseBoolToVis}}"/>
-                                                </StackPanel>
-                                            </ui:Button>
-                                        </Grid>
-                                    </ui:Button>
-                                </Grid>
-
-                                <!-- Subcategories Indented List -->
-                                <StackPanel Grid.Row="1" 
-                                            Margin="14,3,0,4"
-                                            Visibility="{Binding CanShowTweakerSubMenu, Converter={StaticResource BoolToVis}}">
-                                    <!-- 1. Tüm Ayarlar -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="All"
-                                               Icon="{ui:SymbolIcon List24}"
-                                               ToolTip="Tüm Ayarlar">
-                                        <TextBlock Text="Tüm Ayarlar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 2. Gizlilik & Debloat -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="PrivacyDebloat"
-                                               Icon="{ui:SymbolIcon ShieldCheckmark24}"
-                                               ToolTip="Gizlilik &amp; Debloat">
-                                        <TextBlock Text="Gizlilik &amp; Debloat" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 3. Windows 11 -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="Windows11"
-                                               Icon="{ui:SymbolIcon AppGeneric20}"
-                                               ToolTip="Windows 11">
-                                        <TextBlock Text="Windows 11" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 3. Görünüm & Tema -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="Appearance"
-                                               Icon="{ui:SymbolIcon Color20}"
-                                               ToolTip="Görünüm &amp; Tema">
-                                        <TextBlock Text="Görünüm &amp; Tema" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 4. Gelişmiş Görünüm -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="AdvancedAppearance"
-                                               Icon="{ui:SymbolIcon FontIncrease20}"
-                                               ToolTip="Gelişmiş Görünüm">
-                                        <TextBlock Text="Gelişmiş Görünüm" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 5. Davranışlar -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="Behavior"
-                                               Icon="{ui:SymbolIcon Wrench20}"
-                                               ToolTip="Sistem Davranışları">
-                                        <TextBlock Text="Davranışlar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 6. Açılış & Oturum -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="BootLogon"
-                                               Icon="{ui:SymbolIcon Power20}"
-                                               ToolTip="Açılış &amp; Oturum">
-                                        <TextBlock Text="Açılış &amp; Oturum" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 7. Masaüstü & Görev Çubuğu -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="DesktopTaskbar"
-                                               Icon="{ui:SymbolIcon Desktop20}"
-                                               ToolTip="Masaüstü &amp; Görev Çubuğu">
-                                        <TextBlock Text="Masaüstü &amp; Görev Çubuğu" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 8. Sağ Tık & Kısayollar -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="ContextMenu"
-                                               Icon="{ui:SymbolIcon Cursor20}"
-                                               ToolTip="Sağ Tık Menüsü">
-                                        <TextBlock Text="Sağ Tık &amp; Kısayollar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 9. Dosya Gezgini -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="FileExplorer"
-                                               Icon="{ui:SymbolIcon Folder20}"
-                                               ToolTip="Dosya Gezgini">
-                                        <TextBlock Text="Dosya Gezgini" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 10. Ayarlar & Denetim Masası -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="SettingsCpl"
-                                               Icon="{ui:SymbolIcon Settings20}"
-                                               ToolTip="Ayarlar &amp; Denetim Masası">
-                                        <TextBlock Text="Ayarlar &amp; Denetim" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 11. Microsoft Edge -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="Edge"
-                                               Icon="{ui:SymbolIcon Globe20}"
-                                               ToolTip="Microsoft Edge">
-                                        <TextBlock Text="Microsoft Edge" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 12. Sistem Araçları -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Margin="0,0,0,2"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="Tools"
-                                               Icon="{ui:SymbolIcon DeveloperBoard20}"
-                                               ToolTip="Sistem Araçları">
-                                        <TextBlock Text="Sistem Araçları" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-
-                                    <!-- 13. Klasik Uygulamalar -->
-                                    <ui:Button Appearance="Transparent"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="8,5"
-                                               Command="{Binding NavigateToTweakerCategoryCommand}"
-                                               CommandParameter="ClassicApps"
-                                               Icon="{ui:SymbolIcon Apps20}"
-                                               ToolTip="Klasik Uygulamalar">
-                                        <TextBlock Text="Klasik Uygulamalar" Margin="6,0,0,0" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </ui:Button>
-                                </StackPanel>
-                            </Grid>
+                            <!-- 12. Windows Tweaker Module Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Tweaker'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Tweaker"
+                                       Icon="{ui:SymbolIcon Wrench24}"
+                                       ToolTip="Windows Tweaker &amp; İnce Ayarlar">
+                                <TextBlock Text="Windows Tweaker" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
 
                             <!-- 12. Settings Module Button -->
                             <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Settings'}"
