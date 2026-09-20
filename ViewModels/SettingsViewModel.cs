@@ -721,13 +721,28 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3151 = new ReleaseChangelogItem
+            {
+                Version = "v3.15.1",
+                ReleaseDate = "21 Eylül 2026",
+                Title = "Sistem Bilgisi Simgesi Düzeltmesi & Otomatik XAML Doğrulama Koruması",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Sistem Bilgisi XAML İkon Düzeltmesi: Donanım ve depolama modülündeki HTML raporu oluşturma butonunda tanımsız olan 'OpenInNewWindow20' simgesi yerine geçerli 'ArrowExport20' simgesi entegre edilerek çalışma zamanı XamlParseException hatası giderildi.",
+                    "Otomatik XAML Sembol Doğrulayıcı (SymbolValidator): Gelecekte hatalı veya uydurma Fluent sembollerinin arayüze eklenmesini derleme/test seviyesinde önleyen otomatik xUnit test mekanizması entegre edildi.",
+                    "Sürüm Bütünlüğü & Güvenli Dağıtım: v3.15.1 için tüm bağımlılıklar, manifestolar ve güncelleme servisleri senkronize edildi."
+                }
+            };
+
             var v3150 = new ReleaseChangelogItem
             {
                 Version = "v3.15.0",
                 ReleaseDate = "21 Eylül 2026",
                 Title = "Donanım, Depolama & S.M.A.R.T. Modülü Kapsamlı Görsel & Fonksiyonel Revizyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Modern Fluent Segmented Sekme Çubuğu: Aktif alt sekme vurgusu ve ikonlarıyla zenginleştirilmiş modern gezinti paneli (Donanım & Telemetri, S.M.A.R.T. Sağlık, Büyük Dosya Analizörü).",
@@ -977,8 +992,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3150;
+            LatestRelease = v3151;
 
+            ReleaseHistory.Add(v3151);
             ReleaseHistory.Add(v3150);
             ReleaseHistory.Add(v3140);
             ReleaseHistory.Add(v3130);

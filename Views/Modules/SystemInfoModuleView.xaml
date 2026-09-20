@@ -545,7 +545,7 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:Button Appearance="Primary"
                                        Content="HTML Raporu Oluştur"
-                                       Icon="{ui:SymbolIcon OpenInNewWindow20}"
+                                       Icon="{ui:SymbolIcon ArrowExport20}"
                                        Command="{Binding ExportReportHtmlCommand}"
                                        Padding="14,8"
                                        Margin="0,0,8,0"/>
