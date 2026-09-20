@@ -42,8 +42,11 @@ jobs:
         run: dotnet restore
 
       - name: Publish Single-File Executable
+        shell: pwsh
         run: |
-          dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
+          $proj = (Get-ChildItem -Path . -Filter "*Bak*.csproj" -File | Select-Object -First 1).FullName
+          Write-Host "Hedef proje derleniyor: $proj"
+          dotnet publish $proj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
 
       - name: Rename and Package Artifacts
         shell: pwsh
