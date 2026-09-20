@@ -159,6 +159,8 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _ramBadge = "%58";
 
+        public string CurrentUserName => Environment.UserName;
+
         public event Action? LogoutRequested;
 
         #endregion

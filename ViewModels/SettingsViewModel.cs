@@ -721,13 +721,28 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v390 = new ReleaseChangelogItem
+            {
+                Version = "v3.9.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Işık Hızında Başlangıç (Login Ekranı Kaldırıldı) & Dinamik Windows Kullanıcı Rozeti",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Doğrudan Ana Panel Başlangıcı (0 Saniye Gecikme): Sistem optimizasyon araçlarında gereksiz parola ve giriş formu sürtünmesi kökten kaldırıldı; uygulama çift tıklandığı an doğrudan Ana Yönetim Paneline açılır.",
+                    "Dinamik Windows Kullanıcı Rozeti: Başlık çubuğundaki statik kullanıcı ismi yerine oturum açmış aktif Windows kullanıcısı (Environment.UserName) bağlandı.",
+                    "Başlık Çubuğu Sadeleştirmesi: İşlevsiz hale gelen oturumu kapat butonu kaldırılarak pencere başlığı modern ve ferah bir görünüme kavuşturuldu."
+                }
+            };
+
             var v380 = new ReleaseChangelogItem
             {
                 Version = "v3.8.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Sistem Temizliği Fluent 2, 20 Temizlik Hedefi, Canlı Disk Röntgeni & Teftiş Çekmecesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "20 Genişletilmiş Temizlik Hedefi: Windows Sistem Kalıntıları (Teslim İyileştirme, Shader, WER, CBS/DISM Logları, Thumbnail DB), Web Tarayıcıları (Edge, Chrome, Firefox, Brave, Discord, Telegram) ve Oyun/Medya/Dev (Steam, Spotify, Epic, NuGet/npm/pip) kategorilerine kavuşturuldu.",
@@ -877,8 +892,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v380;
+            LatestRelease = v390;
 
+            ReleaseHistory.Add(v390);
             ReleaseHistory.Add(v380);
             ReleaseHistory.Add(v370);
             ReleaseHistory.Add(v360);

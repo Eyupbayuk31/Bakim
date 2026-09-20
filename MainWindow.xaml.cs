@@ -22,24 +22,12 @@ namespace Bakım
 
             _trayIcon = trayIcon;
             DataContext = viewModel;
-            viewModel.LogoutRequested += OnLogoutRequested;
 
             Loaded += (_, _) =>
             {
                 _trayIcon.Attach(this);
                 theme.ApplyBackdrop(settings.Current.IsMicaEnabled);
             };
-        }
-
-        private void OnLogoutRequested()
-        {
-            // Oturum kapatılırken tepsi simgesi ana pencereyle birlikte serbest bırakılır.
-            _trayIcon?.Detach();
-
-            var loginWindow = App.GetService<LoginWindow>();
-            Application.Current.MainWindow = loginWindow;
-            loginWindow.Show();
-            Close();
         }
     }
 }

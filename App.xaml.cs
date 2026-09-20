@@ -106,9 +106,9 @@ namespace Bakım
             // 7. İlk pencere konteynerden çözülür.
             //    StartupUri kullanılmıyor: o yol pencereyi WPF'in kendisi üretir ve
             //    DI'ı tamamen atlar; ViewModel'ler de XAML'den örneklenmek zorunda kalırdı.
-            var loginWindow = GetService<LoginWindow>();
-            MainWindow = loginWindow;
-            loginWindow.Show();
+            var mainWindow = GetService<MainWindow>();
+            MainWindow = mainWindow;
+            mainWindow.Show();
 
             _logService.Info("Başlangıç tamamlandı.", "Startup");
         }

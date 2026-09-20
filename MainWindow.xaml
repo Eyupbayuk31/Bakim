@@ -125,25 +125,17 @@
                                ToolTip="Açık / Koyu Tema"
                                Icon="{ui:SymbolIcon DarkTheme20}" AutomationProperties.Name="Açık / Koyu Tema"/>
 
-                    <!-- Eyüp User Badge -->
+                    <!-- Current Windows User Badge -->
                     <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                             BorderThickness="1" 
                             CornerRadius="8" 
-                            Padding="8,3" 
-                            Margin="0,0,8,0">
+                            Padding="8,3">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Person20" FontSize="13" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                            <TextBlock Text="Eyüp" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{Binding CurrentUserName}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </StackPanel>
                     </Border>
-
-                    <!-- Logout Button -->
-                    <ui:Button Appearance="Secondary" 
-                               Padding="8,3"
-                               Command="{Binding LogoutCommand}" 
-                               ToolTip="Oturumu Kapat"
-                               Icon="{ui:SymbolIcon SignOut20}" AutomationProperties.Name="Oturumu Kapat"/>
                 </StackPanel>
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
