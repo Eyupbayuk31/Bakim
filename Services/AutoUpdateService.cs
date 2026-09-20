@@ -13,7 +13,7 @@ namespace Bakım.Services
     public class UpdateInfo
     {
         public bool IsUpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = "3.1.0";
+        public string CurrentVersion { get; set; } = "3.2.0";
         public string LatestVersion { get; set; } = string.Empty;
         public string ReleaseNotes { get; set; } = string.Empty;
         public string DownloadUrl { get; set; } = string.Empty;
@@ -26,7 +26,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "3.1.0";
+        public const string DefaultCurrentVersion = "3.2.0";
 
         public static Version GetCurrentVersion()
         {
