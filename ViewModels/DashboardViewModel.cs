@@ -14,6 +14,7 @@ namespace Bakım.ViewModels
         private readonly ISystemCleanService _cleanService;
         private readonly ISystemInfoService _infoService;
         private readonly ITelemetryService _telemetryService;
+        private readonly IGameModeService _gameModeService;
 
         private readonly DispatcherTimer _telemetryTimer;
         private readonly Queue<double> _cpuHistory = new();
@@ -25,12 +26,17 @@ namespace Bakım.ViewModels
             ISystemCleanService cleanService, 
             ISystemInfoService infoService, 
             ITelemetryService telemetryService,
+            IGameModeService gameModeService,
             IAppSettingsService settingsService)
         {
             _settingsService = settingsService;
             _cleanService = cleanService;
             _infoService = infoService;
             _telemetryService = telemetryService;
+            _gameModeService = gameModeService;
+
+            _isGameModeActive = _gameModeService.IsGameModeActive;
+            _gameModeService.GameModeChanged += OnGameModeChanged;
 
             TopHogs = new ObservableCollection<ResourceHogItem>();
 
@@ -143,6 +149,42 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private int _boostProgressPercent;
+
+        [ObservableProperty]
+        private bool _isGameModeActive;
+
+        public string GameModeStatusBadge => IsGameModeActive ? "Aktif · Arka Plan Donduruldu" : "Devre Dışı · Standart Mod";
+
+        public string GameModeButtonText => IsGameModeActive ? "Oyun Modunu Kapat" : "Oyun Modunu Başlat";
+
+        private void OnGameModeChanged(bool active)
+        {
+            IsGameModeActive = active;
+            OnPropertyChanged(nameof(GameModeStatusBadge));
+            OnPropertyChanged(nameof(GameModeButtonText));
+        }
+
+        [RelayCommand]
+        public async Task ToggleGameModeAsync()
+        {
+            long freed = await _gameModeService.ToggleGameModeAsync();
+            IsGameModeActive = _gameModeService.IsGameModeActive;
+            OnPropertyChanged(nameof(GameModeStatusBadge));
+            OnPropertyChanged(nameof(GameModeButtonText));
+
+            if (IsGameModeActive)
+            {
+                string freedText = CleanCategory.FormatBytes(freed);
+                OptimizationResultMessage = $"🎮 Ultra Oyun Modu Aktif! Arka plan servisleri donduruldu. {freedText} bellek oyuna ayrıldı!";
+                OptimizationFreedBadge = $"+{freedText} Serbest";
+                HasOptimizationResult = true;
+            }
+            else
+            {
+                OptimizationResultMessage = "Oyun Modu Kapatıldı. Arka plan servisleri normale döndü.";
+                HasOptimizationResult = true;
+            }
+        }
 
         public event Action? NavigateToCleanerRequested;
         public event Action? NavigateToOptimizerRequested;

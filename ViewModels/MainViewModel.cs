@@ -25,6 +25,9 @@ namespace Bakım.ViewModels
         private readonly IServiceProvider _services;
         private readonly ICommandPaletteService _paletteService;
         private readonly IThemeService _themeService;
+        private readonly IGameModeService _gameModeService;
+        private readonly ITelemetryService _telemetryService;
+        private readonly DispatcherTimer _miniTelemetryTimer;
         private readonly ILogService _log;
 
         // Alt modüller ilk erişimde oluşturulur: açılışta 14 ViewModel birden
@@ -53,12 +56,27 @@ namespace Bakım.ViewModels
             IThemeService themeService,
             INavigationService navigationService,
             IBackgroundMaintenanceService maintenanceService,
+            IGameModeService gameModeService,
+            ITelemetryService telemetryService,
             ILogService log)
         {
             _services = services;
             _paletteService = paletteService;
             _themeService = themeService;
+            _gameModeService = gameModeService;
+            _telemetryService = telemetryService;
             _log = log;
+
+            _isGameModeActive = _gameModeService.IsGameModeActive;
+            _gameModeService.GameModeChanged += active => OnUiThread(() => IsGameModeActive = active);
+
+            _miniTelemetryTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3)
+            };
+            _miniTelemetryTimer.Tick += async (_, _) => await UpdateMiniTelemetryAsync();
+            _miniTelemetryTimer.Start();
+            _ = UpdateMiniTelemetryAsync();
 
             _dashboard = Lazy(() =>
             {
@@ -159,9 +177,48 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _ramBadge = "%58";
 
+        [ObservableProperty]
+        private bool _isGameModeActive;
+
+        [ObservableProperty]
+        private string _miniCpuText = "%0";
+
+        [ObservableProperty]
+        private string _miniRamText = "%0";
+
         public string CurrentUserName => Environment.UserName;
 
         public event Action? LogoutRequested;
+
+        private async Task UpdateMiniTelemetryAsync()
+        {
+            try
+            {
+                var sample = await _telemetryService.SampleMetricsAsync();
+                MiniCpuText = $"%{sample.CpuUsagePercentage}";
+                MiniRamText = $"%{sample.RamUsagePercentage}";
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public async Task ToggleGameModeAsync()
+        {
+            long freed = await _gameModeService.ToggleGameModeAsync();
+            IsGameModeActive = _gameModeService.IsGameModeActive;
+            if (IsGameModeActive)
+            {
+                ShowToast("🎮 Ultra Oyun Modu Aktif!",
+                    $"Arka plan servisleri ve bildirimler donduruldu. {CleanCategory.FormatBytes(freed)} bellek oyuna ayrıldı!",
+                    InfoBarSeverity.Success, "TopSpeed24");
+            }
+            else
+            {
+                ShowToast("Oyun Modu Kapatıldı",
+                    "Arka plan koruma servisleri normale döndü.",
+                    InfoBarSeverity.Informational, "CheckmarkCircle24");
+            }
+        }
 
         #endregion
 

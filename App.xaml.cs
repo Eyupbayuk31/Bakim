@@ -108,7 +108,29 @@ namespace Bakım
             //    DI'ı tamamen atlar; ViewModel'ler de XAML'den örneklenmek zorunda kalırdı.
             var mainWindow = GetService<MainWindow>();
             MainWindow = mainWindow;
-            mainWindow.Show();
+
+            bool isSilentStart = false;
+            foreach (var arg in e.Args)
+            {
+                if (arg.Equals("--autostart", StringComparison.OrdinalIgnoreCase) ||
+                    arg.Equals("--minimized", StringComparison.OrdinalIgnoreCase) ||
+                    arg.Equals("--tray", StringComparison.OrdinalIgnoreCase))
+                {
+                    isSilentStart = true;
+                    break;
+                }
+            }
+
+            if (isSilentStart)
+            {
+                mainWindow.WindowState = WindowState.Minimized;
+                mainWindow.Hide();
+                _logService.Info("Sessiz başlangıç parametresi saptandı (--autostart / --tray). Pencere tepsiye gizleniyor.", "Startup");
+            }
+            else
+            {
+                mainWindow.Show();
+            }
 
             _logService.Info("Başlangıç tamamlandı.", "Startup");
         }
@@ -117,6 +139,7 @@ namespace Bakım
         {
             try
             {
+                Bakım.MainWindow.IsExplicitExit = true;
                 AppLog.Info($"Uygulama kapanıyor (çıkış kodu {e.ApplicationExitCode}).", "Shutdown");
 
                 TryGetService<IBackgroundMaintenanceService>()?.Stop();
@@ -197,6 +220,7 @@ namespace Bakım
 
             // Otomasyon & Yaşam Döngüsü Servisleri
             services.AddSingleton<IBackgroundMaintenanceService, BackgroundMaintenanceService>();
+            services.AddSingleton<IGameModeService, GameModeService>();
             services.AddSingleton<IExitCleanupService, ExitCleanupService>();
             services.AddSingleton<ITrayIconService, TrayIconService>();
 

@@ -14,31 +14,44 @@ namespace Bakım.Services
 
         /// <summary>Pencereyi tepsiden geri getirir ve öne alır.</summary>
         void RestoreWindow();
+
+        /// <summary>Kullanıcıya sistem tepsisi balon bildirimi gösterir.</summary>
+        void ShowBalloon(string title, string message);
     }
 
     /// <summary>
-    /// Ayarlardaki "Simge Durumunda Tepsiye Küçült" tercihini gerçekten uygulayan servis.
-    /// Bu tercih v3.0.3'e kadar arayüzde görünüyor ve kaydediliyor fakat hiçbir etkisi yoktu.
-    ///
-    /// WPF-UI 4.x tray desteği içermediği için System.Windows.Forms.NotifyIcon kullanılır;
-    /// hiçbir WinForms penceresi açılmaz, yalnızca bildirim alanı simgesi oluşturulur.
+    /// Sistem Tepsisi (System Tray) ve Arka Planda Çalışma Motoru.
+    /// Çarpıya (X) basıldığında uygulamanın kapanmayıp arka planda nöbet tutmasını sağlar.
+    /// Ultra Oyun Modu ve Hızlı RAM temizliğini doğrudan tepsi menüsünden yönetir.
     /// </summary>
     public sealed class TrayIconService : ITrayIconService, IDisposable
     {
         private readonly IAppSettingsService _settings;
         private readonly ISystemCleanService _cleanService;
+        private readonly IGameModeService _gameModeService;
+        private readonly INavigationService _navigationService;
         private readonly ILogService _log;
 
         private Forms.NotifyIcon? _notifyIcon;
+        private Forms.ToolStripMenuItem? _gameModeItem;
         private Window? _window;
         private bool _balloonShown;
         private bool _disposed;
 
-        public TrayIconService(IAppSettingsService settings, ISystemCleanService cleanService, ILogService log)
+        public TrayIconService(
+            IAppSettingsService settings,
+            ISystemCleanService cleanService,
+            IGameModeService gameModeService,
+            INavigationService navigationService,
+            ILogService log)
         {
             _settings = settings;
             _cleanService = cleanService;
+            _gameModeService = gameModeService;
+            _navigationService = navigationService;
             _log = log ?? NullLogService.Instance;
+
+            _gameModeService.GameModeChanged += OnGameModeChanged;
         }
 
         public void Attach(Window window)
@@ -49,6 +62,7 @@ namespace Bakım.Services
 
             _window = window;
             _window.StateChanged += OnWindowStateChanged;
+            _window.Closing += OnWindowClosing;
             _window.Closed += OnWindowClosed;
 
             try
@@ -63,7 +77,7 @@ namespace Bakım.Services
 
                 _notifyIcon.DoubleClick += (_, _) => RestoreWindow();
 
-                _log.Info("Sistem tepsisi simgesi oluşturuldu.", nameof(TrayIconService));
+                _log.Info("Sistem tepsisi simgesi oluşturuldu ve pencereye bağlandı.", nameof(TrayIconService));
             }
             catch (Exception ex)
             {
@@ -77,6 +91,7 @@ namespace Bakım.Services
             if (_window != null)
             {
                 _window.StateChanged -= OnWindowStateChanged;
+                _window.Closing -= OnWindowClosing;
                 _window.Closed -= OnWindowClosed;
                 _window = null;
             }
@@ -95,6 +110,7 @@ namespace Bakım.Services
                 }
 
                 _notifyIcon = null;
+                _gameModeItem = null;
             }
         }
 
@@ -106,7 +122,10 @@ namespace Bakım.Services
             try
             {
                 window.Show();
-                window.WindowState = WindowState.Normal;
+                if (window.WindowState == WindowState.Minimized)
+                {
+                    window.WindowState = WindowState.Normal;
+                }
                 window.Activate();
                 window.Topmost = true;
                 window.Topmost = false;
@@ -115,6 +134,18 @@ namespace Bakım.Services
             catch (Exception ex)
             {
                 _log.Warning("Pencere tepsiden geri getirilemedi.", ex, nameof(TrayIconService));
+            }
+        }
+
+        public void ShowBalloon(string title, string message)
+        {
+            try
+            {
+                _notifyIcon?.ShowBalloonTip(3000, title, message, Forms.ToolTipIcon.Info);
+            }
+            catch (Exception ex)
+            {
+                _log.Warning("Tepsi bildirimi gösterilemedi.", ex, nameof(TrayIconService));
             }
         }
 
@@ -138,39 +169,101 @@ namespace Bakım.Services
             _log.Debug("Pencere sistem tepsisine küçültüldü.", nameof(TrayIconService));
         }
 
-        private void OnWindowClosed(object? sender, EventArgs e) => Detach();
-
-        private void ShowBalloon(string title, string message)
+        private void OnWindowClosing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
-            try
+            if (!MainWindow.IsExplicitExit)
             {
-                _notifyIcon?.ShowBalloonTip(3000, title, message, Forms.ToolTipIcon.Info);
-            }
-            catch (Exception ex)
-            {
-                _log.Warning("Tepsi bildirimi gösterilemedi.", ex, nameof(TrayIconService));
+                e.Cancel = true;
+                _window?.Hide();
+                ShowBalloon("Bakım Arka Planda Çalışıyor",
+                    "Uygulama arka planda nöbet tutmaya devam ediyor. Açmak için çift tıklayın.");
+                _log.Info("Çarpı (X) butonuna basıldı: Pencere arka plana küçültüldü (Close-to-Tray).", nameof(TrayIconService));
             }
         }
+
+        private void OnWindowClosed(object? sender, EventArgs e) => Detach();
 
         private Forms.ContextMenuStrip BuildMenu()
         {
             var menu = new Forms.ContextMenuStrip();
 
-            var showItem = new Forms.ToolStripMenuItem("Bakım'ı Göster");
+            var showItem = new Forms.ToolStripMenuItem("🖥️ Bakım'ı Göster");
+            showItem.Font = new System.Drawing.Font(showItem.Font, System.Drawing.FontStyle.Bold);
             showItem.Click += (_, _) => RestoreWindow();
 
-            var boostItem = new Forms.ToolStripMenuItem("Hızlı RAM Temizle");
+            _gameModeItem = new Forms.ToolStripMenuItem(GetGameModeMenuText());
+            _gameModeItem.Click += async (_, _) => await ToggleGameModeFromTrayAsync();
+
+            var boostItem = new Forms.ToolStripMenuItem("⚡ Hızlı RAM Temizle");
             boostItem.Click += async (_, _) => await QuickBoostAsync();
 
-            var exitItem = new Forms.ToolStripMenuItem("Çıkış");
+            var settingsItem = new Forms.ToolStripMenuItem("⚙️ Ayarlar");
+            settingsItem.Click += (_, _) =>
+            {
+                RestoreWindow();
+                _navigationService.Navigate("Settings");
+            };
+
+            var exitItem = new Forms.ToolStripMenuItem("❌ Çıkış (Uygulamayı Kapat)");
             exitItem.Click += (_, _) => ShutdownApplication();
 
             menu.Items.Add(showItem);
+            menu.Items.Add(new Forms.ToolStripSeparator());
+            menu.Items.Add(_gameModeItem);
             menu.Items.Add(boostItem);
+            menu.Items.Add(settingsItem);
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add(exitItem);
 
             return menu;
+        }
+
+        private string GetGameModeMenuText()
+        {
+            return _gameModeService.IsGameModeActive
+                ? "🎮 Oyun Modu: [AÇIK] (Kapat)"
+                : "🎮 Oyun Modu: [KAPALI] (Aç)";
+        }
+
+        private void OnGameModeChanged(bool isActive)
+        {
+            Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                if (_gameModeItem != null)
+                {
+                    _gameModeItem.Text = GetGameModeMenuText();
+                }
+
+                if (_notifyIcon != null)
+                {
+                    _notifyIcon.Text = isActive 
+                        ? "Bakım - Oyun Modu Aktif (Arka Plan Donduruldu)" 
+                        : "Bakım - Sistem Yönetim Paneli";
+                }
+            });
+        }
+
+        private async System.Threading.Tasks.Task ToggleGameModeFromTrayAsync()
+        {
+            try
+            {
+                long freed = await _gameModeService.ToggleGameModeAsync();
+                bool isActive = _gameModeService.IsGameModeActive;
+
+                if (isActive)
+                {
+                    ShowBalloon("🎮 Ultra Oyun Modu Aktif!",
+                        $"Arka plan servisleri donduruldu. {Models.CleanCategory.FormatBytes(freed)} bellek serbest bırakıldı.");
+                }
+                else
+                {
+                    ShowBalloon("Oyun Modu Kapatıldı", "Arka plan servisleri normale döndü.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Tepsiden Oyun Modu değiştirilirken hata.", ex, nameof(TrayIconService));
+            }
         }
 
         private async System.Threading.Tasks.Task QuickBoostAsync()
@@ -194,6 +287,7 @@ namespace Bakım.Services
         {
             try
             {
+                MainWindow.IsExplicitExit = true;
                 Detach();
                 Application.Current?.Shutdown();
             }
@@ -228,6 +322,7 @@ namespace Bakım.Services
         {
             if (_disposed) return;
             _disposed = true;
+            _gameModeService.GameModeChanged -= OnGameModeChanged;
             Detach();
         }
     }

@@ -195,7 +195,7 @@ namespace Bakım.Services
                         StartInfo = new ProcessStartInfo
                         {
                             FileName = "schtasks.exe",
-                            Arguments = $"/create /tn \"{TaskName}\" /tr \"\\\"{exePath}\\\"\" /sc onlogon /rl highest /f",
+                            Arguments = $"/create /tn \"{TaskName}\" /tr \"\\\"{exePath}\\\" --autostart\" /sc onlogon /rl highest /f",
                             CreateNoWindow = true,
                             UseShellExecute = false,
                             RedirectStandardOutput = true,

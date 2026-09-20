@@ -8,6 +8,7 @@ namespace Bakım.Services
     {
         void Start();
         void Stop();
+        bool IsGameModeActive { get; set; }
 
         /// <summary>RAM kullanımı eşiği aştığında tetiklenir (yüzde değeri taşır).</summary>
         event Action<int>? HighRamDetected;
@@ -51,6 +52,7 @@ namespace Bakım.Services
             _log = log ?? NullLogService.Instance;
         }
 
+        public bool IsGameModeActive { get; set; }
         public event Action<int>? HighRamDetected;
         public event Action<long>? AutoRamCleanCompleted;
 
@@ -128,6 +130,8 @@ namespace Bakım.Services
 
         private async Task TickAsync(CancellationToken token)
         {
+            if (IsGameModeActive) return; // Ultra Oyun Modunda arka plan denetimleri dondurulur
+
             var settings = _settings.Current;
 
             // --- 1. Yüksek RAM uyarısı ---

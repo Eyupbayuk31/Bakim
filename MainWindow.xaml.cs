@@ -8,13 +8,18 @@ namespace Bakım
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     ///
-    /// ViewModel artık XAML'den değil konteynerden gelir. Bu fark önemlidir:
-    /// XAML örneklemesi parametresiz yapıcı metot zorunlu kılıyor, o da her
-    /// ViewModel'i servislerini elle `new` etmeye mecbur bırakıyordu.
+    /// Close-to-Tray: Çarpı (X) butonuna tıklandığında uygulama tamamen kapanmaz;
+    /// sistem tepsisine gizlenerek arka planda nöbet tutmaya devam eder.
+    /// Tamamen kapatmak için sistem tepsisinden "Çıkış" seçilmelidir.
     /// </summary>
     public partial class MainWindow : FluentWindow
     {
         private readonly ITrayIconService? _trayIcon;
+
+        /// <summary>
+        /// Yalnızca tepsi menüsünden veya sistem çıkışından tetiklendiğinde true olur.
+        /// </summary>
+        public static bool IsExplicitExit { get; set; } = false;
 
         public MainWindow(MainViewModel viewModel, ITrayIconService trayIcon, IAppSettingsService settings, IThemeService theme)
         {
@@ -23,11 +28,27 @@ namespace Bakım
             _trayIcon = trayIcon;
             DataContext = viewModel;
 
+            // Tepsi simgesini hemen bağla; pencere gizli başlatılsa bile tepsi ikonu aktif olsun
+            _trayIcon.Attach(this);
+
             Loaded += (_, _) =>
             {
-                _trayIcon.Attach(this);
                 theme.ApplyBackdrop(settings.Current.IsMicaEnabled);
             };
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            if (!IsExplicitExit)
+            {
+                e.Cancel = true;
+                Hide();
+                _trayIcon?.ShowBalloon("Bakım Arka Planda Çalışıyor",
+                    "Uygulama arka planda nöbet tutmaya devam ediyor. Açmak için çift tıklayın.");
+                return;
+            }
+
+            base.OnClosing(e);
         }
     }
 }

@@ -427,7 +427,7 @@ namespace Bakım.ViewModels
                         var exePath = AdminElevationService.GetExePath();
                         if (!string.IsNullOrEmpty(exePath))
                         {
-                            key.SetValue(AppRegistryValueName, $"\"{exePath}\"");
+                            key.SetValue(AppRegistryValueName, $"\"{exePath}\" --autostart");
                         }
                     }
                     else
@@ -721,13 +721,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3100 = new ReleaseChangelogItem
+            {
+                Version = "v3.10.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Sistem Tepsisinde Kesintisiz Nöbet (Close-to-Tray), Sessiz Başlangıç & Ultra Oyun Modu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Sistem Tepsisinde Kesintisiz Nöbet (Close-to-Tray): Çarpı (X) butonuna tıklandığında uygulama kapanmak yerine sistem tepsisine küçülür ve arka planda bilgisayarı korumaya devam eder; tamamen kapatmak için tepsiden 'Çıkış' seçilir.",
+                    "Sessiz Windows Başlangıcı (--autostart / --tray): Bilgisayar açılırken ekrana pencere fırlatmadan doğrudan arka planda sistem tepsisinde hazır bekler.",
+                    "Ultra Oyun Modu (Game Turbo Engine): Oyun oynarken arka plandaki tüm RAM denetimleri, soket taramaları, yenileme döngüleri ve bildirimler tamamen dondurulur; CPU ve RAM %100 oyuna odaklanır.",
+                    "Tek Tıkla Oyun Öncesi Bellek & Güç Optimizasyonu: Oyun Modu açıldığı an derin bellek boşaltması yapılır ve Windows Güç Planı otomatik olarak Yüksek Performansa kilitlenir.",
+                    "Başlık Çubuğu Mini Telemetri & Canlı Çip: TitleBar üzerinde anlık CPU ve RAM yükü canlı olarak izlenebilir; Oyun Modu tek tıkla başlık çubuğundan veya sistem tepsisinden açılıp kapatılabilir."
+                }
+            };
+
             var v390 = new ReleaseChangelogItem
             {
                 Version = "v3.9.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Işık Hızında Başlangıç (Login Ekranı Kaldırıldı) & Dinamik Windows Kullanıcı Rozeti",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Doğrudan Ana Panel Başlangıcı (0 Saniye Gecikme): Sistem optimizasyon araçlarında gereksiz parola ve giriş formu sürtünmesi kökten kaldırıldı; uygulama çift tıklandığı an doğrudan Ana Yönetim Paneline açılır.",
@@ -892,8 +909,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v390;
+            LatestRelease = v3100;
 
+            ReleaseHistory.Add(v3100);
             ReleaseHistory.Add(v390);
             ReleaseHistory.Add(v380);
             ReleaseHistory.Add(v370);
