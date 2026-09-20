@@ -103,7 +103,7 @@ namespace Bakım.Services
             _flyoutWindow.UpdateState();
 
             // Ekran çalışma alanını ve farenin pozisyonunu al
-            var workArea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
+            var workArea = System.Windows.Forms.Screen.PrimaryScreen?.WorkingArea ?? new System.Drawing.Rectangle(0, 0, 1920, 1080);
             var mousePos = System.Windows.Forms.Cursor.Position;
 
             // X ve Y pozisyonunu çalışma alanının sağ alt köşesine hizala

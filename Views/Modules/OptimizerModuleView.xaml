@@ -597,7 +597,7 @@
                             </StackPanel>
 
                             <ui:Button Grid.Column="2" 
-                                       Appearance="Subtle" 
+                                       Appearance="Transparent" 
                                        Command="{Binding CloseDrawerCommand}" 
                                        Icon="{ui:SymbolIcon Dismiss24}" 
                                        ToolTip="Çekmeceyi Kapat"/>
