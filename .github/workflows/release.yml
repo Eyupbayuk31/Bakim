@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v3.4.0'
+        default: 'v3.5.0'
 
 permissions:
   contents: write
@@ -52,7 +52,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.4.0" }
+          if (-not $tag) { $tag = "v3.5.0" }
           
           # Derleme adi artik dogrudan Bakim.exe uretiyor (AssemblyName).
           # Kendine kopyalama hata verecegi icin yalnizca varligi dogrulanir.
@@ -70,7 +70,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.4.0" }
+          if (-not $tag) { $tag = "v3.5.0" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null

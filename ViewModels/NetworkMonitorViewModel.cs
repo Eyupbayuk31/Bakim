@@ -92,7 +92,20 @@ namespace Bakım.ViewModels
         private string _searchText = string.Empty;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsAllFilter))]
+        [NotifyPropertyChangedFor(nameof(IsTcpFilter))]
+        [NotifyPropertyChangedFor(nameof(IsUdpFilter))]
+        [NotifyPropertyChangedFor(nameof(IsExternalFilter))]
+        [NotifyPropertyChangedFor(nameof(IsListeningFilter))]
+        [NotifyPropertyChangedFor(nameof(IsSuspiciousFilter))]
         private string _selectedFilter = "All"; // All, TCP, UDP, External, Listening, Suspicious
+
+        public bool IsAllFilter => SelectedFilter == "All";
+        public bool IsTcpFilter => SelectedFilter == "TCP";
+        public bool IsUdpFilter => SelectedFilter == "UDP";
+        public bool IsExternalFilter => SelectedFilter == "External";
+        public bool IsListeningFilter => SelectedFilter == "Listening";
+        public bool IsSuspiciousFilter => SelectedFilter == "Suspicious";
 
         [ObservableProperty]
         private bool _isAutoRefreshEnabled = true;

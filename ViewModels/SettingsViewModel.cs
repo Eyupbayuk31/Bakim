@@ -721,13 +721,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v350 = new ReleaseChangelogItem
+            {
+                Version = "v3.5.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Ağ Operasyon Merkezi Fluent 2 Arayüz Kusursuzlaştırması & Tema Kontrastı",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Windows 11 Fluent Segmente Sekme Çubuğu: Katı renkli blok butonlar yerine yükseltilmiş kart yüzeyi ve pürüzsüz geçişli pill kontrolü.",
+                    "Bağlantı & Süreç Röntgeni Paneli İyileştirmesi: Çekmece varsayılanda kapalı başlayarak tabloya tam ekran ferahlığı sağlandı, yerel soket ve IP kırpılmaları kökten çözüldü.",
+                    "Aktif Filtre Çipleri: Tümü, TCP, UDP, Dış Bağlantılar, Dinleme ve Şüpheli butonları aktif durum göstergesiyle modernize edildi.",
+                    "Tüm Temalarda Kusursuz Kontrast: TextOnAccent tanımları sisteme kazandırılarak 4 temada da yüksek okunabilirlik ve WCAG AA kontrastı garanti altına alındı."
+                }
+            };
+
             var v340 = new ReleaseChangelogItem
             {
                 Version = "v3.4.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Ağ Operasyon Merkezi, 1000 Mbps Çoklu Akış Hız Testi & Sürüm Günlüğü",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "1000 Mbps Çoklu Akış Hız Testi: Gigabit fiber bağlantılara özel Cloudflare CDN üzerinden 3 paralel soketle kesintisiz 6 saniyelik bant genişliği, canlı Mbps, Ping ve Jitter ölçümü.",
@@ -811,8 +827,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v340;
+            LatestRelease = v350;
 
+            ReleaseHistory.Add(v350);
             ReleaseHistory.Add(v340);
             ReleaseHistory.Add(v330);
             ReleaseHistory.Add(v320);

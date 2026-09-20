@@ -173,6 +173,8 @@ namespace Bakım.Services
 
                     Set(res, "AccentTextFillColorPrimaryBrush", def.Accent);
                     Set(res, "AccentFillColorDefaultBrush", def.Primary);
+                    Set(res, "TextOnAccentFillColorPrimaryBrush", Color.FromRgb(0xFF, 0xFF, 0xFF));
+                    Set(res, "TextOnAccentFillColorSecondaryBrush", Color.FromRgb(0xEE, 0xEE, 0xEE));
 
                     Set(res, "SystemFillColorSuccessBrush", def.Success);
                     Set(res, "SystemFillColorCautionBrush", def.Caution);

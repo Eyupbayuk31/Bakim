@@ -24,6 +24,102 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
+
+        <!-- Windows 11 Fluent Segmented Tab Base Style -->
+        <Style x:Key="SegmentedTabItemStyle" TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="14,9"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="TabBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Tab 1: Connections -->
+        <Style x:Key="ConnectionsTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsConnectionsTab}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tab 2: Listening -->
+        <Style x:Key="ListeningTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsListeningTab}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tab 3: Adapters -->
+        <Style x:Key="AdaptersTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsAdaptersTab}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tab 4: SpeedTest -->
+        <Style x:Key="SpeedTestTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSpeedTestTab}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Tab 5: Diagnostics -->
+        <Style x:Key="DiagnosticsTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDiagnosticsTab}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -77,76 +173,84 @@
             </Grid.ColumnDefinitions>
 
             <!-- Card 1: Total Connections -->
-            <ui:Card Grid.Column="0" Padding="16,12">
+            <ui:Card Grid.Column="0" Padding="16,12" Style="{StaticResource InteractiveCard}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock Text="Toplam Bağlantı" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.TotalConnections}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.TotalConnections}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Globe24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Primary.Subtle}" CornerRadius="8" Width="40" Height="40" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Globe24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
             </ui:Card>
 
             <!-- Card 2: Established -->
-            <ui:Card Grid.Column="2" Padding="16,12">
+            <ui:Card Grid.Column="2" Padding="16,12" Style="{StaticResource InteractiveCard}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock Text="Aktif İletişim" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.EstablishedCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.EstablishedCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Checkmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="8" Width="40" Height="40" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Checkmark24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
             </ui:Card>
 
             <!-- Card 3: Listening Ports -->
-            <ui:Card Grid.Column="4" Padding="16,12">
+            <ui:Card Grid.Column="4" Padding="16,12" Style="{StaticResource InteractiveCard}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock Text="Dinlenen Portlar" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.ListeningCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.ListeningCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Laptop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Accent.Subtle}" CornerRadius="8" Width="40" Height="40" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Laptop24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
             </ui:Card>
 
             <!-- Card 4: Bandwidth Speed -->
-            <ui:Card Grid.Column="6" Padding="16,12">
+            <ui:Card Grid.Column="6" Padding="16,12" Style="{StaticResource InteractiveCard}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock Text="Ağ Hızı (İndirme / Yükleme)" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                             <TextBlock Text="{Binding Stats.FormattedDownloadSpeed, StringFormat='↓ {0}'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             <TextBlock Text="{Binding Stats.FormattedUploadSpeed, StringFormat='  ↑ {0}'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
                         </StackPanel>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="ArrowDownload24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Primary.Subtle}" CornerRadius="8" Width="40" Height="40" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                 </Grid>
             </ui:Card>
         </Grid>
 
-        <!-- 3. Modern Segmented Tab Switcher -->
+        <!-- 3. Modern Segmented Tab Switcher (Windows 11 Fluent Pill Container) -->
         <Border Grid.Row="2" 
                 Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                 BorderThickness="1" 
                 CornerRadius="8" 
-                Padding="6" 
+                Padding="4" 
                 Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -158,58 +262,68 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Tab 1: Active Connections -->
-                <ui:Button Grid.Column="0" 
-                           Appearance="{Binding SelectedTab, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Connections}"
-                           Command="{Binding SetTabCommand}" 
-                           CommandParameter="Connections" 
-                           HorizontalAlignment="Stretch" 
-                           Padding="10,8" 
-                           Margin="0,0,4,0"
-                           Content="Canlı Bağlantılar" 
-                           Icon="{ui:SymbolIcon Globe20}"/>
+                <Button Grid.Column="0" 
+                        Style="{StaticResource ConnectionsTabStyle}"
+                        Command="{Binding SetTabCommand}" 
+                        CommandParameter="Connections" 
+                        HorizontalAlignment="Stretch" 
+                        Margin="0,0,4,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Globe20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Canlı Bağlantılar"/>
+                    </StackPanel>
+                </Button>
 
                 <!-- Tab 2: Listening Ports -->
-                <ui:Button Grid.Column="1" 
-                           Appearance="{Binding SelectedTab, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Listening}"
-                           Command="{Binding SetTabCommand}" 
-                           CommandParameter="Listening" 
-                           HorizontalAlignment="Stretch" 
-                           Padding="10,8" 
-                           Margin="0,0,4,0"
-                           Content="Dinlenen Portlar" 
-                           Icon="{ui:SymbolIcon Laptop20}"/>
+                <Button Grid.Column="1" 
+                        Style="{StaticResource ListeningTabStyle}"
+                        Command="{Binding SetTabCommand}" 
+                        CommandParameter="Listening" 
+                        HorizontalAlignment="Stretch" 
+                        Margin="0,0,4,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Laptop20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Dinlenen Portlar"/>
+                    </StackPanel>
+                </Button>
 
                 <!-- Tab 3: Adapters -->
-                <ui:Button Grid.Column="2" 
-                           Appearance="{Binding SelectedTab, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Adapters}"
-                           Command="{Binding SetTabCommand}" 
-                           CommandParameter="Adapters" 
-                           HorizontalAlignment="Stretch" 
-                           Padding="10,8" 
-                           Margin="0,0,4,0"
-                           Content="Ağ Adaptörleri &amp; IP" 
-                           Icon="{ui:SymbolIcon DeveloperBoard20}"/>
+                <Button Grid.Column="2" 
+                        Style="{StaticResource AdaptersTabStyle}"
+                        Command="{Binding SetTabCommand}" 
+                        CommandParameter="Adapters" 
+                        HorizontalAlignment="Stretch" 
+                        Margin="0,0,4,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="DeveloperBoard20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Ağ Adaptörleri &amp; IP"/>
+                    </StackPanel>
+                </Button>
 
                 <!-- Tab 4: Speed Test -->
-                <ui:Button Grid.Column="3" 
-                           Appearance="{Binding SelectedTab, Converter={StaticResource StringToNavAppearance}, ConverterParameter=SpeedTest}"
-                           Command="{Binding SetTabCommand}" 
-                           CommandParameter="SpeedTest" 
-                           HorizontalAlignment="Stretch" 
-                           Padding="10,8" 
-                           Margin="0,0,4,0"
-                           Content="1000 Mbps Hız Testi" 
-                           Icon="{ui:SymbolIcon ArrowDownload20}"/>
+                <Button Grid.Column="3" 
+                        Style="{StaticResource SpeedTestTabStyle}"
+                        Command="{Binding SetTabCommand}" 
+                        CommandParameter="SpeedTest" 
+                        HorizontalAlignment="Stretch" 
+                        Margin="0,0,4,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="ArrowDownload20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="1000 Mbps Hız Testi"/>
+                    </StackPanel>
+                </Button>
 
                 <!-- Tab 5: Diagnostics Tools -->
-                <ui:Button Grid.Column="4" 
-                           Appearance="{Binding SelectedTab, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Diagnostics}"
-                           Command="{Binding SetTabCommand}" 
-                           CommandParameter="Diagnostics" 
-                           HorizontalAlignment="Stretch" 
-                           Padding="10,8" 
-                           Content="Ağ Teşhis Araçları" 
-                           Icon="{ui:SymbolIcon Wrench20}"/>
+                <Button Grid.Column="4" 
+                        Style="{StaticResource DiagnosticsTabStyle}"
+                        Command="{Binding SetTabCommand}" 
+                        CommandParameter="Diagnostics" 
+                        HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Wrench20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Ağ Teşhis Araçları"/>
+                    </StackPanel>
+                </Button>
             </Grid>
         </Border>
 
@@ -243,12 +357,12 @@
                                 VerticalContentAlignment="Center"/>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ui:Button Appearance="Secondary" Content="Tümü" Command="{Binding SetFilterCommand}" CommandParameter="All" Padding="12,8" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="Secondary" Content="TCP" Command="{Binding SetFilterCommand}" CommandParameter="TCP" Padding="12,8" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="Secondary" Content="UDP" Command="{Binding SetFilterCommand}" CommandParameter="UDP" Padding="12,8" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="Secondary" Content="Dış Bağlantılar" Command="{Binding SetFilterCommand}" CommandParameter="External" Padding="12,8" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="Secondary" Content="Dinleme" Command="{Binding SetFilterCommand}" CommandParameter="Listening" Padding="12,8" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="Secondary" Content="Şüpheli / Riskli" Command="{Binding SetFilterCommand}" CommandParameter="Suspicious" Padding="12,8"/>
+                        <ui:Button Appearance="{Binding IsAllFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Tümü" Command="{Binding SetFilterCommand}" CommandParameter="All" Padding="12,7" Margin="0,0,6,0"/>
+                        <ui:Button Appearance="{Binding IsTcpFilter, Converter={StaticResource BoolToNavAppearance}}" Content="TCP" Command="{Binding SetFilterCommand}" CommandParameter="TCP" Padding="12,7" Margin="0,0,6,0"/>
+                        <ui:Button Appearance="{Binding IsUdpFilter, Converter={StaticResource BoolToNavAppearance}}" Content="UDP" Command="{Binding SetFilterCommand}" CommandParameter="UDP" Padding="12,7" Margin="0,0,6,0"/>
+                        <ui:Button Appearance="{Binding IsExternalFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Dış Bağlantılar" Command="{Binding SetFilterCommand}" CommandParameter="External" Padding="12,7" Margin="0,0,6,0"/>
+                        <ui:Button Appearance="{Binding IsListeningFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Dinleme" Command="{Binding SetFilterCommand}" CommandParameter="Listening" Padding="12,7" Margin="0,0,6,0"/>
+                        <ui:Button Appearance="{Binding IsSuspiciousFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Şüpheli / Riskli" Command="{Binding SetFilterCommand}" CommandParameter="Suspicious" Padding="12,7"/>
                     </StackPanel>
                 </Grid>
 
@@ -256,7 +370,7 @@
                 <Grid Grid.Row="1" Grid.IsSharedSizeScope="True">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="{Binding IsDrawerOpen, Converter={StaticResource BoolToVis}}"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- Main Connections List Card -->
@@ -281,12 +395,12 @@
                                     Padding="16,10">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="2.2*"/> <!-- Process & PID -->
-                                        <ColumnDefinition Width="Auto" SharedSizeGroup="ProtoCol"/>
-                                        <ColumnDefinition Width="1.5*"/> <!-- Local -->
-                                        <ColumnDefinition Width="2.2*"/> <!-- Remote & Domain -->
-                                        <ColumnDefinition Width="Auto" SharedSizeGroup="ThreatCol"/>
-                                        <ColumnDefinition Width="Auto" SharedSizeGroup="ActionCol"/>
+                                        <ColumnDefinition Width="1.8*" MinWidth="150"/> <!-- Process & PID -->
+                                        <ColumnDefinition Width="Auto" MinWidth="85"/>   <!-- Protokol / Durum -->
+                                        <ColumnDefinition Width="1.6*" MinWidth="165"/> <!-- Yerel Soket (Kırpılma Engelli) -->
+                                        <ColumnDefinition Width="2.0*" MinWidth="190"/> <!-- Uzak Hedef & Servis -->
+                                        <ColumnDefinition Width="Auto" MinWidth="130"/> <!-- Güvenlik Analizi -->
+                                        <ColumnDefinition Width="Auto" MinWidth="100"/> <!-- İşlemler -->
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Grid.Column="0" Text="Süreç Adı &amp; PID" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -362,12 +476,12 @@
                                             </Grid.ContextMenu>
 
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="2.2*"/> <!-- Process & PID -->
-                                                <ColumnDefinition Width="Auto" SharedSizeGroup="ProtoCol"/>
-                                                <ColumnDefinition Width="1.5*"/> <!-- Local -->
-                                                <ColumnDefinition Width="2.2*"/> <!-- Remote -->
-                                                <ColumnDefinition Width="Auto" SharedSizeGroup="ThreatCol"/>
-                                                <ColumnDefinition Width="Auto" SharedSizeGroup="ActionCol"/>
+                                                <ColumnDefinition Width="1.8*" MinWidth="150"/> <!-- Process & PID -->
+                                                <ColumnDefinition Width="Auto" MinWidth="85"/>   <!-- Protokol / Durum -->
+                                                <ColumnDefinition Width="1.6*" MinWidth="165"/> <!-- Yerel Soket (Kırpılma Engelli) -->
+                                                <ColumnDefinition Width="2.0*" MinWidth="190"/> <!-- Uzak Hedef & Servis -->
+                                                <ColumnDefinition Width="Auto" MinWidth="130"/> <!-- Güvenlik Analizi -->
+                                                <ColumnDefinition Width="Auto" MinWidth="100"/> <!-- İşlemler -->
                                             </Grid.ColumnDefinitions>
 
                                             <!-- Col 0: Process Name & PID -->
@@ -382,8 +496,13 @@
                                                 <TextBlock Text="{Binding State}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,1,0,0"/>
                                             </StackPanel>
 
-                                            <!-- Col 2: Local Endpoint -->
-                                            <TextBlock Grid.Column="2" Text="{Binding LocalEndpoint}" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            <!-- Col 2: Local Endpoint (Asla Kırpılmaz) -->
+                                            <TextBlock Grid.Column="2" 
+                                                       Text="{Binding LocalEndpoint}" 
+                                                       FontSize="12" 
+                                                       FontFamily="Consolas" 
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
+                                                       VerticalAlignment="Center"/>
 
                                             <!-- Col 3: Remote Endpoint & Service Name -->
                                             <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="12,0,12,0">
@@ -404,11 +523,11 @@
                                                 <TextBlock Text="{Binding PortCategory}" Style="{StaticResource PortCategoryTextStyle}" TextTrimming="CharacterEllipsis"/>
                                             </Border>
 
-                                            <!-- Col 5: Quick Action Buttons -->
+                                            <!-- Col 5: Quick Action Buttons (Modern Subtle Icon Buttons) -->
                                             <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <ui:Button Appearance="Secondary" Padding="6,4" Margin="0,0,4,0" ToolTip="Güvenlik Duvarı ile Engelle" Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
-                                                <ui:Button Appearance="Danger" Padding="6,4" Margin="0,0,4,0" ToolTip="Süreci ve Soketi Sonlandır" Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Dismiss20}"/>
-                                                <ui:Button Appearance="Secondary" Padding="6,4" ToolTip="Dosya Konumunu Aç" Command="{Binding DataContext.OpenProcessLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon FolderOpen20}"/>
+                                                <ui:Button Appearance="Transparent" Padding="5" Margin="0,0,2,0" ToolTip="Güvenlik Duvarı ile Engelle" Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
+                                                <ui:Button Appearance="Transparent" Padding="5" Margin="0,0,2,0" ToolTip="Süreci ve Soketi Sonlandır" Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Dismiss20}"/>
+                                                <ui:Button Appearance="Transparent" Padding="5" ToolTip="Dosya Konumunu Aç" Command="{Binding DataContext.OpenProcessLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon FolderOpen20}"/>
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
@@ -420,146 +539,173 @@
                     <!-- Right Side Master-Detail Inspection Drawer (Röntgen Paneli) -->
                     <Border Grid.Column="1" 
                             Width="360" 
-                            Margin="12,0,0,0" 
+                            Margin="14,0,0,0" 
                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                             BorderThickness="1" 
                             CornerRadius="8" 
-                            Padding="16">
-                        <Grid DataContext="{Binding SelectedConnection}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/> <!-- Header & Close -->
-                                <RowDefinition Height="Auto"/> <!-- Process Info -->
-                                <RowDefinition Height="Auto"/> <!-- Socket Details -->
-                                <RowDefinition Height="Auto"/> <!-- Threat Assessment -->
-                                <RowDefinition Height="*"/>    <!-- Spacer / Notes -->
-                                <RowDefinition Height="Auto"/> <!-- Action Buttons -->
-                            </Grid.RowDefinitions>
+                            Padding="16"
+                            Visibility="{Binding IsDrawerOpen, Converter={StaticResource BoolToVis}}">
+                        <Grid>
+                            <!-- Empty State if no item selected -->
+                            <StackPanel VerticalAlignment="Center" 
+                                        HorizontalAlignment="Center" 
+                                        Margin="16"
+                                        Visibility="{Binding SelectedConnection, Converter={StaticResource InverseNullToVisibilityConverter}}">
+                                <Border Background="{DynamicResource Brush.Accent.Subtle}" 
+                                        Width="56" Height="56" 
+                                        CornerRadius="28" 
+                                        HorizontalAlignment="Center" 
+                                        Margin="0,0,0,14">
+                                    <ui:SymbolIcon Symbol="Shield24" FontSize="28" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Ayrıntılı Röntgen" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Soldaki listeden bir bağlantıya tıklayarak süreç kimliği, soket, ters DNS ve güvenlik analizini inceleyebilirsiniz." 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                           TextWrapping="Wrap" 
+                                           TextAlignment="Center" 
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
 
-                            <!-- Drawer Header -->
-                            <Grid Grid.Row="0" Margin="0,0,0,14">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                            <!-- Rich Process & Socket Inspection Details -->
+                            <Grid DataContext="{Binding SelectedConnection}"
+                                  Visibility="{Binding DataContext.SelectedConnection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullToVisibilityConverter}}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- Header & Close -->
+                                    <RowDefinition Height="Auto"/> <!-- Process Info -->
+                                    <RowDefinition Height="Auto"/> <!-- Socket Details -->
+                                    <RowDefinition Height="Auto"/> <!-- Threat Assessment -->
+                                    <RowDefinition Height="*"/>    <!-- Spacer / Notes -->
+                                    <RowDefinition Height="Auto"/> <!-- Action Buttons -->
+                                </Grid.RowDefinitions>
 
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Bağlantı &amp; Süreç Röntgeni" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text="Ayrıntılı soket ve güvenlik denetimi" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                </StackPanel>
-
-                                <ui:Button Grid.Column="1" 
-                                           Appearance="Secondary" 
-                                           Padding="6,4" 
-                                           Command="{Binding DataContext.CloseDrawerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                           Icon="{ui:SymbolIcon Dismiss20}"/>
-                            </Grid>
-
-                            <!-- Process Overview -->
-                            <ui:Card Grid.Row="1" Padding="12" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding ProcessName}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,4"/>
-                                    
-                                    <TextBlock Text="Yayımcı / İmza:" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,4,0,0"/>
-                                    <TextBlock Text="{Binding Publisher}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-
-                                    <TextBlock Text="Yürütülebilir Dosya:" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"/>
-                                    <TextBlock Text="{Binding ProcessPath}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" ToolTip="{Binding ProcessPath}"/>
-                                </StackPanel>
-                            </ui:Card>
-
-                            <!-- Socket Endpoints -->
-                            <ui:Card Grid.Row="2" Padding="12" Margin="0,0,0,12">
-                                <StackPanel>
-                                    <TextBlock Text="Soket &amp; Protokol Detayları" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
-                                    
-                                    <Grid Margin="0,2">
-                                        <TextBlock Text="Protokol / Durum:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding Protocol, StringFormat='{}{0}'}" HorizontalAlignment="Right" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                    </Grid>
-                                    <Grid Margin="0,2">
-                                        <TextBlock Text="Yerel Uç Nokta:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding LocalEndpoint}" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Grid>
-                                    <Grid Margin="0,2">
-                                        <TextBlock Text="Uzak Hedef:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding RemoteEndpoint}" HorizontalAlignment="Right" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Grid>
-                                    <Grid Margin="0,2">
-                                        <TextBlock Text="Tanımlı Servis:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding ServiceDescription}" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                    </Grid>
-                                    <Grid Margin="0,2">
-                                        <TextBlock Text="Ters DNS Çözümü:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding RemoteHostName}" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="180"/>
-                                    </Grid>
-                                </StackPanel>
-                            </ui:Card>
-
-                            <!-- Threat Assessment -->
-                            <Border Grid.Row="3" 
-                                    Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                    BorderThickness="1" 
-                                    CornerRadius="6" 
-                                    Padding="12" 
-                                    Margin="0,0,0,12">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                        <ui:SymbolIcon Symbol="Shield20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                                        <TextBlock Text="{Binding PortCategory}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding ThreatDescription}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Actions -->
-                            <StackPanel Grid.Row="5">
-                                <ui:Button Appearance="Secondary" 
-                                           HorizontalAlignment="Stretch" 
-                                           Padding="12,8" 
-                                           Margin="0,0,0,6"
-                                           Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                           CommandParameter="{Binding}"
-                                           Content="Güvenlik Duvarı ile Engelle" 
-                                           Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
-
-                                <ui:Button Appearance="Danger" 
-                                           HorizontalAlignment="Stretch" 
-                                           Padding="12,8" 
-                                           Margin="0,0,0,6"
-                                           Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                           CommandParameter="{Binding}"
-                                           Content="Süreci ve Soketi Sonlandır" 
-                                           Icon="{ui:SymbolIcon Dismiss20}"/>
-
-                                <Grid>
+                                <!-- Drawer Header -->
+                                <Grid Grid.Row="0" Margin="0,0,0,14">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="6"/>
-                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <ui:Button Grid.Column="0" 
-                                               Appearance="Secondary" 
-                                               HorizontalAlignment="Stretch" 
-                                               Padding="8,6" 
-                                               Command="{Binding DataContext.OpenProcessLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               Content="Konum" 
-                                               Icon="{ui:SymbolIcon FolderOpen20}"/>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Bağlantı &amp; Süreç Röntgeni" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Ayrıntılı soket ve güvenlik denetimi" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </StackPanel>
 
-                                    <ui:Button Grid.Column="2" 
+                                    <ui:Button Grid.Column="1" 
                                                Appearance="Secondary" 
-                                               HorizontalAlignment="Stretch" 
-                                               Padding="8,6" 
-                                               Command="{Binding DataContext.CopyIpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding RemoteAddress}"
-                                               Content="IP Kopyala" 
-                                               Icon="{ui:SymbolIcon Copy20}"/>
+                                               Padding="6,4" 
+                                               Command="{Binding DataContext.CloseDrawerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                               ToolTip="Röntgen Panelini Kapat"
+                                               Icon="{ui:SymbolIcon Dismiss20}"/>
                                 </Grid>
-                            </StackPanel>
+
+                                <!-- Process Overview -->
+                                <ui:Card Grid.Row="1" Padding="12" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding ProcessName}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,4"/>
+                                        
+                                        <TextBlock Text="Yayımcı / İmza:" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,4,0,0"/>
+                                        <TextBlock Text="{Binding Publisher}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+
+                                        <TextBlock Text="Yürütülebilir Dosya:" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"/>
+                                        <TextBlock Text="{Binding ProcessPath}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" ToolTip="{Binding ProcessPath}"/>
+                                    </StackPanel>
+                                </ui:Card>
+
+                                <!-- Socket Endpoints -->
+                                <ui:Card Grid.Row="2" Padding="12" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock Text="Soket &amp; Protokol Detayları" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                                        
+                                        <Grid Margin="0,2">
+                                            <TextBlock Text="Protokol / Durum:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="{Binding Protocol, StringFormat='{}{0}'}" HorizontalAlignment="Right" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,2">
+                                            <TextBlock Text="Yerel Uç Nokta:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="{Binding LocalEndpoint}" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,2">
+                                            <TextBlock Text="Uzak Hedef:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="{Binding RemoteEndpoint}" HorizontalAlignment="Right" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,2">
+                                            <TextBlock Text="Tanımlı Servis:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="{Binding ServiceDescription}" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                        </Grid>
+                                        <Grid Margin="0,2">
+                                            <TextBlock Text="Ters DNS Çözümü:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="{Binding RemoteHostName}" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="180"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </ui:Card>
+
+                                <!-- Threat Assessment -->
+                                <Border Grid.Row="3" 
+                                        Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="12" 
+                                        Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <ui:SymbolIcon Symbol="Shield20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{Binding PortCategory}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding ThreatDescription}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Actions -->
+                                <StackPanel Grid.Row="5">
+                                    <ui:Button Appearance="Secondary" 
+                                               HorizontalAlignment="Stretch" 
+                                               Padding="12,8" 
+                                               Margin="0,0,0,6"
+                                               Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               Content="Güvenlik Duvarı ile Engelle" 
+                                               Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
+
+                                    <ui:Button Appearance="Danger" 
+                                               HorizontalAlignment="Stretch" 
+                                               Padding="12,8" 
+                                               Margin="0,0,0,6"
+                                               Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               Content="Süreci ve Soketi Sonlandır" 
+                                               Icon="{ui:SymbolIcon Dismiss20}"/>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="6"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <ui:Button Grid.Column="0" 
+                                                   Appearance="Secondary" 
+                                                   HorizontalAlignment="Stretch" 
+                                                   Padding="8,6" 
+                                                   Command="{Binding DataContext.OpenProcessLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Content="Konum" 
+                                                   Icon="{ui:SymbolIcon FolderOpen20}"/>
+
+                                        <ui:Button Grid.Column="2" 
+                                                   Appearance="Secondary" 
+                                                   HorizontalAlignment="Stretch" 
+                                                   Padding="8,6" 
+                                                   Command="{Binding DataContext.CopyIpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding RemoteAddress}"
+                                                   Content="IP Kopyala" 
+                                                   Icon="{ui:SymbolIcon Copy20}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
                         </Grid>
                     </Border>
                 </Grid>
