@@ -2,8 +2,11 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using Bakım.Models;
 
 namespace Bakım.Services
@@ -11,6 +14,12 @@ namespace Bakım.Services
     public interface INetworkMonitorService
     {
         Task<(List<NetworkConnectionItem> Connections, NetworkOverviewStats Stats)> GetActiveConnectionsAsync();
+        Task<List<ListeningPortItem>> GetListeningPortsAsync();
+        Task<List<NetworkAdapterItem>> GetNetworkAdaptersAsync();
+        Task<PingResultItem> PingHostAsync(string host, int timeoutMs = 2000);
+        Task<bool> FlushDnsCacheAsync();
+        Task<PortCheckResult> CheckPortAsync(string host, int port, int timeoutMs = 2500);
+        Task RunSpeedTestAsync(IProgress<SpeedTestProgress> progress, CancellationToken ct);
         Task<bool> BlockProcessInFirewallAsync(NetworkConnectionItem item);
         Task<bool> UnblockProcessInFirewallAsync(NetworkConnectionItem item);
         bool KillProcess(int pid);
@@ -19,7 +28,7 @@ namespace Bakım.Services
 
     public class NetworkMonitorService : INetworkMonitorService
     {
-        #region IP Helper API (iphlpapi.dll) P/Invoke & Structures
+        #region IP Helper API (iphlpapi.dll) & DnsApi P/Invoke
 
         private const int AF_INET = 2; // IPv4
         private const int AF_INET6 = 23; // IPv6
@@ -90,19 +99,52 @@ namespace Bakım.Services
             UDP_TABLE_CLASS TableClass,
             uint Reserved = 0);
 
+        [DllImport("dnsapi.dll", EntryPoint = "DnsFlushResolverCache")]
+        private static extern int DnsFlushResolverCache();
+
         #endregion
 
-        #region Cache & Bandwidth State
+        #region Cache & State
 
-        private static readonly ConcurrentDictionary<int, (string Name, string Path)> _processCache = new();
+        private static readonly ConcurrentDictionary<int, (string Name, string Path, string Publisher, bool IsSigned)> _processCache = new();
         private static readonly ConcurrentDictionary<string, string> _dnsCache = new();
-        private static readonly HashSet<int> SafeWellKnownPorts = new()
+        private static readonly HttpClient _httpClient = new HttpClient
         {
-            80, 443, 53, 123, 853, 993, 995, 587, 22, 21, 3389, 8080, 8443
+            Timeout = TimeSpan.FromSeconds(15)
         };
+
         private static readonly HashSet<int> KnownMalwarePorts = new()
         {
             4444, 5555, 6667, 1337, 31337, 8888, 9999, 12345, 27374, 30128
+        };
+
+        private static readonly Dictionary<int, string> WellKnownServiceNames = new()
+        {
+            { 80, "HTTP (Standart Web)" },
+            { 443, "HTTPS (Güvenli Web)" },
+            { 53, "DNS (Alan Adı)" },
+            { 853, "DNS over TLS (DoT)" },
+            { 22, "SSH (Güvenli Terminal)" },
+            { 21, "FTP (Dosya Aktarımı)" },
+            { 25, "SMTP (E-posta Gönderimi)" },
+            { 110, "POP3 (E-posta)" },
+            { 143, "IMAP (E-posta)" },
+            { 587, "SMTP (Güvenli Gönderim)" },
+            { 993, "IMAPS (Güvenli E-posta)" },
+            { 995, "POP3S (Güvenli E-posta)" },
+            { 123, "NTP (Zaman Senkronu)" },
+            { 3389, "RDP (Uzak Masaüstü)" },
+            { 3306, "MySQL Veritabanı" },
+            { 5432, "PostgreSQL Veritabanı" },
+            { 1433, "MSSQL Veritabanı" },
+            { 27017, "MongoDB Veritabanı" },
+            { 6379, "Redis Önbellek" },
+            { 8080, "Alternatif HTTP Proxy/Web" },
+            { 8443, "Alternatif HTTPS Web" },
+            { 5000, "Geliştirme / Yerel API" },
+            { 3000, "Geliştirme Sunucusu (Node/React)" },
+            { 5173, "Vite Geliştirme Sunucusu" },
+            { 27015, "Steam / Oyun Trafiği" }
         };
 
         private static long _prevBytesReceived;
@@ -112,9 +154,11 @@ namespace Bakım.Services
 
         #endregion
 
+        #region 1. Canlı Bağlantılar (Active Connections)
+
         public async Task<(List<NetworkConnectionItem> Connections, NetworkOverviewStats Stats)> GetActiveConnectionsAsync()
         {
-            return await Task.Run(async () =>
+            return await Task.Run(() =>
             {
                 var connections = new List<NetworkConnectionItem>();
 
@@ -130,9 +174,11 @@ namespace Bakım.Services
 
                 foreach (var item in connections)
                 {
-                    var (name, path) = GetProcessDetails(item.ProcessId);
+                    var (name, path, publisher, isSigned) = GetProcessDetails(item.ProcessId);
                     item.ProcessName = name;
                     item.ProcessPath = path;
+                    item.Publisher = publisher;
+                    item.IsSigned = isSigned;
 
                     CategorizeSecurity(item);
 
@@ -291,10 +337,10 @@ namespace Bakım.Services
             };
         }
 
-        private static (string Name, string Path) GetProcessDetails(int pid)
+        private static (string Name, string Path, string Publisher, bool IsSigned) GetProcessDetails(int pid)
         {
-            if (pid <= 0) return ("Sistem / Boşta", string.Empty);
-            if (pid == 4) return ("System Kernel", @"C:\Windows\System32\ntoskrnl.exe");
+            if (pid <= 0) return ("Sistem / Boşta", string.Empty, "Windows Kernel", true);
+            if (pid == 4) return ("System Kernel", @"C:\Windows\System32\ntoskrnl.exe", "Microsoft Windows", true);
 
             if (_processCache.TryGetValue(pid, out var cached))
             {
@@ -306,19 +352,44 @@ namespace Bakım.Services
                 using var proc = Process.GetProcessById(pid);
                 string name = proc.ProcessName;
                 string path = string.Empty;
+                string publisher = "Bilinmiyor";
+                bool isSigned = false;
+
                 try
                 {
                     path = proc.MainModule?.FileName ?? string.Empty;
+                    if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                    {
+                        var info = FileVersionInfo.GetVersionInfo(path);
+                        if (!string.IsNullOrWhiteSpace(info.CompanyName))
+                        {
+                            publisher = info.CompanyName;
+                        }
+
+                        // Check digital signature existence
+                        try
+                        {
+#pragma warning disable SYSLIB0057
+                            using var cert = X509Certificate.CreateFromSignedFile(path);
+#pragma warning restore SYSLIB0057
+                            isSigned = true;
+                            if (publisher == "Bilinmiyor" && !string.IsNullOrWhiteSpace(cert.Subject))
+                            {
+                                publisher = cert.Subject;
+                            }
+                        }
+                        catch { }
+                    }
                 }
                 catch { }
 
-                var result = (name, path);
+                var result = (name, path, publisher, isSigned);
                 _processCache[pid] = result;
                 return result;
             }
             catch
             {
-                var fallback = ($"PID: {pid}", string.Empty);
+                var fallback = ($"PID: {pid}", string.Empty, "Bilinmiyor", false);
                 _processCache[pid] = fallback;
                 return fallback;
             }
@@ -326,11 +397,22 @@ namespace Bakım.Services
 
         private static void CategorizeSecurity(NetworkConnectionItem item)
         {
+            int targetPort = item.RemotePort > 0 ? item.RemotePort : item.LocalPort;
+            if (WellKnownServiceNames.TryGetValue(targetPort, out var serviceName))
+            {
+                item.ServiceDescription = serviceName;
+            }
+            else
+            {
+                item.ServiceDescription = targetPort > 0 ? $"Port {targetPort}" : "-";
+            }
+
             if (item.State == "LISTENING")
             {
                 item.PortCategory = "Dinleme Modu (Yerel)";
                 item.BadgeBrush = "AccentTextFillColorPrimaryBrush";
                 item.IsSuspicious = false;
+                item.ThreatDescription = "Bu süreç yerel sistemde gelen istekleri dinlemektedir.";
                 return;
             }
 
@@ -341,14 +423,39 @@ namespace Bakım.Services
                     item.PortCategory = "Kritik / Şüpheli Port";
                     item.BadgeBrush = "SystemFillColorCriticalBrush";
                     item.IsSuspicious = true;
+                    item.ThreatDescription = $"Bağlantı bilinen arka kapı / trojan portlarından biriyle (Port: {item.RemotePort}) kurulmuştur!";
                     return;
                 }
 
-                if (SafeWellKnownPorts.Contains(item.RemotePort))
+                // Check suspicious path (temp / appdata temp execution)
+                if (!string.IsNullOrWhiteSpace(item.ProcessPath))
                 {
-                    item.PortCategory = item.RemotePort == 443 ? "Güvenli (HTTPS)" : (item.RemotePort == 80 ? "Standart (HTTP)" : "Güvenli Standart Port");
+                    string lowPath = item.ProcessPath.ToLowerInvariant();
+                    if (lowPath.Contains(@"\temp\") || lowPath.Contains(@"\appdata\local\temp\"))
+                    {
+                        item.PortCategory = "Riskli Dizin Süreci";
+                        item.BadgeBrush = "SystemFillColorCriticalBrush";
+                        item.IsSuspicious = true;
+                        item.ThreatDescription = "Bu süreç Temp klasöründen çalıştırılarak dış ağa bağlanıyor! Güvenlik taraması önerilir.";
+                        return;
+                    }
+                }
+
+                if (item.RemotePort == 443)
+                {
+                    item.PortCategory = "Güvenli (HTTPS)";
                     item.BadgeBrush = "SystemFillColorSuccessBrush";
                     item.IsSuspicious = false;
+                    item.ThreatDescription = "Şifreli HTTPS web trafiği. Standart güvenli protokoldür.";
+                    return;
+                }
+
+                if (item.RemotePort == 80)
+                {
+                    item.PortCategory = "Standart (HTTP)";
+                    item.BadgeBrush = "SystemFillColorSuccessBrush";
+                    item.IsSuspicious = false;
+                    item.ThreatDescription = "Şifresiz HTTP web trafiği.";
                     return;
                 }
 
@@ -357,6 +464,7 @@ namespace Bakım.Services
                     item.PortCategory = "Dış Bağlantı (Özel Port)";
                     item.BadgeBrush = "SystemFillColorCautionBrush";
                     item.IsSuspicious = true;
+                    item.ThreatDescription = $"Dış ağdaki özel bir porta ({item.RemotePort}) veri aktarılıyor.";
                     return;
                 }
             }
@@ -364,6 +472,7 @@ namespace Bakım.Services
             item.PortCategory = "Normal Ağ Trafiği";
             item.BadgeBrush = "TextFillColorSecondaryBrush";
             item.IsSuspicious = false;
+            item.ThreatDescription = "Sıradan ağ iletişimi.";
         }
 
         private static (double RxSpeedKb, double TxSpeedKb) CalculateGlobalSpeed()
@@ -450,6 +559,493 @@ namespace Bakım.Services
             }
         }
 
+        #endregion
+
+        #region 2. Dinlenen Portlar (Listening Ports)
+
+        public async Task<List<ListeningPortItem>> GetListeningPortsAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var list = new List<ListeningPortItem>();
+                var allConns = GetTcpConnections();
+
+                foreach (var conn in allConns.Where(c => c.State == "LISTENING"))
+                {
+                    var (name, path, _, _) = GetProcessDetails(conn.ProcessId);
+                    WellKnownServiceNames.TryGetValue(conn.LocalPort, out var serviceName);
+
+                    list.Add(new ListeningPortItem
+                    {
+                        ProcessId = conn.ProcessId,
+                        ProcessName = name,
+                        ProcessPath = path,
+                        Protocol = "TCP",
+                        LocalAddress = conn.LocalAddress,
+                        Port = conn.LocalPort,
+                        ServiceName = serviceName ?? "Özel Servis",
+                        PortCategory = KnownMalwarePorts.Contains(conn.LocalPort) ? "Şüpheli Dinleyici" : "Standart Dinleme"
+                    });
+                }
+
+                // Also fetch UDP listening ports
+                var udpConns = GetUdpConnections();
+                foreach (var conn in udpConns)
+                {
+                    var (name, path, _, _) = GetProcessDetails(conn.ProcessId);
+                    WellKnownServiceNames.TryGetValue(conn.LocalPort, out var serviceName);
+
+                    list.Add(new ListeningPortItem
+                    {
+                        ProcessId = conn.ProcessId,
+                        ProcessName = name,
+                        ProcessPath = path,
+                        Protocol = "UDP",
+                        LocalAddress = conn.LocalAddress,
+                        Port = conn.LocalPort,
+                        ServiceName = serviceName ?? "Özel Servis",
+                        PortCategory = KnownMalwarePorts.Contains(conn.LocalPort) ? "Şüpheli Dinleyici" : "UDP Soketi"
+                    });
+                }
+
+                return list
+                    .OrderBy(x => x.Port)
+                    .ThenBy(x => x.ProcessName)
+                    .ToList();
+            });
+        }
+
+        #endregion
+
+        #region 3. Ağ Adaptörleri & Donanım (Network Interfaces)
+
+        public async Task<List<NetworkAdapterItem>> GetNetworkAdaptersAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var list = new List<NetworkAdapterItem>();
+
+                try
+                {
+                    foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+                    {
+                        // Skip loopback and tunnel interfaces if desired, but keep virtual / real cards
+                        if (nic.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                            continue;
+
+                        var ipProps = nic.GetIPProperties();
+                        var stats = nic.GetIPStatistics();
+
+                        // IPv4 and Subnet
+                        string ipv4 = "-";
+                        string subnet = "-";
+                        foreach (var uni in ipProps.UnicastAddresses)
+                        {
+                            if (uni.Address.AddressFamily == AddressFamily.InterNetwork)
+                            {
+                                ipv4 = uni.Address.ToString();
+                                subnet = uni.IPv4Mask?.ToString() ?? "-";
+                                break;
+                            }
+                        }
+
+                        // Gateway
+                        string gateway = "-";
+                        var firstGw = ipProps.GatewayAddresses.FirstOrDefault();
+                        if (firstGw != null && firstGw.Address != null)
+                        {
+                            gateway = firstGw.Address.ToString();
+                        }
+
+                        // DNS
+                        var dnsList = ipProps.DnsAddresses
+                            .Where(d => d.AddressFamily == AddressFamily.InterNetwork)
+                            .Select(d => d.ToString())
+                            .ToList();
+                        string dns = dnsList.Count > 0 ? string.Join(", ", dnsList) : "-";
+
+                        // MAC
+                        byte[] macBytes = nic.GetPhysicalAddress().GetAddressBytes();
+                        string mac = macBytes.Length > 0 ? string.Join(":", macBytes.Select(b => b.ToString("X2"))) : "-";
+
+                        // Speed
+                        string speedText = FormatSpeed(nic.Speed);
+
+                        // Data transferred
+                        string rxFormatted = FormatBytes(stats.BytesReceived);
+                        string txFormatted = FormatBytes(stats.BytesSent);
+
+                        string typeName = nic.NetworkInterfaceType switch
+                        {
+                            NetworkInterfaceType.Ethernet => "Kablolu (Ethernet)",
+                            NetworkInterfaceType.Wireless80211 => "Kablosuz (Wi-Fi)",
+                            _ => nic.NetworkInterfaceType.ToString()
+                        };
+
+                        bool isUp = nic.OperationalStatus == OperationalStatus.Up;
+
+                        list.Add(new NetworkAdapterItem
+                        {
+                            Id = nic.Id,
+                            Name = nic.Name,
+                            Description = nic.Description,
+                            TypeName = typeName,
+                            Status = isUp ? "Etkin / Bağlı" : "Bağlantı Yok",
+                            IsUp = isUp,
+                            SpeedText = speedText,
+                            Ipv4Address = ipv4,
+                            SubnetMask = subnet,
+                            Gateway = gateway,
+                            DnsServers = dns,
+                            MacAddress = mac,
+                            TotalReceivedFormatted = rxFormatted,
+                            TotalSentFormatted = txFormatted
+                        });
+                    }
+                }
+                catch { }
+
+                return list.OrderByDescending(x => x.IsUp).ThenBy(x => x.Name).ToList();
+            });
+        }
+
+        private static string FormatSpeed(long speedBits)
+        {
+            if (speedBits <= 0) return "Bilinmiyor";
+            if (speedBits >= 1_000_000_000)
+            {
+                double gbps = speedBits / 1_000_000_000.0;
+                return gbps >= 1.0 ? $"{gbps:F1} Gbps ({speedBits / 1_000_000} Mbps)" : $"{speedBits / 1_000_000} Mbps";
+            }
+            if (speedBits >= 1_000_000)
+            {
+                return $"{speedBits / 1_000_000} Mbps";
+            }
+            return $"{speedBits / 1_000} Kbps";
+        }
+
+        private static string FormatBytes(long bytes)
+        {
+            if (bytes <= 0) return "0 MB";
+            double mb = bytes / (1024.0 * 1024.0);
+            if (mb >= 1024.0)
+            {
+                return $"{mb / 1024.0:F2} GB";
+            }
+            return $"{mb:F1} MB";
+        }
+
+        #endregion
+
+        #region 4. 1000 Mbps Gigabit Hız Testi (Speed Test Engine)
+
+        public async Task RunSpeedTestAsync(IProgress<SpeedTestProgress> progress, CancellationToken ct)
+        {
+            await Task.Run(async () =>
+            {
+                var report = new SpeedTestProgress
+                {
+                    State = "TestingPing",
+                    StatusMessage = "Gecikme (Ping & Jitter) ölçülüyor..."
+                };
+                progress.Report(report);
+
+                // 1. Ping & Jitter measurement
+                double pingAvg = 0;
+                double jitter = 0;
+                try
+                {
+                    using var ping = new Ping();
+                    var pings = new List<long>();
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (ct.IsCancellationRequested) return;
+                        var reply = await ping.SendPingAsync("1.1.1.1", 1200);
+                        if (reply.Status == IPStatus.Success)
+                        {
+                            pings.Add(reply.RoundtripTime);
+                        }
+                        await Task.Delay(100, ct);
+                    }
+
+                    if (pings.Count > 0)
+                    {
+                        pingAvg = pings.Average();
+                        if (pings.Count > 1)
+                        {
+                            jitter = Math.Abs(pings.Max() - pings.Min()) / 2.0;
+                        }
+                    }
+                }
+                catch
+                {
+                    pingAvg = 15; // fallback
+                }
+
+                report.PingMs = Math.Round(pingAvg, 1);
+                report.JitterMs = Math.Round(jitter, 1);
+                report.State = "Downloading";
+                report.StatusMessage = "1000 Mbps Çoklu Akış (Multi-Stream) İndirme Başlatılıyor...";
+                progress.Report(report);
+
+                // 2. High-speed multi-stream download test (6 seconds duration)
+                // Cloudflare CDN large chunk endpoints (50MB - 100MB)
+                string[] downloadUrls = new[]
+                {
+                    "https://speed.cloudflare.com/__down?bytes=50000000",
+                    "https://speed.cloudflare.com/__down?bytes=50000000",
+                    "https://speed.cloudflare.com/__down?bytes=50000000"
+                };
+
+                long totalBytes = 0;
+                var startTime = DateTime.UtcNow;
+                var testDuration = TimeSpan.FromSeconds(6.0);
+                var endTime = startTime + testDuration;
+
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                linkedCts.CancelAfter(testDuration);
+
+                // Parallel download streams
+                var downloadTasks = downloadUrls.Select(url => Task.Run(async () =>
+                {
+                    byte[] buffer = new byte[128 * 1024]; // 128 KB buffer for Gigabit throughput
+                    while (!linkedCts.Token.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, linkedCts.Token);
+                            if (!response.IsSuccessStatusCode) break;
+
+                            using var stream = await response.Content.ReadAsStreamAsync(linkedCts.Token);
+                            int bytesRead;
+                            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, linkedCts.Token)) > 0)
+                            {
+                                Interlocked.Add(ref totalBytes, bytesRead);
+                                if (linkedCts.Token.IsCancellationRequested) break;
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+                        catch
+                        {
+                            // If one stream fails, retry after brief delay
+                            try { await Task.Delay(200, linkedCts.Token); } catch { break; }
+                        }
+                    }
+                }, linkedCts.Token)).ToList();
+
+                // Sampling loop (every 250ms)
+                long lastBytes = 0;
+                var lastSampleTime = DateTime.UtcNow;
+                double peakMbps = 0;
+
+                while (!linkedCts.Token.IsCancellationRequested && DateTime.UtcNow < endTime)
+                {
+                    await Task.Delay(250);
+
+                    var now = DateTime.UtcNow;
+                    double deltaSeconds = (now - lastSampleTime).TotalSeconds;
+                    long currentTotalBytes = Interlocked.Read(ref totalBytes);
+                    long deltaBytes = currentTotalBytes - lastBytes;
+
+                    if (deltaSeconds > 0.05)
+                    {
+                        double currentMbps = (deltaBytes * 8.0) / (deltaSeconds * 1_000_000.0);
+                        if (currentMbps > peakMbps) peakMbps = currentMbps;
+
+                        double totalElapsed = (now - startTime).TotalSeconds;
+                        double averageMbps = totalElapsed > 0.1 ? (currentTotalBytes * 8.0) / (totalElapsed * 1_000_000.0) : 0;
+                        double downloadedMb = currentTotalBytes / (1024.0 * 1024.0);
+                        int percent = Math.Min(98, (int)((totalElapsed / testDuration.TotalSeconds) * 100));
+
+                        report.CurrentMbps = Math.Round(currentMbps, 1);
+                        report.AverageMbps = Math.Round(averageMbps, 1);
+                        report.PeakMbps = Math.Round(peakMbps, 1);
+                        report.DownloadedMb = Math.Round(downloadedMb, 1);
+                        report.ProgressPercent = percent;
+                        report.StatusMessage = $"1000 Mbps Akış: {report.CurrentMbps:F1} Mbps (İnen: {report.DownloadedMb:F1} MB)";
+                        progress.Report(report);
+
+                        lastBytes = currentTotalBytes;
+                        lastSampleTime = now;
+                    }
+                }
+
+                // Wait for all download tasks to wind down
+                try
+                {
+                    await Task.WhenAll(downloadTasks);
+                }
+                catch { }
+
+                if (ct.IsCancellationRequested)
+                {
+                    report.State = "Canceled";
+                    report.StatusMessage = "Hız testi kullanıcı tarafından iptal edildi.";
+                    progress.Report(report);
+                    return;
+                }
+
+                // Final calculation
+                double finalElapsed = (DateTime.UtcNow - startTime).TotalSeconds;
+                long finalTotalBytes = Interlocked.Read(ref totalBytes);
+                double finalAvgMbps = finalElapsed > 0.1 ? (finalTotalBytes * 8.0) / (finalElapsed * 1_000_000.0) : 0;
+                double finalMb = finalTotalBytes / (1024.0 * 1024.0);
+
+                report.State = "Completed";
+                report.CurrentMbps = Math.Round(finalAvgMbps, 1);
+                report.AverageMbps = Math.Round(finalAvgMbps, 1);
+                report.PeakMbps = Math.Round(peakMbps, 1);
+                report.DownloadedMb = Math.Round(finalMb, 1);
+                report.ProgressPercent = 100;
+                report.StatusMessage = $"Test Tamamlandı! Ortalama: {report.AverageMbps:F1} Mbps | Tepe: {report.PeakMbps:F1} Mbps (Toplam {report.DownloadedMb:F1} MB)";
+                progress.Report(report);
+            }, ct);
+        }
+
+        #endregion
+
+        #region 5. Ağ Teşhis Araçları (Ping, DNS Flush, Port Check)
+
+        public async Task<PingResultItem> PingHostAsync(string host, int timeoutMs = 2000)
+        {
+            return await Task.Run(async () =>
+            {
+                var cleanHost = host.Trim().Replace("http://", "").Replace("https://", "").Split('/')[0];
+                try
+                {
+                    using var ping = new Ping();
+                    var reply = await ping.SendPingAsync(cleanHost, timeoutMs);
+                    if (reply.Status == IPStatus.Success)
+                    {
+                        return new PingResultItem
+                        {
+                            Host = cleanHost,
+                            RoundtripMs = reply.RoundtripTime,
+                            Status = "Başarılı (OK)",
+                            IsSuccess = true,
+                            Ttl = reply.Options?.Ttl ?? 64,
+                            BufferSize = reply.Buffer?.Length ?? 32
+                        };
+                    }
+                    else
+                    {
+                        return new PingResultItem
+                        {
+                            Host = cleanHost,
+                            RoundtripMs = 0,
+                            Status = reply.Status.ToString(),
+                            IsSuccess = false
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new PingResultItem
+                    {
+                        Host = cleanHost,
+                        RoundtripMs = 0,
+                        Status = $"Hata: {ex.Message}",
+                        IsSuccess = false
+                    };
+                }
+            });
+        }
+
+        public async Task<bool> FlushDnsCacheAsync()
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    // 1. Windows API direct flush
+                    int apiResult = DnsFlushResolverCache();
+
+                    // 2. Commandline ipconfig fallback
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "ipconfig",
+                        Arguments = "/flushdns",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    using var proc = Process.Start(psi);
+                    proc?.WaitForExit(3000);
+
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+        }
+
+        public async Task<PortCheckResult> CheckPortAsync(string host, int port, int timeoutMs = 2500)
+        {
+            return await Task.Run(async () =>
+            {
+                var cleanHost = host.Trim().Replace("http://", "").Replace("https://", "").Split('/')[0];
+                WellKnownServiceNames.TryGetValue(port, out var serviceName);
+                if (string.IsNullOrEmpty(serviceName)) serviceName = $"Port {port}";
+
+                var sw = Stopwatch.StartNew();
+                try
+                {
+                    using var client = new TcpClient();
+                    var connectTask = client.ConnectAsync(cleanHost, port);
+                    var delayTask = Task.Delay(timeoutMs);
+
+                    var completed = await Task.WhenAny(connectTask, delayTask);
+                    sw.Stop();
+
+                    if (completed == connectTask && client.Connected)
+                    {
+                        return new PortCheckResult
+                        {
+                            Host = cleanHost,
+                            Port = port,
+                            IsOpen = true,
+                            ServiceName = serviceName,
+                            LatencyMs = sw.ElapsedMilliseconds,
+                            Message = $"Port {port} ({serviceName}) AÇIK! Yanıt süresi: {sw.ElapsedMilliseconds} ms."
+                        };
+                    }
+                    else
+                    {
+                        return new PortCheckResult
+                        {
+                            Host = cleanHost,
+                            Port = port,
+                            IsOpen = false,
+                            ServiceName = serviceName,
+                            LatencyMs = timeoutMs,
+                            Message = $"Port {port} ({serviceName}) KAPALI veya Zaman Aşımına Uğradı."
+                        };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    sw.Stop();
+                    return new PortCheckResult
+                    {
+                        Host = cleanHost,
+                        Port = port,
+                        IsOpen = false,
+                        ServiceName = serviceName,
+                        LatencyMs = sw.ElapsedMilliseconds,
+                        Message = $"Erişim Hatası: {ex.Message}"
+                    };
+                }
+            });
+        }
+
+        #endregion
+
+        #region 6. Güvenlik Duvarı ve Süreç Kontrolü
+
         public async Task<bool> BlockProcessInFirewallAsync(NetworkConnectionItem item)
         {
             return await Task.Run(() =>
@@ -533,5 +1129,7 @@ namespace Bakım.Services
             }
             catch { }
         }
+
+        #endregion
     }
 }

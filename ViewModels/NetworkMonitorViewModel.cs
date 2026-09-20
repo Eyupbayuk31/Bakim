@@ -16,16 +16,23 @@ namespace Bakım.ViewModels
         private readonly INetworkMonitorService _networkService;
         private readonly DispatcherTimer _timer;
         private List<NetworkConnectionItem> _allConnections = new();
+        private CancellationTokenSource? _speedTestCts;
 
         public NetworkMonitorViewModel(INetworkMonitorService networkService,
             IAppSettingsService settingsService)
         {
             _settingsService = settingsService;
             _networkService = networkService;
-            Connections = new ObservableCollection<NetworkConnectionItem>();
 
+            Connections = new ObservableCollection<NetworkConnectionItem>();
             _filteredView = CollectionViewSource.GetDefaultView(Connections);
             _filteredView.Filter = FilterConnectionItem;
+
+            ListeningPorts = new ObservableCollection<ListeningPortItem>();
+            _filteredListeningView = CollectionViewSource.GetDefaultView(ListeningPorts);
+            _filteredListeningView.Filter = FilterListeningItem;
+
+            Adapters = new ObservableCollection<NetworkAdapterItem>();
 
             _timer = new DispatcherTimer
             {
@@ -33,18 +40,49 @@ namespace Bakım.ViewModels
             };
             _timer.Tick += async (s, e) =>
             {
-                if (IsAutoRefreshEnabled && !IsBusy)
+                if (IsAutoRefreshEnabled && !IsBusy && SelectedTab == "Connections")
                 {
                     await LoadConnectionsInternalAsync(false);
                 }
             };
-
-            // Zamanlayıcı OnActivatedAsync() içinde başlar — bkz. IModuleViewModel
         }
+
+        #region Sekme & Navigasyon
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsConnectionsTab))]
+        [NotifyPropertyChangedFor(nameof(IsListeningTab))]
+        [NotifyPropertyChangedFor(nameof(IsAdaptersTab))]
+        [NotifyPropertyChangedFor(nameof(IsSpeedTestTab))]
+        [NotifyPropertyChangedFor(nameof(IsDiagnosticsTab))]
+        private string _selectedTab = "Connections"; // Connections, Listening, Adapters, SpeedTest, Diagnostics
+
+        public bool IsConnectionsTab => SelectedTab == "Connections";
+        public bool IsListeningTab => SelectedTab == "Listening";
+        public bool IsAdaptersTab => SelectedTab == "Adapters";
+        public bool IsSpeedTestTab => SelectedTab == "SpeedTest";
+        public bool IsDiagnosticsTab => SelectedTab == "Diagnostics";
+
+        [RelayCommand]
+        public async Task SetTabAsync(string tab)
+        {
+            SelectedTab = tab;
+            if (tab == "Listening" && ListeningPorts.Count == 0)
+            {
+                await LoadListeningPortsAsync();
+            }
+            else if (tab == "Adapters" && Adapters.Count == 0)
+            {
+                await LoadAdaptersAsync();
+            }
+        }
+
+        #endregion
+
+        #region 1. Canlı Bağlantılar (Active Sockets)
 
         private readonly ICollectionView _filteredView;
         public ICollectionView FilteredConnections => _filteredView;
-
         public ObservableCollection<NetworkConnectionItem> Connections { get; }
 
         [ObservableProperty]
@@ -54,7 +92,7 @@ namespace Bakım.ViewModels
         private string _searchText = string.Empty;
 
         [ObservableProperty]
-        private string _selectedFilter = "All"; // All, TCP, UDP, External, Listening
+        private string _selectedFilter = "All"; // All, TCP, UDP, External, Listening, Suspicious
 
         [ObservableProperty]
         private bool _isAutoRefreshEnabled = true;
@@ -64,6 +102,27 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private string _statusMessage = "Ağ bağlantıları taranıyor...";
+
+        [ObservableProperty]
+        private NetworkConnectionItem? _selectedConnection;
+
+        [ObservableProperty]
+        private bool _isDrawerOpen;
+
+        partial void OnSelectedConnectionChanged(NetworkConnectionItem? value)
+        {
+            if (value != null)
+            {
+                IsDrawerOpen = true;
+            }
+        }
+
+        [RelayCommand]
+        public void CloseDrawer()
+        {
+            IsDrawerOpen = false;
+            SelectedConnection = null;
+        }
 
         partial void OnSearchTextChanged(string value)
         {
@@ -86,6 +145,7 @@ namespace Bakım.ViewModels
                 "UDP" => item.Protocol == "UDP",
                 "External" => item.IsExternal && item.State == "ESTABLISHED",
                 "Listening" => item.State == "LISTENING",
+                "Suspicious" => item.IsSuspicious,
                 _ => true
             };
 
@@ -100,13 +160,25 @@ namespace Bakım.ViewModels
                    item.LocalEndpoint.ToLowerInvariant().Contains(query) ||
                    item.RemoteEndpoint.ToLowerInvariant().Contains(query) ||
                    item.RemoteHostName.ToLowerInvariant().Contains(query) ||
+                   item.ServiceDescription.ToLowerInvariant().Contains(query) ||
                    item.State.ToLowerInvariant().Contains(query);
         }
 
         [RelayCommand]
         public async Task RefreshAsync()
         {
-            await LoadConnectionsInternalAsync(true);
+            if (SelectedTab == "Connections")
+            {
+                await LoadConnectionsInternalAsync(true);
+            }
+            else if (SelectedTab == "Listening")
+            {
+                await LoadListeningPortsAsync();
+            }
+            else if (SelectedTab == "Adapters")
+            {
+                await LoadAdaptersAsync();
+            }
         }
 
         [RelayCommand]
@@ -206,6 +278,7 @@ namespace Bakım.ViewModels
                 bool killed = _networkService.KillProcess(item.ProcessId);
                 if (killed)
                 {
+                    CloseDrawer();
                     _ = RefreshAsync();
                 }
                 else
@@ -230,15 +303,280 @@ namespace Bakım.ViewModels
                 Clipboard.SetText(ip);
             }
         }
-    
+
+        #endregion
+
+        #region 2. Dinlenen Portlar (Listening Ports)
+
+        private readonly ICollectionView _filteredListeningView;
+        public ICollectionView FilteredListeningPorts => _filteredListeningView;
+        public ObservableCollection<ListeningPortItem> ListeningPorts { get; }
+
+        [ObservableProperty]
+        private string _listeningSearchText = string.Empty;
+
+        partial void OnListeningSearchTextChanged(string value)
+        {
+            _filteredListeningView.Refresh();
+        }
+
+        private bool FilterListeningItem(object obj)
+        {
+            if (obj is not ListeningPortItem item) return false;
+            if (string.IsNullOrWhiteSpace(ListeningSearchText)) return true;
+
+            string query = ListeningSearchText.Trim().ToLowerInvariant();
+            return item.ProcessName.ToLowerInvariant().Contains(query) ||
+                   item.Port.ToString().Contains(query) ||
+                   item.ServiceName.ToLowerInvariant().Contains(query) ||
+                   item.LocalAddress.ToLowerInvariant().Contains(query);
+        }
+
+        public async Task LoadListeningPortsAsync()
+        {
+            IsBusy = true;
+            try
+            {
+                var ports = await _networkService.GetListeningPortsAsync();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ListeningPorts.Clear();
+                    foreach (var p in ports)
+                    {
+                        ListeningPorts.Add(p);
+                    }
+                    _filteredListeningView.Refresh();
+                });
+            }
+            catch { }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        #endregion
+
+        #region 3. Ağ Adaptörleri (Network Adapters)
+
+        public ObservableCollection<NetworkAdapterItem> Adapters { get; }
+
+        public async Task LoadAdaptersAsync()
+        {
+            IsBusy = true;
+            try
+            {
+                var list = await _networkService.GetNetworkAdaptersAsync();
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Adapters.Clear();
+                    foreach (var a in list)
+                    {
+                        Adapters.Add(a);
+                    }
+                });
+            }
+            catch { }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        #endregion
+
+        #region 4. 1000 Mbps Gigabit Hız Testi (Speed Test)
+
+        [ObservableProperty]
+        private string _speedTestState = "Idle"; // Idle, TestingPing, Downloading, Completed, Canceled, Error
+
+        [ObservableProperty]
+        private double _currentSpeedMbps;
+
+        [ObservableProperty]
+        private double _peakSpeedMbps;
+
+        [ObservableProperty]
+        private double _averageSpeedMbps;
+
+        [ObservableProperty]
+        private double _speedPingMs;
+
+        [ObservableProperty]
+        private double _speedJitterMs;
+
+        [ObservableProperty]
+        private double _downloadedMb;
+
+        [ObservableProperty]
+        private int _speedProgressPercent;
+
+        [ObservableProperty]
+        private string _speedTestStatus = "1000 Mbps Hız Testini Başlatmaya Hazır";
+
+        [ObservableProperty]
+        private bool _isSpeedTestRunning;
+
+        [RelayCommand]
+        public async Task StartSpeedTestAsync()
+        {
+            if (IsSpeedTestRunning) return;
+
+            IsSpeedTestRunning = true;
+            CurrentSpeedMbps = 0;
+            PeakSpeedMbps = 0;
+            AverageSpeedMbps = 0;
+            DownloadedMb = 0;
+            SpeedProgressPercent = 0;
+            SpeedTestStatus = "Sunucuya bağlanılıyor ve ping ölçülüyor...";
+
+            _speedTestCts = new CancellationTokenSource();
+
+            var progress = new Progress<SpeedTestProgress>(p =>
+            {
+                CurrentSpeedMbps = p.CurrentMbps;
+                PeakSpeedMbps = p.PeakMbps;
+                AverageSpeedMbps = p.AverageMbps;
+                SpeedPingMs = p.PingMs;
+                SpeedJitterMs = p.JitterMs;
+                DownloadedMb = p.DownloadedMb;
+                SpeedProgressPercent = p.ProgressPercent;
+                SpeedTestStatus = p.StatusMessage;
+                SpeedTestState = p.State;
+            });
+
+            try
+            {
+                await _networkService.RunSpeedTestAsync(progress, _speedTestCts.Token);
+            }
+            catch (Exception ex)
+            {
+                SpeedTestStatus = $"Hata: {ex.Message}";
+                SpeedTestState = "Error";
+            }
+            finally
+            {
+                IsSpeedTestRunning = false;
+                _speedTestCts?.Dispose();
+                _speedTestCts = null;
+            }
+        }
+
+        [RelayCommand]
+        public void CancelSpeedTest()
+        {
+            if (_speedTestCts != null && !_speedTestCts.IsCancellationRequested)
+            {
+                _speedTestCts.Cancel();
+                SpeedTestStatus = "Test iptal ediliyor...";
+            }
+        }
+
+        #endregion
+
+        #region 5. Ağ Teşhis Araçları (Ping, DNS Flush, Port Check)
+
+        [ObservableProperty]
+        private string _pingTarget = "1.1.1.1";
+
+        [ObservableProperty]
+        private string _pingResult = "Ping testi başlatılmadı.";
+
+        [ObservableProperty]
+        private bool _isPingRunning;
+
+        [RelayCommand]
+        public async Task RunPingAsync()
+        {
+            if (string.IsNullOrWhiteSpace(PingTarget) || IsPingRunning) return;
+
+            IsPingRunning = true;
+            PingResult = $"{PingTarget} adresine ping paketi gönderiliyor...";
+            try
+            {
+                var res = await _networkService.PingHostAsync(PingTarget);
+                PingResult = res.FormattedResult;
+            }
+            catch (Exception ex)
+            {
+                PingResult = $"Hata: {ex.Message}";
+            }
+            finally
+            {
+                IsPingRunning = false;
+            }
+        }
+
+        [ObservableProperty]
+        private string _flushDnsStatus = "DNS Çözümleyici Önbelleği Beklemede.";
+
+        [ObservableProperty]
+        private bool _isFlushingDns;
+
+        [RelayCommand]
+        public async Task FlushDnsAsync()
+        {
+            if (IsFlushingDns) return;
+
+            IsFlushingDns = true;
+            FlushDnsStatus = "Windows DNS önbelleği temizleniyor...";
+            try
+            {
+                bool ok = await _networkService.FlushDnsCacheAsync();
+                FlushDnsStatus = ok
+                    ? "Tebrikler! Windows DNS Çözümleyici Önbelleği başarıyla temizlendi (Flush DNS OK)."
+                    : "DNS önbelleği temizlenirken bir hata oluştu.";
+            }
+            catch (Exception ex)
+            {
+                FlushDnsStatus = $"Hata: {ex.Message}";
+            }
+            finally
+            {
+                IsFlushingDns = false;
+            }
+        }
+
+        [ObservableProperty]
+        private string _portCheckHost = "google.com";
+
+        [ObservableProperty]
+        private int _portCheckPort = 443;
+
+        [ObservableProperty]
+        private string _portCheckResultText = "Port testi henüz yapılmadı.";
+
+        [ObservableProperty]
+        private bool _isPortChecking;
+
+        [RelayCommand]
+        public async Task CheckPortAsync()
+        {
+            if (string.IsNullOrWhiteSpace(PortCheckHost) || PortCheckPort <= 0 || IsPortChecking) return;
+
+            IsPortChecking = true;
+            PortCheckResultText = $"{PortCheckHost}:{PortCheckPort} bağlantısı test ediliyor...";
+            try
+            {
+                var res = await _networkService.CheckPortAsync(PortCheckHost, PortCheckPort);
+                PortCheckResultText = res.Message;
+            }
+            catch (Exception ex)
+            {
+                PortCheckResultText = $"Hata: {ex.Message}";
+            }
+            finally
+            {
+                IsPortChecking = false;
+            }
+        }
+
+        #endregion
+
         #region Modül Yaşam Döngüsü
 
         private bool _isActive;
 
-        /// <summary>
-        /// Modül görünür oldu. Zamanlayıcı BURADA başlar — yapıcı metotta değil.
-        /// Böylece açılışta yalnızca ilk modül kaynak tüketir.
-        /// </summary>
         public async Task OnActivatedAsync()
         {
             if (_isActive) return;
@@ -257,17 +595,16 @@ namespace Bakım.ViewModels
             }
         }
 
-        /// <summary>Modülden çıkıldı: arka planda WMI sorgusu atmaya devam etme.</summary>
         public Task OnDeactivatedAsync()
         {
             if (!_isActive) return Task.CompletedTask;
             _isActive = false;
 
             _timer.Stop();
+            CancelSpeedTest();
             return Task.CompletedTask;
         }
 
-        /// <summary>Kullanıcının ayarlardaki yenileme aralığı tercihini uygular.</summary>
         private void ApplyRefreshInterval()
         {
             int seconds = _settingsService.Current.RefreshIntervalSeconds;
@@ -276,6 +613,5 @@ namespace Bakım.ViewModels
         }
 
         #endregion
-
-}
+    }
 }
