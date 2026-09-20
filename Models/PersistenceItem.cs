@@ -41,8 +41,18 @@ namespace Bakım.Models
         [ObservableProperty]
         private bool _isEnabled = true;
 
+        /// <summary>
+        /// VirusTotal tarama DURUMU. Varsayılanı "Analiz Et" idi; bu iki sorun
+        /// doğuruyordu:
+        ///   1. Emir kipindeki bir ifade tıklanamayan bir durum rozetinde
+        ///      duruyor, kullanıcı butona benzettiği için tıklamaya çalışıyordu.
+        ///   2. Toplu tarama filtresi "Taranmadı" değerini arıyordu; varsayılan
+        ///      eşleşmediği için hiç taranmamış girdiler toplu taramada
+        ///      sessizce atlanıyordu.
+        /// Durum rozeti durumu anlatır, eylem emretmez.
+        /// </summary>
         [ObservableProperty]
-        private string _virusTotalScore = "Analiz Et";
+        private string _virusTotalScore = "Taranmadı";
 
         [ObservableProperty]
         private int _maliciousDetections = -1;

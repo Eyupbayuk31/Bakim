@@ -443,60 +443,67 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Column 6: Action Buttons (VirusTotal, Open Location, Delete) -->
+                                <!--
+                                    Column 6: Satır eylemleri.
+
+                                    Önceki sürümde 6 etiketsiz simge yan yana duruyordu ve
+                                    ikisi kalkandı (ShieldKeyhole = AI analizi, Shield =
+                                    VirusTotal sorgusu). Görsel olarak neredeyse aynı, işleri
+                                    tamamen farklı — hangisine basılacağı belirsizdi.
+
+                                    Artık: etiketli birincil eylem + taşma menüsü + yıkıcı eylem.
+                                -->
                                 <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <!-- AI Heuristic Threat Analyzer Button -->
+
+                                    <!-- Birincil eylem: metinli, tereddütsüz -->
                                     <ui:Button Appearance="Secondary"
-                                               Padding="8,5"
+                                               Padding="10,5"
                                                Margin="0,0,6,0"
                                                Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
-                                               Icon="{ui:SymbolIcon ShieldKeyhole20}"
-                                               ToolTip="Sezgisel AI Tehdit Analizi Yap (% Risk Skoru &amp; Detaylar)" AutomationProperties.Name="Sezgisel AI Tehdit Analizi Yap (% Risk Skoru &amp; Detaylar)"/>
+                                               Icon="{ui:SymbolIcon ShieldTask20}"
+                                               Content="Analiz Et"
+                                               ToolTip="Dosyayı derinlemesine incele: PE yapısı, imza, entropi ve risk skoru"
+                                               AutomationProperties.Name="{Binding Name, StringFormat='{}{0} dosyasını analiz et'}"/>
 
-                                    <!-- VirusTotal API Quick Scan Button -->
-                                    <ui:Button Appearance="Secondary"
-                                               Padding="8,5"
-                                               Margin="0,0,6,0"
-                                               Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               Icon="{ui:SymbolIcon Shield20}"
-                                               ToolTip="Bu Dosyayı VirusTotal API ile Sorgula" AutomationProperties.Name="Bu Dosyayı VirusTotal API ile Sorgula"/>
+                                    <!-- İkincil eylemler taşma menüsünde -->
+                                    <ui:DropDownButton Appearance="Secondary"
+                                                       Padding="8,5"
+                                                       Margin="0,0,6,0"
+                                                       Icon="{ui:SymbolIcon MoreHorizontal20}"
+                                                       ToolTip="Diğer eylemler"
+                                                       AutomationProperties.Name="{Binding Name, StringFormat='{}{0} için diğer eylemler'}">
+                                        <ui:DropDownButton.Flyout>
+                                            <ContextMenu>
+                                                <MenuItem Header="VirusTotal ile Sorgula"
+                                                          Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding}"
+                                                          Icon="{ui:SymbolIcon Shield20}"/>
+                                                <MenuItem Header="VirusTotal Raporunu Tarayıcıda Aç"
+                                                          Command="{Binding DataContext.OpenVirusTotalWebCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding}"
+                                                          Icon="{ui:SymbolIcon Globe20}"/>
+                                                <Separator/>
+                                                <MenuItem Header="Dosya Konumunu Aç"
+                                                          Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding}"
+                                                          Icon="{ui:SymbolIcon FolderOpen20}"/>
+                                                <MenuItem Header="SHA-256 Özetini Kopyala"
+                                                          Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding}"
+                                                          Icon="{ui:SymbolIcon Copy20}"/>
+                                            </ContextMenu>
+                                        </ui:DropDownButton.Flyout>
+                                    </ui:DropDownButton>
 
-                                    <!-- VirusTotal Web Lookup Button -->
-                                    <ui:Button Appearance="Secondary"
-                                               Padding="8,5"
-                                               Margin="0,0,6,0"
-                                               Command="{Binding DataContext.OpenVirusTotalWebCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               Icon="{ui:SymbolIcon Globe20}"
-                                               ToolTip="VirusTotal'de SHA-256 Raporunu Aç" AutomationProperties.Name="VirusTotal'de SHA-256 Raporunu Aç"/>
-
-                                    <!-- Open File Location Button -->
-                                    <ui:Button Appearance="Secondary"
-                                               Padding="8,5"
-                                               Margin="0,0,6,0"
-                                               Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               Icon="{ui:SymbolIcon FolderOpen20}"
-                                               ToolTip="Dosya Konumunu Windows Gezgini'nde Aç" AutomationProperties.Name="Dosya Konumunu Windows Gezgini'nde Aç"/>
-
-                                    <!-- Copy Hash Button -->
-                                    <ui:Button Appearance="Secondary"
-                                               Padding="8,5"
-                                               Margin="0,0,6,0"
-                                               Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               Icon="{ui:SymbolIcon Copy20}"
-                                               ToolTip="SHA-256 Hash'ini Panoya Kopyala" AutomationProperties.Name="SHA-256 Hash'ini Panoya Kopyala"/>
-
-                                    <!-- Permanent Delete Button -->
+                                    <!-- Yıkıcı eylem görünür kalır: kırmızı ve beklenen konumda -->
                                     <ui:Button Appearance="Danger"
                                                Padding="8,5"
                                                Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon Delete20}"
-                                               ToolTip="Kalıcı Olarak Sil" AutomationProperties.Name="Kalıcı Olarak Sil"/>
+                                               ToolTip="Bu kalıcılık girdisini kalıcı olarak sil"
+                                               AutomationProperties.Name="{Binding Name, StringFormat='{}{0} girdisini sil'}"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
