@@ -48,6 +48,39 @@ namespace Bakım.ViewModels
         private string SettingsFilePath => _settingsService.SettingsFilePath;
         private string LogsDirectoryPath => _log.LogDirectory;
 
+        #region Category Navigation Properties
+
+        [ObservableProperty]
+        private string _selectedCategory = "General"; // General, Performance, Startup, Security, Modules, About
+
+        public bool IsGeneralSelected => string.Equals(SelectedCategory, "General", StringComparison.OrdinalIgnoreCase);
+        public bool IsPerformanceSelected => string.Equals(SelectedCategory, "Performance", StringComparison.OrdinalIgnoreCase);
+        public bool IsStartupSelected => string.Equals(SelectedCategory, "Startup", StringComparison.OrdinalIgnoreCase);
+        public bool IsSecuritySelected => string.Equals(SelectedCategory, "Security", StringComparison.OrdinalIgnoreCase);
+        public bool IsModulesSelected => string.Equals(SelectedCategory, "Modules", StringComparison.OrdinalIgnoreCase);
+        public bool IsAboutSelected => string.Equals(SelectedCategory, "About", StringComparison.OrdinalIgnoreCase);
+
+        partial void OnSelectedCategoryChanged(string value)
+        {
+            OnPropertyChanged(nameof(IsGeneralSelected));
+            OnPropertyChanged(nameof(IsPerformanceSelected));
+            OnPropertyChanged(nameof(IsStartupSelected));
+            OnPropertyChanged(nameof(IsSecuritySelected));
+            OnPropertyChanged(nameof(IsModulesSelected));
+            OnPropertyChanged(nameof(IsAboutSelected));
+        }
+
+        [RelayCommand]
+        private void SelectCategory(string category)
+        {
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                SelectedCategory = category;
+            }
+        }
+
+        #endregion
+
         #region Appearance & Theme Properties
 
         [ObservableProperty]

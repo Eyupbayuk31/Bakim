@@ -160,7 +160,7 @@
                     Grid.Column="0" 
                     Width="260"
                     ClipToBounds="True"
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                    Background="Transparent" 
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                     BorderThickness="0,0,1,0" 
                     Padding="10,14">
@@ -171,69 +171,69 @@
                                 <DataTrigger.EnterActions>
                                     <BeginStoryboard>
                                         <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Width" 
-                                                             To="64" 
-                                                             Duration="0:0:0.3">
-                                                <DoubleAnimation.EasingFunction>
-                                                    <CubicEase EasingMode="EaseOut"/>
-                                                </DoubleAnimation.EasingFunction>
-                                            </DoubleAnimation>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </DataTrigger.EnterActions>
-                                <DataTrigger.ExitActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Width" 
-                                                             To="260" 
-                                                             Duration="0:0:0.3">
-                                                <DoubleAnimation.EasingFunction>
-                                                    <CubicEase EasingMode="EaseOut"/>
-                                                </DoubleAnimation.EasingFunction>
-                                            </DoubleAnimation>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </DataTrigger.ExitActions>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Hamburger & Brand Header -->
-                        <RowDefinition Height="*"/>    <!-- Scrollable Navigation Items List -->
-                        <RowDefinition Height="Auto"/> <!-- Bottom Status Card -->
-                    </Grid.RowDefinitions>
-
-                    <!-- Top Hamburger & Brand Header -->
-                    <Grid Grid.Row="0" Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <!-- Hamburger Toggle Button -->
-                        <ui:Button Grid.Column="0" 
-                                   Appearance="Secondary"
-                                   Padding="8,8"
-                                   Width="42" Height="40"
-                                   HorizontalAlignment="Center"
-                                   Command="{Binding ToggleSidebarCommand}"
-                                   ToolTip="Menüyü Daralt / Genişlet"
-                                   Icon="{ui:SymbolIcon Navigation24}" AutomationProperties.Name="Menüyü Daralt / Genişlet"/>
-
-                        <!-- Brand Title (Visible only when Expanded) -->
-                        <Grid Grid.Column="1" 
-                              Margin="10,0,0,0" 
-                              VerticalAlignment="Center"
-                              Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
-                            <StackPanel>
-                                <TextBlock Text="BAKIM v2.0" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                <TextBlock Text="Sistem Optimize &amp; Güvenlik" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
-                            </StackPanel>
-                        </Grid>
-                    </Grid>
+                                             <DoubleAnimation Storyboard.TargetProperty="Width" 
+                                                              To="64" 
+                                                              Duration="0:0:0.3">
+                                                 <DoubleAnimation.EasingFunction>
+                                                     <CubicEase EasingMode="EaseOut"/>
+                                                 </DoubleAnimation.EasingFunction>
+                                             </DoubleAnimation>
+                                         </Storyboard>
+                                     </BeginStoryboard>
+                                 </DataTrigger.EnterActions>
+                                 <DataTrigger.ExitActions>
+                                     <BeginStoryboard>
+                                         <Storyboard>
+                                             <DoubleAnimation Storyboard.TargetProperty="Width" 
+                                                              To="260" 
+                                                              Duration="0:0:0.3">
+                                                 <DoubleAnimation.EasingFunction>
+                                                     <CubicEase EasingMode="EaseOut"/>
+                                                 </DoubleAnimation.EasingFunction>
+                                             </DoubleAnimation>
+                                         </Storyboard>
+                                     </BeginStoryboard>
+                                 </DataTrigger.ExitActions>
+                             </DataTrigger>
+                         </Style.Triggers>
+                     </Style>
+                 </Border.Style>
+ 
+                 <Grid>
+                     <Grid.RowDefinitions>
+                         <RowDefinition Height="Auto"/> <!-- Hamburger & Brand Header -->
+                         <RowDefinition Height="*"/>    <!-- Scrollable Navigation Items List -->
+                         <RowDefinition Height="Auto"/> <!-- Bottom Status Card -->
+                     </Grid.RowDefinitions>
+ 
+                     <!-- Top Hamburger & Brand Header -->
+                     <Grid Grid.Row="0" Margin="0,0,0,14">
+                         <Grid.ColumnDefinitions>
+                             <ColumnDefinition Width="Auto"/>
+                             <ColumnDefinition Width="*"/>
+                         </Grid.ColumnDefinitions>
+                         
+                         <!-- Hamburger Toggle Button -->
+                         <ui:Button Grid.Column="0" 
+                                    Appearance="Secondary"
+                                    Padding="8,8"
+                                    Width="42" Height="40"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding ToggleSidebarCommand}"
+                                    ToolTip="Menüyü Daralt / Genişlet"
+                                    Icon="{ui:SymbolIcon Navigation24}" AutomationProperties.Name="Menüyü Daralt / Genişlet"/>
+ 
+                         <!-- Brand Title (Visible only when Expanded) -->
+                         <Grid Grid.Column="1" 
+                               Margin="10,0,0,0" 
+                               VerticalAlignment="Center"
+                               Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
+                             <StackPanel>
+                                 <TextBlock Text="BAKIM v3.1" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                 <TextBlock Text="Sistem Optimize &amp; Güvenlik" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
+                             </StackPanel>
+                         </Grid>
+                     </Grid>
 
                     <!-- Scrollable Navigation Items List -->
                     <ScrollViewer Grid.Row="1" 
