@@ -13,13 +13,13 @@
         Topmost="True">
 
     <!-- 100% Solid, Fully Opaque Slate Dark Surface (Zero Background Bleed) -->
-    <Border Background="#1E293B"
-            BorderBrush="#38BDF8"
+    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
             BorderThickness="1.5"
             CornerRadius="14"
             Padding="20">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="36" ShadowDepth="6" Opacity="0.85" Color="#000000"/>
+            <DropShadowEffect BlurRadius="36" ShadowDepth="6" Opacity="0.85" Color="{DynamicResource Color.Shadow}"/>
         </Border.Effect>
 
         <Grid>
@@ -43,8 +43,8 @@
                 <Border Grid.Column="0"
                         Width="44" Height="44"
                         CornerRadius="10"
-                        Background="#0F172A"
-                        BorderBrush="#334155"
+                        Background="{DynamicResource ApplicationBackgroundBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         Margin="0,0,14,0"
                         VerticalAlignment="Center">
@@ -57,7 +57,7 @@
                         <ui:SymbolIcon x:Name="FallbackIcon"
                                        Symbol="Delete24"
                                        FontSize="24"
-                                       Foreground="#38BDF8"
+                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
                     </Grid>
@@ -69,17 +69,17 @@
                         <TextBlock Text="{Binding AppName}"
                                    FontSize="16"
                                    FontWeight="Bold"
-                                   Foreground="#F8FAFC"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    TextTrimming="CharacterEllipsis"
                                    MaxWidth="450"/>
                         <TextBlock Text=" • Kalıntı Temizleyici"
                                    FontSize="16"
                                    FontWeight="SemiBold"
-                                   Foreground="#38BDF8"/>
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </StackPanel>
                     <TextBlock Text="Kaldırma işlemi bitti. Sistemde kalan artık klasör, dosya ve kayıt defteri girdileri bulundu."
                                FontSize="11.5"
-                               Foreground="#94A3B8"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                Margin="0,3,0,0"/>
                 </StackPanel>
 
@@ -89,13 +89,13 @@
                            Padding="6,4"
                            Command="{Binding CancelCommand}"
                            Icon="{ui:SymbolIcon Dismiss20}"
-                           ToolTip="Kapat ve Atla"/>
+                           ToolTip="Kapat ve Atla" AutomationProperties.Name="Kapat ve Atla"/>
             </Grid>
 
             <!-- 1. Filter & Selection Toolbar -->
             <Border Grid.Row="1"
-                    Background="#0F172A"
-                    BorderBrush="#334155"
+                    Background="{DynamicResource ApplicationBackgroundBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="12,8"
@@ -109,13 +109,13 @@
 
                     <!-- Master Checkbox -->
                     <CheckBox Grid.Column="0"
-                              IsChecked="{Binding IsAllSelected, Mode=TwoWay}"
+                              IsChecked="{Binding IsAllSelected, Mode=TwoWay}" AutomationProperties.Name="Tüm kalıntıları seç"
                               Command="{Binding ToggleSelectAllCommand}"
                               VerticalAlignment="Center"
                               Margin="0,0,16,0"
                               Cursor="Hand">
                         <TextBlock Text="Tümünü Seç / Kaldır"
-                                   Foreground="#F8FAFC"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    FontSize="12.5"
                                    FontWeight="Medium"
                                    VerticalAlignment="Center"
@@ -129,43 +129,43 @@
                                      IsChecked="True"
                                      Command="{Binding SetFilterCommand}"
                                      CommandParameter="All"
-                                     Foreground="#F8FAFC"
+                                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                      Margin="0,0,10,0"
                                      Cursor="Hand"/>
                         <RadioButton Content="Klasörler"
                                      GroupName="ResidualCategory"
                                      Command="{Binding SetFilterCommand}"
                                      CommandParameter="Folders"
-                                     Foreground="#94A3B8"
+                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                      Margin="0,0,10,0"
                                      Cursor="Hand"/>
                         <RadioButton Content="Dosyalar"
                                      GroupName="ResidualCategory"
                                      Command="{Binding SetFilterCommand}"
                                      CommandParameter="Files"
-                                     Foreground="#94A3B8"
+                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                      Margin="0,0,10,0"
                                      Cursor="Hand"/>
                         <RadioButton Content="Kayıt Defteri"
                                      GroupName="ResidualCategory"
                                      Command="{Binding SetFilterCommand}"
                                      CommandParameter="Registry"
-                                     Foreground="#94A3B8"
+                                     Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                      Cursor="Hand"/>
                     </StackPanel>
 
                     <!-- Selection Summary -->
                     <Border Grid.Column="2"
-                            Background="#1E293B"
-                            BorderBrush="#334155"
+                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
                             CornerRadius="6"
                             Padding="8,3">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding SelectedCount}" Foreground="#38BDF8" FontWeight="Bold" FontSize="11.5"/>
-                            <TextBlock Text="/" Foreground="#64748B" FontSize="11.5"/>
-                            <TextBlock Text="{Binding TotalCount}" Foreground="#94A3B8" FontSize="11.5"/>
-                            <TextBlock Text=" Kalıntı" Foreground="#94A3B8" FontSize="11.5"/>
+                            <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Bold" FontSize="11.5"/>
+                            <TextBlock Text="/" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="11.5"/>
+                            <TextBlock Text="{Binding TotalCount}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="11.5"/>
+                            <TextBlock Text=" Kalıntı" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="11.5"/>
                         </StackPanel>
                     </Border>
                 </Grid>
@@ -173,8 +173,8 @@
 
             <!-- 2. Residual Items List (Virtualized) -->
             <Border Grid.Row="2"
-                    Background="#0F172A"
-                    BorderBrush="#334155"
+                    Background="{DynamicResource ApplicationBackgroundBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="4">
@@ -201,7 +201,7 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#1E293B"/>
+                                                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -221,13 +221,13 @@
 
                                 <!-- Context Menu -->
                                 <Grid.ContextMenu>
-                                    <ContextMenu Background="#1E293B" BorderBrush="#334155">
+                                    <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
                                         <MenuItem Header="Dosya Gezgininde Göster"
-                                                  Foreground="#F8FAFC"
+                                                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                   Command="{Binding DataContext.OpenLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   CommandParameter="{Binding}"/>
                                         <MenuItem Header="Yolu Panoya Kopyala"
-                                                  Foreground="#F8FAFC"
+                                                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                   Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   CommandParameter="{Binding}"/>
                                     </ContextMenu>
@@ -235,7 +235,7 @@
 
                                 <!-- Checkbox -->
                                 <CheckBox Grid.Column="0"
-                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          IsChecked="{Binding IsSelected, Mode=TwoWay}" AutomationProperties.Name="{Binding Path}"
                                           VerticalAlignment="Center"
                                           Margin="0,0,10,0"
                                           Cursor="Hand"/>
@@ -244,15 +244,15 @@
                                 <Border Grid.Column="1"
                                         Width="30" Height="30"
                                         CornerRadius="6"
-                                        Background="#1E293B"
-                                        BorderBrush="#334155"
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
                                     <TextBlock Text="{Binding TypeName}"
                                                FontSize="10"
                                                FontWeight="SemiBold"
-                                               Foreground="#38BDF8"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
                                 </Border>
@@ -260,13 +260,13 @@
                                 <!-- Path & Description -->
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
                                     <TextBlock Text="{Binding Path}"
-                                               Foreground="#F8FAFC"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                FontSize="12"
                                                FontWeight="Medium"
                                                TextTrimming="CharacterEllipsis"
                                                ToolTip="{Binding Path}"/>
                                     <TextBlock Text="{Binding Description}"
-                                               Foreground="#94A3B8"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                FontSize="11"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
@@ -274,20 +274,20 @@
                                 <!-- Size & Risk Badge -->
                                 <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding FormattedSize}"
-                                               Foreground="#38BDF8"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                                FontSize="11.5"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center"
                                                Margin="0,0,8,0"/>
 
                                     <Border CornerRadius="4"
-                                            Background="#1E293B"
-                                            BorderBrush="#334155"
+                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                             BorderThickness="1"
                                             Padding="6,2"
                                             VerticalAlignment="Center">
                                         <TextBlock Text="{Binding RiskBadgeText}"
-                                                   Foreground="#10B981"
+                                                   Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                    FontSize="10.5"
                                                    FontWeight="Medium"/>
                                     </Border>
@@ -308,25 +308,25 @@
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                     <TextBlock Text="{Binding StatusText}"
                                FontSize="11.5"
-                               Foreground="#94A3B8"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                TextTrimming="CharacterEllipsis"/>
                     <ProgressBar Height="4"
                                  IsIndeterminate="{Binding IsCleaning}"
                                  Visibility="{Binding IsCleaning, Converter={StaticResource BoolToVis}}"
                                  Margin="0,4,0,0"
-                                 Foreground="#38BDF8"
-                                 Background="#0F172A"/>
+                                 Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                 Background="{DynamicResource ApplicationBackgroundBrush}"/>
                 </StackPanel>
 
                 <!-- Selected Total Size Footprint -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
                     <TextBlock Text="Temizlenecek Alan: "
                                FontSize="11.5"
-                               Foreground="#64748B"/>
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     <TextBlock Text="{Binding FormattedSelectedSize}"
                                FontSize="12"
                                FontWeight="Bold"
-                               Foreground="#10B981"/>
+                               Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                 </StackPanel>
             </Grid>
 
@@ -340,10 +340,10 @@
 
                 <!-- Quick Help / Note -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Info20" FontSize="16" Foreground="#38BDF8" Margin="0,0,6,0"/>
+                    <ui:SymbolIcon Symbol="Info20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="İpucu: Sağ tıklayarak konumu dosya gezgininde inceleyebilirsiniz."
                                FontSize="11"
-                               Foreground="#64748B"/>
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                 </StackPanel>
 
                 <!-- Action Buttons -->

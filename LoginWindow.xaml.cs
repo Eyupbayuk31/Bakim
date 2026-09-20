@@ -11,48 +11,33 @@ namespace Bakım
     /// </summary>
     public partial class LoginWindow : FluentWindow
     {
-        public LoginWindow()
+        public LoginWindow(LoginViewModel viewModel)
         {
             InitializeComponent();
 
-            if (DataContext is LoginViewModel vm)
+            DataContext = viewModel;
+            viewModel.LoginSucceeded += OnLoginSucceeded;
+
+            // PasswordBox içeriği bağlanamaz (güvenlik gereği bir DependencyProperty
+            // değildir), bu yüzden senkronizasyon kod arkasında elle yapılır.
+            if (!string.IsNullOrEmpty(viewModel.Password))
             {
-                vm.LoginSucceeded += OnLoginSucceeded;
-
-                // DPAPI'den otomatik yüklenen şifreyi PasswordBox'a aktar
-                if (!string.IsNullOrEmpty(vm.Password))
-                {
-                    TxtPassword.Password = vm.Password;
-                }
-
-                // PasswordBox iki yönlü senkronizasyonu
-                TxtPassword.PasswordChanged += (s, e) =>
-                {
-                    vm.Password = TxtPassword.Password;
-                };
-
-                TxtConfirmPassword.PasswordChanged += (s, e) =>
-                {
-                    vm.ConfirmPassword = TxtConfirmPassword.Password;
-                };
+                TxtPassword.Password = viewModel.Password;
             }
 
-            Loaded += (s, e) =>
+            TxtPassword.PasswordChanged += (_, _) => viewModel.Password = TxtPassword.Password;
+            TxtConfirmPassword.PasswordChanged += (_, _) => viewModel.ConfirmPassword = TxtConfirmPassword.Password;
+
+            Loaded += (_, _) =>
             {
-                if (string.IsNullOrWhiteSpace(TxtUser.Text))
-                {
-                    TxtUser.Focus();
-                }
-                else
-                {
-                    TxtPassword.Focus();
-                }
+                if (string.IsNullOrWhiteSpace(TxtUser.Text)) TxtUser.Focus();
+                else TxtPassword.Focus();
             };
         }
 
         private void OnLoginSucceeded()
         {
-            var mainWindow = new MainWindow();
+            var mainWindow = App.GetService<MainWindow>();
             Application.Current.MainWindow = mainWindow;
             mainWindow.Show();
             Close();

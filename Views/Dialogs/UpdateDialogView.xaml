@@ -13,7 +13,7 @@
         Topmost="True"
         ShowInTaskbar="True"
         WindowStartupLocation="CenterScreen"
-        Icon="pack://application:,,,/Assets/app.ico">
+        Icon="pack://application:,,,/Bakim;component/Assets/app.ico">
 
     <Border Background="{DynamicResource ApplicationBackgroundBrush}"
             BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
@@ -21,7 +21,7 @@
             CornerRadius="14"
             Padding="22">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.65" Color="#000000"/>
+            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Opacity="0.65" Color="{DynamicResource Color.Shadow}"/>
         </Border.Effect>
 
         <Grid>
@@ -86,8 +86,8 @@
                         Padding="10,6" 
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Yeni Sürüm: " FontSize="11" Foreground="#0F172A" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="LatestVersionText" Text="v2.6.0" FontSize="11" FontWeight="Bold" Foreground="#0F172A"/>
+                        <TextBlock Text="Yeni Sürüm: " FontSize="11" Foreground="{DynamicResource ApplicationBackgroundBrush}" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="LatestVersionText" Text="v2.6.0" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
                     </StackPanel>
                 </Border>
 

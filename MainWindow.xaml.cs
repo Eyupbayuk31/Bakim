@@ -1,28 +1,42 @@
 using System.Windows;
 using Wpf.Ui.Controls;
+using Bakım.Services;
 using Bakım.ViewModels;
 
 namespace Bakım
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
-    /// Wpf.Ui FluentWindow miras alınır; sıfır code-behind ile saf navigasyon yürütülür.
+    ///
+    /// ViewModel artık XAML'den değil konteynerden gelir. Bu fark önemlidir:
+    /// XAML örneklemesi parametresiz yapıcı metot zorunlu kılıyor, o da her
+    /// ViewModel'i servislerini elle `new` etmeye mecbur bırakıyordu.
     /// </summary>
     public partial class MainWindow : FluentWindow
     {
-        public MainWindow()
+        private readonly ITrayIconService? _trayIcon;
+
+        public MainWindow(MainViewModel viewModel, ITrayIconService trayIcon, IAppSettingsService settings, IThemeService theme)
         {
             InitializeComponent();
 
-            if (DataContext is MainViewModel vm)
+            _trayIcon = trayIcon;
+            DataContext = viewModel;
+            viewModel.LogoutRequested += OnLogoutRequested;
+
+            Loaded += (_, _) =>
             {
-                vm.LogoutRequested += OnLogoutRequested;
-            }
+                _trayIcon.Attach(this);
+                theme.ApplyBackdrop(settings.Current.IsMicaEnabled);
+            };
         }
 
         private void OnLogoutRequested()
         {
-            var loginWindow = new LoginWindow();
+            // Oturum kapatılırken tepsi simgesi ana pencereyle birlikte serbest bırakılır.
+            _trayIcon?.Detach();
+
+            var loginWindow = App.GetService<LoginWindow>();
             Application.Current.MainWindow = loginWindow;
             loginWindow.Show();
             Close();

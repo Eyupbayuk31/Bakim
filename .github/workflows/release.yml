@@ -9,7 +9,7 @@ on:
       version_tag:
         description: 'Sürüm Etiketi (Örn: v2.5.0)'
         required: true
-        default: 'v3.0.3'
+        default: 'v3.1.0'
 
 permissions:
   contents: write
@@ -49,10 +49,13 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.0.3" }
+          if (-not $tag) { $tag = "v3.1.0" }
           
-          # Rename executable to standard ascii name for distribution
-          Copy-Item "publish\win-x64\Bak*.exe" "publish\win-x64\Bakim.exe"
+          # Derleme adi artik dogrudan Bakim.exe uretiyor (AssemblyName).
+          # Kendine kopyalama hata verecegi icin yalnizca varligi dogrulanir.
+          if (-not (Test-Path "publish\win-x64\Bakim.exe")) {
+              throw "Bakim.exe bulunamadi - AssemblyName degismis olabilir."
+          }
           
           # Create zip package
           Compress-Archive -Path "publish\win-x64\Bakim.exe" -DestinationPath "Bakim-$tag-win-x64.zip" -Force
@@ -64,7 +67,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.0.3" }
+          if (-not $tag) { $tag = "v3.1.0" }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
@@ -88,24 +91,35 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: Bakım ${{ env.TAG_NAME }} - AI Sezgisel Tehdit Analizörü & Kalıntı Temizleme (V44.0)
+          name: Bakım ${{ env.TAG_NAME }} - Tasarım Sistemi, Güvenlik Sertleştirme ve Mimari Yenileme
           draft: false
           prerelease: false
           make_latest: true
           generate_release_notes: false
           body: |
-            • **AI Sezgisel Dosya Tehdit Analizörü & Açıklama Kalkanı (V44.0)**:
-              - Herhangi bir `.exe`, `.dll`, `.sys`, `.bat` veya Autoruns kaydını derinlemesine inceleyip zararlı olma nedenlerini Türkçe açıklayan modern tehdit analiz motoru eklendi.
-              - **6+1 Katmanlı Güvenlik Vektörü**: WinVerifyTrust Authenticode sertifika doğrulaması, şüpheli çalışma dizini (Temp, Public), sahte System32 taklit tespiti (`svchost.exe` vb.), gizli konsol parametreleri (`-w hidden`, `-enc`), çift uzantı ve Unicode RLO (`\u202E`) tuzağı tespiti.
-              - **Shannon Entropi Analizi**: Dosya bayt dağılımının bilgi yoğunluğunu (0.0 - 8.0) hesaplayarak UPX, Themida, VMProtect veya özel packer/crypter'ları anında yakalama.
-              - **Mark of the Web (MOTW)**: NTFS `:Zone.Identifier` alternatif veri akışı ile dosyanın internetten/tarayıcıdan indirilip doğrudan başlangıca yerleştiğini tespit etme.
-              - **Aktif Süreç Tespiti & Aksiyon Paketi**: Dosya bellekte çalışıyorsa tek tıkla "Süreci Sonlandır" (Process Tree Kill), başlangıçtan devre dışı bırakma, sahiplik alıp zorla parçalayarak silme (Shred) ve Markdown formatında teknik analiz raporu kopyalama.
-              - Autoruns, Program Kaldırıcı ve Avcı Modu üzerinden tek tıkla dosya inceleme ve serbest dosya seçici ("Dosya İncele") entegrasyonu.
-            • **İnteraktif Kalıntı Temizleme Modalı (Residual Cleanup Dialog - V42.0)**:
-              - Standart kaldırma işlemi biter bitmez otomatik açılan Revo stili kalıntı temizleme modalı.
-              - Kategori filtreleme (Tümü, Klasörler, Dosyalar, Kayıt Defteri), master seçim kutusu ve canlı boyut hesaplama.
-            • **Sysinternals Autoruns (V41.0) & VirusTotal API v3 Entegrasyonu**:
-              - 8 Kalıcılık Vektörü, tek tıkla toplu VirusTotal taraması ve kalıcı API anahtarı yönetimi.
+            • **Güvenlik Sertleştirme**:
+              - Kaynağa gömülü yönetici parolası tamamen kaldırıldı.
+              - Hesap veritabanı artık yalnızca yereldir; uzak sunucudan kullanıcı çekilmez.
+              - Parola türetme OWASP 2023 önerisine yükseltildi (PBKDF2-SHA256, 210.000 tur). Eski hesaplar ilk girişte sessizce güçlendirilir.
+              - Kaba kuvvet denemeleri artan bekleme süresiyle frenlenir; yerel kilidi unutanlar için kurtarma yolu eklendi.
+              - Güncelleme paketi çalıştırılmadan önce kaynak adresi, Authenticode imzası ve SHA-256 özeti denetlenir.
+              - VirusTotal API anahtarı düz metin yerine DPAPI ile şifrelenerek saklanır (mevcut anahtar otomatik taşınır).
+            • **Tasarım Sistemi**:
+              - Dört tema: Mica Koyu, AMOLED Saf Siyah, Cyberpunk Neon Mor ve **yeni Fluent Açık**.
+              - Tema değişimi artık arayüzün tamamını boyuyor; seçilen tema açılışta geri yükleniyor.
+              - Arayüzdeki 194 sabit renk kodu anlamsal tasarım token'larına taşındı; tipografi ve boşluk ölçeği tanımlandı.
+              - Yeniden kullanılabilir bileşen kütüphanesi (başlık, metrik kapsülü, durum rozeti, KPI kartı, boş durum).
+              - 90 erişilebilirlik etiketi eklendi; durum rozetleri anlamı yalnızca renkle taşımıyor.
+              - Per-Monitor V2 DPI farkındalığı: çoklu monitörde arayüz bulanıklaşmıyor.
+            • **Çalışmayan Ayarlar Gerçek Oldu**:
+              - Sistem tepsisine küçültme (tepsi menüsü ve hızlı RAM temizleme ile).
+              - Zamanlanmış otomatik RAM temizliği ve yüksek bellek uyarısı.
+              - Çıkışta otomatik temizlik, Mica efekti anahtarı ve telemetri yenileme aralığı.
+            • **Performans & Kararlılık**:
+              - Modüller ilk açılışta değil, ilk gezinmede yükleniyor.
+              - Canlı telemetri yalnızca görünen modülde çalışıyor; arka planda sistem sorgusu atılmıyor.
+              - Dosya tabanlı günlükleme eklendi (Ayarlar → Log Klasörünü Aç), ayrıntılı günlük anahtarıyla.
+              - Ayar dosyası atomik yazılıyor; bozuk dosya karantinaya alınıp varsayılanlara dönülüyor.
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe

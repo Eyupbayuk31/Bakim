@@ -8,8 +8,9 @@ using Bakım.Services;
 
 namespace Bakım.ViewModels
 {
-    public partial class DashboardViewModel : ObservableObject
+    public partial class DashboardViewModel : ObservableObject, IModuleViewModel
     {
+        private readonly IAppSettingsService _settingsService;
         private readonly ISystemCleanService _cleanService;
         private readonly ISystemInfoService _infoService;
         private readonly ITelemetryService _telemetryService;
@@ -20,18 +21,16 @@ namespace Bakım.ViewModels
         private const int MaxHistoryPoints = 25;
         private int _sampleCount;
 
-        public DashboardViewModel() : this(null, null, null)
-        {
-        }
-
         public DashboardViewModel(
-            ISystemCleanService? cleanService, 
-            ISystemInfoService? infoService, 
-            ITelemetryService? telemetryService = null)
+            ISystemCleanService cleanService, 
+            ISystemInfoService infoService, 
+            ITelemetryService telemetryService,
+            IAppSettingsService settingsService)
         {
-            _cleanService = cleanService ?? new SystemCleanService();
-            _infoService = infoService ?? new SystemInfoService();
-            _telemetryService = telemetryService ?? new TelemetryService();
+            _settingsService = settingsService;
+            _cleanService = cleanService;
+            _infoService = infoService;
+            _telemetryService = telemetryService;
 
             TopHogs = new ObservableCollection<ResourceHogItem>();
 
@@ -49,10 +48,57 @@ namespace Bakım.ViewModels
                 Interval = TimeSpan.FromMilliseconds(1500)
             };
             _telemetryTimer.Tick += async (_, _) => await OnTelemetryTickAsync();
+            // Zamanlayıcı ve ilk yükleme OnActivatedAsync() içinde başlar — bkz. IModuleViewModel
+        }
+
+        #region Modül Yaşam Döngüsü
+
+        private bool _isActive;
+
+        /// <summary>
+        /// Pano görünür oldu. v3.1'e kadar telemetri zamanlayıcısı yapıcı metotta
+        /// başlıyor ve hiç durmuyordu; uygulama arka plandayken bile 1.5 saniyede bir
+        /// WMI sorgusu atılıyordu.
+        /// </summary>
+        public async Task OnActivatedAsync()
+        {
+            if (_isActive) return;
+            _isActive = true;
+
+            ApplyRefreshInterval();
             _telemetryTimer.Start();
 
-            _ = InitializeDashboardAsync();
+            try
+            {
+                await InitializeDashboardAsync();
+            }
+            catch (Exception ex)
+            {
+                Services.AppLog.Error("Pano etkinleştirilirken hata.", ex, nameof(DashboardViewModel));
+            }
         }
+
+        public Task OnDeactivatedAsync()
+        {
+            if (!_isActive) return Task.CompletedTask;
+            _isActive = false;
+
+            _telemetryTimer.Stop();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Panonun örnekleme aralığı kullanıcı tercihinin yarısıdır (en az 1 sn):
+        /// canlı grafiklerin akıcı görünmesi için diğer modüllerden sık örnekler.
+        /// </summary>
+        private void ApplyRefreshInterval()
+        {
+            int seconds = _settingsService.Current.RefreshIntervalSeconds;
+            double interval = Math.Max(1.0, seconds / 2.0);
+            _telemetryTimer.Interval = TimeSpan.FromSeconds(interval);
+        }
+
+        #endregion
 
         public ObservableCollection<ResourceHogItem> TopHogs { get; }
 

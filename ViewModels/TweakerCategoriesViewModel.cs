@@ -35,11 +35,7 @@ namespace Bakım.ViewModels
 
         public ObservableCollection<TweakerCategoryItem> Categories { get; }
 
-        public TweakerCategoriesViewModel() : this(null)
-        {
-        }
-
-        public TweakerCategoriesViewModel(INavigationService? navigationService)
+        public TweakerCategoriesViewModel(INavigationService navigationService)
         {
             _navigationService = navigationService ?? NavigationService.Instance;
 

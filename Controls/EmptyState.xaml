@@ -1,0 +1,51 @@
+<UserControl x:Class="Bakım.Controls.EmptyState"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root">
+
+    <!--
+        "Sonuç yok" / "Henüz tarama yapılmadı" durumları için ortak yüzey.
+        Modüller arasında tutarsız olan boş durum anlatımını tek biçime getirir:
+        her zaman bir simge, bir başlık, bir açıklama ve (varsa) çıkış yolu sunar.
+    -->
+
+    <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="{StaticResource Stroke.Thin}"
+            CornerRadius="{StaticResource Radius.MD}"
+            Padding="{StaticResource Pad.Dialog}"
+            MinHeight="160">
+
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420">
+
+            <ui:SymbolIcon FontSize="{StaticResource Icon.XXL}"
+                           HorizontalAlignment="Center"
+                           Opacity="0.55"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                           Symbol="{Binding Icon, ElementName=Root, Converter={StaticResource SafeSymbol}}"/>
+
+            <TextBlock Text="{Binding Title, ElementName=Root}"
+                       FontSize="{StaticResource Font.Subtitle}"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Margin="{StaticResource Gap.Top.MD}"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+            <TextBlock Text="{Binding Description, ElementName=Root}"
+                       FontSize="{StaticResource Font.Body}"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Margin="{StaticResource Gap.Top.XS}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Visibility="{Binding Description, ElementName=Root, Converter={StaticResource StringToVis}}"/>
+
+            <ContentPresenter Content="{Binding Actions, ElementName=Root}"
+                              HorizontalAlignment="Center"
+                              Margin="{StaticResource Gap.Top.MD}"/>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
@@ -23,46 +24,37 @@
             </Grid.RowDefinitions>
 
             <!-- 0. Header Area -->
-            <Grid Grid.Row="0" Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Ayarlar ve Sistem Tercihleri" 
-                               FontSize="24" 
-                               FontWeight="Bold" 
-                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <TextBlock Text="Görünüm stili, arka plan performans sıklığı, kalıcı yönetici hakları ve yedekleme yönetimi." 
-                               FontSize="13" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                               Margin="0,4,0,0"/>
+                    <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,24"
+                         Title="Ayarlar ve Sistem Tercihleri"
+                         Description="Görünüm stili, arka plan performans sıklığı, kalıcı yönetici hakları ve yedekleme yönetimi.">
+            <c:SectionHeader.Actions>
+                <StackPanel Orientation="Horizontal">
+                <ui:Button Appearance="Secondary"
+                Command="{Binding ExportSettingsCommand}"
+                Padding="12,8"
+                Margin="0,0,8,0"
+                Content="Ayarları Yedekle"
+                Icon="{ui:SymbolIcon ArrowDownload24}"
+                ToolTip="Ayarları JSON olarak dışa aktar"/>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding ImportSettingsCommand}"
+                Padding="12,8"
+                Margin="0,0,8,0"
+                Content="Yedekten Geri Yükle"
+                Icon="{ui:SymbolIcon ArrowUpload24}"
+                ToolTip="JSON yedek dosyasından ayarları içe aktar"/>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding ResetPreferencesCommand}"
+                Padding="12,8"
+                Content="Sıfırla"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"
+                ToolTip="Varsayılan fabrika ayarlarına dön"/>
                 </StackPanel>
-
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <ui:Button Appearance="Secondary" 
-                               Command="{Binding ExportSettingsCommand}"
-                               Padding="12,8"
-                               Margin="0,0,8,0"
-                               Content="Ayarları Yedekle"
-                               Icon="{ui:SymbolIcon ArrowDownload24}"
-                               ToolTip="Ayarları JSON olarak dışa aktar"/>
-                    <ui:Button Appearance="Secondary" 
-                               Command="{Binding ImportSettingsCommand}"
-                               Padding="12,8"
-                               Margin="0,0,8,0"
-                               Content="Yedekten Geri Yükle"
-                               Icon="{ui:SymbolIcon ArrowUpload24}"
-                               ToolTip="JSON yedek dosyasından ayarları içe aktar"/>
-                    <ui:Button Appearance="Secondary" 
-                               Command="{Binding ResetPreferencesCommand}"
-                               Padding="12,8"
-                               Content="Sıfırla"
-                               Icon="{ui:SymbolIcon ArrowClockwise24}"
-                               ToolTip="Varsayılan fabrika ayarlarına dön"/>
-                </StackPanel>
-            </Grid>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
             <!-- 1. Section: Appearance & Themes -->
             <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,16">
@@ -86,9 +78,11 @@
                                    Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <!-- Theme Selection Buttons (3-Column Grid) -->
+                    <!-- Theme Selection Buttons (4-Column Grid, seçili tema vurgulanır) -->
                     <Grid Grid.Row="1" Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="12"/>
                             <ColumnDefinition Width="*"/>
@@ -97,43 +91,65 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Mica Dark Theme Option -->
-                        <ui:Button Grid.Column="0" 
+                        <ui:Button Grid.Column="0"
                                    HorizontalAlignment="Stretch"
                                    Padding="16,14"
+                                   Appearance="{Binding IsMicaTheme, Converter={StaticResource BoolToNavAppearance}}"
                                    Command="{Binding SetMicaDarkThemeCommand}"
+                                   AutomationProperties.Name="Mica Koyu temasını uygula"
                                    Icon="{ui:SymbolIcon DarkTheme24}">
                             <ui:Button.Content>
                                 <StackPanel Margin="6,0,0,0">
                                     <TextBlock Text="Mica Koyu" FontWeight="SemiBold" FontSize="13"/>
-                                    <TextBlock Text="Slate koyu zemin &amp; Fluent Mica efekti" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Slate koyu zemin &amp; Fluent Mica efekti" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Button.Content>
                         </ui:Button>
 
                         <!-- AMOLED Black Theme Option -->
-                        <ui:Button Grid.Column="2" 
+                        <ui:Button Grid.Column="2"
                                    HorizontalAlignment="Stretch"
                                    Padding="16,14"
+                                   Appearance="{Binding IsAmoledTheme, Converter={StaticResource BoolToNavAppearance}}"
                                    Command="{Binding SetAmoledThemeCommand}"
+                                   AutomationProperties.Name="AMOLED Siyah temasını uygula"
                                    Icon="{ui:SymbolIcon WeatherMoon24}">
                             <ui:Button.Content>
                                 <StackPanel Margin="6,0,0,0">
                                     <TextBlock Text="AMOLED Siyah" FontWeight="SemiBold" FontSize="13"/>
-                                    <TextBlock Text="Saf OLED siyahı ve derin kontrast" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Saf OLED siyahı ve derin kontrast" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Button.Content>
                         </ui:Button>
 
                         <!-- Cyberpunk Purple Theme Option -->
-                        <ui:Button Grid.Column="4" 
+                        <ui:Button Grid.Column="4"
                                    HorizontalAlignment="Stretch"
                                    Padding="16,14"
+                                   Appearance="{Binding IsCyberpunkTheme, Converter={StaticResource BoolToNavAppearance}}"
                                    Command="{Binding SetCyberpunkThemeCommand}"
+                                   AutomationProperties.Name="Cyberpunk Mor temasını uygula"
                                    Icon="{ui:SymbolIcon Color24}">
                             <ui:Button.Content>
                                 <StackPanel Margin="6,0,0,0">
                                     <TextBlock Text="Cyberpunk Mor" FontWeight="SemiBold" FontSize="13"/>
-                                    <TextBlock Text="Neon mor zemin ve pembe vurgular" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Neon mor zemin ve pembe vurgular" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ui:Button.Content>
+                        </ui:Button>
+
+                        <!-- Fluent Light Theme Option -->
+                        <ui:Button Grid.Column="6"
+                                   HorizontalAlignment="Stretch"
+                                   Padding="16,14"
+                                   Appearance="{Binding IsLightTheme, Converter={StaticResource BoolToNavAppearance}}"
+                                   Command="{Binding SetLightThemeCommand}"
+                                   AutomationProperties.Name="Fluent Açık temasını uygula"
+                                   Icon="{ui:SymbolIcon WeatherSunny24}">
+                            <ui:Button.Content>
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="Fluent Açık" FontWeight="SemiBold" FontSize="13"/>
+                                    <TextBlock Text="Aydınlık zemin, gündüz kullanımı" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
                             </ui:Button.Content>
                         </ui:Button>
@@ -171,7 +187,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding IsMicaEnabled, Mode=TwoWay}"
+                                         IsChecked="{Binding IsMicaEnabled, Mode=TwoWay}" AutomationProperties.Name="Mica arka plan efektini aç veya kapat"
                                          VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
@@ -202,7 +218,7 @@
                     <Grid Grid.Row="1" Margin="0,4,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="Auto" MinWidth="160"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock Text="Canlı Veri Yenileme Sıklığı" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -213,7 +229,7 @@
                         </StackPanel>
                         <ComboBox Grid.Column="1" 
                                   SelectedValuePath="Tag"
-                                  SelectedValue="{Binding RefreshIntervalSeconds, Mode=TwoWay}"
+                                  SelectedValue="{Binding RefreshIntervalSeconds, Mode=TwoWay}" AutomationProperties.Name="Telemetri yenileme aralığı"
                                   VerticalAlignment="Center"
                                   Padding="10,6">
                             <ComboBoxItem Content="Yüksek (1 Saniye)" Tag="1"/>
@@ -229,7 +245,7 @@
                     <Grid Grid.Row="3" Margin="0,12,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="Auto" MinWidth="160"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock Text="Otomatik RAM Temizleme Aralığı" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -240,7 +256,7 @@
                         </StackPanel>
                         <ComboBox Grid.Column="1" 
                                   SelectedValuePath="Tag"
-                                  SelectedValue="{Binding AutoRamCleanIntervalMinutes, Mode=TwoWay}"
+                                  SelectedValue="{Binding AutoRamCleanIntervalMinutes, Mode=TwoWay}" AutomationProperties.Name="Otomatik RAM temizleme aralığı"
                                   VerticalAlignment="Center"
                                   Padding="10,6">
                             <ComboBoxItem Content="Devre Dışı (Kapalı)" Tag="0"/>
@@ -292,7 +308,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding StartWithWindows, Mode=TwoWay}"
+                                         IsChecked="{Binding StartWithWindows, Mode=TwoWay}" AutomationProperties.Name="Windows ile birlikte başlat"
                                          VerticalAlignment="Center"/>
                     </Grid>
 
@@ -313,7 +329,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
+                                         IsChecked="{Binding MinimizeToTray, Mode=TwoWay}" AutomationProperties.Name="Simge durumunda sistem tepsisine küçült"
                                          VerticalAlignment="Center"/>
                     </Grid>
 
@@ -334,7 +350,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding NotifyOnHighRam, Mode=TwoWay}"
+                                         IsChecked="{Binding NotifyOnHighRam, Mode=TwoWay}" AutomationProperties.Name="Yüksek bellek kullanımında uyar"
                                          VerticalAlignment="Center"/>
                     </Grid>
 
@@ -355,7 +371,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding AutoCleanOnExit, Mode=TwoWay}"
+                                         IsChecked="{Binding AutoCleanOnExit, Mode=TwoWay}" AutomationProperties.Name="Çıkışta geçici dosyaları temizle"
                                          VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
@@ -422,7 +438,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding IsAlwaysRunAsAdmin, Mode=TwoWay}"
+                                         IsChecked="{Binding IsAlwaysRunAsAdmin, Mode=TwoWay}" AutomationProperties.Name="Her zaman yönetici olarak çalıştır"
                                          VerticalAlignment="Center"/>
                     </Grid>
 
@@ -442,7 +458,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding IsTaskSchedulerAutoStart, Mode=TwoWay}"
+                                         IsChecked="{Binding IsTaskSchedulerAutoStart, Mode=TwoWay}" AutomationProperties.Name="Görev Zamanlayıcı ile yönetici başlat"
                                          VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
@@ -493,7 +509,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding PromptRestorePointBeforeUninstall, Mode=TwoWay}"
+                                         IsChecked="{Binding PromptRestorePointBeforeUninstall, Mode=TwoWay}" AutomationProperties.Name="Kaldırma öncesi geri yükleme noktası sor"
                                          VerticalAlignment="Center"/>
                     </Grid>
 
@@ -513,7 +529,7 @@
                                        Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:ToggleSwitch Grid.Column="1" 
-                                         IsChecked="{Binding CreateRestorePointOnUninstall, Mode=TwoWay}"
+                                         IsChecked="{Binding CreateRestorePointOnUninstall, Mode=TwoWay}" AutomationProperties.Name="Kaldırma sırasında geri yükleme noktası oluştur"
                                          VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
@@ -554,7 +570,7 @@
                                     PlaceholderText="VirusTotal API anahtarınızı (64 karakter) buraya yapıştırın..."
                                     ClearButtonEnabled="True"
                                     VerticalContentAlignment="Center"
-                                    Padding="12,10"/>
+                                    Padding="12,10" AutomationProperties.Name="VirusTotal API anahtarınızı (64 karakter) buraya yapıştırın..."/>
 
                         <ui:Button Grid.Row="0" Grid.Column="2"
                                    Appearance="Primary"
@@ -577,10 +593,11 @@
             <ui:Card Grid.Row="7" Padding="20">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/> <!-- 0: Başlık ve eylemler -->
+                        <RowDefinition Height="Auto"/> <!-- 1: Ayrıntılı günlükleme anahtarı -->
+                        <RowDefinition Height="Auto"/> <!-- 2: Üst veri ızgarası -->
+                        <RowDefinition Height="Auto"/> <!-- 3: Güncelleme durumu -->
+                        <RowDefinition Height="Auto"/> <!-- 4: Alt bilgi -->
                     </Grid.RowDefinitions>
 
                     <!-- Header & Actions -->
@@ -609,16 +626,51 @@
                                        Margin="0,0,8,0"
                                        Content="Güncellemeleri Denetle"
                                        Icon="{ui:SymbolIcon ArrowSync24}"/>
-                            <ui:Button Appearance="Secondary" 
+                            <ui:Button Appearance="Secondary"
                                        Command="{Binding OpenLogsFolderCommand}"
                                        Padding="12,7"
+                                       AutomationProperties.Name="Günlük dosyalarının bulunduğu klasörü aç"
                                        Content="Log Klasörünü Aç"
                                        Icon="{ui:SymbolIcon FolderOpen20}"/>
                         </StackPanel>
                     </Grid>
 
+                    <!-- Ayrıntılı Günlükleme Anahtarı -->
+                    <Border Grid.Row="1"
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="12,10"
+                            Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                <TextBlock Text="Ayrıntılı Günlükleme (Debug)"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Sorun bildirirken açın: her işlem adımı günlük dosyasına yazılır. Normal kullanımda kapalı kalması önerilir."
+                                           FontSize="11"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <ui:ToggleSwitch Grid.Column="1"
+                                             VerticalAlignment="Center"
+                                             Margin="12,0,0,0"
+                                             AutomationProperties.Name="Ayrıntılı günlüklemeyi aç veya kapat"
+                                             IsChecked="{Binding VerboseLogging, Mode=TwoWay}"/>
+                        </Grid>
+                    </Border>
+
                     <!-- 4-Column Metadata Grid -->
-                    <Grid Grid.Row="1">
+                    <Grid Grid.Row="2">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
@@ -660,8 +712,8 @@
                     </Grid>
 
                     <!-- Update Status Banner -->
-                    <Border Grid.Row="2" 
-                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                    <Border Grid.Row="3"
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                             BorderThickness="1" 
                             CornerRadius="6" 
@@ -674,8 +726,8 @@
                     </Border>
 
                     <!-- Installation & Execution Mode Banner -->
-                    <Border Grid.Row="3" 
-                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                    <Border Grid.Row="4"
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                             BorderThickness="1" 
                             CornerRadius="6" 

@@ -6,13 +6,14 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using Bakım.Models;
 
 namespace Bakım.Services
 {
     public class UpdateInfo
     {
         public bool IsUpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = "3.0.3";
+        public string CurrentVersion { get; set; } = "3.1.0";
         public string LatestVersion { get; set; } = string.Empty;
         public string ReleaseNotes { get; set; } = string.Empty;
         public string DownloadUrl { get; set; } = string.Empty;
@@ -25,7 +26,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "3.0.3";
+        public const string DefaultCurrentVersion = "3.1.0";
 
         public static Version GetCurrentVersion()
         {
@@ -212,9 +213,57 @@ namespace Bakım.Services
             }
         }
 
+        /// <summary>
+        /// Güncelleme paketinin indirilmesine izin verilen kaynaklar.
+        /// Bu liste dışındaki bir adres (ör. ele geçirilmiş sürüm notundan gelen bağlantı)
+        /// asla indirilip çalıştırılmaz.
+        /// </summary>
+        private static readonly string[] AllowedDownloadHosts =
+        {
+            "github.com",
+            "objects.githubusercontent.com",
+            "release-assets.githubusercontent.com",
+            "api.github.com"
+        };
+
+        /// <summary>İndirme adresinin HTTPS ve beklenen GitHub kaynağından olduğunu doğrular.</summary>
+        public static bool IsTrustedDownloadUrl(string downloadUrl)
+        {
+            if (!Uri.TryCreate(downloadUrl, UriKind.Absolute, out var uri)) return false;
+            if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)) return false;
+
+            foreach (string host in AllowedDownloadHosts)
+            {
+                if (string.Equals(uri.Host, host, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+
+            return false;
+        }
+
         public static async Task DownloadAndExecuteInstallerAsync(string downloadUrl, Action<int>? onProgressChanged = null)
         {
-            string tempInstallerPath = Path.Combine(Path.GetTempPath(), "Bakim_Setup_Update.exe");
+            // 1) KAYNAK DENETİMİ — yabancı bir adresten indirilen paket çalıştırılmaz.
+            if (!IsTrustedDownloadUrl(downloadUrl))
+            {
+                AppLog.Error($"Güvenilmeyen güncelleme adresi reddedildi: {downloadUrl}", null, nameof(AutoUpdateService));
+
+                ShowOnUiThread(() => MessageBox.Show(
+                    "Güncelleme paketi beklenmeyen bir adresten sunuluyor ve güvenlik gereği indirilmedi.\n\n" +
+                    $"Adres: {downloadUrl}\n\n" +
+                    "Lütfen güncellemeyi projenin resmî GitHub sürümler sayfasından elle indirin.",
+                    "Güncelleme Engellendi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error));
+
+                return;
+            }
+
+            // Eşzamanlı/eski indirmelerin üzerine yazmaması için benzersiz ad
+            string tempInstallerPath = Path.Combine(
+                Path.GetTempPath(),
+                $"Bakim_Setup_Update_{Guid.NewGuid():N}.exe");
+
+            AppLog.Info($"Güncelleme indiriliyor: {downloadUrl}", nameof(AutoUpdateService));
 
             using (var client = new HttpClient())
             using (var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
@@ -243,7 +292,61 @@ namespace Bakım.Services
                 }
             }
 
-            // Inno Setup Sessiz Kurulum Parametreleri ile Başlat ve Uygulamayı Kapat
+            // 2) BÜTÜNLÜK DENETİMİ — paket çalıştırılmadan önce imzası ve özeti incelenir.
+            var verdict = Helpers.AuthenticodeVerifier.Verify(tempInstallerPath);
+
+            AppLog.Info(
+                $"Güncelleme paketi doğrulandı — {verdict.Describe()}, SHA-256: {verdict.Sha256}",
+                nameof(AutoUpdateService));
+
+            if (verdict.Status == SignatureStatus.InvalidOrTampered)
+            {
+                // Bozulmuş imza kurtarılabilir bir durum değildir: kesin reddedilir.
+                AppLog.Error("Güncelleme paketinin imzası geçersiz; kurulum iptal edildi.", null, nameof(AutoUpdateService));
+                TryDelete(tempInstallerPath);
+
+                ShowOnUiThread(() => MessageBox.Show(
+                    "İndirilen güncelleme paketinin dijital imzası geçersiz veya dosya değiştirilmiş.\n\n" +
+                    "Kurulum güvenlik gereği iptal edildi ve dosya silindi.",
+                    "Güncelleme Engellendi",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error));
+
+                return;
+            }
+
+            if (!verdict.IsTrusted)
+            {
+                // Paket henüz kod imzalama sertifikasıyla imzalanmıyor. Sessizce çalıştırmak
+                // yerine kullanıcıya özeti gösterip açık onay isteniyor.
+                bool proceed = false;
+
+                ShowOnUiThread(() =>
+                {
+                    var answer = MessageBox.Show(
+                        "İndirilen güncelleme paketi dijital olarak imzalanmamış.\n\n" +
+                        $"Kaynak: {downloadUrl}\n" +
+                        $"SHA-256: {verdict.Sha256}\n\n" +
+                        "Paketi yalnızca bu özet, resmî sürüm sayfasındaki değerle aynıysa çalıştırın.\n\n" +
+                        "Kuruluma devam edilsin mi?",
+                        "İmzasız Güncelleme Paketi",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    proceed = answer == MessageBoxResult.Yes;
+                });
+
+                if (!proceed)
+                {
+                    AppLog.Info("Kullanıcı imzasız güncellemeyi reddetti.", nameof(AutoUpdateService));
+                    TryDelete(tempInstallerPath);
+                    return;
+                }
+
+                AppLog.Warning("Kullanıcı imzasız güncelleme paketini onayladı.", null, nameof(AutoUpdateService));
+            }
+
+            // 3) Inno Setup Sessiz Kurulum Parametreleri ile Başlat ve Uygulamayı Kapat
             // /VERYSILENT: Hiçbir pencere göstermez
             // /SUPPRESSMSGBOXES: Mesaj kutusu sormaz
             // /NORESTART: Bilgisayarı yeniden başlatmaz
@@ -256,7 +359,24 @@ namespace Bakım.Services
                 Verb = "runas"
             };
 
-            Process.Start(startInfo);
+            try
+            {
+                Process.Start(startInfo);
+            }
+            catch (Exception ex)
+            {
+                // Kullanıcı UAC istemini reddettiğinde buraya düşülür.
+                AppLog.Warning("Güncelleme kurulumu başlatılamadı.", ex, nameof(AutoUpdateService));
+                TryDelete(tempInstallerPath);
+
+                ShowOnUiThread(() => MessageBox.Show(
+                    $"Güncelleme kurulumu başlatılamadı: {ex.Message}",
+                    "Güncelleme",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning));
+
+                return;
+            }
 
             if (Application.Current != null)
             {
@@ -265,6 +385,28 @@ namespace Bakım.Services
             else
             {
                 Environment.Exit(0);
+            }
+        }
+
+        /// <summary>Arka plan indirme görevinden arayüz penceresi açmak için güvenli geçiş.</summary>
+        private static void ShowOnUiThread(Action action)
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+
+            if (dispatcher == null) action();
+            else if (dispatcher.CheckAccess()) action();
+            else dispatcher.Invoke(action);
+        }
+
+        private static void TryDelete(string path)
+        {
+            try
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning($"Geçici güncelleme dosyası silinemedi: {path}", ex, nameof(AutoUpdateService));
             }
         }
 

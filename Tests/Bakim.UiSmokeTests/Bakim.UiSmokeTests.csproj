@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    XAML DUMAN TESTİ
+    ================
+    Neden ayrı bir çalıştırılabilir proje (xUnit değil):
+    WPF görünümlerini yüklemek tek bir STA thread'i ve gerçek bir Application
+    nesnesi gerektirir. Test koşucusu altında bunu kurmak kırılgandır; bağımsız
+    bir konsol uygulaması hem CI'de hem elde aynı şekilde çalışır.
+
+    Çalıştırma:  dotnet run  (bu klasörde)
+    Çıkış kodu:  0 = temiz, 1 = çökme veya eksik kaynak
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <AssemblyName>Bakim.UiSmokeTests</AssemblyName>
+    <RootNamespace>Bakim.UiSmokeTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ana uygulamayla aynı belirsizlik çözümü -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bakım.csproj" />
+  </ItemGroup>
+
+</Project>

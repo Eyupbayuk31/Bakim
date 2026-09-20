@@ -109,9 +109,9 @@ namespace Bakım.Services
 
         #endregion
 
-        public FileThreatAnalyzerService(IVirusTotalCheckService? virusTotalService = null)
+        public FileThreatAnalyzerService(IVirusTotalCheckService virusTotalService)
         {
-            _virusTotalService = virusTotalService ?? new VirusTotalCheckService();
+            _virusTotalService = virusTotalService;
         }
 
         public async Task<ThreatAnalysisResult> AnalyzeFileAsync(string filePath, string? commandArgs = null, PersistenceItem? autorunItem = null)

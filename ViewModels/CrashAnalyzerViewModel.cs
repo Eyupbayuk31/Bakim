@@ -13,13 +13,9 @@ namespace Bakım.ViewModels
     {
         private readonly ICrashAnalyzerService _crashService;
 
-        public CrashAnalyzerViewModel() : this(null)
+        public CrashAnalyzerViewModel(ICrashAnalyzerService crashService)
         {
-        }
-
-        public CrashAnalyzerViewModel(ICrashAnalyzerService? crashService)
-        {
-            _crashService = crashService ?? new CrashAnalyzerService();
+            _crashService = crashService;
 
             Crashes = new ObservableCollection<BsodCrashItem>();
             Events = new ObservableCollection<SystemEventItem>();

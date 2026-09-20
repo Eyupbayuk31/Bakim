@@ -73,7 +73,7 @@ namespace Bakım.ViewModels
             IVirusTotalCheckService? virusTotalService = null)
         {
             _result = result;
-            _analyzerService = analyzerService ?? new FileThreatAnalyzerService();
+            _analyzerService = analyzerService ?? App.GetService<IFileThreatAnalyzerService>();
             _autorunsEngine = autorunsEngine;
             _virusTotalService = virusTotalService ?? new VirusTotalCheckService();
 

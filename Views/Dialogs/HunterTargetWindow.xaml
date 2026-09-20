@@ -17,7 +17,7 @@
             CornerRadius="24"
             Padding="12">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.7" Color="#000000"/>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.7" Color="{DynamicResource Color.Shadow}"/>
         </Border.Effect>
 
         <Grid>
@@ -39,7 +39,7 @@
                            Padding="4,2"
                            Click="CloseButton_Click"
                            Icon="{ui:SymbolIcon Dismiss16}"
-                           ToolTip="Avcı Modunu Kapat"/>
+                           ToolTip="Avcı Modunu Kapat" AutomationProperties.Name="Avcı Modunu Kapat"/>
             </Grid>
 
             <!-- 1. Center Interactive Draggable Target -->
@@ -58,7 +58,7 @@
                     MouseLeftButtonUp="TargetCrosshair_MouseLeftButtonUp"
                     MouseMove="TargetCrosshair_MouseMove">
                 <Border.Effect>
-                    <DropShadowEffect Color="#38BDF8" BlurRadius="14" ShadowDepth="0" Opacity="0.6"/>
+                    <DropShadowEffect Color="{DynamicResource Color.Accent}" BlurRadius="14" ShadowDepth="0" Opacity="0.6"/>
                 </Border.Effect>
                 <Grid>
                     <!-- Concentric Rings for High-Tech Reticle -->

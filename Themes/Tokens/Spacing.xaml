@@ -1,0 +1,79 @@
+<!--
+    BOŞLUK, YARIÇAP VE BOYUT ÖLÇEĞİ
+    ================================
+    4 px yarım adımlı, 8 px taban ızgarası. Margin/Padding değerleri artık
+    keyfi (4, 10, 14, 18 ...) değil bu ölçekten seçilir.
+
+    Kullanım:
+        Padding="{StaticResource Pad.Card}"
+        Margin="{StaticResource Gap.Bottom.MD}"
+        CornerRadius="{StaticResource Radius.SM}"
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ============ HAM ÖLÇEK (Double) ============ -->
+    <sys:Double x:Key="Space.0">0</sys:Double>
+    <sys:Double x:Key="Space.1">4</sys:Double>
+    <sys:Double x:Key="Space.2">8</sys:Double>
+    <sys:Double x:Key="Space.3">12</sys:Double>
+    <sys:Double x:Key="Space.4">16</sys:Double>
+    <sys:Double x:Key="Space.5">20</sys:Double>
+    <sys:Double x:Key="Space.6">24</sys:Double>
+    <sys:Double x:Key="Space.7">32</sys:Double>
+    <sys:Double x:Key="Space.8">40</sys:Double>
+
+    <!-- ============ DOLGU (Padding) ============ -->
+    <Thickness x:Key="Pad.None">0</Thickness>
+    <Thickness x:Key="Pad.Chip">8,4</Thickness>
+    <Thickness x:Key="Pad.Badge">8,3</Thickness>
+    <Thickness x:Key="Pad.Control">12,7</Thickness>
+    <Thickness x:Key="Pad.Row">12,10</Thickness>
+    <Thickness x:Key="Pad.Card">20</Thickness>
+    <Thickness x:Key="Pad.CardCompact">16,14</Thickness>
+    <Thickness x:Key="Pad.Dialog">24</Thickness>
+    <Thickness x:Key="Pad.Module">24</Thickness>
+
+    <!-- ============ ARALIK (Margin) ============ -->
+    <Thickness x:Key="Gap.None">0</Thickness>
+
+    <!-- Alt aralık: dikey yığınlarda bölümler arası -->
+    <Thickness x:Key="Gap.Bottom.XS">0,0,0,4</Thickness>
+    <Thickness x:Key="Gap.Bottom.SM">0,0,0,8</Thickness>
+    <Thickness x:Key="Gap.Bottom.MD">0,0,0,12</Thickness>
+    <Thickness x:Key="Gap.Bottom.LG">0,0,0,16</Thickness>
+    <Thickness x:Key="Gap.Bottom.XL">0,0,0,24</Thickness>
+
+    <!-- Sağ aralık: yatay yığınlarda öğeler arası -->
+    <Thickness x:Key="Gap.Right.XS">0,0,4,0</Thickness>
+    <Thickness x:Key="Gap.Right.SM">0,0,8,0</Thickness>
+    <Thickness x:Key="Gap.Right.MD">0,0,12,0</Thickness>
+
+    <!-- Simge ile metin arası standart boşluk -->
+    <Thickness x:Key="Gap.IconText">0,0,6,0</Thickness>
+
+    <!-- Üst aralık -->
+    <Thickness x:Key="Gap.Top.XS">0,4,0,0</Thickness>
+    <Thickness x:Key="Gap.Top.SM">0,8,0,0</Thickness>
+    <Thickness x:Key="Gap.Top.MD">0,12,0,0</Thickness>
+
+    <!-- ============ YARIÇAP ============ -->
+    <CornerRadius x:Key="Radius.None">0</CornerRadius>
+    <CornerRadius x:Key="Radius.XS">4</CornerRadius>
+    <CornerRadius x:Key="Radius.SM">6</CornerRadius>
+    <CornerRadius x:Key="Radius.MD">8</CornerRadius>
+    <CornerRadius x:Key="Radius.LG">12</CornerRadius>
+    <CornerRadius x:Key="Radius.XL">16</CornerRadius>
+    <CornerRadius x:Key="Radius.Pill">999</CornerRadius>
+    <CornerRadius x:Key="Radius.TopOnly">6,6,0,0</CornerRadius>
+    <CornerRadius x:Key="Radius.BottomOnly">0,0,6,6</CornerRadius>
+
+    <!-- ============ KENARLIK KALINLIĞI ============ -->
+    <Thickness x:Key="Stroke.None">0</Thickness>
+    <Thickness x:Key="Stroke.Thin">1</Thickness>
+    <Thickness x:Key="Stroke.Medium">2</Thickness>
+    <!-- Sol kenarda vurgu şeridi (aktif navigasyon öğesi) -->
+    <Thickness x:Key="Stroke.AccentBar">3,0,0,0</Thickness>
+
+</ResourceDictionary>

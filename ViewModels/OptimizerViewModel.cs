@@ -9,20 +9,19 @@ using Bakım.Services;
 
 namespace Bakım.ViewModels
 {
-    public partial class OptimizerViewModel : ObservableObject
+    public partial class OptimizerViewModel : ObservableObject, IModuleViewModel
     {
+        private readonly IAppSettingsService _settingsService;
         private readonly ISystemCleanService _cleanService;
         private readonly ISystemInfoService _infoService;
         private readonly DispatcherTimer _autoRefreshTimer;
 
-        public OptimizerViewModel() : this(null, null)
+        public OptimizerViewModel(ISystemCleanService cleanService, ISystemInfoService infoService,
+            IAppSettingsService settingsService)
         {
-        }
-
-        public OptimizerViewModel(ISystemCleanService? cleanService, ISystemInfoService? infoService)
-        {
-            _cleanService = cleanService ?? new SystemCleanService();
-            _infoService = infoService ?? new SystemInfoService();
+            _settingsService = settingsService;
+            _cleanService = cleanService;
+            _infoService = infoService;
             TopProcesses = new ObservableCollection<ProcessMemoryItem>();
 
             _ = RefreshAsync();
@@ -39,7 +38,7 @@ namespace Bakım.ViewModels
                     await RefreshBackgroundAsync();
                 }
             };
-            _autoRefreshTimer.Start();
+            // Zamanlayıcı OnActivatedAsync() içinde başlar — bkz. IModuleViewModel
         }
 
         public ObservableCollection<ProcessMemoryItem> TopProcesses { get; }
@@ -388,5 +387,52 @@ namespace Bakım.ViewModels
                 }
             });
         }
-    }
+    
+        #region Modül Yaşam Döngüsü
+
+        private bool _isActive;
+
+        /// <summary>
+        /// Modül görünür oldu. Zamanlayıcı BURADA başlar — yapıcı metotta değil.
+        /// Böylece açılışta yalnızca ilk modül kaynak tüketir.
+        /// </summary>
+        public async Task OnActivatedAsync()
+        {
+            if (_isActive) return;
+            _isActive = true;
+
+            ApplyRefreshInterval();
+            _autoRefreshTimer.Start();
+
+            try
+            {
+                await RefreshAsync();
+            }
+            catch (Exception ex)
+            {
+                Services.AppLog.Error("Modül etkinleştirilirken hata.", ex, nameof(OptimizerViewModel));
+            }
+        }
+
+        /// <summary>Modülden çıkıldı: arka planda WMI sorgusu atmaya devam etme.</summary>
+        public Task OnDeactivatedAsync()
+        {
+            if (!_isActive) return Task.CompletedTask;
+            _isActive = false;
+
+            _autoRefreshTimer.Stop();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>Kullanıcının ayarlardaki yenileme aralığı tercihini uygular.</summary>
+        private void ApplyRefreshInterval()
+        {
+            int seconds = _settingsService.Current.RefreshIntervalSeconds;
+            if (seconds < 1) seconds = 1;
+            _autoRefreshTimer.Interval = TimeSpan.FromSeconds(seconds);
+        }
+
+        #endregion
+
+}
 }

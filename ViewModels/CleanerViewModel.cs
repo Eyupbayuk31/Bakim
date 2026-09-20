@@ -11,13 +11,9 @@ namespace Bakım.ViewModels
         private readonly ISystemCleanService _cleanService;
         private CancellationTokenSource? _cts;
 
-        public CleanerViewModel() : this(null)
+        public CleanerViewModel(ISystemCleanService cleanService)
         {
-        }
-
-        public CleanerViewModel(ISystemCleanService? cleanService)
-        {
-            _cleanService = cleanService ?? new SystemCleanService();
+            _cleanService = cleanService;
             Categories = new ObservableCollection<CleanCategory>(_cleanService.GetDefaultCategories());
             ScannedFiles = new ObservableCollection<CleanFileItem>();
         }

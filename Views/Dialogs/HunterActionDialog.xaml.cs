@@ -171,7 +171,7 @@ namespace Bakım.Views.Dialogs
 
             try
             {
-                var analyzer = new Services.FileThreatAnalyzerService();
+                var analyzer = App.GetService<Services.IFileThreatAnalyzerService>();
                 var result = await analyzer.AnalyzeFileAsync(exe);
                 var dialog = new ThreatAnalysisDialog(result, analyzer);
                 dialog.Owner = this;

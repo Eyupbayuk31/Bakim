@@ -13,13 +13,9 @@ namespace Bakım.ViewModels
     {
         private readonly IServiceManagerService _serviceManager;
 
-        public ServiceManagerViewModel() : this(null)
+        public ServiceManagerViewModel(IServiceManagerService serviceManager)
         {
-        }
-
-        public ServiceManagerViewModel(IServiceManagerService? serviceManager)
-        {
-            _serviceManager = serviceManager ?? new ServiceManagerService();
+            _serviceManager = serviceManager;
 
             Services = new ObservableCollection<ServiceItem>();
             Drivers = new ObservableCollection<DriverItem>();

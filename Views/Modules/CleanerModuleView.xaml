@@ -199,9 +199,9 @@
                     <Rectangle Width="260" HorizontalAlignment="Left">
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="#0038BDF8" Offset="0"/>
-                                <GradientStop Color="#FF38BDF8" Offset="0.5"/>
-                                <GradientStop Color="#0038BDF8" Offset="1"/>
+                                <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
+                                <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.5"/>
+                                <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                         <Rectangle.RenderTransform>
@@ -239,7 +239,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <CheckBox Grid.Column="0" 
-                                              IsChecked="{Binding IsSelected}" 
+                                              IsChecked="{Binding IsSelected}" AutomationProperties.Name="{Binding FileName}" 
                                               Cursor="Hand"
                                               Margin="2,0,4,0"
                                               VerticalAlignment="Center">
@@ -337,9 +337,9 @@
                     <Rectangle HorizontalAlignment="Left" Width="120" Height="2">
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                <GradientStop Color="#0038BDF8" Offset="0"/>
-                                <GradientStop Color="#CC38BDF8" Offset="0.5"/>
-                                <GradientStop Color="#0038BDF8" Offset="1"/>
+                                <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
+                                <GradientStop Color="{DynamicResource Color.Accent.Glow}" Offset="0.5"/>
+                                <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                         <Rectangle.RenderTransform>
@@ -427,9 +427,9 @@
                         <Rectangle HorizontalAlignment="Left" Width="200" Height="1">
                             <Rectangle.Fill>
                                 <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                    <GradientStop Color="#0038BDF8" Offset="0"/>
-                                    <GradientStop Color="#FF38BDF8" Offset="0.5"/>
-                                    <GradientStop Color="#0038BDF8" Offset="1"/>
+                                    <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
+                                    <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.5"/>
+                                    <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
                             <Rectangle.RenderTransform>

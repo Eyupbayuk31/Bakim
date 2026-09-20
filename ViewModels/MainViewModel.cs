@@ -1,7 +1,11 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Wpf.Ui.Controls;
 using Bakım.Helpers;
 using Bakım.Models;
@@ -9,118 +13,112 @@ using Bakım.Services;
 
 namespace Bakım.ViewModels
 {
+    /// <summary>
+    /// Kabuk (shell) ViewModel'i: navigasyon, komut paleti, bildirimler.
+    ///
+    /// v3.1'e kadar bu sınıf yapıcı metodunda 22 servisi ve 14 alt ViewModel'i
+    /// elle örnekliyordu; DI konteyneri kayıtlıydı ama hiç kullanılmıyordu.
+    /// Artık her şey konteynerden gelir ve alt modüller İLK GEZİNMEDE oluşturulur.
+    /// </summary>
     public partial class MainViewModel : ObservableObject
     {
+        private readonly IServiceProvider _services;
         private readonly ICommandPaletteService _paletteService;
         private readonly IThemeService _themeService;
+        private readonly ILogService _log;
 
-        public MainViewModel() : this(null, null, null)
-        {
-        }
+        // Alt modüller ilk erişimde oluşturulur: açılışta 14 ViewModel birden
+        // ayağa kalkmaz, 14 servis grafiği çözülmez.
+        private readonly Lazy<DashboardViewModel> _dashboard;
+        private readonly Lazy<CleanerViewModel> _cleaner;
+        private readonly Lazy<OptimizerViewModel> _optimizer;
+        private readonly Lazy<StartupViewModel> _startup;
+        private readonly Lazy<SystemInfoViewModel> _systemInfo;
+        private readonly Lazy<NetworkMonitorViewModel> _networkMonitor;
+        private readonly Lazy<ServiceManagerViewModel> _serviceManager;
+        private readonly Lazy<PrivacyDebloatViewModel> _privacyDebloat;
+        private readonly Lazy<CrashAnalyzerViewModel> _crashAnalyzer;
+        private readonly Lazy<UninstallerViewModel> _uninstaller;
+        private readonly Lazy<AutorunsViewModel> _autoruns;
+        private readonly Lazy<WindowsTweakerViewModel> _windowsTweaker;
+        private readonly Lazy<SettingsViewModel> _settings;
+        private readonly Lazy<TweakerCategoriesViewModel> _tweakerCategories;
+
+        /// <summary>Şu an etkin olan modül; gezinirken devre dışı bırakılır.</summary>
+        private IModuleViewModel? _activeModule;
 
         public MainViewModel(
-            ISystemCleanService? cleanService,
-            ISystemInfoService? infoService,
-            IStartupService? startupService,
-            INetworkMonitorService? networkService = null,
-            IServiceManagerService? serviceManager = null,
-            IPrivacyDebloatService? privacyService = null,
-            ICrashAnalyzerService? crashService = null,
-            IUninstallerService? uninstallerService = null,
-            IBehaviorTweaksService? behaviorService = null,
-            IBootLogonTweaksService? bootLogonService = null,
-            IDesktopTaskbarTweaksService? desktopTaskbarService = null,
-            IContextMenuShortcutsService? contextMenuService = null,
-            ISystemToolsService? toolsService = null,
-            IClassicAppsService? classicAppsService = null,
-            IWindows11TweaksService? win11TweaksService = null,
-            IAppearanceTweaksService? appearanceService = null,
-            IAdvancedAppearanceService? advancedAppearanceService = null,
-            ITweaksSnapshotService? snapshotService = null,
-            IEdgeTweaksService? edgeService = null,
-            ISettingsControlPanelTweaksService? settingsCplService = null,
-            IFileExplorerTweaksService? fileExplorerService = null,
-            ITelemetryService? telemetryService = null,
-            ICommandPaletteService? paletteService = null,
-            IThemeService? themeService = null)
+            IServiceProvider services,
+            ICommandPaletteService paletteService,
+            IThemeService themeService,
+            INavigationService navigationService,
+            IBackgroundMaintenanceService maintenanceService,
+            ILogService log)
         {
-            var cleanSvc = cleanService ?? new SystemCleanService();
-            var infoSvc = infoService ?? new SystemInfoService();
-            var startupSvc = startupService ?? new StartupService();
-            var netSvc = networkService ?? new NetworkMonitorService();
-            var servSvc = serviceManager ?? new ServiceManagerService();
-            var privSvc = privacyService ?? new PrivacyDebloatService();
-            var crashSvc = crashService ?? new CrashAnalyzerService();
-            var uninstSvc = uninstallerService ?? new UninstallerService();
-            var behaviorSvc = behaviorService ?? new BehaviorTweaksService();
-            var bootLogonSvc = bootLogonService ?? new BootLogonTweaksService();
-            var dtSvc = desktopTaskbarService ?? new DesktopTaskbarTweaksService();
-            var cmSvc = contextMenuService ?? new ContextMenuShortcutsService();
-            var toolsSvc = toolsService ?? new SystemToolsService();
-            var classicSvc = classicAppsService ?? new ClassicAppsService();
-            var win11Svc = win11TweaksService ?? new Windows11TweaksService();
-            var appearSvc = appearanceService ?? new AppearanceTweaksService();
-            var advAppearSvc = advancedAppearanceService ?? new AdvancedAppearanceService();
-            var snapSvc = snapshotService ?? new TweaksSnapshotService();
-            var edgeSvc = edgeService ?? new EdgeTweaksService();
-            var setCplSvc = settingsCplService ?? new SettingsControlPanelTweaksService();
-            var feSvc = fileExplorerService ?? new FileExplorerTweaksService();
-            var teleSvc = telemetryService ?? new TelemetryService();
+            _services = services;
+            _paletteService = paletteService;
+            _themeService = themeService;
+            _log = log;
 
-            _paletteService = paletteService ?? new CommandPaletteService();
-            _themeService = themeService ?? new ThemeService();
+            _dashboard = Lazy(() =>
+            {
+                var vm = _services.GetRequiredService<DashboardViewModel>();
+                vm.NavigateToCleanerRequested += () => Navigate("Cleaner");
+                vm.NavigateToOptimizerRequested += () => Navigate("Optimizer");
+                return vm;
+            });
 
-            Dashboard = new DashboardViewModel(cleanSvc, infoSvc, teleSvc);
-            Cleaner = new CleanerViewModel(cleanSvc);
-            Optimizer = new OptimizerViewModel(cleanSvc, infoSvc);
-            Startup = new StartupViewModel(startupSvc);
-            SystemInfo = new SystemInfoViewModel(infoSvc);
-            NetworkMonitor = new NetworkMonitorViewModel(netSvc);
-            ServiceManager = new ServiceManagerViewModel(servSvc);
-            PrivacyDebloat = new PrivacyDebloatViewModel(privSvc);
-            CrashAnalyzer = new CrashAnalyzerViewModel(crashSvc);
-            Uninstaller = new UninstallerViewModel(uninstSvc);
-            var vtSvc = new VirusTotalCheckService();
-            var autorunsSvc = new AutorunsScannerEngine(vtSvc);
-            Autoruns = new AutorunsViewModel(autorunsSvc, vtSvc);
-            WindowsTweaker = new WindowsTweakerViewModel(
-                behaviorSvc, bootLogonSvc, dtSvc, cmSvc, toolsSvc,
-                classicSvc, win11Svc, appearSvc, advAppearSvc, snapSvc,
-                edgeSvc, setCplSvc, feSvc);
-            Settings = new SettingsViewModel();
-            TweakerCategories = new TweakerCategoriesViewModel();
+            _cleaner = Lazy(_services.GetRequiredService<CleanerViewModel>);
+            _optimizer = Lazy(_services.GetRequiredService<OptimizerViewModel>);
+            _startup = Lazy(_services.GetRequiredService<StartupViewModel>);
+            _systemInfo = Lazy(_services.GetRequiredService<SystemInfoViewModel>);
+            _networkMonitor = Lazy(_services.GetRequiredService<NetworkMonitorViewModel>);
+            _serviceManager = Lazy(_services.GetRequiredService<ServiceManagerViewModel>);
+            _privacyDebloat = Lazy(_services.GetRequiredService<PrivacyDebloatViewModel>);
+            _crashAnalyzer = Lazy(_services.GetRequiredService<CrashAnalyzerViewModel>);
+            _uninstaller = Lazy(_services.GetRequiredService<UninstallerViewModel>);
+            _autoruns = Lazy(_services.GetRequiredService<AutorunsViewModel>);
+            _windowsTweaker = Lazy(_services.GetRequiredService<WindowsTweakerViewModel>);
+            _settings = Lazy(_services.GetRequiredService<SettingsViewModel>);
+            _tweakerCategories = Lazy(_services.GetRequiredService<TweakerCategoriesViewModel>);
 
-            // Alt viewmodel navigasyon olayları
-            Dashboard.NavigateToCleanerRequested += () => Navigate("Cleaner");
-            Dashboard.NavigateToOptimizerRequested += () => Navigate("Optimizer");
+            navigationService.NavigationRequested += target => Navigate(target);
+            navigationService.TweakerCategoryRequested += NavigateToTweakerCategory;
 
-            NavigationService.Instance.NavigationRequested += target => Navigate(target);
-            NavigationService.Instance.TweakerCategoryRequested += cat => NavigateToTweakerCategory(cat);
+            SubscribeToBackgroundMaintenance(maintenanceService);
 
             IsAdmin = UacHelper.IsAdministrator();
-            CurrentView = Dashboard;
-            CurrentNavKey = "Dashboard";
+            FilteredCommands = new ObservableCollection<CommandPaletteItem>(
+                _paletteService.GetAllCommands().Take(12));
 
-            FilteredCommands = new ObservableCollection<CommandPaletteItem>(_paletteService.GetAllCommands().Take(12));
+            // Açılış modülü
+            _currentView = Dashboard;
+            _ = ActivateAsync(Dashboard);
 
-            // Arka planda açılış güncelleme denetimi (4 saniye gecikmeli, UI'ı kilitlemez)
             _ = CheckForUpdatesOnStartupAsync();
         }
 
-        public DashboardViewModel Dashboard { get; }
-        public CleanerViewModel Cleaner { get; }
-        public OptimizerViewModel Optimizer { get; }
-        public StartupViewModel Startup { get; }
-        public SystemInfoViewModel SystemInfo { get; }
-        public NetworkMonitorViewModel NetworkMonitor { get; }
-        public ServiceManagerViewModel ServiceManager { get; }
-        public PrivacyDebloatViewModel PrivacyDebloat { get; }
-        public CrashAnalyzerViewModel CrashAnalyzer { get; }
-        public UninstallerViewModel Uninstaller { get; }
-        public AutorunsViewModel Autoruns { get; }
-        public WindowsTweakerViewModel WindowsTweaker { get; }
-        public SettingsViewModel Settings { get; }
-        public TweakerCategoriesViewModel TweakerCategories { get; }
+        private static Lazy<T> Lazy<T>(Func<T> factory) =>
+            new(factory, System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+
+        #region Alt Modüller (lazy)
+
+        public DashboardViewModel Dashboard => _dashboard.Value;
+        public CleanerViewModel Cleaner => _cleaner.Value;
+        public OptimizerViewModel Optimizer => _optimizer.Value;
+        public StartupViewModel Startup => _startup.Value;
+        public SystemInfoViewModel SystemInfo => _systemInfo.Value;
+        public NetworkMonitorViewModel NetworkMonitor => _networkMonitor.Value;
+        public ServiceManagerViewModel ServiceManager => _serviceManager.Value;
+        public PrivacyDebloatViewModel PrivacyDebloat => _privacyDebloat.Value;
+        public CrashAnalyzerViewModel CrashAnalyzer => _crashAnalyzer.Value;
+        public UninstallerViewModel Uninstaller => _uninstaller.Value;
+        public AutorunsViewModel Autoruns => _autoruns.Value;
+        public WindowsTweakerViewModel WindowsTweaker => _windowsTweaker.Value;
+        public SettingsViewModel Settings => _settings.Value;
+        public TweakerCategoriesViewModel TweakerCategories => _tweakerCategories.Value;
+
+        #endregion
 
         public ObservableCollection<ToastNotificationItem> ActiveToasts { get; } = new();
 
@@ -144,19 +142,14 @@ namespace Bakım.ViewModels
         public bool CanShowTweakerSubMenu => IsSidebarExpanded && IsTweakerMenuExpanded;
 
         partial void OnIsSidebarExpandedChanged(bool value)
-        {
-            OnPropertyChanged(nameof(CanShowTweakerSubMenu));
-        }
+            => OnPropertyChanged(nameof(CanShowTweakerSubMenu));
 
         partial void OnIsTweakerMenuExpandedChanged(bool value)
-        {
-            OnPropertyChanged(nameof(CanShowTweakerSubMenu));
-        }
+            => OnPropertyChanged(nameof(CanShowTweakerSubMenu));
 
         [ObservableProperty]
         private bool _isAdmin;
 
-        // Dynamic Sidebar Badges
         [ObservableProperty]
         private string _tweaksBadge = "14 Aktif";
 
@@ -167,6 +160,36 @@ namespace Bakım.ViewModels
         private string _ramBadge = "%58";
 
         public event Action? LogoutRequested;
+
+        #endregion
+
+        #region Arka Plan Bakım Bildirimleri
+
+        private void SubscribeToBackgroundMaintenance(IBackgroundMaintenanceService maintenance)
+        {
+            maintenance.HighRamDetected += percent => OnUiThread(() =>
+                ShowToast(
+                    "Yüksek Bellek Kullanımı",
+                    $"RAM kullanımı %{percent} seviyesinde. Tek tıkla hızlandırmayı deneyebilirsiniz.",
+                    InfoBarSeverity.Warning,
+                    "Warning24"));
+
+            maintenance.AutoRamCleanCompleted += freedBytes => OnUiThread(() =>
+                ShowToast(
+                    "Otomatik RAM Temizliği",
+                    $"{CleanCategory.FormatBytes(freedBytes)} bellek geri kazanıldı.",
+                    InfoBarSeverity.Success,
+                    "TopSpeed24"));
+        }
+
+        private static void OnUiThread(Action action)
+        {
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher == null) return;
+
+            if (dispatcher.CheckAccess()) action();
+            else dispatcher.BeginInvoke(action);
+        }
 
         #endregion
 
@@ -204,24 +227,16 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
-        public void CloseCommandPalette()
-        {
-            IsCommandPaletteOpen = false;
-        }
+        public void CloseCommandPalette() => IsCommandPaletteOpen = false;
 
         [RelayCommand]
         public void SelectNextCommand()
         {
             if (FilteredCommands.Count == 0) return;
             int idx = SelectedCommand != null ? FilteredCommands.IndexOf(SelectedCommand) : -1;
-            if (idx < FilteredCommands.Count - 1)
-            {
-                SelectedCommand = FilteredCommands[idx + 1];
-            }
-            else
-            {
-                SelectedCommand = FilteredCommands[0];
-            }
+            SelectedCommand = idx < FilteredCommands.Count - 1
+                ? FilteredCommands[idx + 1]
+                : FilteredCommands[0];
         }
 
         [RelayCommand]
@@ -229,14 +244,9 @@ namespace Bakım.ViewModels
         {
             if (FilteredCommands.Count == 0) return;
             int idx = SelectedCommand != null ? FilteredCommands.IndexOf(SelectedCommand) : -1;
-            if (idx > 0)
-            {
-                SelectedCommand = FilteredCommands[idx - 1];
-            }
-            else
-            {
-                SelectedCommand = FilteredCommands[FilteredCommands.Count - 1];
-            }
+            SelectedCommand = idx > 0
+                ? FilteredCommands[idx - 1]
+                : FilteredCommands[FilteredCommands.Count - 1];
         }
 
         [RelayCommand]
@@ -262,7 +272,8 @@ namespace Bakım.ViewModels
                     {
                         Navigate(target.TargetParameter);
                     }
-                    ShowToast("Sayfa Açıldı", $"{target.Title} modülüne geçiş yapıldı.", InfoBarSeverity.Informational, target.IconName);
+                    ShowToast("Sayfa Açıldı", $"{target.Title} modülüne geçiş yapıldı.",
+                        InfoBarSeverity.Informational, target.IconName);
                     break;
 
                 case CommandActionKind.QuickAction:
@@ -308,6 +319,11 @@ namespace Bakım.ViewModels
                     ShowToast("Tema Güncellendi", "Cyberpunk Neon Mor teması uygulandı.", InfoBarSeverity.Success, "Color24");
                     break;
 
+                case "Theme:Light":
+                    _themeService.ApplyTheme(AppThemeKind.FluentLight);
+                    ShowToast("Tema Güncellendi", "Fluent Açık teması uygulandı.", InfoBarSeverity.Success, "WeatherSunny24");
+                    break;
+
                 default:
                     ShowToast("İşlem Tamamlandı", $"{title} başarıyla icra edildi.", InfoBarSeverity.Success, "CheckmarkCircle24");
                     break;
@@ -318,7 +334,12 @@ namespace Bakım.ViewModels
 
         #region Floating Toast Notification System
 
-        public void ShowToast(string title, string message, InfoBarSeverity severity = InfoBarSeverity.Success, string iconName = "CheckmarkCircle24")
+        /// <summary>Aynı anda gösterilecek en fazla bildirim; fazlası en eskiyi düşürür.</summary>
+        private const int MaxVisibleToasts = 4;
+
+        public void ShowToast(string title, string message,
+            InfoBarSeverity severity = InfoBarSeverity.Success,
+            string iconName = "CheckmarkCircle24")
         {
             var toast = new ToastNotificationItem
             {
@@ -328,9 +349,14 @@ namespace Bakım.ViewModels
                 IconName = iconName
             };
 
+            // Bildirim yağmurunda ekranın dolmasını engelle
+            while (ActiveToasts.Count >= MaxVisibleToasts)
+            {
+                ActiveToasts.RemoveAt(0);
+            }
+
             ActiveToasts.Add(toast);
 
-            // 3.5 saniye sonra otomatik kaldır
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.5) };
             timer.Tick += (s, e) =>
             {
@@ -348,19 +374,13 @@ namespace Bakım.ViewModels
 
         #endregion
 
-        #region Standard Navigation Commands
+        #region Navigation
 
         [RelayCommand]
-        public void ToggleSidebar()
-        {
-            IsSidebarExpanded = !IsSidebarExpanded;
-        }
+        public void ToggleSidebar() => IsSidebarExpanded = !IsSidebarExpanded;
 
         [RelayCommand]
-        public void ToggleTweakerMenu()
-        {
-            IsTweakerMenuExpanded = !IsTweakerMenuExpanded;
-        }
+        public void ToggleTweakerMenu() => IsTweakerMenuExpanded = !IsTweakerMenuExpanded;
 
         [RelayCommand]
         public void NavigateToTweakerCategory(string categoryKey)
@@ -378,62 +398,105 @@ namespace Bakım.ViewModels
                 Navigate("Tweaker");
             }
 
-            if (IsSidebarExpanded)
-            {
-                IsTweakerMenuExpanded = true;
-            }
+            if (IsSidebarExpanded) IsTweakerMenuExpanded = true;
         }
 
         [RelayCommand]
         public void Navigate(string target)
         {
-            CurrentNavKey = target;
-            if (target == "Tweaker" || target == "WindowsTweaker" || target == "PrivacyDebloat")
+            if (!AppModuleRegistry.TryResolve(target, out var module))
             {
-                if (IsSidebarExpanded)
+                // Sessizce Panoya düşmek yerine sorunu görünür kıl.
+                _log.Warning(
+                    $"Bilinmeyen navigasyon anahtarı: '{target}'. Panoya dönülüyor.",
+                    null, nameof(MainViewModel));
+                module = AppModule.Dashboard;
+            }
+
+            CurrentNavKey = target;
+
+            if (module is AppModule.WindowsTweaker or AppModule.PrivacyDebloat && IsSidebarExpanded)
+            {
+                IsTweakerMenuExpanded = true;
+            }
+
+            object view = module switch
+            {
+                AppModule.Dashboard => Dashboard,
+                AppModule.Cleaner => Cleaner,
+                AppModule.Optimizer => Optimizer,
+                AppModule.Startup => Startup,
+                AppModule.SystemInfo => SystemInfo,
+                AppModule.NetworkMonitor => NetworkMonitor,
+                AppModule.ServiceManager => ServiceManager,
+                AppModule.PrivacyDebloat => PrivacyDebloat,
+                AppModule.CrashAnalyzer => CrashAnalyzer,
+                AppModule.Uninstaller => Uninstaller,
+                AppModule.Autoruns => Autoruns,
+                AppModule.WindowsTweaker => WindowsTweaker,
+                AppModule.Settings => Settings,
+                _ => Dashboard
+            };
+
+            if (ReferenceEquals(view, CurrentView)) return;
+
+            CurrentView = view;
+            _ = SwitchActiveModuleAsync(view);
+        }
+
+        /// <summary>Eski modülü durdurur, yenisini başlatır.</summary>
+        private async Task SwitchActiveModuleAsync(object view)
+        {
+            var previous = _activeModule;
+            _activeModule = view as IModuleViewModel;
+
+            if (previous != null && !ReferenceEquals(previous, _activeModule))
+            {
+                try
                 {
-                    IsTweakerMenuExpanded = true;
+                    await previous.OnDeactivatedAsync();
+                }
+                catch (Exception ex)
+                {
+                    _log.Error("Modül devre dışı bırakılırken hata.", ex, nameof(MainViewModel));
                 }
             }
 
-            CurrentView = target switch
+            if (_activeModule != null)
             {
-                "Dashboard" => Dashboard,
-                "Cleaner" => Cleaner,
-                "Optimizer" => Optimizer,
-                "Startup" => Startup,
-                "SystemInfo" => SystemInfo,
-                "Network" or "NetworkMonitor" => NetworkMonitor,
-                "ServiceManager" => ServiceManager,
-                "PrivacyDebloat" => PrivacyDebloat,
-                "CrashAnalyzer" => CrashAnalyzer,
-                "Uninstaller" => Uninstaller,
-                "Autoruns" or "Persistence" => Autoruns,
-                "Tweaker" => WindowsTweaker,
-                "WindowsTweaker" => WindowsTweaker,
-                "Settings" => Settings,
-                _ => Dashboard
-            };
+                await ActivateAsync(_activeModule);
+            }
+        }
+
+        private async Task ActivateAsync(object view)
+        {
+            if (view is not IModuleViewModel module) return;
+
+            _activeModule = module;
+            try
+            {
+                await module.OnActivatedAsync();
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Modül etkinleştirilirken hata.", ex, nameof(MainViewModel));
+            }
         }
 
         [RelayCommand]
-        public void RestartAsAdmin()
-        {
-            UacHelper.RestartAsAdministrator();
-        }
+        public void RestartAsAdmin() => UacHelper.RestartAsAdministrator();
 
         [RelayCommand]
         public void ToggleTheme()
         {
             _themeService.ToggleNextTheme();
-            ShowToast("Tema Değiştirildi", $"Yeni tema aktif: {_themeService.CurrentTheme}", InfoBarSeverity.Informational, "DarkTheme24");
+            ShowToast("Tema Değiştirildi",
+                $"Yeni tema aktif: {_themeService.CurrentDefinition.DisplayName}",
+                InfoBarSeverity.Informational, "DarkTheme24");
         }
 
         [RelayCommand]
-        public void Logout()
-        {
-            LogoutRequested?.Invoke();
-        }
+        public void Logout() => LogoutRequested?.Invoke();
 
         private async Task CheckForUpdatesOnStartupAsync()
         {
@@ -441,19 +504,23 @@ namespace Bakım.ViewModels
             {
                 await Task.Delay(4000);
                 var update = await AutoUpdateService.CheckForUpdatesAsync();
+
                 if (update.IsUpdateAvailable && !string.IsNullOrEmpty(update.DownloadUrl))
                 {
                     System.Windows.Application.Current?.Dispatcher.Invoke(() =>
                     {
-                        var dialog = new Views.Dialogs.UpdateDialogView(update);
-                        dialog.Owner = System.Windows.Application.Current.MainWindow;
+                        var dialog = new Views.Dialogs.UpdateDialogView(update)
+                        {
+                            Owner = System.Windows.Application.Current.MainWindow
+                        };
                         dialog.ShowDialog();
                     });
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Sessiz hata yakalama: Başlangıçta kullanıcıyı rahatsız etme
+                // Başlangıçta kullanıcıyı rahatsız etme, ama sessizce de kaybetme
+                _log.Warning("Açılış güncelleme denetimi başarısız.", ex, nameof(MainViewModel));
             }
         }
 

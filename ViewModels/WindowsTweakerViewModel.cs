@@ -27,38 +27,34 @@ namespace Bakım.ViewModels
         private readonly IFileExplorerTweaksService _fileExplorerService;
         private readonly ICollectionView _filteredTweaks;
 
-        public WindowsTweakerViewModel() : this(null, null)
-        {
-        }
-
         public WindowsTweakerViewModel(
-            IBehaviorTweaksService? behaviorService = null,
-            IBootLogonTweaksService? bootLogonService = null,
-            IDesktopTaskbarTweaksService? desktopTaskbarService = null,
-            IContextMenuShortcutsService? contextMenuService = null,
-            ISystemToolsService? toolsService = null,
-            IClassicAppsService? classicAppsService = null,
-            IWindows11TweaksService? win11Service = null,
-            IAppearanceTweaksService? appearanceService = null,
-            IAdvancedAppearanceService? advancedAppearanceService = null,
-            ITweaksSnapshotService? snapshotService = null,
-            IEdgeTweaksService? edgeService = null,
-            ISettingsControlPanelTweaksService? settingsCplService = null,
-            IFileExplorerTweaksService? fileExplorerService = null)
+            IBehaviorTweaksService behaviorService,
+            IBootLogonTweaksService bootLogonService,
+            IDesktopTaskbarTweaksService desktopTaskbarService,
+            IContextMenuShortcutsService contextMenuService,
+            ISystemToolsService toolsService,
+            IClassicAppsService classicAppsService,
+            IWindows11TweaksService win11Service,
+            IAppearanceTweaksService appearanceService,
+            IAdvancedAppearanceService advancedAppearanceService,
+            ITweaksSnapshotService snapshotService,
+            IEdgeTweaksService edgeService,
+            ISettingsControlPanelTweaksService settingsCplService,
+            IFileExplorerTweaksService fileExplorerService)
         {
-            _behaviorService = behaviorService ?? new BehaviorTweaksService();
-            _bootLogonService = bootLogonService ?? new BootLogonTweaksService();
-            _desktopTaskbarService = desktopTaskbarService ?? new DesktopTaskbarTweaksService();
-            _contextMenuService = contextMenuService ?? new ContextMenuShortcutsService();
-            _toolsService = toolsService ?? new SystemToolsService();
-            _classicAppsService = classicAppsService ?? new ClassicAppsService();
-            _win11Service = win11Service ?? new Windows11TweaksService();
-            _appearanceService = appearanceService ?? new AppearanceTweaksService();
-            _advancedAppearanceService = advancedAppearanceService ?? new AdvancedAppearanceService();
-            _snapshotService = snapshotService ?? new TweaksSnapshotService();
-            _edgeService = edgeService ?? new EdgeTweaksService();
-            _settingsCplService = settingsCplService ?? new SettingsControlPanelTweaksService();
-            _fileExplorerService = fileExplorerService ?? new FileExplorerTweaksService();
+            _behaviorService = behaviorService;
+            _bootLogonService = bootLogonService;
+            _desktopTaskbarService = desktopTaskbarService;
+            _contextMenuService = contextMenuService;
+            _toolsService = toolsService;
+            _classicAppsService = classicAppsService;
+            _win11Service = win11Service;
+            _appearanceService = appearanceService;
+            _advancedAppearanceService = advancedAppearanceService;
+            _snapshotService = snapshotService;
+            _edgeService = edgeService;
+            _settingsCplService = settingsCplService;
+            _fileExplorerService = fileExplorerService;
 
             AllTweaks = new ObservableCollection<SystemTweakItem>();
             ClassicTools = new ObservableCollection<ClassicAppItem>();

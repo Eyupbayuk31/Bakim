@@ -1,0 +1,96 @@
+<UserControl x:Class="Bakım.Controls.StatCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root">
+
+    <!--
+        KPI kartı: simge + etiket + büyük değer + alt açıklama.
+        Panoda ve Sistem Bilgisi modülünde tekrarlanan telemetri kartlarını standartlaştırır.
+
+        Responsive: sabit genişlik yoktur. Kapsayıcı Grid sütunu ne verirse ona uyar,
+        uzun değerler kırpılır (TextTrimming) — böylece dar pencerede taşma olmaz.
+    -->
+
+    <Border BorderThickness="{StaticResource Stroke.Thin}"
+            CornerRadius="{StaticResource Radius.MD}"
+            Padding="{StaticResource Pad.CardCompact}"
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Accent">
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Success">
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Caution">
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Critical">
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Simge + etiket -->
+                <RowDefinition Height="Auto"/> <!-- Değer -->
+                <RowDefinition Height="Auto"/> <!-- Alt açıklama -->
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:SymbolIcon FontSize="{StaticResource Icon.SM}"
+                               Margin="{StaticResource Gap.IconText}"
+                               VerticalAlignment="Center"
+                               Symbol="{Binding Icon, ElementName=Root, Converter={StaticResource SafeSymbol}}"
+                               Visibility="{Binding Icon, ElementName=Root, Converter={StaticResource StringToVis}}">
+                    <ui:SymbolIcon.Style>
+                        <Style TargetType="ui:SymbolIcon">
+                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Success">
+                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Caution">
+                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Critical">
+                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ui:SymbolIcon.Style>
+                </ui:SymbolIcon>
+
+                <TextBlock Text="{Binding Label, ElementName=Root}"
+                           FontSize="{StaticResource Font.Caption}"
+                           FontWeight="Medium"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            </StackPanel>
+
+            <TextBlock Grid.Row="1"
+                       Text="{Binding Value, ElementName=Root}"
+                       FontSize="{StaticResource Font.Title}"
+                       FontWeight="Bold"
+                       Margin="{StaticResource Gap.Top.XS}"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+            <TextBlock Grid.Row="2"
+                       Text="{Binding Caption, ElementName=Root}"
+                       FontSize="{StaticResource Font.Caption}"
+                       TextWrapping="Wrap"
+                       Margin="{StaticResource Gap.Top.XS}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Visibility="{Binding Caption, ElementName=Root, Converter={StaticResource StringToVis}}"/>
+        </Grid>
+    </Border>
+</UserControl>

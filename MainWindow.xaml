@@ -9,17 +9,14 @@
         xmlns:modules="clr-namespace:Bakım.Views.Modules"
         xmlns:models="clr-namespace:Bakım.Models"
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="Bakım - Sistem Temizlik ve Optimizasyon" 
         MinWidth="1020" MinHeight="680"
         Width="1280" Height="840"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
-        Icon="pack://application:,,,/Assets/app.ico">
-
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
+        Icon="pack://application:,,,/Bakim;component/Assets/app.ico">
 
     <Window.InputBindings>
         <KeyBinding Gesture="Ctrl+K" Command="{Binding OpenCommandPaletteCommand}"/>
@@ -126,7 +123,7 @@
                                Command="{Binding ToggleThemeCommand}" 
                                Margin="0,0,8,0" 
                                ToolTip="Açık / Koyu Tema"
-                               Icon="{ui:SymbolIcon DarkTheme20}"/>
+                               Icon="{ui:SymbolIcon DarkTheme20}" AutomationProperties.Name="Açık / Koyu Tema"/>
 
                     <!-- Eyüp User Badge -->
                     <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
@@ -146,7 +143,7 @@
                                Padding="8,3"
                                Command="{Binding LogoutCommand}" 
                                ToolTip="Oturumu Kapat"
-                               Icon="{ui:SymbolIcon SignOut20}"/>
+                               Icon="{ui:SymbolIcon SignOut20}" AutomationProperties.Name="Oturumu Kapat"/>
                 </StackPanel>
             </ui:TitleBar.TrailingContent>
         </ui:TitleBar>
@@ -224,7 +221,7 @@
                                    HorizontalAlignment="Center"
                                    Command="{Binding ToggleSidebarCommand}"
                                    ToolTip="Menüyü Daralt / Genişlet"
-                                   Icon="{ui:SymbolIcon Navigation24}"/>
+                                   Icon="{ui:SymbolIcon Navigation24}" AutomationProperties.Name="Menüyü Daralt / Genişlet"/>
 
                         <!-- Brand Title (Visible only when Expanded) -->
                         <Grid Grid.Column="1" 
@@ -421,9 +418,8 @@
                                                CommandParameter="Tweaker"
                                                Icon="{ui:SymbolIcon Wrench24}"
                                                ToolTip="Windows Tweaker">
-                                        <Grid Margin="6,0,0,0" 
-                                              HorizontalAlignment="Stretch" 
-                                              Width="175"
+                                        <Grid Margin="6,0,0,0"
+                                              HorizontalAlignment="Stretch"
                                               Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
                                             <TextBlock Text="Windows Tweaker" VerticalAlignment="Center" FontSize="12.5"/>
                                             <ui:Button Appearance="Transparent"
@@ -679,9 +675,10 @@
                           Panel.ZIndex="100">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:ToastNotificationItem}">
-                        <ui:Card Padding="14,10" 
-                                 Margin="0,0,0,8" 
-                                 Width="320"
+                        <ui:Card Padding="14,10"
+                                 Margin="0,0,0,8"
+                                 MinWidth="320"
+                                 MaxWidth="420"
                                  BorderBrush="{DynamicResource Brush.Accent}"
                                  BorderThickness="1">
                             <Grid>
@@ -708,7 +705,7 @@
                                            Command="{Binding DataContext.DismissToastCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                            CommandParameter="{Binding}"
                                            Icon="{ui:SymbolIcon Dismiss20}"
-                                           ToolTip="Kapat"/>
+                                           ToolTip="Kapat" AutomationProperties.Name="Kapat"/>
                             </Grid>
                         </ui:Card>
                     </DataTemplate>
@@ -719,20 +716,20 @@
         <!-- Global Command Palette Modal (Raycast / Linear Ctrl+K) -->
         <Grid Grid.RowSpan="2"
               Visibility="{Binding IsCommandPaletteOpen, Converter={StaticResource BoolToVis}}"
-              Background="#E6000000"
+              Background="{DynamicResource Brush.Overlay.Scrim}"
               Panel.ZIndex="999">
             <Grid.InputBindings>
                 <KeyBinding Gesture="Escape" Command="{Binding CloseCommandPaletteCommand}"/>
             </Grid.InputBindings>
 
             <!-- Centered Floating Solid Card (No Mica transparency bleed) -->
-            <Border Width="640"
+            <Border MaxWidth="640"
                     MaxHeight="540"
                     Padding="0"
                     VerticalAlignment="Top"
-                    Margin="0,80,0,0"
-                    HorizontalAlignment="Center"
-                    Background="#182234"
+                    Margin="24,80,24,0"
+                    HorizontalAlignment="Stretch"
+                    Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                     BorderBrush="{DynamicResource Brush.Accent}"
                     BorderThickness="1"
                     CornerRadius="12"
@@ -768,7 +765,7 @@
                                     Padding="0,6"
                                     BorderThickness="0"
                                     Background="Transparent"
-                                    VerticalContentAlignment="Center">
+                                    VerticalContentAlignment="Center" AutomationProperties.Name="Sayfa, ayar veya komut ara... (Örn: RAM, Temizle)">
                             <ui:TextBox.InputBindings>
                                 <KeyBinding Key="Return"
                                             Command="{Binding ExecuteCommandCommand}"
@@ -786,7 +783,7 @@
                                    Margin="8,0,0,0"
                                    Command="{Binding CloseCommandPaletteCommand}"
                                    Icon="{ui:SymbolIcon Dismiss20}"
-                                   ToolTip="Kapat (Esc)"/>
+                                   ToolTip="Kapat (Esc)" AutomationProperties.Name="Kapat (Esc)"/>
                     </Grid>
 
                     <!-- ═══ Row 1: Separator ═══ -->
@@ -833,7 +830,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="ItemContainerBorder" Property="Background" Value="#253348"/>
+                                                    <Setter TargetName="ItemContainerBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
                                                     <Setter TargetName="ItemContainerBorder" Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>

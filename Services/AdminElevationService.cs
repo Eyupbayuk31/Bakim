@@ -26,7 +26,7 @@ namespace Bakım.Services
             }
             catch { }
 
-            return AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\') + @"\Bakım.exe";
+            return AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\') + @"\Bakim.exe";
         }
 
         /// <summary>

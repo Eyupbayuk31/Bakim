@@ -10,19 +10,18 @@ using Bakım.Services;
 
 namespace Bakım.ViewModels
 {
-    public partial class SystemInfoViewModel : ObservableObject
+    public partial class SystemInfoViewModel : ObservableObject, IModuleViewModel
     {
+        private readonly IAppSettingsService _settingsService;
         private readonly ISystemInfoService _infoService;
         private readonly DispatcherTimer _liveTelemetryTimer;
         private CancellationTokenSource? _scanCts;
 
-        public SystemInfoViewModel() : this(null)
+        public SystemInfoViewModel(ISystemInfoService infoService,
+            IAppSettingsService settingsService)
         {
-        }
-
-        public SystemInfoViewModel(ISystemInfoService? infoService)
-        {
-            _infoService = infoService ?? new SystemInfoService();
+            _settingsService = settingsService;
+            _infoService = infoService;
             Drives = new ObservableCollection<DriveInfoItem>();
             SmartDisks = new ObservableCollection<SmartDiskHealthItem>();
             LargeFiles = new ObservableCollection<LargeDiskFileItem>();
@@ -64,7 +63,7 @@ namespace Bakım.ViewModels
                     }
                 }
             };
-            _liveTelemetryTimer.Start();
+            // Zamanlayıcı OnActivatedAsync() içinde başlar — bkz. IModuleViewModel
         }
 
         public ObservableCollection<DriveInfoItem> Drives { get; }
@@ -255,5 +254,53 @@ namespace Bakım.ViewModels
         {
             UacHelper.RestartAsAdministrator();
         }
-    }
+    
+        #region Modül Yaşam Döngüsü
+
+        private bool _isActive;
+
+        /// <summary>
+        /// Modül görünür oldu. Zamanlayıcı BURADA başlar — yapıcı metotta değil.
+        /// Böylece açılışta yalnızca ilk modül kaynak tüketir.
+        /// </summary>
+        public async Task OnActivatedAsync()
+        {
+            if (_isActive) return;
+            _isActive = true;
+
+            ApplyRefreshInterval();
+            _liveTelemetryTimer.Start();
+
+            try
+            {
+                await RefreshAsync();
+                await LoadSmartHealthAsync();
+            }
+            catch (Exception ex)
+            {
+                Services.AppLog.Error("Modül etkinleştirilirken hata.", ex, nameof(SystemInfoViewModel));
+            }
+        }
+
+        /// <summary>Modülden çıkıldı: arka planda WMI sorgusu atmaya devam etme.</summary>
+        public Task OnDeactivatedAsync()
+        {
+            if (!_isActive) return Task.CompletedTask;
+            _isActive = false;
+
+            _liveTelemetryTimer.Stop();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>Kullanıcının ayarlardaki yenileme aralığı tercihini uygular.</summary>
+        private void ApplyRefreshInterval()
+        {
+            int seconds = _settingsService.Current.RefreshIntervalSeconds;
+            if (seconds < 1) seconds = 1;
+            _liveTelemetryTimer.Interval = TimeSpan.FromSeconds(seconds);
+        }
+
+        #endregion
+
+}
 }

@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
@@ -35,42 +36,33 @@
         </Grid.RowDefinitions>
 
         <!-- 1. Header Section -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Ağ &amp; Bağlantı İzleyici" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Text="Canlı TCP/UDP soketleri, süreç bazlı bağlantılar ve güvenlik analizi." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,20"
+                         Title="Ağ &amp; Bağlantı İzleyici"
+                         Description="Canlı TCP/UDP soketleri, süreç bazlı bağlantılar ve güvenlik analizi.">
+            <c:SectionHeader.Actions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Auto-Refresh Toggle -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
-                    <TextBlock Text="Canlı İzleme:" 
-                               FontSize="12" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                               VerticalAlignment="Center" 
-                               Margin="0,0,8,0"/>
-                    <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" VerticalAlignment="Center"/>
+                <TextBlock Text="Canlı İzleme:"
+                FontSize="12"
+                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                VerticalAlignment="Center"
+                Margin="0,0,8,0"/>
+                <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" AutomationProperties.Name="Otomatik yenilemeyi aç veya kapat" VerticalAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Refresh Button -->
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding RefreshCommand}"
-                           Padding="14,8"
-                           Content="Yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </StackPanel>
-        </Grid>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding RefreshCommand}"
+                Padding="14,8"
+                Content="Yenile"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+                </StackPanel>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- 2. Metric Overview Cards -->
         <Grid Grid.Row="1" Margin="0,0,0,18">
@@ -163,7 +155,7 @@
                         Padding="12,9" 
                         Margin="0,0,12,0" 
                         Icon="{ui:SymbolIcon Search20}"
-                        VerticalContentAlignment="Center"/>
+                        VerticalContentAlignment="Center" AutomationProperties.Name="Süreç adı, IP adresi veya Port numarası ile ara..."/>
 
             <!-- Filter Buttons -->
             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -374,7 +366,7 @@
                                        ToolTip="Güvenlik Duvarı ile Engelle"
                                        Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"
-                                       Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
+                                       Icon="{ui:SymbolIcon ShieldKeyhole20}" AutomationProperties.Name="Güvenlik Duvarı ile Engelle"/>
 
                             <!-- Kill Socket / Process Button -->
                             <ui:Button Appearance="Danger" 
@@ -383,7 +375,7 @@
                                        ToolTip="Süreci ve Bağlantıyı Sonlandır"
                                        Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"
-                                       Icon="{ui:SymbolIcon Dismiss20}"/>
+                                       Icon="{ui:SymbolIcon Dismiss20}" AutomationProperties.Name="Süreci ve Bağlantıyı Sonlandır"/>
 
                             <!-- Open Location Button -->
                             <ui:Button Appearance="Secondary" 
@@ -391,7 +383,7 @@
                                        ToolTip="Dosya Konumunu Aç"
                                        Command="{Binding DataContext.OpenProcessLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"
-                                       Icon="{ui:SymbolIcon FolderOpen20}"/>
+                                       Icon="{ui:SymbolIcon FolderOpen20}" AutomationProperties.Name="Dosya Konumunu Aç"/>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>

@@ -1,0 +1,50 @@
+namespace Bakım.Models
+{
+    /// <summary>
+    /// Uygulamanın kalıcı kullanıcı tercihleri.
+    /// Tek kaynak: %LocalAppData%\Bakim\appsettings.json — yalnızca IAppSettingsService okur/yazar.
+    /// </summary>
+    public class AppSettingsData
+    {
+        /// <summary>Geriye dönük göç (migration) kararları için şema sürümü.</summary>
+        public int SchemaVersion { get; set; } = 1;
+
+        // --- Görünüm ---
+        public string Theme { get; set; } = "MicaDark";
+        public bool IsMicaEnabled { get; set; } = true;
+
+        // --- Performans & Otomasyon ---
+        /// <summary>Canlı telemetri örnekleme aralığı (saniye). 1-10 arası kısıtlanır.</summary>
+        public int RefreshIntervalSeconds { get; set; } = 2;
+
+        /// <summary>Otomatik RAM temizleme aralığı (dakika). 0 = kapalı.</summary>
+        public int AutoRamCleanIntervalMinutes { get; set; } = 0;
+
+        public bool StartWithWindows { get; set; } = false;
+        public bool MinimizeToTray { get; set; } = false;
+        public bool NotifyOnHighRam { get; set; } = true;
+        public bool AutoCleanOnExit { get; set; } = false;
+        public bool AlwaysRunAsAdmin { get; set; } = false;
+        public bool TaskSchedulerAutoStart { get; set; } = false;
+
+        // --- Kaldırıcı ---
+        public bool PromptRestorePointBeforeUninstall { get; set; } = true;
+        public bool CreateRestorePointOnUninstall { get; set; } = true;
+
+        // --- VirusTotal ---
+        /// <summary>
+        /// ESKİ ALAN — düz metin API anahtarı. Yalnızca tek seferlik göç için okunur,
+        /// göçten sonra boşaltılır. Yerine <see cref="VirusTotalApiKeyProtected"/> kullanılır.
+        /// </summary>
+        public string VirusTotalApiKey { get; set; } = string.Empty;
+
+        /// <summary>DPAPI (CurrentUser) ile şifrelenmiş, Base64 kodlu VirusTotal API anahtarı.</summary>
+        public string VirusTotalApiKeyProtected { get; set; } = string.Empty;
+
+        // --- Tanılama ---
+        /// <summary>Ayrıntılı günlükleme (Debug seviyesi) açık mı.</summary>
+        public bool VerboseLogging { get; set; } = false;
+
+        public AppSettingsData Clone() => (AppSettingsData)MemberwiseClone();
+    }
+}

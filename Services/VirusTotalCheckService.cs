@@ -17,60 +17,85 @@ namespace Bakım.Services
         public string ApiKey { get; set; } = string.Empty;
         public bool HasApiKey => !string.IsNullOrWhiteSpace(ApiKey);
 
-        public VirusTotalCheckService()
+        public VirusTotalCheckService() : this(null) { }
+
+        public VirusTotalCheckService(IAppSettingsService? settingsService)
         {
             _httpClient = new HttpClient
             {
                 Timeout = TimeSpan.FromSeconds(10)
             };
+
+            _settings = settingsService
+                        ?? App.TryGetService<IAppSettingsService>()
+                        ?? new AppSettingsService(AppLog.Current);
+
             LoadApiKey();
+        }
+
+        private readonly IAppSettingsService _settings;
+
+        /// <summary>
+        /// Ayar nesnesinden kullanılabilir API anahtarını çözer.
+        /// Önce DPAPI ile korunan alan, yoksa eski düz metin alan okunur.
+        /// </summary>
+        public static string ResolveApiKey(Models.AppSettingsData data)
+        {
+            if (data == null) return string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(data.VirusTotalApiKeyProtected))
+            {
+                string unprotected = Helpers.DataProtection.Unprotect(data.VirusTotalApiKeyProtected);
+                if (!string.IsNullOrWhiteSpace(unprotected)) return unprotected;
+            }
+
+            return data.VirusTotalApiKey ?? string.Empty;
         }
 
         public string LoadApiKey()
         {
             try
             {
-                string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string path = Path.Combine(appData, "Bakim", "appsettings.json");
-                if (File.Exists(path))
+                var data = _settings.Current;
+                ApiKey = ResolveApiKey(data);
+
+                // Tek seferlik göç: düz metin anahtar bulunduysa şifreleyip düz metni sil.
+                if (!string.IsNullOrWhiteSpace(data.VirusTotalApiKey))
                 {
-                    string json = File.ReadAllText(path);
-                    using var doc = JsonDocument.Parse(json);
-                    if (doc.RootElement.TryGetProperty("VirusTotalApiKey", out var prop))
-                    {
-                        ApiKey = prop.GetString() ?? string.Empty;
-                        return ApiKey;
-                    }
+                    AppLog.Info("VirusTotal API anahtarı DPAPI ile şifrelenmiş depolamaya taşınıyor.", nameof(VirusTotalCheckService));
+                    SaveApiKey(ApiKey);
                 }
+
+                return ApiKey;
             }
-            catch { }
-            return string.Empty;
+            catch (Exception ex)
+            {
+                AppLog.Error("VirusTotal API anahtarı okunamadı.", ex, nameof(VirusTotalCheckService));
+                return string.Empty;
+            }
         }
 
         public void SaveApiKey(string apiKey)
         {
             ApiKey = apiKey?.Trim() ?? string.Empty;
+
             try
             {
-                string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string appDir = Path.Combine(appData, "Bakim");
-                if (!Directory.Exists(appDir)) Directory.CreateDirectory(appDir);
-                string path = Path.Combine(appDir, "appsettings.json");
+                string protectedKey = Helpers.DataProtection.Protect(ApiKey);
 
-                var dict = new Dictionary<string, object>();
-                if (File.Exists(path))
+                _settings.Update(s =>
                 {
-                    try
-                    {
-                        string existingJson = File.ReadAllText(path);
-                        dict = JsonSerializer.Deserialize<Dictionary<string, object>>(existingJson) ?? new Dictionary<string, object>();
-                    }
-                    catch { }
-                }
-                dict["VirusTotalApiKey"] = ApiKey;
-                File.WriteAllText(path, JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = true }));
+                    s.VirusTotalApiKeyProtected = protectedKey;
+                    // Eski düz metin alanı her koşulda temizlenir.
+                    s.VirusTotalApiKey = string.Empty;
+                });
+
+                AppLog.Info("VirusTotal API anahtarı güvenli şekilde kaydedildi.", nameof(VirusTotalCheckService));
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLog.Error("VirusTotal API anahtarı kaydedilemedi.", ex, nameof(VirusTotalCheckService));
+            }
         }
 
         public async Task<bool> ValidateApiKeyAsync(string apiKey)

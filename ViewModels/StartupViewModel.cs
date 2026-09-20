@@ -11,13 +11,9 @@ namespace Bakım.ViewModels
         private readonly IStartupService _startupService;
         private List<StartupProgramItem> _allPrograms = new();
 
-        public StartupViewModel() : this(null)
+        public StartupViewModel(IStartupService startupService)
         {
-        }
-
-        public StartupViewModel(IStartupService? startupService)
-        {
-            _startupService = startupService ?? new StartupService();
+            _startupService = startupService;
             StartupPrograms = new ObservableCollection<StartupProgramItem>();
 
             _ = RefreshAsync();

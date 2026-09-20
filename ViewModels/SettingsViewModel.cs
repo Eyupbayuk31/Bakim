@@ -8,63 +8,45 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Bakım.Helpers;
+using Bakım.Models;
 using Bakım.Services;
 using Bakım.Views.Dialogs;
 using Wpf.Ui.Appearance;
 
 namespace Bakım.ViewModels
 {
-    public class AppSettingsData
-    {
-        public string Theme { get; set; } = "MicaDark";
-        public bool IsMicaEnabled { get; set; } = true;
-        public int RefreshIntervalSeconds { get; set; } = 2;
-        public int AutoRamCleanIntervalMinutes { get; set; } = 0;
-        public bool StartWithWindows { get; set; } = false;
-        public bool MinimizeToTray { get; set; } = false;
-        public bool NotifyOnHighRam { get; set; } = true;
-        public bool AutoCleanOnExit { get; set; } = false;
-        public bool AlwaysRunAsAdmin { get; set; } = false;
-        public bool TaskSchedulerAutoStart { get; set; } = false;
-        public bool PromptRestorePointBeforeUninstall { get; set; } = true;
-        public bool CreateRestorePointOnUninstall { get; set; } = true;
-        public string VirusTotalApiKey { get; set; } = string.Empty;
-    }
-
     public partial class SettingsViewModel : ObservableObject
     {
         private const string RunRegistryKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string AppRegistryValueName = "BakimApp";
-        private readonly string _settingsFilePath;
-        private readonly string _logsDirectoryPath;
-        private readonly ThemeService _themeService;
+
+        private readonly IAppSettingsService _settingsService;
+        private readonly IThemeService _themeService;
+        private readonly ILogService _log;
         private readonly IGitHubUpdateService _updateService;
+        private readonly IVirusTotalCheckService _virusTotalService;
         private bool _isInitializing = true;
 
-        public SettingsViewModel() : this(null)
+        public SettingsViewModel(
+            IGitHubUpdateService updateService,
+            IAppSettingsService settingsService,
+            IThemeService themeService,
+            ILogService log,
+            IVirusTotalCheckService virusTotalService)
         {
-        }
-
-        public SettingsViewModel(IGitHubUpdateService? updateService)
-        {
-            _updateService = updateService ?? new GitHubUpdateService();
-            _themeService = new ThemeService();
-            string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string appFolder = Path.Combine(appData, "Bakim");
-            _settingsFilePath = Path.Combine(appFolder, "appsettings.json");
-            _logsDirectoryPath = Path.Combine(appFolder, "Logs");
-
-            try
-            {
-                if (!Directory.Exists(appFolder)) Directory.CreateDirectory(appFolder);
-                if (!Directory.Exists(_logsDirectoryPath)) Directory.CreateDirectory(_logsDirectoryPath);
-            }
-            catch { }
+            _updateService = updateService;
+            _settingsService = settingsService;
+            _themeService = themeService;
+            _log = log;
+            _virusTotalService = virusTotalService;
 
             IsAdmin = UacHelper.IsAdministrator();
             LoadSettings();
             _isInitializing = false;
         }
+
+        private string SettingsFilePath => _settingsService.SettingsFilePath;
+        private string LogsDirectoryPath => _log.LogDirectory;
 
         #region Appearance & Theme Properties
 
@@ -76,6 +58,9 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private bool _isCyberpunkTheme;
+
+        [ObservableProperty]
+        private bool _isLightTheme;
 
         [ObservableProperty]
         private bool _isMicaEnabled = true;
@@ -167,11 +152,29 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isTestingVirusTotalKey;
 
+        /// <summary>Ayrıntılı (Debug) günlükleme. Sorun bildirirken açılması istenir.</summary>
+        [ObservableProperty]
+        private bool _verboseLogging;
+
         #endregion
 
         #region Change Handlers & Persistence
 
-        partial void OnIsMicaEnabledChanged(bool value) => AutoSaveSettings();
+        partial void OnIsMicaEnabledChanged(bool value)
+        {
+            if (_isInitializing) return;
+            _themeService.ApplyBackdrop(value);
+            AutoSaveSettings();
+        }
+
+        partial void OnVerboseLoggingChanged(bool value)
+        {
+            if (_isInitializing) return;
+            _log.MinimumLevel = value ? LogLevel.Debug : LogLevel.Info;
+            _log.Info($"Ayrıntılı günlükleme {(value ? "açıldı" : "kapatıldı")}.", nameof(SettingsViewModel));
+            AutoSaveSettings();
+        }
+
         partial void OnRefreshIntervalSecondsChanged(int value) => AutoSaveSettings();
         partial void OnAutoRamCleanIntervalMinutesChanged(int value) => AutoSaveSettings();
         partial void OnMinimizeToTrayChanged(bool value) => AutoSaveSettings();
@@ -220,94 +223,96 @@ namespace Bakım.ViewModels
                 IsInstalled = AdminElevationService.IsInstalledApplication();
                 InstallationStatus = AdminElevationService.GetInstallationStatusText();
 
-                if (File.Exists(_settingsFilePath))
-                {
-                    string json = File.ReadAllText(_settingsFilePath);
-                    var data = JsonSerializer.Deserialize<AppSettingsData>(json);
-                    if (data != null)
-                    {
-                        IsMicaEnabled = data.IsMicaEnabled;
-                        RefreshIntervalSeconds = data.RefreshIntervalSeconds;
-                        AutoRamCleanIntervalMinutes = data.AutoRamCleanIntervalMinutes;
-                        MinimizeToTray = data.MinimizeToTray;
-                        NotifyOnHighRam = data.NotifyOnHighRam;
-                        AutoCleanOnExit = data.AutoCleanOnExit;
-                        PromptRestorePointBeforeUninstall = data.PromptRestorePointBeforeUninstall;
-                        CreateRestorePointOnUninstall = data.CreateRestorePointOnUninstall;
-                        VirusTotalApiKey = data.VirusTotalApiKey ?? string.Empty;
-                        VirusTotalApiStatus = string.IsNullOrWhiteSpace(VirusTotalApiKey) ? "API anahtarı girilmedi." : "API anahtarı kayıtlı.";
+                ApplyToProperties(_settingsService.Current);
 
-                        switch (data.Theme)
-                        {
-                            case "AmoledBlack":
-                                SetAmoledTheme();
-                                break;
-                            case "CyberpunkPurple":
-                                SetCyberpunkTheme();
-                                break;
-                            case "MicaDark":
-                            default:
-                                SetMicaDarkTheme();
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    SetMicaDarkTheme();
-                }
+                // Tema açılışta App tarafından zaten uygulandı; burada yalnızca
+                // seçim durumu eşitlenir, yeniden boyama yapılmaz (titreme olmaz).
+                SyncThemeSelection(_themeService.CurrentTheme);
 
                 LoadAutostartPreference();
             }
-            catch
+            catch (Exception ex)
             {
-                SetMicaDarkTheme();
+                _log.Error("Ayarlar yüklenemedi, varsayılanlar gösteriliyor.", ex, nameof(SettingsViewModel));
+                SyncThemeSelection(AppThemeKind.MicaDark);
             }
+        }
+
+        /// <summary>Kalıcı ayar nesnesini görünür özelliklere aktarır.</summary>
+        private void ApplyToProperties(AppSettingsData data)
+        {
+            IsMicaEnabled = data.IsMicaEnabled;
+            RefreshIntervalSeconds = data.RefreshIntervalSeconds;
+            AutoRamCleanIntervalMinutes = data.AutoRamCleanIntervalMinutes;
+            MinimizeToTray = data.MinimizeToTray;
+            NotifyOnHighRam = data.NotifyOnHighRam;
+            AutoCleanOnExit = data.AutoCleanOnExit;
+            PromptRestorePointBeforeUninstall = data.PromptRestorePointBeforeUninstall;
+            CreateRestorePointOnUninstall = data.CreateRestorePointOnUninstall;
+            VerboseLogging = data.VerboseLogging;
+
+            VirusTotalApiKey = VirusTotalCheckService.ResolveApiKey(data);
+            VirusTotalApiStatus = string.IsNullOrWhiteSpace(VirusTotalApiKey)
+                ? "API anahtarı girilmedi."
+                : "API anahtarı kayıtlı.";
+        }
+
+        /// <summary>Görünür özelliklerden kalıcı ayar nesnesi üretir.</summary>
+        private AppSettingsData BuildData()
+        {
+            // Mevcut kaydı temel al ki burada yönetilmeyen alanlar (şema sürümü,
+            // korumalı API anahtarı) kaybolmasın.
+            var data = _settingsService.Current.Clone();
+
+            data.Theme = _themeService.CurrentTheme.ToString();
+            data.IsMicaEnabled = IsMicaEnabled;
+            data.RefreshIntervalSeconds = RefreshIntervalSeconds;
+            data.AutoRamCleanIntervalMinutes = AutoRamCleanIntervalMinutes;
+            data.StartWithWindows = StartWithWindows;
+            data.MinimizeToTray = MinimizeToTray;
+            data.NotifyOnHighRam = NotifyOnHighRam;
+            data.AutoCleanOnExit = AutoCleanOnExit;
+            data.AlwaysRunAsAdmin = IsAlwaysRunAsAdmin;
+            data.TaskSchedulerAutoStart = IsTaskSchedulerAutoStart;
+            data.PromptRestorePointBeforeUninstall = PromptRestorePointBeforeUninstall;
+            data.CreateRestorePointOnUninstall = CreateRestorePointOnUninstall;
+            data.VerboseLogging = VerboseLogging;
+
+            return data;
         }
 
         private void AutoSaveSettings()
         {
             if (_isInitializing) return;
-
-            try
-            {
-                string theme = IsAmoledTheme ? "AmoledBlack" : (IsCyberpunkTheme ? "CyberpunkPurple" : "MicaDark");
-                var data = new AppSettingsData
-                {
-                    Theme = theme,
-                    IsMicaEnabled = IsMicaEnabled,
-                    RefreshIntervalSeconds = RefreshIntervalSeconds,
-                    AutoRamCleanIntervalMinutes = AutoRamCleanIntervalMinutes,
-                    StartWithWindows = StartWithWindows,
-                    MinimizeToTray = MinimizeToTray,
-                    NotifyOnHighRam = NotifyOnHighRam,
-                    AutoCleanOnExit = AutoCleanOnExit,
-                    AlwaysRunAsAdmin = IsAlwaysRunAsAdmin,
-                    TaskSchedulerAutoStart = IsTaskSchedulerAutoStart,
-                    PromptRestorePointBeforeUninstall = PromptRestorePointBeforeUninstall,
-                    CreateRestorePointOnUninstall = CreateRestorePointOnUninstall,
-                    VirusTotalApiKey = VirusTotalApiKey
-                };
-
-                string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-                File.WriteAllText(_settingsFilePath, json);
-            }
-            catch { }
+            _settingsService.Save(BuildData());
         }
 
+        /// <summary>
+        /// Diğer ViewModel'lerin (ör. UninstallerViewModel) güncel ayarlara erişimi.
+        /// Mümkünse bellekteki tekil örnek kullanılır, aksi halde diskten okunur.
+        /// </summary>
         public static AppSettingsData LoadCurrentSettings()
         {
+            var service = App.TryGetService<IAppSettingsService>();
+            if (service != null) return service.Current;
+
             try
             {
-                string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                string path = Path.Combine(appData, "Bakim", "appsettings.json");
+                string path = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Bakim", "appsettings.json");
+
                 if (File.Exists(path))
                 {
-                    string json = File.ReadAllText(path);
-                    return JsonSerializer.Deserialize<AppSettingsData>(json) ?? new AppSettingsData();
+                    return JsonSerializer.Deserialize<AppSettingsData>(File.ReadAllText(path))
+                           ?? new AppSettingsData();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLog.Error("Ayarlar diskten okunamadı.", ex, nameof(SettingsViewModel));
+            }
+
             return new AppSettingsData();
         }
 
@@ -316,36 +321,39 @@ namespace Bakım.ViewModels
         #region Theme Commands
 
         [RelayCommand]
-        public void SetMicaDarkTheme()
-        {
-            _themeService.ApplyTheme(AppThemeKind.MicaDark);
-            IsMicaTheme = true;
-            IsAmoledTheme = false;
-            IsCyberpunkTheme = false;
-            CurrentThemeStatus = "Mica Koyu (Varsayılan Fluent 2.0)";
-            AutoSaveSettings();
-        }
+        public void SetMicaDarkTheme() => SelectTheme(AppThemeKind.MicaDark);
 
         [RelayCommand]
-        public void SetAmoledTheme()
-        {
-            _themeService.ApplyTheme(AppThemeKind.AmoledBlack);
-            IsMicaTheme = false;
-            IsAmoledTheme = true;
-            IsCyberpunkTheme = false;
-            CurrentThemeStatus = "AMOLED Siyah (Kusursuz Derin Kontrast)";
-            AutoSaveSettings();
-        }
+        public void SetAmoledTheme() => SelectTheme(AppThemeKind.AmoledBlack);
 
         [RelayCommand]
-        public void SetCyberpunkTheme()
+        public void SetCyberpunkTheme() => SelectTheme(AppThemeKind.CyberpunkPurple);
+
+        [RelayCommand]
+        public void SetLightTheme() => SelectTheme(AppThemeKind.FluentLight);
+
+        private void SelectTheme(AppThemeKind kind)
         {
-            _themeService.ApplyTheme(AppThemeKind.CyberpunkPurple);
-            IsMicaTheme = false;
-            IsAmoledTheme = false;
-            IsCyberpunkTheme = true;
-            CurrentThemeStatus = "Cyberpunk Mor (Neon Vurgular)";
-            AutoSaveSettings();
+            // ThemeService temayı uygular ve tercihi kendisi kalıcı hale getirir.
+            _themeService.ApplyTheme(kind);
+            SyncThemeSelection(kind);
+        }
+
+        /// <summary>Seçili tema düğmelerini ve durum metnini tazeler; yeniden boyama yapmaz.</summary>
+        private void SyncThemeSelection(AppThemeKind kind)
+        {
+            IsMicaTheme = kind == AppThemeKind.MicaDark;
+            IsAmoledTheme = kind == AppThemeKind.AmoledBlack;
+            IsCyberpunkTheme = kind == AppThemeKind.CyberpunkPurple;
+            IsLightTheme = kind == AppThemeKind.FluentLight;
+
+            CurrentThemeStatus = kind switch
+            {
+                AppThemeKind.AmoledBlack => "AMOLED Siyah (Kusursuz Derin Kontrast)",
+                AppThemeKind.CyberpunkPurple => "Cyberpunk Mor (Neon Vurgular)",
+                AppThemeKind.FluentLight => "Fluent Açık (Gündüz Modu)",
+                _ => "Mica Koyu (Varsayılan Fluent 2.0)"
+            };
         }
 
         #endregion
@@ -409,18 +417,32 @@ namespace Bakım.ViewModels
         {
             try
             {
-                if (!Directory.Exists(_logsDirectoryPath))
+                string path = LogsDirectoryPath;
+
+                if (string.IsNullOrWhiteSpace(path))
                 {
-                    Directory.CreateDirectory(_logsDirectoryPath);
+                    MessageBox.Show(
+                        "Günlük dosyası konumu belirlenemedi.",
+                        "Günlükler",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
                 }
+
+                Directory.CreateDirectory(path);
+
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "explorer.exe",
-                    Arguments = $"\"{_logsDirectoryPath}\"",
+                    Arguments = $"\"{path}\"",
                     UseShellExecute = true
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                _log.Error("Günlük klasörü açılamadı.", ex, nameof(SettingsViewModel));
+                MessageBox.Show($"Günlük klasörü açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         [RelayCommand]
@@ -437,28 +459,25 @@ namespace Bakım.ViewModels
 
                 if (sfd.ShowDialog() == true)
                 {
-                    string theme = IsAmoledTheme ? "AmoledBlack" : (IsCyberpunkTheme ? "CyberpunkPurple" : "MicaDark");
-                    var data = new AppSettingsData
-                    {
-                        Theme = theme,
-                        IsMicaEnabled = IsMicaEnabled,
-                        RefreshIntervalSeconds = RefreshIntervalSeconds,
-                        AutoRamCleanIntervalMinutes = AutoRamCleanIntervalMinutes,
-                        StartWithWindows = StartWithWindows,
-                        MinimizeToTray = MinimizeToTray,
-                        NotifyOnHighRam = NotifyOnHighRam,
-                        AutoCleanOnExit = AutoCleanOnExit,
-                        AlwaysRunAsAdmin = IsAlwaysRunAsAdmin,
-                        TaskSchedulerAutoStart = IsTaskSchedulerAutoStart
-                    };
+                    var data = BuildData();
+
+                    // Sırlar yedeğe yazılmaz: DPAPI ile şifrelenmiş anahtar yalnızca
+                    // onu üreten Windows kullanıcısında çözülebilir, taşınması anlamsızdır.
+                    data.VirusTotalApiKey = string.Empty;
+                    data.VirusTotalApiKeyProtected = string.Empty;
 
                     string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
                     File.WriteAllText(sfd.FileName, json);
-                    MessageBox.Show("Ayarlar başarıyla dışa aktarıldı!", "Yedekleme Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    _log.Info($"Ayarlar dışa aktarıldı: {sfd.FileName}", nameof(SettingsViewModel));
+                    MessageBox.Show(
+                        "Ayarlar başarıyla dışa aktarıldı!\n\nGüvenlik gereği VirusTotal API anahtarı yedeğe dahil edilmedi.",
+                        "Yedekleme Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
+                _log.Error("Ayar dışa aktarımı başarısız.", ex, nameof(SettingsViewModel));
                 MessageBox.Show($"Yedekleme sırasında hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -478,39 +497,35 @@ namespace Bakım.ViewModels
                 {
                     string json = File.ReadAllText(ofd.FileName);
                     var data = JsonSerializer.Deserialize<AppSettingsData>(json);
-                    if (data != null)
+
+                    if (data == null)
                     {
-                        IsMicaEnabled = data.IsMicaEnabled;
-                        RefreshIntervalSeconds = data.RefreshIntervalSeconds;
-                        AutoRamCleanIntervalMinutes = data.AutoRamCleanIntervalMinutes;
-                        StartWithWindows = data.StartWithWindows;
-                        MinimizeToTray = data.MinimizeToTray;
-                        NotifyOnHighRam = data.NotifyOnHighRam;
-                        AutoCleanOnExit = data.AutoCleanOnExit;
-                        IsAlwaysRunAsAdmin = data.AlwaysRunAsAdmin;
-                        IsTaskSchedulerAutoStart = data.TaskSchedulerAutoStart;
-
-                        switch (data.Theme)
-                        {
-                            case "AmoledBlack":
-                                SetAmoledTheme();
-                                break;
-                            case "CyberpunkPurple":
-                                SetCyberpunkTheme();
-                                break;
-                            case "MicaDark":
-                            default:
-                                SetMicaDarkTheme();
-                                break;
-                        }
-
-                        AutoSaveSettings();
-                        MessageBox.Show("Ayarlar başarıyla içe aktarıldı ve uygulandı!", "İçe Aktarma Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("Dosya okunabildi fakat geçerli ayar içermiyor.",
+                            "İçe Aktarma", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
                     }
+
+                    // Yedek dosyası sır taşımaz; mevcut API anahtarı korunur.
+                    data.VirusTotalApiKey = string.Empty;
+                    data.VirusTotalApiKeyProtected = _settingsService.Current.VirusTotalApiKeyProtected;
+
+                    IsAlwaysRunAsAdmin = data.AlwaysRunAsAdmin;
+                    IsTaskSchedulerAutoStart = data.TaskSchedulerAutoStart;
+                    StartWithWindows = data.StartWithWindows;
+
+                    ApplyToProperties(data);
+                    SelectTheme(ThemeService.ParseKind(data.Theme));
+                    _themeService.ApplyBackdrop(data.IsMicaEnabled);
+
+                    AutoSaveSettings();
+
+                    _log.Info($"Ayarlar içe aktarıldı: {ofd.FileName}", nameof(SettingsViewModel));
+                    MessageBox.Show("Ayarlar başarıyla içe aktarıldı ve uygulandı!", "İçe Aktarma Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
+                _log.Error("Ayar içe aktarımı başarısız.", ex, nameof(SettingsViewModel));
                 MessageBox.Show($"İçe aktarma sırasında hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -584,29 +599,25 @@ namespace Bakım.ViewModels
             if (confirm != MessageBoxResult.Yes) return;
 
             SetMicaDarkTheme();
-            IsMicaEnabled = true;
-            RefreshIntervalSeconds = 2;
-            AutoRamCleanIntervalMinutes = 0;
+
+            var defaults = new AppSettingsData();
+            ApplyToProperties(defaults);
+
             StartWithWindows = false;
-            MinimizeToTray = false;
-            NotifyOnHighRam = true;
-            AutoCleanOnExit = false;
             IsAlwaysRunAsAdmin = false;
             IsTaskSchedulerAutoStart = false;
 
             AdminElevationService.SetAlwaysRunAsAdmin(false);
             AdminElevationService.SetTaskSchedulerAutoStart(false);
 
-            try
-            {
-                if (File.Exists(_settingsFilePath))
-                {
-                    File.Delete(_settingsFilePath);
-                }
-            }
-            catch { }
+            _themeService.ApplyBackdrop(defaults.IsMicaEnabled);
 
-            AutoSaveSettings();
+            // Kayıtlı dosyayı silmek yerine varsayılanları yazıyoruz:
+            // böylece ayar dosyası her zaman tutarlı ve okunabilir kalır.
+            _settingsService.Save(defaults);
+            ApplyToProperties(_settingsService.Current);
+
+            _log.Info("Ayarlar fabrika varsayılanlarına sıfırlandı.", nameof(SettingsViewModel));
             MessageBox.Show("Tüm ayarlar başarıyla varsayılan değerlerine döndürüldü.", "Sıfırlama Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -628,13 +639,13 @@ namespace Bakım.ViewModels
 
             try
             {
-                var vtService = new VirusTotalCheckService();
-                bool isValid = await vtService.ValidateApiKeyAsync(VirusTotalApiKey);
+                // Tekil örnek: anahtar kaydedildiğinde tarama motorları da anında görür.
+                bool isValid = await _virusTotalService.ValidateApiKeyAsync(VirusTotalApiKey);
                 if (isValid)
                 {
-                    vtService.SaveApiKey(VirusTotalApiKey);
-                    VirusTotalApiStatus = "Başarılı! API anahtarı geçerli ve sisteme kaydedildi. ✓";
-                    AutoSaveSettings();
+                    // Anahtar DPAPI ile şifrelenerek saklanır; appsettings.json'a düz metin yazılmaz.
+                    _virusTotalService.SaveApiKey(VirusTotalApiKey);
+                    VirusTotalApiStatus = "Başarılı! API anahtarı doğrulandı ve şifrelenerek kaydedildi. ✓";
                 }
                 else
                 {
@@ -643,6 +654,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
+                _log.Error("VirusTotal anahtar doğrulaması başarısız.", ex, nameof(SettingsViewModel));
                 VirusTotalApiStatus = $"Doğrulama hatası: {ex.Message}";
             }
             finally

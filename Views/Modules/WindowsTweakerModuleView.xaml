@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
@@ -20,68 +21,59 @@
         </Grid.RowDefinitions>
 
         <!-- 0. Header & Top Action Buttons -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,20"
+                         Title="Windows Tweaker &amp; İnce Ayarlar"
+                         Description="Winaero Tweaker klon motoru: Sistem davranışları, masaüstü, sağ tık, araçlar ve klasik uygulamalar.">
+            <c:SectionHeader.Actions>
+                <!-- Top Actions Toolbar -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:Button Appearance="Secondary"
+                Content="Varsayılanlara Dön"
+                Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
+                ToolTip="Tüm ayarları orijinal Windows fabrika değerlerine sıfırlar"
+                Command="{Binding RestoreDefaultsCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                Padding="14,8"
+                Margin="0,0,8,0"/>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Windows Tweaker &amp; İnce Ayarlar" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Text="Winaero Tweaker klon motoru: Sistem davranışları, masaüstü, sağ tık, araçlar ve klasik uygulamalar." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
+                <ui:Button Appearance="Secondary"
+                Content="Yedekten Geri Yükle"
+                Icon="{ui:SymbolIcon History24}"
+                ToolTip="Sistemin ilk ayarlar yedeğini (Snapshot) geri yükler"
+                Command="{Binding RestoreFromSnapshotCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                Padding="14,8"
+                Margin="0,0,8,0"/>
 
-            <!-- Top Actions Toolbar -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:Button Appearance="Secondary" 
-                           Content="Varsayılanlara Dön" 
-                           Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
-                           ToolTip="Tüm ayarları orijinal Windows fabrika değerlerine sıfırlar"
-                           Command="{Binding RestoreDefaultsCommand}"
-                           IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                           Padding="14,8" 
-                           Margin="0,0,8,0"/>
+                <ui:Button Appearance="Danger"
+                Content="Gezgini Yeniden Başlat"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"
+                ToolTip="Masaüstü ve Görev Çubuğu ayarlarının yansıması için Windows Gezgini'ni yeniden başlatır"
+                Command="{Binding RestartExplorerCommand}"
+                Visibility="{Binding CanRestartExplorer, Converter={StaticResource BoolToVis}}"
+                Padding="14,8"
+                Margin="0,0,8,0"/>
 
-                <ui:Button Appearance="Secondary" 
-                           Content="Yedekten Geri Yükle" 
-                           Icon="{ui:SymbolIcon History24}"
-                           ToolTip="Sistemin ilk ayarlar yedeğini (Snapshot) geri yükler"
-                           Command="{Binding RestoreFromSnapshotCommand}"
-                           IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                           Padding="14,8" 
-                           Margin="0,0,8,0"/>
+                <ui:Button Appearance="Primary"
+                Content="Önerilenleri Uygula"
+                Icon="{ui:SymbolIcon CheckmarkCircle24}"
+                Command="{Binding ApplyAllRecommendedCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                Padding="16,8"
+                Margin="0,0,8,0"/>
 
-                <ui:Button Appearance="Danger" 
-                           Content="Gezgini Yeniden Başlat" 
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"
-                           ToolTip="Masaüstü ve Görev Çubuğu ayarlarının yansıması için Windows Gezgini'ni yeniden başlatır"
-                           Command="{Binding RestartExplorerCommand}"
-                           Visibility="{Binding CanRestartExplorer, Converter={StaticResource BoolToVis}}"
-                           Padding="14,8" 
-                           Margin="0,0,8,0"/>
-
-                <ui:Button Appearance="Primary" 
-                           Content="Önerilenleri Uygula" 
-                           Icon="{ui:SymbolIcon CheckmarkCircle24}"
-                           Command="{Binding ApplyAllRecommendedCommand}"
-                           IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                           Padding="16,8" 
-                           Margin="0,0,8,0"/>
-
-                <ui:Button Appearance="Secondary" 
-                           Content="Yenile" 
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"
-                           Command="{Binding RefreshAllCommand}"
-                           IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                           Padding="14,8"/>
-            </StackPanel>
-        </Grid>
+                <ui:Button Appearance="Secondary"
+                Content="Yenile"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"
+                Command="{Binding RefreshAllCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                Padding="14,8"/>
+                </StackPanel>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- 1. Result InfoBar -->
         <ui:InfoBar Grid.Row="1" 
@@ -200,10 +192,10 @@
                             CornerRadius="10"
                             Padding="16"
                             Margin="0,4,0,0"
-                            Width="580"
+                            MaxWidth="580"
                             SnapsToDevicePixels="True">
                         <Border.Effect>
-                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.35" Color="#000000"/>
+                            <DropShadowEffect BlurRadius="16" ShadowDepth="4" Opacity="0.35" Color="{DynamicResource Color.Shadow}"/>
                         </Border.Effect>
                         <Grid>
                             <Grid.RowDefinitions>
@@ -226,7 +218,7 @@
                                            Padding="4"
                                            Command="{Binding ToggleCategoryPickerCommand}"
                                            Icon="{ui:SymbolIcon Dismiss20}"
-                                           ToolTip="Kapat"/>
+                                           ToolTip="Kapat" AutomationProperties.Name="Kapat"/>
                             </Grid>
 
                             <!-- 3-Column Category Tiles Grid -->
@@ -534,7 +526,7 @@
                             <!-- Right Controls: ToggleSwitch, Numeric Input, or Action Button -->
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal">
                                 <!-- Boolean ToggleSwitch -->
-                                <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=OneWay}"
+                                <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=OneWay}" AutomationProperties.Name="{Binding Title}"
                                                  Command="{Binding DataContext.ToggleTweakCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                  CommandParameter="{Binding}"
                                                  IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
@@ -542,7 +534,7 @@
 
                                 <!-- Numeric Input & Save Button -->
                                 <StackPanel Orientation="Horizontal" Visibility="{Binding IsNumeric, Converter={StaticResource BoolToVis}}">
-                                    <ui:TextBox Text="{Binding NumericValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    <ui:TextBox Text="{Binding NumericValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Sayısal değer"
                                                 Width="60"
                                                 VerticalContentAlignment="Center"
                                                 HorizontalContentAlignment="Center"
@@ -633,7 +625,7 @@
                                         PlaceholderText="Çalıştırılacak komut (Örn: cmd.exe, regedit.exe, powershell.exe)"
                                         VerticalContentAlignment="Center"
                                         Padding="10,8"
-                                        Margin="0,0,12,0"/>
+                                        Margin="0,0,12,0" AutomationProperties.Name="Çalıştırılacak komut (Örn: cmd.exe, regedit.exe, powershell.exe)"/>
                             <ui:Button Grid.Column="1" 
                                        Appearance="Danger"
                                        Content="TrustedInstaller Olarak Başlat"
@@ -670,13 +662,13 @@
                                         PlaceholderText="Programın tam yolu (Örn: C:\Program Files\App\app.exe)"
                                         VerticalContentAlignment="Center"
                                         Padding="10,8"
-                                        Margin="0,0,10,0"/>
+                                        Margin="0,0,10,0" AutomationProperties.Name="Programın tam yolu (Örn: C:\Program Files\App\app.exe)"/>
                             <ui:TextBox Grid.Column="1" 
                                         Text="{Binding ElevatedShortcutName, Mode=TwoWay}"
                                         PlaceholderText="Kısayol Adı"
                                         VerticalContentAlignment="Center"
                                         Padding="10,8"
-                                        Margin="0,0,10,0"/>
+                                        Margin="0,0,10,0" AutomationProperties.Name="Kısayol Adı"/>
                             <ui:Button Grid.Column="2" 
                                        Appearance="Success"
                                        Content="Kısayolu Oluştur"
@@ -718,22 +710,22 @@
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
                                 <TextBlock Text="Üretici (Manufacturer)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
-                                <ui:TextBox Text="{Binding OemInfo.Manufacturer, Mode=TwoWay}" Padding="10,8"/>
+                                <ui:TextBox Text="{Binding OemInfo.Manufacturer, Mode=TwoWay}" AutomationProperties.Name="Üretici adı" Padding="10,8"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="0" Grid.Column="2">
                                 <TextBlock Text="Model" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
-                                <ui:TextBox Text="{Binding OemInfo.Model, Mode=TwoWay}" Padding="10,8"/>
+                                <ui:TextBox Text="{Binding OemInfo.Model, Mode=TwoWay}" AutomationProperties.Name="Model adı" Padding="10,8"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="0">
                                 <TextBlock Text="Kayıtlı Sahip (Registered Owner)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
-                                <ui:TextBox Text="{Binding OemInfo.RegisteredOwner, Mode=TwoWay}" Padding="10,8"/>
+                                <ui:TextBox Text="{Binding OemInfo.RegisteredOwner, Mode=TwoWay}" AutomationProperties.Name="Kayıtlı sahip" Padding="10,8"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="2">
                                 <TextBlock Text="Kayıtlı Kurum (Organization)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
-                                <ui:TextBox Text="{Binding OemInfo.RegisteredOrganization, Mode=TwoWay}" Padding="10,8"/>
+                                <ui:TextBox Text="{Binding OemInfo.RegisteredOrganization, Mode=TwoWay}" AutomationProperties.Name="Kayıtlı kuruluş" Padding="10,8"/>
                             </StackPanel>
                         </Grid>
 
@@ -993,7 +985,7 @@
                             <TextBlock Text="Arka planda kalan inaktif pencerelerin başlık çubuğu rengini belirleyin (Hex formatında örn: #2B2B2B, #1E293B, #334155)." 
                                        FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
                             <StackPanel Orientation="Horizontal">
-                                <ui:TextBox Text="{Binding Metrics.InactiveTitleBarHex, Mode=TwoWay}" PlaceholderText="#2B2B2B" Width="140" Padding="10,6" Margin="0,0,12,0"/>
+                                <ui:TextBox Text="{Binding Metrics.InactiveTitleBarHex, Mode=TwoWay}" PlaceholderText="{DynamicResource ControlFillColorTertiaryBrush}" Width="140" Padding="10,6" Margin="0,0,12,0" AutomationProperties.Name="{DynamicResource ControlFillColorTertiaryBrush}"/>
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">

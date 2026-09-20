@@ -8,17 +8,14 @@
         xmlns:helpers="clr-namespace:Bakım.Helpers"
         xmlns:vm="clr-namespace:Bakım.ViewModels"
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:LoginViewModel}"
         Title="Bakım - Giriş" 
         MinWidth="420" MinHeight="580"
         Width="440" Height="620"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
         ExtendsContentIntoTitleBar="True"
-        Icon="pack://application:,,,/Assets/app.ico">
-
-    <Window.DataContext>
-        <vm:LoginViewModel/>
-    </Window.DataContext>
+        Icon="pack://application:,,,/Bakim;component/Assets/app.ico">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -51,7 +48,7 @@
                                 BorderThickness="1.5"
                                 HorizontalAlignment="Center"
                                 Margin="0,0,0,10">
-                            <Image Source="pack://application:,,,/Assets/app.png" 
+                            <Image Source="pack://application:,,,/Bakim;component/Assets/app.png" 
                                    Width="34" Height="34" 
                                    RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Border>
@@ -70,12 +67,14 @@
                     </StackPanel>
 
                     <!-- Row 1: Fluent Segmented Mode Switcher (Giriş Yap / Kayıt Ol) -->
-                    <Border Grid.Row="1" 
-                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                            BorderThickness="1" 
-                            CornerRadius="8" 
-                            Padding="3" 
+                    <!-- İlk kurulumda gizlenir: henüz giriş yapılabilecek bir hesap yoktur. -->
+                    <Border Grid.Row="1"
+                            Visibility="{Binding CanSwitchMode, Converter={StaticResource BoolToVis}}"
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="3"
                             Margin="0,0,0,16">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -165,7 +164,7 @@
                                     VerticalContentAlignment="Center"
                                     Padding="12,9"
                                     Margin="0,0,0,12"
-                                    Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"/>
+                                    Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Kullanıcı adınızı girin"/>
 
                         <!-- 2. Şifre -->
                         <TextBlock Text="Şifre" 
@@ -228,18 +227,32 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <ui:Button Grid.Column="0"
-                                   Appearance="Transparent" 
-                                   HorizontalAlignment="Left" 
-                                   VerticalContentAlignment="Center"
-                                   Padding="8,4"
-                                   Icon="{ui:SymbolIcon DarkTheme20}"
-                                   Content="Temayı Değiştir"
-                                   Command="{Binding ToggleThemeCommand}"
-                                   FontSize="11"/>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <ui:Button Appearance="Transparent"
+                                       VerticalContentAlignment="Center"
+                                       Padding="8,4"
+                                       Icon="{ui:SymbolIcon DarkTheme20}"
+                                       Content="Temayı Değiştir"
+                                       AutomationProperties.Name="Uygulama temasını değiştir"
+                                       Command="{Binding ToggleThemeCommand}"
+                                       FontSize="11"/>
+
+                            <!-- Kurtarma: yerel kilidi unutan kullanıcı uygulamadan dışlanmaz. -->
+                            <ui:Button Appearance="Transparent"
+                                       VerticalContentAlignment="Center"
+                                       Padding="8,4"
+                                       Margin="4,0,0,0"
+                                       Visibility="{Binding CanSwitchMode, Converter={StaticResource BoolToVis}}"
+                                       Icon="{ui:SymbolIcon ArrowReset20}"
+                                       Content="Hesapları Sıfırla"
+                                       ToolTip="Bu cihazdaki yerel Bakım hesaplarını siler ve kurulumu yeniden başlatır."
+                                       AutomationProperties.Name="Bu cihazdaki yerel hesapları sıfırla"
+                                       Command="{Binding ResetAccountsCommand}"
+                                       FontSize="11"/>
+                        </StackPanel>
 
                         <TextBlock Grid.Column="1"
-                                   Text="v3.0.2"
+                                   Text="v3.1.0"
                                    FontSize="10.5"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                    VerticalAlignment="Center"/>

@@ -1,0 +1,90 @@
+<UserControl x:Class="Bakım.Controls.MetricChip"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root">
+
+    <!--
+        Simge + etiket + (isteğe bağlı) değer taşıyan küçük bilgi kapsülü.
+        Kod tabanında ~40 kez elle yeniden yazılmış Border/StackPanel/SymbolIcon/TextBlock
+        desenini tek bir bileşene indirger.
+
+        Renkler Intent üzerinden trigger ile seçilir; converter kullanılmaz çünkü
+        converter tema değişiminde yeniden değerlendirilmez, DynamicResource setter'ı ise değerlendirilir.
+    -->
+
+    <Border BorderThickness="{StaticResource Stroke.Thin}"
+            CornerRadius="{StaticResource Radius.SM}"
+            Padding="{StaticResource Pad.Chip}"
+            VerticalAlignment="Center">
+
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Accent">
+                        <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Success">
+                        <Setter Property="Background" Value="{DynamicResource Brush.Success.Subtle}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Caution">
+                        <Setter Property="Background" Value="{DynamicResource Brush.Caution.Subtle}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Critical">
+                        <Setter Property="Background" Value="{DynamicResource Brush.Critical.Subtle}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+
+            <ui:SymbolIcon FontSize="{StaticResource Icon.XS}"
+                           Margin="{StaticResource Gap.IconText}"
+                           VerticalAlignment="Center"
+                           Symbol="{Binding Icon, ElementName=Root, Converter={StaticResource SafeSymbol}}"
+                           Visibility="{Binding Icon, ElementName=Root, Converter={StaticResource StringToVis}}">
+                <ui:SymbolIcon.Style>
+                    <Style TargetType="ui:SymbolIcon">
+                        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Neutral">
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Success">
+                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Caution">
+                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Critical">
+                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ui:SymbolIcon.Style>
+            </ui:SymbolIcon>
+
+            <TextBlock Text="{Binding Label, ElementName=Root}"
+                       FontSize="{StaticResource Font.Caption}"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       Visibility="{Binding Label, ElementName=Root, Converter={StaticResource StringToVis}}"/>
+
+            <TextBlock Text="{Binding Value, ElementName=Root}"
+                       FontSize="{StaticResource Font.Caption}"
+                       FontWeight="SemiBold"
+                       Margin="4,0,0,0"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Visibility="{Binding Value, ElementName=Root, Converter={StaticResource StringToVis}}"/>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -40,7 +40,7 @@
                 <StackPanel Orientation="Horizontal" Margin="36,6,0,0"
                             Visibility="{Binding IsVirusTotalScanning, Converter={StaticResource BoolToVis}}">
                     <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Margin="0,0,8,0"/>
-                    <TextBlock Text="{Binding VirusTotalScanProgress}" FontSize="11.5" Foreground="#38BDF8" FontWeight="Medium"/>
+                    <TextBlock Text="{Binding VirusTotalScanProgress}" FontSize="11.5" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Medium"/>
                 </StackPanel>
             </StackPanel>
 
@@ -208,7 +208,7 @@
                 <!-- Row 2: Search Box & Sysinternals Filter Toggles -->
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="280"/>
+                        <ColumnDefinition Width="*" MinWidth="180" MaxWidth="320"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
@@ -220,18 +220,18 @@
                                 Icon="{ui:SymbolIcon Search20}"
                                 ClearButtonEnabled="True"
                                 VerticalContentAlignment="Center"
-                                Padding="10,6"/>
+                                Padding="10,6" AutomationProperties.Name="İsim, yol, yayıncı veya SHA-256 ara..."/>
 
                     <!-- Filter Switches (Sysinternals Hide Microsoft) -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
                             <TextBlock Text="Microsoft Girdilerini Gizle" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <ui:ToggleSwitch IsChecked="{Binding HideMicrosoftEntries, Mode=TwoWay}" VerticalAlignment="Center"/>
+                            <ui:ToggleSwitch IsChecked="{Binding HideMicrosoftEntries, Mode=TwoWay}" AutomationProperties.Name="Microsoft imzalı girdileri gizle" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Yalnızca İmzasızları Göster" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <ui:ToggleSwitch IsChecked="{Binding ShowOnlyUnsigned, Mode=TwoWay}" VerticalAlignment="Center"/>
+                            <ui:ToggleSwitch IsChecked="{Binding ShowOnlyUnsigned, Mode=TwoWay}" AutomationProperties.Name="Yalnızca imzasız girdileri göster" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -278,22 +278,22 @@
                                 CornerRadius="8"
                                 Padding="12,10">
                             <Border.ContextMenu>
-                                <ContextMenu Background="#1E293B" BorderBrush="#334155">
+                                <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
                                     <MenuItem Header="🛡️ Sezgisel AI Tehdit Analizi Yap"
-                                              Foreground="#F8FAFC"
+                                              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               FontWeight="SemiBold"
                                               Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
                                     <MenuItem Header="🔍 VirusTotal API ile Doğrula"
-                                              Foreground="#F8FAFC"
+                                              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
                                     <MenuItem Header="📁 Dosya Konumunu Aç"
-                                              Foreground="#F8FAFC"
+                                              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
                                     <MenuItem Header="📋 SHA-256 Kopyala"
-                                              Foreground="#F8FAFC"
+                                              Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
                                 </ContextMenu>
@@ -316,7 +316,7 @@
                                                  CommandParameter="{Binding}"
                                                  VerticalAlignment="Center"
                                                  Margin="0,0,14,0"
-                                                 ToolTip="Başlangıçta çalışmayı aktif et / güvenli devre dışı bırak"/>
+                                                 ToolTip="Başlangıçta çalışmayı aktif et / güvenli devre dışı bırak" AutomationProperties.Name="Başlangıçta çalışmayı aktif et / güvenli devre dışı bırak"/>
 
                                 <!-- Column 1: Application Icon -->
                                 <Border Grid.Column="1" 
@@ -380,17 +380,17 @@
                                         VerticalAlignment="Center">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#15F59E0B"/>
-                                            <Setter Property="BorderBrush" Value="#F59E0B"/>
+                                            <Setter Property="Background" Value="{DynamicResource Brush.Caution.Subtle}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
                                             <Setter Property="BorderThickness" Value="1"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Signature}" Value="Verified">
-                                                    <Setter Property="Background" Value="#1510B981"/>
-                                                    <Setter Property="BorderBrush" Value="#10B981"/>
+                                                    <Setter Property="Background" Value="{DynamicResource Brush.Success.Subtle}"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Signature}" Value="InvalidOrTampered">
-                                                    <Setter Property="Background" Value="#15EF4444"/>
-                                                    <Setter Property="BorderBrush" Value="#EF4444"/>
+                                                    <Setter Property="Background" Value="{DynamicResource Brush.Critical.Subtle}"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -399,13 +399,13 @@
                                         <ui:SymbolIcon Symbol="ShieldCheckmark16" FontSize="12" Margin="0,0,4,0">
                                             <ui:SymbolIcon.Style>
                                                 <Style TargetType="ui:SymbolIcon">
-                                                    <Setter Property="Foreground" Value="#F59E0B"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Signature}" Value="Verified">
-                                                            <Setter Property="Foreground" Value="#10B981"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Signature}" Value="InvalidOrTampered">
-                                                            <Setter Property="Foreground" Value="#EF4444"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -414,19 +414,19 @@
                                         <TextBlock Text="{Binding Signature}" FontSize="11" FontWeight="Medium">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
-                                                    <Setter Property="Foreground" Value="#F59E0B"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding Signature}" Value="Verified">
                                                             <Setter Property="Text" Value="Doğrulandı"/>
-                                                            <Setter Property="Foreground" Value="#10B981"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Signature}" Value="Unsigned">
                                                             <Setter Property="Text" Value="İmzasız"/>
-                                                            <Setter Property="Foreground" Value="#F59E0B"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
                                                         </DataTrigger>
                                                         <DataTrigger Binding="{Binding Signature}" Value="InvalidOrTampered">
                                                             <Setter Property="Text" Value="Geçersiz İmza"/>
-                                                            <Setter Property="Foreground" Value="#EF4444"/>
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
@@ -437,15 +437,15 @@
 
                                 <!-- Column 5: VirusTotal Score Badge -->
                                 <Border Grid.Column="5" 
-                                        Background="#1564748B"
-                                        BorderBrush="#334155"
+                                        Background="{DynamicResource Brush.Muted.Subtle}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
                                         CornerRadius="6"
                                         Padding="8,4"
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="#38BDF8" Margin="0,0,4,0"/>
+                                        <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
                                         <TextBlock Text="{Binding VirusTotalScore}" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Border>
@@ -459,7 +459,7 @@
                                                Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon ShieldKeyhole20}"
-                                               ToolTip="Sezgisel AI Tehdit Analizi Yap (% Risk Skoru &amp; Detaylar)"/>
+                                               ToolTip="Sezgisel AI Tehdit Analizi Yap (% Risk Skoru &amp; Detaylar)" AutomationProperties.Name="Sezgisel AI Tehdit Analizi Yap (% Risk Skoru &amp; Detaylar)"/>
 
                                     <!-- VirusTotal API Quick Scan Button -->
                                     <ui:Button Appearance="Secondary"
@@ -468,7 +468,7 @@
                                                Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon Shield20}"
-                                               ToolTip="Bu Dosyayı VirusTotal API ile Sorgula"/>
+                                               ToolTip="Bu Dosyayı VirusTotal API ile Sorgula" AutomationProperties.Name="Bu Dosyayı VirusTotal API ile Sorgula"/>
 
                                     <!-- VirusTotal Web Lookup Button -->
                                     <ui:Button Appearance="Secondary"
@@ -477,7 +477,7 @@
                                                Command="{Binding DataContext.OpenVirusTotalWebCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon Globe20}"
-                                               ToolTip="VirusTotal'de SHA-256 Raporunu Aç"/>
+                                               ToolTip="VirusTotal'de SHA-256 Raporunu Aç" AutomationProperties.Name="VirusTotal'de SHA-256 Raporunu Aç"/>
 
                                     <!-- Open File Location Button -->
                                     <ui:Button Appearance="Secondary"
@@ -486,7 +486,7 @@
                                                Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon FolderOpen20}"
-                                               ToolTip="Dosya Konumunu Windows Gezgini'nde Aç"/>
+                                               ToolTip="Dosya Konumunu Windows Gezgini'nde Aç" AutomationProperties.Name="Dosya Konumunu Windows Gezgini'nde Aç"/>
 
                                     <!-- Copy Hash Button -->
                                     <ui:Button Appearance="Secondary"
@@ -495,7 +495,7 @@
                                                Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon Copy20}"
-                                               ToolTip="SHA-256 Hash'ini Panoya Kopyala"/>
+                                               ToolTip="SHA-256 Hash'ini Panoya Kopyala" AutomationProperties.Name="SHA-256 Hash'ini Panoya Kopyala"/>
 
                                     <!-- Permanent Delete Button -->
                                     <ui:Button Appearance="Danger"
@@ -503,7 +503,7 @@
                                                Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon Delete20}"
-                                               ToolTip="Kalıcı Olarak Sil"/>
+                                               ToolTip="Kalıcı Olarak Sil" AutomationProperties.Name="Kalıcı Olarak Sil"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -532,28 +532,29 @@
     </Grid>
 
     <!-- VirusTotal API Key Input Modal Overlay -->
-    <Grid Background="#D00F172A"
+    <Grid Background="{DynamicResource Brush.Overlay.Scrim}"
           Visibility="{Binding IsApiKeyDialogOpen, Converter={StaticResource BoolToVis}}"
           Panel.ZIndex="999">
-        <Border Width="500"
+        <Border MaxWidth="500"
+                Margin="24,0"
                 VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                Background="#1E293B"
-                BorderBrush="#38BDF8"
+                HorizontalAlignment="Stretch"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 BorderThickness="2"
                 CornerRadius="14"
                 Padding="24">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="32" ShadowDepth="6" Opacity="0.85" Color="#000000"/>
+                <DropShadowEffect BlurRadius="32" ShadowDepth="6" Opacity="0.85" Color="{DynamicResource Color.Shadow}"/>
             </Border.Effect>
             <StackPanel>
                 <!-- Modal Header -->
                 <Grid Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="#38BDF8" Margin="0,0,10,0"/>
+                        <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                         <StackPanel>
-                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC"/>
-                            <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="11.5" Foreground="#94A3B8" Margin="0,2,0,0"/>
+                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
                     <ui:Button Appearance="Transparent"
@@ -561,21 +562,21 @@
                                Padding="6,4"
                                Command="{Binding CloseApiKeyDialogCommand}"
                                Icon="{ui:SymbolIcon Dismiss20}"
-                               ToolTip="Kapat"/>
+                               ToolTip="Kapat" AutomationProperties.Name="Kapat"/>
                 </Grid>
 
                 <!-- API Key Input Field -->
-                <TextBlock Text="VirusTotal API Anahtarı (v3):" FontSize="12.5" FontWeight="SemiBold" Foreground="#F8FAFC" Margin="0,0,0,6"/>
+                <TextBlock Text="VirusTotal API Anahtarı (v3):" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,6"/>
                 <ui:TextBox Text="{Binding ApiKeyInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="64 karakterlik VirusTotal API anahtarınızı buraya yapıştırın..."
                             ClearButtonEnabled="True"
                             Padding="12,10"
-                            Margin="0,0,0,12"/>
+                            Margin="0,0,0,12" AutomationProperties.Name="64 karakterlik VirusTotal API anahtarınızı buraya yapıştırın..."/>
 
                 <!-- Status Message -->
                 <TextBlock Text="{Binding ApiKeyStatusText}" 
                            FontSize="12" 
-                           Foreground="#38BDF8" 
+                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
                            FontWeight="Medium"
                            Margin="0,0,0,16"
                            TextWrapping="Wrap"/>
@@ -592,7 +593,7 @@
                     <TextBlock Grid.Column="0" 
                                Text="virustotal.com üzerinden ücretsiz alabilirsiniz." 
                                FontSize="11" 
-                               Foreground="#64748B" 
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                VerticalAlignment="Center"/>
 
                     <ui:Button Grid.Column="1"

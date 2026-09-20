@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:OptimizerViewModel}"
@@ -17,45 +18,36 @@
         </Grid.RowDefinitions>
 
         <!-- Top Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,20"
+                         Title="Bellek ve Süreçler"
+                         Description="Fiziksel bellek kullanımı ve çalışan işlemler.">
+            <c:SectionHeader.Actions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" AutomationProperties.Name="Canlı izlemeyi aç veya kapat"
+                OnContent="Canlı İzleme"
+                OffContent="Canlı İzleme"
+                Margin="0,0,12,0"
+                VerticalAlignment="Center"/>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Bellek ve Süreçler" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Text="Fiziksel bellek kullanımı ve çalışan işlemler." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding RefreshCommand}"
+                Padding="14,8"
+                Content="Yenile"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"
+                Margin="0,0,8,0"/>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}"
-                                 OnContent="Canlı İzleme"
-                                 OffContent="Canlı İzleme"
-                                 Margin="0,0,12,0"
-                                 VerticalAlignment="Center"/>
-
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding RefreshCommand}"
-                           Padding="14,8"
-                           Content="Yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"
-                           Margin="0,0,8,0"/>
-
-                <ui:Button Appearance="Primary" 
-                           Command="{Binding OptimizeRamCommand}"
-                           IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                           Padding="16,8"
-                           Content="Belleği Temizle"
-                           Icon="{ui:SymbolIcon Flash24}"/>
-            </StackPanel>
-        </Grid>
+                <ui:Button Appearance="Primary"
+                Command="{Binding OptimizeRamCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                Padding="16,8"
+                Content="Belleği Temizle"
+                Icon="{ui:SymbolIcon Flash24}"/>
+                </StackPanel>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- Result InfoBar -->
         <ui:InfoBar Grid.Row="1" 
@@ -157,9 +149,9 @@
                         <Rectangle HorizontalAlignment="Left" Width="160" Height="2">
                             <Rectangle.Fill>
                                 <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                    <GradientStop Color="#0038BDF8" Offset="0"/>
-                                    <GradientStop Color="#FF38BDF8" Offset="0.5"/>
-                                    <GradientStop Color="#0038BDF8" Offset="1"/>
+                                    <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
+                                    <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.5"/>
+                                    <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
                                 </LinearGradientBrush>
                             </Rectangle.Fill>
                             <Rectangle.RenderTransform>
@@ -400,7 +392,7 @@
                                            HorizontalAlignment="Right" 
                                            VerticalAlignment="Center" 
                                            ToolTip="Görevi Sonlandır" 
-                                           Icon="{ui:SymbolIcon Dismiss20}"/>
+                                           Icon="{ui:SymbolIcon Dismiss20}" AutomationProperties.Name="Görevi Sonlandır"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

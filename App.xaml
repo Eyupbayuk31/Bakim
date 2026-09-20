@@ -3,14 +3,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:local="clr-namespace:Bakım"
-             xmlns:conv="clr-namespace:Bakım.Converters"
-             StartupUri="LoginWindow.xaml">
+             xmlns:conv="clr-namespace:Bakım.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <!-- Wpf.Ui Core Dictionaries -->
                 <ui:ThemesDictionary Theme="Dark"/>
                 <ui:ControlsDictionary/>
+
+                <!--
+                    TASARIM SİSTEMİ TOKENLARI
+                    Sıra önemlidir: palet WPF-UI'dan SONRA gelmeli ki aynı adlı
+                    anahtarları gölgeleyebilsin. Çalışma zamanında ThemeService
+                    bu anahtarları Application.Resources üzerine doğrudan yazarak
+                    tema değişimini yönetir.
+                -->
+                <ResourceDictionary Source="Themes/Tokens/Palette.Bootstrap.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Typography.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Spacing.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Motion.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->
@@ -34,24 +45,10 @@
             <conv:CategoryToBackgroundConverter x:Key="CategoryToBackground"/>
 
 
-            <!-- Semantic Design System Brushes mapped to Wpf.Ui System Brushes -->
-            <SolidColorBrush x:Key="Brush.Window.Background" Color="#0F172A"/>
-            <SolidColorBrush x:Key="Brush.Surface.Background" Color="#1E293B"/>
-            <SolidColorBrush x:Key="Brush.Surface.Border" Color="#334155"/>
-            <SolidColorBrush x:Key="Brush.Surface.Hover" Color="#273549"/>
-            <SolidColorBrush x:Key="Brush.Text.Primary" Color="#F8FAFC"/>
-            <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#94A3B8"/>
-            <SolidColorBrush x:Key="Brush.Text.Muted" Color="#64748B"/>
-            <SolidColorBrush x:Key="Brush.Primary" Color="#2563EB"/>
-            <SolidColorBrush x:Key="Brush.Accent" Color="#38BDF8"/>
-            <SolidColorBrush x:Key="Brush.Success" Color="#10B981"/>
-            <SolidColorBrush x:Key="Brush.Warning" Color="#F59E0B"/>
-            <SolidColorBrush x:Key="Brush.Danger" Color="#EF4444"/>
-            <SolidColorBrush x:Key="Brush.Danger.Background" Color="#451A1A"/>
-            <SolidColorBrush x:Key="Brush.Danger.Text" Color="#FCA5A5"/>
-            <SolidColorBrush x:Key="Brush.Input.Background" Color="#0F172A"/>
-            <SolidColorBrush x:Key="Brush.Badge.Background" Color="#334155"/>
-            <SolidColorBrush x:Key="Brush.Badge.Border" Color="#475569"/>
+            <!--
+                Anlamsal fırçalar artık Themes/Tokens/Palette.Bootstrap.xaml içinde
+                tanımlanır ve çalışma zamanında ThemeService tarafından yönetilir.
+            -->
 
             <!-- Interactive Hover Glow & Micro-Lift Style for ui:Card -->
             <Style x:Key="InteractiveCard" TargetType="{x:Type ui:Card}">

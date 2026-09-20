@@ -1,3 +1,7 @@
 <Solution>
   <Project Path="Bakım.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bakim.UiSmokeTests/Bakim.UiSmokeTests.csproj" />
+    <Project Path="Tests/Bakim.Tests/Bakim.Tests.csproj" />
+  </Folder>
 </Solution>

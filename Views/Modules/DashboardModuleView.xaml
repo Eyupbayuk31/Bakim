@@ -6,11 +6,20 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
-             mc:Ignorable="d" 
+             xmlns:c="clr-namespace:Bakım.Controls"
+             mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:DashboardViewModel}"
              d:DesignHeight="820" d:DesignWidth="1050">
 
-    <Grid Margin="24">
+    <!--
+        Pano içeriği pencere yüksekliğinden uzundur (tasarım yüksekliği 820,
+        pencere alt sınırı 680). ScrollViewer olmadan küçük ekranlarda alttaki
+        donanım sensörleri ve süreç listesi tamamen erişilemez kalıyordu.
+    -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  PanningMode="VerticalOnly">
+    <Grid Margin="{StaticResource Pad.Module}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Header -->
             <RowDefinition Height="Auto"/> <!-- 1: Central Health Score & One-Click Booster -->
@@ -18,46 +27,23 @@
             <RowDefinition Height="*"/>    <!-- 3: Hardware Sensors & Top Resource Hogs Grid -->
         </Grid.RowDefinitions>
 
-        <!-- 0. Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Genel Bakış" 
-                               FontSize="24" 
-                               FontWeight="Bold" 
-                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
-                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="6" 
-                            Padding="8,3" 
-                            Margin="12,0,0,0"
-                            VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="7" Height="7" Fill="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Canlı Telemetri Aktif" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-                <TextBlock Text="Gerçek zamanlı sistem telemetrisi, donanım sensörleri ve tek tıkla bellek optimizasyonu." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:Button Appearance="Secondary" 
+        <!-- 0. Header — tasarım sistemi bileşeni (önceki 38 satırlık elle yazım yerine) -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         Title="Genel Bakış"
+                         Description="Gerçek zamanlı sistem telemetrisi, donanım sensörleri ve tek tıkla bellek optimizasyonu.">
+            <c:SectionHeader.TitleAdornment>
+                <c:StatusBadge Text="Canlı Telemetri Aktif" Intent="Success"/>
+            </c:SectionHeader.TitleAdornment>
+            <c:SectionHeader.Actions>
+                <ui:Button Appearance="Secondary"
                            Command="{Binding RefreshCommand}"
                            Padding="14,8"
                            Content="Yenile"
+                           AutomationProperties.Name="Telemetri verilerini yenile"
                            Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </StackPanel>
-        </Grid>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- 1. Central Health Score & One-Click Booster Card -->
         <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,18">
@@ -114,42 +100,24 @@
                                TextWrapping="Wrap" 
                                Margin="0,0,0,10"/>
 
-                    <!-- Metric Chips -->
+                    <!-- Metric Chips — 36 satırlık kopyala-yapıştır yerine 3 bileşen -->
                     <StackPanel Orientation="Horizontal">
-                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                BorderThickness="1" 
-                                CornerRadius="6" 
-                                Padding="8,4" 
-                                Margin="0,0,8,0">
-                            <StackPanel Orientation="Horizontal">
-                                <ui:SymbolIcon Symbol="TopSpeed24" FontSize="13" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,5,0"/>
-                                <TextBlock Text="{Binding Metrics.RamUsagePercentage, StringFormat='RAM: %{0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </StackPanel>
-                        </Border>
+                        <c:MetricChip Icon="TopSpeed24"
+                                      Intent="Accent"
+                                      Label="RAM:"
+                                      Margin="{StaticResource Gap.Right.SM}"
+                                      Value="{Binding Metrics.RamUsagePercentage, StringFormat='%{0}'}"/>
 
-                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                BorderThickness="1" 
-                                CornerRadius="6" 
-                                Padding="8,4" 
-                                Margin="0,0,8,0">
-                            <StackPanel Orientation="Horizontal">
-                                <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="13" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,5,0"/>
-                                <TextBlock Text="{Binding Metrics.CpuUsagePercentage, StringFormat='İşlemci: %{0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </StackPanel>
-                        </Border>
+                        <c:MetricChip Icon="DeveloperBoard24"
+                                      Intent="Success"
+                                      Label="İşlemci:"
+                                      Margin="{StaticResource Gap.Right.SM}"
+                                      Value="{Binding Metrics.CpuUsagePercentage, StringFormat='%{0}'}"/>
 
-                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                BorderThickness="1" 
-                                CornerRadius="6" 
-                                Padding="8,4">
-                            <StackPanel Orientation="Horizontal">
-                                <ui:SymbolIcon Symbol="HardDrive24" FontSize="13" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,5,0"/>
-                                <TextBlock Text="{Binding Metrics.SystemDriveUsedPercentage, StringFormat='Disk C: %{0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </StackPanel>
-                        </Border>
+                        <c:MetricChip Icon="HardDrive24"
+                                      Intent="Caution"
+                                      Label="Disk C:"
+                                      Value="{Binding Metrics.SystemDriveUsedPercentage, StringFormat='%{0}'}"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -205,9 +173,9 @@
                             <Rectangle HorizontalAlignment="Left" Width="100" Height="1">
                                 <Rectangle.Fill>
                                     <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                        <GradientStop Color="#0038BDF8" Offset="0"/>
-                                        <GradientStop Color="#FF38BDF8" Offset="0.5"/>
-                                        <GradientStop Color="#0038BDF8" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.5"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Rectangle.Fill>
                                 <Rectangle.RenderTransform>
@@ -297,13 +265,13 @@
                             <Polygon Points="{Binding CpuSparklinePolygonPoints}">
                                 <Polygon.Fill>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#38BDF8" Offset="0.0"/>
-                                        <GradientStop Color="#0038BDF8" Offset="1.0"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.0"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1.0"/>
                                     </LinearGradientBrush>
                                 </Polygon.Fill>
                             </Polygon>
                             <Polyline Points="{Binding CpuSparklinePoints}" 
-                                      Stroke="#38BDF8" 
+                                      Stroke="{DynamicResource AccentTextFillColorPrimaryBrush}" 
                                       StrokeThickness="2" 
                                       StrokeLineJoin="Round"/>
                         </Canvas>
@@ -355,13 +323,13 @@
                             <Polygon Points="{Binding RamSparklinePolygonPoints}">
                                 <Polygon.Fill>
                                     <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="#10B981" Offset="0.0"/>
-                                        <GradientStop Color="#0010B981" Offset="1.0"/>
+                                        <GradientStop Color="{DynamicResource Color.Success}" Offset="0.0"/>
+                                        <GradientStop Color="{DynamicResource Color.Success.Transparent}" Offset="1.0"/>
                                     </LinearGradientBrush>
                                 </Polygon.Fill>
                             </Polygon>
                             <Polyline Points="{Binding RamSparklinePoints}" 
-                                      Stroke="#10B981" 
+                                      Stroke="{DynamicResource SystemFillColorSuccessBrush}" 
                                       StrokeThickness="2" 
                                       StrokeLineJoin="Round"/>
                         </Canvas>
@@ -616,7 +584,7 @@
                                                    Command="{Binding DataContext.KillHogProcessCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                    CommandParameter="{Binding}"
                                                    Icon="{ui:SymbolIcon Dismiss20}"
-                                                   ToolTip="Görevi Sonlandır"/>
+                                                   ToolTip="Görevi Sonlandır" AutomationProperties.Name="Görevi Sonlandır"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -635,4 +603,5 @@
             </ui:Card>
         </Grid>
     </Grid>
+    </ScrollViewer>
 </UserControl>

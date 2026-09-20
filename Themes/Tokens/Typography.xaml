@@ -1,0 +1,103 @@
+<!--
+    TİPOGRAFİ ÖLÇEĞİ
+    ================
+    Kod tabanında 22 farklı serbest FontSize değeri vardı (9, 10, 10.5, 11, 11.5, 12, 12.5 ...).
+    Bu sözlük onları adlandırılmış bir ölçeğe indirger.
+
+    İki ayrı ölçek bilinçlidir:
+      • Font.*  → metin boyutları (TextBlock, Button içeriği)
+      • Icon.*  → simge boyutları (ui:SymbolIcon)
+    Sayısal değerleri şu an çakışsa da anlamları farklıdır; simge ölçeği metinden
+    bağımsız değiştirilebilmelidir.
+
+    Kullanım:  FontSize="{StaticResource Font.Body}"
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ============ METİN ÖLÇEĞİ ============ -->
+
+    <!-- Yardımcı etiketler, rozet alt yazıları -->
+    <sys:Double x:Key="Font.Micro">10</sys:Double>
+
+    <!-- İkincil bilgi, meta veri, tablo alt satırı (en yaygın) -->
+    <sys:Double x:Key="Font.Caption">11</sys:Double>
+
+    <!-- Gövde metni, açıklama satırları -->
+    <sys:Double x:Key="Font.Body">12</sys:Double>
+
+    <!-- Vurgulu gövde, liste öğesi başlığı -->
+    <sys:Double x:Key="Font.BodyLarge">13</sys:Double>
+
+    <!-- Kart içi alt başlık -->
+    <sys:Double x:Key="Font.Subtitle">14</sys:Double>
+
+    <!-- Kart / bölüm başlığı -->
+    <sys:Double x:Key="Font.SectionTitle">16</sys:Double>
+
+    <!-- Modül başlığı -->
+    <sys:Double x:Key="Font.Title">20</sys:Double>
+
+    <!-- Sayfa başlığı -->
+    <sys:Double x:Key="Font.TitleLarge">24</sys:Double>
+
+    <!-- KPI sayıları, sağlık skoru -->
+    <sys:Double x:Key="Font.Display">32</sys:Double>
+
+    <!-- ============ SİMGE ÖLÇEĞİ ============ -->
+
+    <sys:Double x:Key="Icon.XS">13</sys:Double>
+    <sys:Double x:Key="Icon.SM">15</sys:Double>
+    <sys:Double x:Key="Icon.MD">18</sys:Double>
+    <sys:Double x:Key="Icon.LG">20</sys:Double>
+    <sys:Double x:Key="Icon.XL">24</sys:Double>
+    <sys:Double x:Key="Icon.XXL">32</sys:Double>
+
+    <!-- ============ HAZIR METİN STİLLERİ ============ -->
+    <!-- Renk DynamicResource ile bağlanır: tema değişince metin de değişir. -->
+
+    <Style x:Key="Text.PageTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.TitleLarge}"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <Style x:Key="Text.SectionTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.SectionTitle}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+
+    <Style x:Key="Text.Body" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="Text.Caption" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+    </Style>
+
+    <Style x:Key="Text.Label" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Micro}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+    </Style>
+
+    <Style x:Key="Text.Value" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.BodyLarge}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <Style x:Key="Text.Mono" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, Courier New"/>
+        <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+    </Style>
+
+</ResourceDictionary>

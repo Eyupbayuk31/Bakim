@@ -1,0 +1,36 @@
+<!--
+    HAREKET (MOTION) TOKENLARI
+    ===========================
+    Animasyon süreleri ve yumuşatma eğrileri tek yerden yönetilir.
+    Erişilebilirlik: "Animasyonları azalt" tercihi eklendiğinde yalnızca bu
+    sözlükteki süreler sıfırlanarak tüm uygulama durgunlaştırılabilir.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- ============ SÜRELER ============ -->
+    <Duration x:Key="Duration.Instant">0:0:0.08</Duration>
+    <Duration x:Key="Duration.Fast">0:0:0.15</Duration>
+    <Duration x:Key="Duration.Base">0:0:0.25</Duration>
+    <Duration x:Key="Duration.Slow">0:0:0.4</Duration>
+
+    <!-- KeyTime / BeginTime için TimeSpan karşılıkları -->
+    <sys:TimeSpan x:Key="Time.Fast">0:0:0.15</sys:TimeSpan>
+    <sys:TimeSpan x:Key="Time.Base">0:0:0.25</sys:TimeSpan>
+
+    <!-- ============ YUMUŞATMA EĞRİLERİ ============ -->
+
+    <!-- Standart: çoğu geçiş için -->
+    <CubicEase x:Key="Ease.Standard" EasingMode="EaseOut"/>
+
+    <!-- Vurgulu: dikkat çeken giriş animasyonları -->
+    <QuarticEase x:Key="Ease.Emphasized" EasingMode="EaseOut"/>
+
+    <!-- Yumuşak giriş-çıkış: sürekli/döngüsel animasyonlar -->
+    <SineEase x:Key="Ease.Gentle" EasingMode="EaseInOut"/>
+
+    <!-- Yaylanma: onay ve başarı geri bildirimleri -->
+    <BackEase x:Key="Ease.Spring" EasingMode="EaseOut" Amplitude="0.35"/>
+
+</ResourceDictionary>

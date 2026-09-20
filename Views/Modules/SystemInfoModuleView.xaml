@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
@@ -17,56 +18,47 @@
         </Grid.RowDefinitions>
 
         <!-- 0: Header Section & Sub-tab Switcher -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Donanım, Depolama &amp; S.M.A.R.T." 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Text="Sistem donanımı, NVMe/SSD S.M.A.R.T. sağlık raporu ve diskteki 1GB+ büyük dosya analizörü." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <!-- Sub-Tab Switcher & Refresh Button -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                        BorderThickness="1" 
-                        CornerRadius="8" 
-                        Padding="4" 
-                        Margin="0,0,12,0">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:Button Content="Donanım Özeti" 
-                                   Command="{Binding SwitchSubTabCommand}" 
-                                   CommandParameter="Hardware"
-                                   Padding="14,6" 
-                                   Margin="0,0,4,0"/>
-                        <ui:Button Content="S.M.A.R.T. Sağlık" 
-                                   Command="{Binding SwitchSubTabCommand}" 
-                                   CommandParameter="Smart"
-                                   Padding="14,6" 
-                                   Margin="0,0,4,0"/>
-                        <ui:Button Content="Büyük Dosyalar (1GB+)" 
-                                   Command="{Binding SwitchSubTabCommand}" 
-                                   CommandParameter="LargeFiles"
-                                   Padding="14,6"/>
-                    </StackPanel>
+                <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,20"
+                         Title="Donanım, Depolama &amp; S.M.A.R.T."
+                         Description="Sistem donanımı, NVMe/SSD S.M.A.R.T. sağlık raporu ve diskteki 1GB+ büyük dosya analizörü.">
+            <c:SectionHeader.Actions>
+                <!-- Sub-Tab Switcher & Refresh Button -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="4"
+                Margin="0,0,12,0">
+                <StackPanel Orientation="Horizontal">
+                <ui:Button Content="Donanım Özeti"
+                Command="{Binding SwitchSubTabCommand}"
+                CommandParameter="Hardware"
+                Padding="14,6"
+                Margin="0,0,4,0"/>
+                <ui:Button Content="S.M.A.R.T. Sağlık"
+                Command="{Binding SwitchSubTabCommand}"
+                CommandParameter="Smart"
+                Padding="14,6"
+                Margin="0,0,4,0"/>
+                <ui:Button Content="Büyük Dosyalar (1GB+)"
+                Command="{Binding SwitchSubTabCommand}"
+                CommandParameter="LargeFiles"
+                Padding="14,6"/>
+                </StackPanel>
                 </Border>
 
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding RefreshCommand}"
-                           Padding="14,8"
-                           Content="Yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </StackPanel>
-        </Grid>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding RefreshCommand}"
+                Padding="14,8"
+                Content="Yenile"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+                </StackPanel>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- 1: Content Viewport (Tab 1: Hardware Specs & Partitions) -->
         <ScrollViewer Grid.Row="1" 
@@ -467,9 +459,9 @@
                             <ui:SymbolIcon Symbol="Search24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                             <TextBlock Text="Hedef Sürücü:" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             
-                            <ComboBox ItemsSource="{Binding AvailableDrives}" 
+                            <ComboBox ItemsSource="{Binding AvailableDrives}" AutomationProperties.Name="Sürücü filtresi" 
                                       SelectedItem="{Binding SelectedDriveFilter, Mode=TwoWay}"
-                                      Width="140"
+                                      MinWidth="140"
                                       Padding="8,4"
                                       Margin="0,0,16,0"/>
 
@@ -536,9 +528,9 @@
                             <Rectangle HorizontalAlignment="Left" Width="180" Height="2">
                                 <Rectangle.Fill>
                                     <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                        <GradientStop Color="#0038BDF8" Offset="0"/>
-                                        <GradientStop Color="#BB38BDF8" Offset="0.5"/>
-                                        <GradientStop Color="#0038BDF8" Offset="1"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent.Glow}" Offset="0.5"/>
+                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
                                     </LinearGradientBrush>
                                 </Rectangle.Fill>
                                 <Rectangle.RenderTransform>
@@ -650,7 +642,7 @@
                                                CommandParameter="{Binding}"
                                                ToolTip="Klasörde Göster"
                                                Padding="8,6" 
-                                               Margin="0,0,6,0"/>
+                                               Margin="0,0,6,0" AutomationProperties.Name="Klasörde Göster"/>
 
                                     <ui:Button Appearance="Danger" 
                                                Icon="{ui:SymbolIcon Dismiss20}"
@@ -658,7 +650,7 @@
                                                CommandParameter="{Binding}"
                                                IsEnabled="{Binding IsDeleting, Converter={StaticResource InverseBool}}"
                                                ToolTip="Dosyayı Güvenle Sil"
-                                               Padding="8,6"/>
+                                               Padding="8,6" AutomationProperties.Name="Dosyayı Güvenle Sil"/>
                                 </StackPanel>
                             </Grid>
                         </ui:Card>

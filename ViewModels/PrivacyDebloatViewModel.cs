@@ -13,13 +13,9 @@ namespace Bakım.ViewModels
     {
         private readonly IPrivacyDebloatService _privacyService;
 
-        public PrivacyDebloatViewModel() : this(null)
+        public PrivacyDebloatViewModel(IPrivacyDebloatService privacyService)
         {
-        }
-
-        public PrivacyDebloatViewModel(IPrivacyDebloatService? privacyService)
-        {
-            _privacyService = privacyService ?? new PrivacyDebloatService();
+            _privacyService = privacyService;
 
             Tweaks = new ObservableCollection<PrivacyTweakItem>();
             BloatwareApps = new ObservableCollection<BloatwareAppItem>();

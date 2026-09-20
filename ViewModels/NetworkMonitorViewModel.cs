@@ -10,19 +10,18 @@ using Bakım.Services;
 
 namespace Bakım.ViewModels
 {
-    public partial class NetworkMonitorViewModel : ObservableObject
+    public partial class NetworkMonitorViewModel : ObservableObject, IModuleViewModel
     {
+        private readonly IAppSettingsService _settingsService;
         private readonly INetworkMonitorService _networkService;
         private readonly DispatcherTimer _timer;
         private List<NetworkConnectionItem> _allConnections = new();
 
-        public NetworkMonitorViewModel() : this(null)
+        public NetworkMonitorViewModel(INetworkMonitorService networkService,
+            IAppSettingsService settingsService)
         {
-        }
-
-        public NetworkMonitorViewModel(INetworkMonitorService? networkService)
-        {
-            _networkService = networkService ?? new NetworkMonitorService();
+            _settingsService = settingsService;
+            _networkService = networkService;
             Connections = new ObservableCollection<NetworkConnectionItem>();
 
             _filteredView = CollectionViewSource.GetDefaultView(Connections);
@@ -40,9 +39,7 @@ namespace Bakım.ViewModels
                 }
             };
 
-            // Initial load
-            _ = LoadConnectionsInternalAsync(true);
-            _timer.Start();
+            // Zamanlayıcı OnActivatedAsync() içinde başlar — bkz. IModuleViewModel
         }
 
         private readonly ICollectionView _filteredView;
@@ -233,5 +230,52 @@ namespace Bakım.ViewModels
                 Clipboard.SetText(ip);
             }
         }
-    }
+    
+        #region Modül Yaşam Döngüsü
+
+        private bool _isActive;
+
+        /// <summary>
+        /// Modül görünür oldu. Zamanlayıcı BURADA başlar — yapıcı metotta değil.
+        /// Böylece açılışta yalnızca ilk modül kaynak tüketir.
+        /// </summary>
+        public async Task OnActivatedAsync()
+        {
+            if (_isActive) return;
+            _isActive = true;
+
+            ApplyRefreshInterval();
+            _timer.Start();
+
+            try
+            {
+                await LoadConnectionsInternalAsync(true);
+            }
+            catch (Exception ex)
+            {
+                Services.AppLog.Error("Modül etkinleştirilirken hata.", ex, nameof(NetworkMonitorViewModel));
+            }
+        }
+
+        /// <summary>Modülden çıkıldı: arka planda WMI sorgusu atmaya devam etme.</summary>
+        public Task OnDeactivatedAsync()
+        {
+            if (!_isActive) return Task.CompletedTask;
+            _isActive = false;
+
+            _timer.Stop();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>Kullanıcının ayarlardaki yenileme aralığı tercihini uygular.</summary>
+        private void ApplyRefreshInterval()
+        {
+            int seconds = _settingsService.Current.RefreshIntervalSeconds;
+            if (seconds < 1) seconds = 1;
+            _timer.Interval = TimeSpan.FromSeconds(seconds);
+        }
+
+        #endregion
+
+}
 }

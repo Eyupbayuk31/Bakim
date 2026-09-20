@@ -37,10 +37,10 @@ namespace Bakım.Services
         private readonly IResidualScannerEngine _residualScanner;
         private readonly IUninstallerService _legacyUninstaller;
 
-        public DeepUninstallerService(IResidualScannerEngine? residualScanner = null, IUninstallerService? legacyUninstaller = null)
+        public DeepUninstallerService(IResidualScannerEngine residualScanner, IUninstallerService legacyUninstaller)
         {
-            _residualScanner = residualScanner ?? new ResidualScannerEngine();
-            _legacyUninstaller = legacyUninstaller ?? new UninstallerService();
+            _residualScanner = residualScanner;
+            _legacyUninstaller = legacyUninstaller;
         }
 
         #region App Discovery

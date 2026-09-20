@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
@@ -59,74 +60,65 @@
         </Grid.RowDefinitions>
 
         <!-- 1. Header Section -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Gizlilik &amp; Telemetri Engelleyici" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Text="Microsoft telemetri, veri toplama, reklam kimliği ve gereksiz AppX bloatware optimizasyonu." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <!-- Sub-Tab Switcher & Action Buttons -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,20"
+                         Title="Gizlilik &amp; Telemetri Engelleyici"
+                         Description="Microsoft telemetri, veri toplama, reklam kimliği ve gereksiz AppX bloatware optimizasyonu.">
+            <c:SectionHeader.Actions>
+                <!-- Sub-Tab Switcher & Action Buttons -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Sub-Tab Switcher -->
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                        BorderThickness="1" 
-                        CornerRadius="8" 
-                        Padding="4" 
-                        Margin="0,0,12,0">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:Button Content="Gizlilik &amp; Telemetri" 
-                                   Command="{Binding SwitchSubTabCommand}" 
-                                   CommandParameter="Privacy"
-                                   Padding="14,6" 
-                                   Margin="0,0,4,0"/>
-                        <ui:Button Content="Bloatware Kaldırıcı" 
-                                   Command="{Binding SwitchSubTabCommand}" 
-                                   CommandParameter="Debloat"
-                                   Padding="14,6"/>
-                    </StackPanel>
+                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="4"
+                Margin="0,0,12,0">
+                <StackPanel Orientation="Horizontal">
+                <ui:Button Content="Gizlilik &amp; Telemetri"
+                Command="{Binding SwitchSubTabCommand}"
+                CommandParameter="Privacy"
+                Padding="14,6"
+                Margin="0,0,4,0"/>
+                <ui:Button Content="Bloatware Kaldırıcı"
+                Command="{Binding SwitchSubTabCommand}"
+                CommandParameter="Debloat"
+                Padding="14,6"/>
+                </StackPanel>
                 </Border>
 
                 <!-- Actions -->
-                <ui:Button Appearance="Primary" 
-                           Command="{Binding ApplyRecommendedCommand}"
-                           Padding="14,8"
-                           Margin="0,0,8,0"
-                           Content="Önerilenleri Koru"
-                           Icon="{ui:SymbolIcon ShieldCheckmark24}"/>
+                <ui:Button Appearance="Primary"
+                Command="{Binding ApplyRecommendedCommand}"
+                Padding="14,8"
+                Margin="0,0,8,0"
+                Content="Önerilenleri Koru"
+                Icon="{ui:SymbolIcon ShieldCheckmark24}"/>
 
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding CreateRestorePointCommand}"
-                           Padding="12,8"
-                           Margin="0,0,8,0"
-                           Content="Geri Yükleme Noktası"
-                           Icon="{ui:SymbolIcon History24}"/>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding CreateRestorePointCommand}"
+                Padding="12,8"
+                Margin="0,0,8,0"
+                Content="Geri Yükleme Noktası"
+                Icon="{ui:SymbolIcon History24}"/>
 
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding RestoreDefaultsCommand}"
-                           Padding="12,8"
-                           Margin="0,0,8,0"
-                           Content="Varsayılanlara Dön"
-                           Icon="{ui:SymbolIcon ArrowReset24}"/>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding RestoreDefaultsCommand}"
+                Padding="12,8"
+                Margin="0,0,8,0"
+                Content="Varsayılanlara Dön"
+                Icon="{ui:SymbolIcon ArrowReset24}"/>
 
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding RefreshAllCommand}"
-                           Padding="12,8"
-                           Content="Yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </StackPanel>
-        </Grid>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding RefreshAllCommand}"
+                Padding="12,8"
+                Content="Yenile"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+                </StackPanel>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- 2. Metric Overview Cards -->
         <Grid Grid.Row="1" Margin="0,0,0,18">
@@ -256,7 +248,7 @@
                         VerticalContentAlignment="Center"
                         Padding="12,8"
                         MinWidth="220"
-                        MaxWidth="360"/>
+                        MaxWidth="360" AutomationProperties.Name="Gizlilik kuralı veya uygulama ara..."/>
         </Grid>
 
         <!-- 4. Active Content Area -->
@@ -332,7 +324,7 @@
 
                                 <!-- Right Toggle Switch -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                    <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=OneWay}"
+                                    <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=OneWay}" AutomationProperties.Name="{Binding Title}"
                                                      Command="{Binding DataContext.ToggleTweakCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                      CommandParameter="{Binding}"
                                                      IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"/>

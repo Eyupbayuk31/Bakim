@@ -13,13 +13,13 @@
         Topmost="True">
 
     <!-- 100% Solid, Fully Opaque Slate Dark Surface (Zero Background Bleed) -->
-    <Border Background="#1E293B"
-            BorderBrush="#38BDF8"
+    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
             BorderThickness="1.5"
             CornerRadius="14"
             Padding="22">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="36" ShadowDepth="6" Opacity="0.9" Color="#000000"/>
+            <DropShadowEffect BlurRadius="36" ShadowDepth="6" Opacity="0.9" Color="{DynamicResource Color.Shadow}"/>
         </Border.Effect>
 
         <Grid>
@@ -43,12 +43,12 @@
                 <Border Grid.Column="0"
                         Width="44" Height="44"
                         CornerRadius="10"
-                        Background="#0F172A"
-                        BorderBrush="#334155"
+                        Background="{DynamicResource ApplicationBackgroundBrush}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
                         Margin="0,0,14,0"
                         VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Shield24" FontSize="24" Foreground="#38BDF8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Symbol="Shield24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -56,16 +56,16 @@
                         <TextBlock Text="Sezgisel Tehdit &amp; Güvenlik Analizi"
                                    FontSize="16"
                                    FontWeight="Bold"
-                                   Foreground="#F8FAFC"/>
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text=" • AI Heuristic Engine"
                                    FontSize="14"
                                    FontWeight="Medium"
-                                   Foreground="#38BDF8"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                    Margin="6,1,0,0"/>
                     </StackPanel>
                     <TextBlock Text="{Binding FilePath}"
                                FontSize="11.5"
-                               Foreground="#94A3B8"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                TextTrimming="CharacterEllipsis"
                                Margin="0,3,0,0"
                                ToolTip="{Binding FilePath}"/>
@@ -76,13 +76,13 @@
                            Padding="6,4"
                            Command="{Binding CloseCommand}"
                            Icon="{ui:SymbolIcon Dismiss20}"
-                           ToolTip="Kapat"/>
+                           ToolTip="Kapat" AutomationProperties.Name="Kapat"/>
             </Grid>
 
             <!-- 1. Risk Score & Overview Card -->
             <Border Grid.Row="1"
-                    Background="#0F172A"
-                    BorderBrush="#334155"
+                    Background="{DynamicResource ApplicationBackgroundBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="10"
                     Padding="16"
@@ -95,7 +95,7 @@
 
                     <!-- Risk Gauge / Meter Box -->
                     <Border Grid.Column="0"
-                            Width="150" Height="100"
+                            MinWidth="150" MinHeight="100"
                             CornerRadius="10"
                             Background="{Binding RiskBackgroundBrush}"
                             BorderBrush="{Binding RiskColor}"
@@ -106,7 +106,7 @@
                             <TextBlock Text="RİSK SKORU"
                                        FontSize="10"
                                        FontWeight="Bold"
-                                       Foreground="#94A3B8"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                        HorizontalAlignment="Center"/>
                             <TextBlock Text="{Binding RiskScore, StringFormat='%{0}'}"
                                        FontSize="30"
@@ -115,7 +115,7 @@
                                        HorizontalAlignment="Center"
                                        Margin="0,2,0,2"/>
                             <Border CornerRadius="4"
-                                    Background="#20000000"
+                                    Background="{DynamicResource Brush.Muted.Subtle}"
                                     Padding="6,2"
                                     HorizontalAlignment="Center">
                                 <TextBlock Text="{Binding RiskLevelText}"
@@ -138,34 +138,34 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Dijital İmza -->
-                        <Border Grid.Row="0" Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,8">
+                        <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,8">
                             <StackPanel>
-                                <TextBlock Text="Dijital Sertifika" FontSize="10.5" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding Result.DigitalSignatureText}" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="Dijital Sertifika" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding Result.DigitalSignatureText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Border>
 
                         <!-- VirusTotal -->
-                        <Border Grid.Row="0" Grid.Column="1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,0,8">
+                        <Border Grid.Row="0" Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,0,8">
                             <StackPanel>
-                                <TextBlock Text="VirusTotal Taraması" FontSize="10.5" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding Result.VirusTotalSummary}" FontSize="12" FontWeight="SemiBold" Foreground="#38BDF8" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="VirusTotal Taraması" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding Result.VirusTotalSummary}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Entropi -->
-                        <Border Grid.Row="1" Grid.Column="0" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
+                        <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
                             <StackPanel>
-                                <TextBlock Text="Shannon Entropi" FontSize="10.5" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding Result.EntropyText}" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="Shannon Entropi" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding Result.EntropyText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Dosya Boyutu & Hash -->
-                        <Border Grid.Row="1" Grid.Column="1" Background="#1E293B" BorderBrush="#334155" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                        <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6">
                             <StackPanel>
-                                <TextBlock Text="Boyut &amp; Mimari" FontSize="10.5" Foreground="#64748B"/>
-                                <TextBlock Text="{Binding Result.FileSizeFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="#F8FAFC"/>
+                                <TextBlock Text="Boyut &amp; Mimari" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock Text="{Binding Result.FileSizeFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -174,8 +174,8 @@
 
             <!-- 2. Active Process Alert Banner (Visible only if process is running) -->
             <Border Grid.Row="2"
-                    Background="#25EF4444"
-                    BorderBrush="#EF4444"
+                    Background="{DynamicResource Brush.Critical.Subtle}"
+                    BorderBrush="{DynamicResource SystemFillColorCriticalBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="12,8"
@@ -188,16 +188,16 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <ui:SymbolIcon Grid.Column="0" Symbol="Warning20" FontSize="18" Foreground="#EF4444" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Grid.Column="0" Symbol="Warning20" FontSize="18" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="DİKKAT: Bu dosya şu anda sistem belleğinde aktif olarak çalışıyor!"
                                    FontSize="12"
                                    FontWeight="Bold"
-                                   Foreground="#EF4444"/>
+                                   Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
                         <TextBlock Text="{Binding ActiveProcessId, StringFormat='Süreç Kimliği (PID): {0}'}"
                                    FontSize="11"
-                                   Foreground="#FCA5A5"
+                                   Foreground="{DynamicResource Brush.Critical.Text}"
                                    Margin="0,2,0,0"/>
                     </StackPanel>
 
@@ -213,8 +213,8 @@
 
             <!-- 3. Detailed Analysis Factors List -->
             <Border Grid.Row="3"
-                    Background="#0F172A"
-                    BorderBrush="#334155"
+                    Background="{DynamicResource ApplicationBackgroundBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="6">
@@ -228,7 +228,7 @@
                                Text="Neden Tehdit Olabilir? (Tespit Edilen Güvenlik Faktörleri)"
                                FontSize="12.5"
                                FontWeight="SemiBold"
-                               Foreground="#F8FAFC"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                Margin="8,6,8,8"/>
 
                     <ListBox Grid.Row="1"
@@ -255,7 +255,7 @@
                                             </Border>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#1E293B"/>
+                                                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -292,18 +292,18 @@
                                         <TextBlock Text="{Binding Title}"
                                                    FontSize="12.5"
                                                    FontWeight="SemiBold"
-                                                   Foreground="#F8FAFC"/>
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="{Binding Description}"
                                                    FontSize="11"
-                                                   Foreground="#94A3B8"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                    TextWrapping="Wrap"
                                                    Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <!-- Score Impact -->
                                     <Border Grid.Column="2"
-                                            Background="#1E293B"
-                                            BorderBrush="#334155"
+                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                             BorderThickness="1"
                                             CornerRadius="4"
                                             Padding="6,2"
@@ -322,8 +322,8 @@
 
             <!-- 4. Recommendation Box -->
             <Border Grid.Row="4"
-                    Background="#1E293B"
-                    BorderBrush="#334155"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="12,10"
@@ -334,11 +334,11 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <ui:SymbolIcon Grid.Column="0" Symbol="Info20" FontSize="18" Foreground="#38BDF8" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Grid.Column="0" Symbol="Info20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Sistem Güvenlik Tavsiyesi:" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8"/>
-                        <TextBlock Text="{Binding Recommendation}" FontSize="11.5" Foreground="#F8FAFC" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                        <TextBlock Text="Sistem Güvenlik Tavsiyesi:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="{Binding Recommendation}" FontSize="11.5" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -358,7 +358,7 @@
                                Icon="{ui:SymbolIcon Folder20}"
                                Command="{Binding OpenLocationCommand}"
                                Padding="10,6"
-                               Margin="0,0,6,0"/>
+                               Margin="0,0,6,0" AutomationProperties.Name="Dosyayı Windows Gezgininde Göster"/>
 
                     <ui:Button Appearance="Secondary"
                                Content="{Binding VtButtonText}"
@@ -380,7 +380,7 @@
                 <TextBlock Grid.Column="1"
                            Text="{Binding StatusText}"
                            FontSize="11"
-                           Foreground="#94A3B8"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                            TextTrimming="CharacterEllipsis"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center"

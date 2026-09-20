@@ -15,12 +15,12 @@
     <Grid>
         <!-- Glowing Neon Target Frame -->
         <Border x:Name="TargetFrame"
-                BorderBrush="#38BDF8"
+                BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 BorderThickness="3"
                 CornerRadius="6"
-                Background="#1538BDF8">
+                Background="{DynamicResource Brush.Accent.Subtle}">
             <Border.Effect>
-                <DropShadowEffect Color="#38BDF8" BlurRadius="18" ShadowDepth="0" Opacity="0.85"/>
+                <DropShadowEffect Color="{DynamicResource Color.Accent}" BlurRadius="18" ShadowDepth="0" Opacity="0.85"/>
             </Border.Effect>
         </Border>
 
@@ -28,20 +28,20 @@
         <Border HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Margin="8,8,0,0"
-                Background="#EE0F172A"
-                BorderBrush="#38BDF8"
+                Background="{DynamicResource Brush.Overlay.Scrim}"
+                BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 BorderThickness="1.5"
                 CornerRadius="8"
                 Padding="10,6">
             <Border.Effect>
-                <DropShadowEffect Color="#000000" BlurRadius="12" ShadowDepth="3" Opacity="0.7"/>
+                <DropShadowEffect Color="{DynamicResource Color.Shadow}" BlurRadius="12" ShadowDepth="3" Opacity="0.7"/>
             </Border.Effect>
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:SymbolIcon x:Name="HudIcon" Symbol="Target24" FontSize="16" Foreground="#38BDF8" Margin="0,0,8,0"/>
+                <ui:SymbolIcon x:Name="HudIcon" Symbol="Target24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                 <StackPanel>
-                    <TextBlock x:Name="HudTitle" Text="Hedef Tespit Edildi" FontSize="12" FontWeight="Bold" Foreground="#F8FAFC"/>
-                    <TextBlock x:Name="HudSubtitle" Text="PID: ---" FontSize="10.5" Foreground="#94A3B8"/>
+                    <TextBlock x:Name="HudTitle" Text="Hedef Tespit Edildi" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock x:Name="HudSubtitle" Text="PID: ---" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                 </StackPanel>
             </StackPanel>
         </Border>

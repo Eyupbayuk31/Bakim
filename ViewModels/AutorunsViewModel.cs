@@ -89,11 +89,11 @@ namespace Bakım.ViewModels
         public AutorunsViewModel(
             IAutorunsScannerEngine scannerEngine,
             IVirusTotalCheckService virusTotalService,
-            IFileThreatAnalyzerService? threatAnalyzerService = null)
+            IFileThreatAnalyzerService threatAnalyzerService)
         {
             _scannerEngine = scannerEngine;
             _virusTotalService = virusTotalService;
-            _threatAnalyzerService = threatAnalyzerService ?? new FileThreatAnalyzerService(_virusTotalService);
+            _threatAnalyzerService = threatAnalyzerService;
 
             ApiKeyInput = _virusTotalService.ApiKey;
             ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır ✓" : "API Anahtarı Tanımlanmadı";

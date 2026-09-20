@@ -6,15 +6,55 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <Version>3.0.3</Version>
-    <AssemblyVersion>3.0.3.0</AssemblyVersion>
-    <FileVersion>3.0.3.0</FileVersion>
+    <!--
+      Derleme/çıktı adı ASCII'dir. Kurulum betiği ve sürüm iş akışı zaten
+      "Bakim.exe" bekliyordu; ayrıca "ı" karakteri süreç listelerinde ve
+      pack:// URI'lerinde kodlama sorunlarına yol açıyordu.
+      Kök ad alanı "Bakım" olarak KALIR.
+    -->
+    <AssemblyName>Bakim</AssemblyName>
+    <!-- Yalnızca sistem tepsisi simgesi (NotifyIcon) için; WPF-UI 4.x tray desteği içermiyor. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Version>3.1.0</Version>
+    <AssemblyVersion>3.1.0.0</AssemblyVersion>
+    <FileVersion>3.1.0.0</FileVersion>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!--
+      WFO0003, DPI ayarlarının manifest yerine WinForms API'siyle yapılmasını önerir.
+      Bu bir WPF uygulamasıdır: WinForms yalnızca tepsi simgesi için referanslanır ve
+      hiçbir WinForms penceresi açılmaz. WPF'in Per-Monitor V2 farkındalığı manifestten
+      okunmak zorundadır, bu yüzden uyarı bilinçli olarak bastırılmıştır.
+    -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Resource Include="Assets\app.ico" />
     <Resource Include="Assets\app.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Test projeleri depo içinde yaşar. SDK varsayılan olarak **/*.cs dosyalarını
+      toplar; bu dışlama olmadan ana uygulama test kaynaklarını da derlemeye
+      çalışır ve derleme kırılır.
+    -->
+    <Compile Remove="Tests\**" />
+    <Page Remove="Tests\**" />
+    <None Remove="Tests\**" />
+    <Resource Remove="Tests\**" />
+    <ApplicationDefinition Remove="Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      WinForms örtük using'i kaldırılır: aksi halde System.Windows.Forms ile
+      System.Windows arasında MessageBox, Application ve Clipboard gibi tipler
+      proje genelinde belirsiz hale gelir. Tepsi servisi tipleri tam adıyla kullanır.
+    -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 
   <ItemGroup>

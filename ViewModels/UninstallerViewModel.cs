@@ -22,26 +22,23 @@ namespace Bakım.ViewModels
         private readonly IResidualScannerEngine _residualScanner;
         private readonly IInstallerMonitorService _monitorService;
         private readonly IHunterService _hunterService;
+        private readonly IAppSettingsService _settingsService;
 
-        public UninstallerViewModel() : this((IDeepUninstallerService?)null, null, null, null)
-        {
-        }
-
-        public UninstallerViewModel(IUninstallerService? uninstallerService) 
-            : this(uninstallerService as IDeepUninstallerService ?? (uninstallerService != null ? new DeepUninstallerService(null, uninstallerService) : null), null, null, null)
-        {
-        }
-
+        // v3.1: Null geçen eski zincirleme yapıcılar kaldırıldı. Bunlar hem DI
+        // konteynerinin yanlış yapıcıyı seçmesine yol açıyor hem de servislerin
+        // yarısı null olan bir ViewModel üretebiliyordu.
         public UninstallerViewModel(
-            IDeepUninstallerService? deepUninstaller = null,
-            IResidualScannerEngine? residualScanner = null,
-            IInstallerMonitorService? monitorService = null,
-            IHunterService? hunterService = null)
+            IDeepUninstallerService deepUninstaller,
+            IResidualScannerEngine residualScanner,
+            IInstallerMonitorService monitorService,
+            IHunterService hunterService,
+            IAppSettingsService settingsService)
         {
-            _residualScanner = residualScanner ?? new ResidualScannerEngine();
-            _deepUninstaller = deepUninstaller ?? new DeepUninstallerService(_residualScanner);
-            _monitorService = monitorService ?? new InstallerMonitorService();
-            _hunterService = hunterService ?? new HunterService();
+            _settingsService = settingsService;
+            _residualScanner = residualScanner;
+            _deepUninstaller = deepUninstaller;
+            _monitorService = monitorService;
+            _hunterService = hunterService;
 
             Apps = new ObservableCollection<InstalledAppItem>();
             Leftovers = new ObservableCollection<LeftoverItem>();
@@ -303,7 +300,7 @@ namespace Bakım.ViewModels
             if (confirm != MessageBoxResult.Yes) return;
 
             // Restore Point Confirmation & Settings Evaluation
-            var settings = SettingsViewModel.LoadCurrentSettings();
+            var settings = _settingsService.Current;
             bool createRestorePoint = false;
 
             if (settings.PromptRestorePointBeforeUninstall)
@@ -425,7 +422,7 @@ namespace Bakım.ViewModels
             if (confirm != MessageBoxResult.Yes) return;
 
             // Restore Point Confirmation & Settings Evaluation
-            var settings = SettingsViewModel.LoadCurrentSettings();
+            var settings = _settingsService.Current;
             bool createRestorePoint = false;
 
             if (settings.PromptRestorePointBeforeUninstall)
@@ -811,7 +808,7 @@ namespace Bakım.ViewModels
 
             try
             {
-                var analyzer = new FileThreatAnalyzerService();
+                var analyzer = App.GetService<IFileThreatAnalyzerService>();
                 var analysisResult = await analyzer.AnalyzeFileAsync(targetFile);
 
                 Application.Current.Dispatcher.Invoke(() =>

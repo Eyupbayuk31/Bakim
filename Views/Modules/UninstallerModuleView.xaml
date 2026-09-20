@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
@@ -20,51 +21,42 @@
         </Grid.RowDefinitions>
 
         <!-- 0. Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Derin Kalıntı Temizleyici &amp; Program Kaldırıcı" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Text="Revo stili iki aşamalı derin disk ve kayıt defteri kalıntı taraması ile yazılımları eksiksiz silin." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <!-- Header Action Buttons: Hunter Mode, Installation Monitor, Refresh -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,20"
+                         Title="Derin Kalıntı Temizleyici &amp; Program Kaldırıcı"
+                         Description="Revo stili iki aşamalı derin disk ve kayıt defteri kalıntı taraması ile yazılımları eksiksiz silin.">
+            <c:SectionHeader.Actions>
+                <!-- Header Action Buttons: Hunter Mode, Installation Monitor, Refresh -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <!-- Avcı Modu (Hunter Mode) -->
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding LaunchHunterModeCommand}"
-                           Padding="12,8"
-                           Margin="0,0,8,0"
-                           Content="Avcı Modu"
-                           ToolTip="Açık pencere veya kısayolu hedef alarak hızlıca kaldırın"
-                           Icon="{ui:SymbolIcon Target24}"/>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding LaunchHunterModeCommand}"
+                Padding="12,8"
+                Margin="0,0,8,0"
+                Content="Avcı Modu"
+                ToolTip="Açık pencere veya kısayolu hedef alarak hızlıca kaldırın"
+                Icon="{ui:SymbolIcon Target24}"/>
 
                 <!-- Kurulum İzleyici (Installation Monitor) -->
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding LaunchInstallationMonitorCommand}"
-                           Padding="12,8"
-                           Margin="0,0,8,0"
-                           Content="Kurulum İzle"
-                           ToolTip="Yeni bir kurulum paketini izleyip sıfır kalıntı logu oluşturun"
-                           Icon="{ui:SymbolIcon Record24}"/>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding LaunchInstallationMonitorCommand}"
+                Padding="12,8"
+                Margin="0,0,8,0"
+                Content="Kurulum İzle"
+                ToolTip="Yeni bir kurulum paketini izleyip sıfır kalıntı logu oluşturun"
+                Icon="{ui:SymbolIcon Record24}"/>
 
                 <!-- Yenile -->
-                <ui:Button Appearance="Secondary" 
-                           Command="{Binding RefreshAppsCommand}"
-                           Padding="12,8"
-                           Content="Yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </StackPanel>
-        </Grid>
+                <ui:Button Appearance="Secondary"
+                Command="{Binding RefreshAppsCommand}"
+                Padding="12,8"
+                Content="Yenile"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+                </StackPanel>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- 1. Top KPI Metrics -->
         <!-- 1. Top KPI Metrics (İnteraktif Filtreleme Desteği) -->
@@ -259,7 +251,7 @@
                             ClearButtonEnabled="True"
                             Icon="{ui:SymbolIcon Search24}"
                             VerticalContentAlignment="Center"
-                            Padding="12,8"/>
+                            Padding="12,8" AutomationProperties.Name="Yüklü program veya yayıncı ara..."/>
             </Grid>
 
             <!-- Katman 2: Sıralama Hapları & Toplu İşlem Butonları -->
@@ -330,7 +322,7 @@
                     </ui:Button>
 
                     <!-- Auto-Clean Toggle -->
-                    <ui:ToggleSwitch IsChecked="{Binding IsAutoCleanEnabled}"
+                    <ui:ToggleSwitch IsChecked="{Binding IsAutoCleanEnabled}" AutomationProperties.Name="Kaldırma sonrası kalıntıları otomatik temizle"
                                      OnContent="Otomatik Kalıntı Temizle"
                                      OffContent="Kalıntıları Elle Onayla"
                                      VerticalAlignment="Center"
@@ -453,7 +445,7 @@
 
                                     <!-- Col 0: CheckBox (Margin ile Otomatik İç Pay, Kırpılma Yok) -->
                                     <CheckBox Grid.Column="0" 
-                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" AutomationProperties.Name="{Binding DisplayName}" 
                                               VerticalAlignment="Center" 
                                               HorizontalAlignment="Left"
                                               Margin="0,0,12,0"
@@ -569,7 +561,7 @@
                                                    Padding="10,8"
                                                    Margin="0,0,8,0"
                                                    VerticalAlignment="Center"
-                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}" AutomationProperties.Name="Kalıntıları İncele ve Temizle"/>
 
                                         <!-- AI Heuristic Threat Analysis Button -->
                                         <ui:Button Appearance="Secondary" 
@@ -580,7 +572,7 @@
                                                    Padding="10,8"
                                                    Margin="0,0,8,0"
                                                    VerticalAlignment="Center"
-                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                                   Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}" AutomationProperties.Name="Sezgisel Tehdit &amp; Güvenlik Analizi Yap"/>
 
                                         <!-- Standard Uninstall Button -->
                                         <ui:Button Appearance="Primary" 
@@ -709,7 +701,7 @@
 
                                     <!-- CheckBox (Kırpılma Yok, Margin ile İç Pay) -->
                                     <CheckBox Grid.Column="0" 
-                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" AutomationProperties.Name="{Binding DisplayName}" 
                                               VerticalAlignment="Center" 
                                               HorizontalAlignment="Left"
                                               Margin="0,0,12,0"

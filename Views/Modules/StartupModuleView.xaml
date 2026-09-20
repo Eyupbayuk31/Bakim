@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:StartupViewModel}"
@@ -16,30 +17,21 @@
         </Grid.RowDefinitions>
 
         <!-- Top Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Başlangıç Uygulamaları" 
-                           FontSize="24" 
-                           FontWeight="Bold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                <TextBlock Text="Windows açılışında otomatik başlatılan uygulamalar." 
-                           FontSize="13" 
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-
-            <ui:Button Grid.Column="1" 
-                       Appearance="Secondary" 
-                       Command="{Binding RefreshCommand}"
-                       Padding="14,8"
-                       Content="Yenile"
-                       Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-        </Grid>
+                <!-- Sayfa basligi — tasarim sistemi bileseni -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,20"
+                         Title="Başlangıç Uygulamaları"
+                         Description="Windows açılışında otomatik başlatılan uygulamalar.">
+            <c:SectionHeader.Actions>
+                <ui:Button
+                Appearance="Secondary"
+                Command="{Binding RefreshCommand}"
+                Padding="14,8"
+                Content="Yenile"
+                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
 
         <!-- Search / Filter Toolbar -->
         <ui:Card Grid.Row="1" Padding="16,12" Margin="0,0,0,20">
@@ -55,7 +47,7 @@
                             ClearButtonEnabled="True" 
                             VerticalContentAlignment="Center" 
                             Padding="12,10"
-                            Icon="{ui:SymbolIcon Search24}"/>
+                            Icon="{ui:SymbolIcon Search24}" AutomationProperties.Name="Uygulama adı veya dosya yolu ile filtrele..."/>
 
                 <TextBlock Grid.Column="1" 
                            Text="{Binding TotalProgramsCount, StringFormat='Toplam Kayıt: {0}'}" 
@@ -205,7 +197,7 @@
 
                                 <!-- Status ToggleSwitch -->
                                 <ui:ToggleSwitch Grid.Column="3" 
-                                                 IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                 IsChecked="{Binding IsEnabled, Mode=TwoWay}" AutomationProperties.Name="{Binding Name}"
                                                  Command="{Binding DataContext.ToggleProgramStateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                  CommandParameter="{Binding}"
                                                  IsEnabled="{Binding IsActionBusy, Converter={StaticResource InverseBool}}"
@@ -223,7 +215,7 @@
                                            HorizontalAlignment="Right" 
                                            VerticalAlignment="Center" 
                                            ToolTip="Dosya Konumunu Aç" 
-                                           Icon="{ui:SymbolIcon FolderOpen20}"/>
+                                           Icon="{ui:SymbolIcon FolderOpen20}" AutomationProperties.Name="Dosya Konumunu Aç"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
