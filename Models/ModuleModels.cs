@@ -83,6 +83,19 @@ namespace Bakım.Models
         public string BiosVersion { get; set; } = string.Empty;
         public string RamSpeedMhz { get; set; } = string.Empty;
 
+        // Extended Telemetry & Diagnostics (Revamp V8.0)
+        public string NetworkAdapterName { get; set; } = "Yerel Ağ / Wi-Fi";
+        public string NetworkIpAddress { get; set; } = "127.0.0.1";
+        public string NetworkLinkSpeed { get; set; } = "1000 Mbps";
+        public string DisplayResolution { get; set; } = "1920 x 1080";
+        public string DisplayRefreshRate { get; set; } = "60 Hz";
+        public string SystemUptimeText { get; set; } = "1 Saat";
+        public string SecureBootStatus { get; set; } = "Aktif";
+        public string TpmStatus { get; set; } = "TPM 2.0 Hazır";
+        public string VirtualizationStatus { get; set; } = "Etkin (VT-x / AMD-V)";
+        public string CpuCoresThreads { get; set; } = string.Empty;
+        public string CpuPercentageText => $"%{CpuPercentage}";
+
         public List<DriveInfoItem> Drives { get; set; } = new();
     }
 
@@ -150,8 +163,11 @@ namespace Bakım.Models
         public string HealthBadgeBrush { get; set; } = "SystemFillColorSuccessBrush";
         public string OperationalStatus { get; set; } = "Sağlam (OK)";
         public string Temperature { get; set; } = "Normal (34 °C)";
+        public int TemperatureNumeric { get; set; } = 34;
+        public string TemperatureColorBrush => TemperatureNumeric > 55 ? "SystemFillColorCriticalBrush" : TemperatureNumeric > 45 ? "SystemFillColorCautionBrush" : "SystemFillColorSuccessBrush";
         public string TotalBytesWritten { get; set; } = "Destekleniyor";
         public string PowerOnHours { get; set; } = "Aktif";
+        public string PowerCycleCount { get; set; } = "Normal";
         public double SizeGb { get; set; }
         public string FormattedSize => $"{SizeGb:F1} GB";
         public int PartitionsCount { get; set; } = 1;
@@ -167,6 +183,7 @@ namespace Bakım.Models
         public long SizeBytes { get; set; }
         public string SizeFormatted { get; set; } = string.Empty;
         public string Extension { get; set; } = string.Empty;
+        public string Category { get; set; } = "Diğer";
         public string LastModifiedFormatted { get; set; } = string.Empty;
         public string DriveLetter { get; set; } = "C:";
         public double SizePercentage { get; set; } = 10;

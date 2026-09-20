@@ -9,64 +9,86 @@
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:SystemInfoViewModel}"
-             d:DesignHeight="850" d:DesignWidth="1100">
+             d:DesignHeight="950" d:DesignWidth="1100">
 
     <Grid Margin="28">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Header & Navigation -->
+            <RowDefinition Height="Auto"/> <!-- 0: Header & Segmented Sub-tab Switcher -->
             <RowDefinition Height="*"/>    <!-- 1: Active Viewport Content -->
         </Grid.RowDefinitions>
 
         <!-- 0: Header Section & Sub-tab Switcher -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
                          Title="Donanım, Depolama &amp; S.M.A.R.T."
-                         Description="Sistem donanımı, NVMe/SSD S.M.A.R.T. sağlık raporu ve diskteki 1GB+ büyük dosya analizörü.">
+                         Description="Gerçek zamanlı donanım telemetrisi, NVMe/SSD S.M.A.R.T. sağlık analizi ve akıllı disk temizleme merkezi.">
             <c:SectionHeader.Actions>
-                <!-- Sub-Tab Switcher & Refresh Button -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="4"
-                Margin="0,0,12,0">
-                <StackPanel Orientation="Horizontal">
-                <ui:Button Content="Donanım Özeti"
-                Command="{Binding SwitchSubTabCommand}"
-                CommandParameter="Hardware"
-                Padding="14,6"
-                Margin="0,0,4,0"/>
-                <ui:Button Content="S.M.A.R.T. Sağlık"
-                Command="{Binding SwitchSubTabCommand}"
-                CommandParameter="Smart"
-                Padding="14,6"
-                Margin="0,0,4,0"/>
-                <ui:Button Content="Büyük Dosyalar (1GB+)"
-                Command="{Binding SwitchSubTabCommand}"
-                CommandParameter="LargeFiles"
-                Padding="14,6"/>
-                </StackPanel>
-                </Border>
+                    <!-- Modern Fluent Segmented Sub-Tab Switcher -->
+                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="4"
+                            Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Tab 1: Hardware -->
+                            <ui:Button Appearance="{Binding IsHardwareTab, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SwitchSubTabCommand}"
+                                       CommandParameter="Hardware"
+                                       Padding="14,7"
+                                       Margin="0,0,4,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="16" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Donanım &amp; Telemetri" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ui:Button>
 
-                <ui:Button Appearance="Secondary"
-                Command="{Binding RefreshCommand}"
-                Padding="14,8"
-                Content="Yenile"
-                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+                            <!-- Tab 2: S.M.A.R.T. -->
+                            <ui:Button Appearance="{Binding IsSmartTab, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SwitchSubTabCommand}"
+                                       CommandParameter="Smart"
+                                       Padding="14,7"
+                                       Margin="0,0,4,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="16" Margin="0,0,8,0"/>
+                                    <TextBlock Text="S.M.A.R.T. Sağlık" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ui:Button>
+
+                            <!-- Tab 3: Large Files -->
+                            <ui:Button Appearance="{Binding IsLargeFilesTab, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SwitchSubTabCommand}"
+                                       CommandParameter="LargeFiles"
+                                       Padding="14,7">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="FolderZip20" FontSize="16" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Büyük Dosya Analizörü" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ui:Button>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Refresh Button -->
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding RefreshCommand}"
+                               Padding="14,8"
+                               Content="Yenile"
+                               Icon="{ui:SymbolIcon ArrowClockwise24}"/>
                 </StackPanel>
             </c:SectionHeader.Actions>
         </c:SectionHeader>
 
-        <!-- 1: Content Viewport (Tab 1: Hardware Specs & Partitions) -->
+        <!-- ========================================================================= -->
+        <!-- 1: TAB 1 - DONANIM & TELEMETRİ (OVERHAUL)                                  -->
+        <!-- ========================================================================= -->
         <ScrollViewer Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding IsHardwareTab, Converter={StaticResource BoolToVis}}">
-            <StackPanel>
-                <!-- Spec Cards Grid (3 Columns) -->
+            <StackPanel Margin="0,0,0,16">
+                <!-- 6 Modern KPI Spec Cards (2 Rows x 3 Columns Grid) -->
                 <Grid Margin="0,0,0,24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -89,33 +111,50 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                                 <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="İşlemci (CPU)" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                             
-                            <Grid Grid.Row="1">
+                            <Grid Grid.Row="1" Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Hardware.CpuName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.CpuName}"/>
+                                    <TextBlock Text="{Binding Hardware.CpuName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.CpuName}"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                                         <TextBlock Text="{Binding Hardware.CpuClockSpeed}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
                                         <TextBlock Text="{Binding Hardware.CpuL3Cache}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </StackPanel>
-                                <ui:ProgressRing Grid.Column="1" 
-                                                 Progress="{Binding Hardware.CpuPercentage}" 
-                                                 Width="36" 
-                                                 Height="36" 
-                                                 IsIndeterminate="False"
-                                                 Foreground="{Binding Hardware.CpuPercentage, Converter={StaticResource PercentageToBrush}}"
-                                                 Margin="8,0,0,0"/>
+
+                                <!-- Crystal-Clear CPU Load Meter (No visual glitches!) -->
+                                <Border Grid.Column="1" 
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{Binding Hardware.CpuPercentage, Converter={StaticResource PercentageToBrush}}"
+                                        BorderThickness="1.5"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        VerticalAlignment="Center"
+                                        Margin="8,0,0,0">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Hardware.CpuPercentageText}" 
+                                                   FontSize="13" 
+                                                   FontWeight="Bold" 
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="{Binding Hardware.CpuPercentage, Converter={StaticResource PercentageToBrush}}"/>
+                                        <TextBlock Text="YÜK" 
+                                                   FontSize="8" 
+                                                   FontWeight="SemiBold" 
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </StackPanel>
+                                </Border>
                             </Grid>
 
-                            <TextBlock Grid.Row="2" Text="{Binding Hardware.ProcessorCount, StringFormat='{}Çekirdek: {0}'}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Text="{Binding Hardware.CpuCoresThreads}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </Grid>
                     </ui:Card>
 
@@ -127,21 +166,34 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                                 <ui:SymbolIcon Symbol="Desktop20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="Ekran Kartı (GPU)" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Hardware.GpuName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.GpuName}"/>
-                                <TextBlock Text="{Binding Hardware.GpuVram}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,3,0,0"/>
-                            </StackPanel>
+                            <Grid Grid.Row="1" Margin="0,0,0,6">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Hardware.GpuName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.GpuName}"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                        <TextBlock Text="{Binding Hardware.GpuVram}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding Hardware.DisplayResolution}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{Binding Hardware.DisplayRefreshRate, StringFormat='@ {0}'}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="8,4" VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <ui:SymbolIcon Symbol="Tv20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Border>
+                            </Grid>
 
                             <TextBlock Grid.Row="2" 
-                                       Text="{Binding Hardware.GpuDriverVersion, StringFormat='Sürücü: {0}'}" 
+                                       Text="{Binding Hardware.GpuDriverVersion, StringFormat='Sürücü Sürümü: {0}'}" 
                                        FontSize="10" 
                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
-                                       Margin="0,6,0,0"
                                        TextTrimming="CharacterEllipsis"
                                        ToolTip="{Binding Hardware.GpuDriverVersion, StringFormat='Sürücü Sürümü: {0}'}"/>
                         </Grid>
@@ -155,33 +207,53 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                                 <ui:SymbolIcon Symbol="TopSpeed20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="Fiziksel Bellek (RAM)" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <Grid Grid.Row="1">
+                            <Grid Grid.Row="1" Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB'}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="{Binding Hardware.RamSpeedMhz, StringFormat='{} ({0})'}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                                     </StackPanel>
-                                    <TextBlock Text="{Binding Hardware.FreeRamGb, StringFormat='Boş: {0:F1} GB'}" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,3,0,0"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                        <TextBlock Text="{Binding Hardware.FreeRamGb, StringFormat='Boş: {0:F1} GB'}" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding Hardware.UsedRamGb, StringFormat='Dolu: {0:F1} GB'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </StackPanel>
                                 </StackPanel>
-                                <ui:ProgressRing Grid.Column="1" 
-                                                 Progress="{Binding Hardware.RamPercentage}" 
-                                                 Width="36" 
-                                                 Height="36" 
-                                                 IsIndeterminate="False"
-                                                 Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"
-                                                 Margin="8,0,0,0"/>
+
+                                <!-- RAM Percentage Badge -->
+                                <Border Grid.Column="1" 
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"
+                                        BorderThickness="1.5"
+                                        CornerRadius="6"
+                                        Padding="10,4"
+                                        VerticalAlignment="Center"
+                                        Margin="8,0,0,0">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="{Binding Hardware.RamPercentage, StringFormat='%{0}'}" 
+                                                   FontSize="13" 
+                                                   FontWeight="Bold" 
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"/>
+                                        <TextBlock Text="DOLU" 
+                                                   FontSize="8" 
+                                                   FontWeight="SemiBold" 
+                                                   HorizontalAlignment="Center"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </StackPanel>
+                                </Border>
                             </Grid>
 
-                            <TextBlock Grid.Row="2" Text="{Binding Hardware.RamPercentage, StringFormat='%{0} Bellek Tüketiliyor'}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Text="{Binding Hardware.RamPercentage, StringFormat='%{0} Bellek Tüketiliyor • Havuz Aktif'}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </Grid>
                     </ui:Card>
 
@@ -193,21 +265,22 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                                 <ui:SymbolIcon Symbol="Laptop20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="Anakart &amp; BIOS" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="Anakart &amp; Bellenim" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                            <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,6">
                                 <TextBlock Text="{Binding Hardware.MotherboardModel}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.MotherboardModel}"/>
                                 <TextBlock Text="{Binding Hardware.BiosVersion}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
 
-                            <TextBlock Grid.Row="2" Text="SMBIOS / UEFI Donanım Katmanı" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Text="SMBIOS / UEFI Donanım Katmanı" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </Grid>
                     </ui:Card>
 
-                    <!-- Card 5: Device & OS -->
+                    <!-- Card 5: Network & Connectivity (NEW!) -->
                     <ui:Card Grid.Row="2" Grid.Column="2" Padding="18">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -215,21 +288,25 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                                <ui:SymbolIcon Symbol="Settings20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="Cihaz &amp; İşletim Sistemi" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                <ui:SymbolIcon Symbol="WifiSettings20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="Ağ &amp; Bağlantı" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Hardware.OsVersion}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.OsVersion}"/>
-                                <TextBlock Text="{Binding Hardware.MachineName, StringFormat='Cihaz: {0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,3,0,0"/>
+                            <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,6">
+                                <TextBlock Text="{Binding Hardware.NetworkAdapterName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.NetworkAdapterName}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                    <TextBlock Text="{Binding Hardware.NetworkLinkSpeed}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding Hardware.NetworkIpAddress, StringFormat='IP: {0}'}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </StackPanel>
                             </StackPanel>
 
-                            <TextBlock Grid.Row="2" Text="{Binding Hardware.UserName, StringFormat='Kullanıcı: {0}'}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Text="Aktif IPv4 Ağ Arabirimi" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </Grid>
                     </ui:Card>
 
-                    <!-- Card 6: UAC & Security Status -->
+                    <!-- Card 6: OS & System Uptime -->
                     <ui:Card Grid.Row="2" Grid.Column="4" Padding="18">
                         <Grid>
                             <Grid.RowDefinitions>
@@ -237,41 +314,40 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                                <ui:SymbolIcon Symbol="Shield20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="Yetki Düzeyi" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                                <ui:SymbolIcon Symbol="Settings20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="İşletim Sistemi &amp; Uptime" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Yönetici (Tam Yetkili)" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Visibility="{Binding Hardware.IsAdmin, Converter={StaticResource BoolToVis}}"/>
-                                <TextBlock Text="Standart Kullanıcı" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Visibility="{Binding Hardware.IsAdmin, Converter={StaticResource InverseBoolToVis}}"/>
+
+                            <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,6">
+                                <TextBlock Text="{Binding Hardware.OsVersion}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.OsVersion}"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                    <TextBlock Text="{Binding Hardware.MachineName, StringFormat='{}Cihaz: {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{Binding Hardware.UserName, StringFormat='{}Kullanıcı: {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
                             </StackPanel>
-                            <ui:Button Grid.Row="2" 
-                                       Appearance="Secondary" 
-                                       Command="{Binding RestartAsAdminCommand}"
-                                       Visibility="{Binding Hardware.IsAdmin, Converter={StaticResource InverseBoolToVis}}"
-                                       Padding="8,3" 
-                                       Margin="0,4,0,0"
-                                       Content="Yönetici Olarak Başlat"
-                                       Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
-                            <TextBlock Grid.Row="2" 
-                                       Text="Yönetici ayrıcalıkları devrede." 
-                                       FontSize="11" 
-                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
-                                       Margin="0,4,0,0"
-                                       Visibility="{Binding Hardware.IsAdmin, Converter={StaticResource BoolToVis}}"/>
+
+                            <TextBlock Grid.Row="2" Text="{Binding Hardware.SystemUptimeText, StringFormat='Çalışma Süresi: {0}'}" FontSize="10" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </Grid>
                     </ui:Card>
                 </Grid>
 
-                <!-- Partitions Header -->
-                <TextBlock Text="Sabit Sürücü Bölümleri &amp; Doluluk Oranları" 
-                           FontSize="16" 
-                           FontWeight="SemiBold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                           Margin="0,0,0,14"/>
+                <!-- Partitions Section Header -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Sabit Sürücüler &amp; Depolama Bölümleri" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Sürücü doluluk oranları, dosya sistemleri ve doğrudan hızlı bakım eylemleri." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Text="{Binding Hardware.DiskActivityText}" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                </Grid>
 
-                <!-- Drive Partitions Cards -->
-                <ItemsControl ItemsSource="{Binding Drives}">
+                <!-- Interactive Drive Partitions Cards -->
+                <ItemsControl ItemsSource="{Binding Drives}" Margin="0,0,0,24">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel/>
@@ -287,7 +363,8 @@
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
-                                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                                    <!-- Top Row: Name, Volume, Format, Usage Badge -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,10">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
@@ -295,10 +372,10 @@
 
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                             <ui:SymbolIcon Symbol="HardDrive24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
-                                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                             <TextBlock Text="{Binding VolumeLabel, StringFormat='({0})'}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                             <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4" Padding="6,2">
-                                                <TextBlock Text="{Binding DriveFormat}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                <TextBlock Text="{Binding DriveFormat}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             </Border>
                                         </StackPanel>
 
@@ -309,46 +386,229 @@
                                                    Foreground="{Binding UsagePercentage, Converter={StaticResource PercentageToBrush}}"/>
                                     </Grid>
 
+                                    <!-- Middle Row: Capacity Bar -->
                                     <ProgressBar Grid.Row="1" 
                                                  Value="{Binding UsagePercentage}" 
                                                  Maximum="100" 
                                                  Height="8" 
                                                  Foreground="{Binding UsagePercentage, Converter={StaticResource PercentageToBrush}}"
-                                                 Margin="0,0,0,10"/>
+                                                 Margin="0,0,0,12"/>
 
+                                    <!-- Bottom Row: Metrics & Quick Action Buttons -->
                                     <Grid Grid.Row="2">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <TextBlock Grid.Column="0" Text="{Binding FormattedFree}" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                                        <TextBlock Grid.Column="1" Text="{Binding FormattedTotal, StringFormat='Toplam Kapasite: {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextAlignment="Right"/>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding FormattedFree}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,12,0"/>
+                                            <TextBlock Text="{Binding FormattedTotal, StringFormat='Toplam Kapasite: {0}'}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        </StackPanel>
+
+                                        <!-- Direct Drive Actions -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ui:Button Appearance="Secondary"
+                                                       Padding="10,4"
+                                                       Margin="0,0,6,0"
+                                                       Content="Disk Temizleme"
+                                                       Icon="{ui:SymbolIcon Broom20}"
+                                                       Command="{Binding DataContext.CleanDriveCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding Name}"/>
+
+                                            <ui:Button Appearance="Secondary"
+                                                       Padding="10,4"
+                                                       Margin="0,0,6,0"
+                                                       Content="Büyük Dosyaları Tara"
+                                                       Icon="{ui:SymbolIcon Search20}"
+                                                       Command="{Binding DataContext.ScanDriveForLargeFilesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding Name}"/>
+
+                                            <ui:Button Appearance="Subtle"
+                                                       Padding="8,4"
+                                                       Icon="{ui:SymbolIcon FolderOpen20}"
+                                                       ToolTip="Sürücüyü Gezginde Aç"
+                                                       Command="{Binding DataContext.OpenDriveInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding Name}"/>
+                                        </StackPanel>
                                     </Grid>
                                 </Grid>
                             </ui:Card>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <!-- ================================================================= -->
+                <!-- BOTTOM HALF: PLATFORM DIAGNOSTICS & SYSTEM REPORTING (ELIMINATES EMPTY VOID!) -->
+                <!-- ================================================================= -->
+                
+                <!-- 1. Platform Teşhis & Güvenlik Bellenimi Paneli -->
+                <ui:Card Padding="18" Margin="0,0,0,14">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <Grid Grid.Row="0" Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="18" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,10,0"/>
+                                <StackPanel>
+                                    <TextBlock Text="Platform Teşhisi &amp; Bellenim Güvenliği" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="UEFI Secure Boot, Donanım TPM, CPU sanallaştırma ve Windows güvenlik katmanı durumu." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- 4-Pillar Diagnostic Grid -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Pillar 1: Secure Boot -->
+                            <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <ui:SymbolIcon Symbol="Shield20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Güvenli Önyükleme" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Hardware.SecureBootStatus}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Pillar 2: TPM -->
+                            <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <ui:SymbolIcon Symbol="LockClosed20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="TPM Güvenlik Çipi" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Hardware.TpmStatus}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Pillar 3: Virtualization -->
+                            <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="CPU Sanallaştırma" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Hardware.VirtualizationStatus}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Pillar 4: UAC Permission -->
+                            <Border Grid.Column="6" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                        <ui:SymbolIcon Symbol="ShieldKeyhole20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="UAC Yetki Düzeyi" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                    <TextBlock Text="Yönetici (Tam Yetkili)" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Visibility="{Binding Hardware.IsAdmin, Converter={StaticResource BoolToVis}}"/>
+                                    <TextBlock Text="Standart Kullanıcı" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Visibility="{Binding Hardware.IsAdmin, Converter={StaticResource InverseBoolToVis}}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </ui:Card>
+
+                <!-- 2. Tek Tıkla Sistem Raporu & Sistem Araçları Paneli -->
+                <ui:Card Padding="18">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <ui:SymbolIcon Symbol="DocumentText20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="Sistem Donanım Raporu &amp; Yönetim Araçları" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            </StackPanel>
+                            <TextBlock Text="Tüm donanım ve depolama dökümünü tek tıkla HTML formatında dışa aktarın veya panoya kopyalayın." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <!-- Actions -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:Button Appearance="Primary"
+                                       Content="HTML Raporu Oluştur"
+                                       Icon="{ui:SymbolIcon OpenInNewWindow20}"
+                                       Command="{Binding ExportReportHtmlCommand}"
+                                       Padding="14,8"
+                                       Margin="0,0,8,0"/>
+
+                            <ui:Button Appearance="Secondary"
+                                       Content="Özeti Panoya Kopyala"
+                                       Icon="{ui:SymbolIcon Copy20}"
+                                       Command="{Binding CopySpecsToClipboardCommand}"
+                                       Padding="12,8"
+                                       Margin="0,0,8,0"/>
+
+                            <ui:Button Appearance="Secondary"
+                                       Content="Disk Yönetimi"
+                                       Icon="{ui:SymbolIcon HardDrive20}"
+                                       Command="{Binding OpenDiskManagementCommand}"
+                                       Padding="10,8"
+                                       Margin="0,0,6,0"/>
+
+                            <ui:Button Appearance="Secondary"
+                                       Content="Aygıt Yöneticisi"
+                                       Icon="{ui:SymbolIcon Settings20}"
+                                       Command="{Binding OpenDeviceManagerCommand}"
+                                       Padding="10,8"/>
+                        </StackPanel>
+                    </Grid>
+                </ui:Card>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- 2: Content Viewport (Tab 2: S.M.A.R.T. Health Cards) -->
+        <!-- ========================================================================= -->
+        <!-- 2: TAB 2 - S.M.A.R.T. SAĞLIK & FİZİKSEL DİSK ANALİZİ                       -->
+        <!-- ========================================================================= -->
         <ScrollViewer Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"
                       Visibility="{Binding IsSmartTab, Converter={StaticResource BoolToVis}}">
-            <StackPanel>
-                <ui:Card Padding="16,12" Margin="0,0,0,16">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,12,0"/>
-                        <StackPanel>
-                            <TextBlock Text="Fiziksel Sürücü Güvenlik &amp; S.M.A.R.T. Durumu" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Sürücü denetleyicisinden doğrudan çekilen arayüz tipi, sağlık durumu ve donanım ömrü." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+            <StackPanel Margin="0,0,0,16">
+                <!-- Info Header Card -->
+                <ui:Card Padding="18,14" Margin="0,0,0,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,12,0"/>
+                            <StackPanel>
+                                <TextBlock Text="Fiziksel Sürücü Güvenlik &amp; S.M.A.R.T. Analizi" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Sürücü denetleyicisinden doğrudan çekilen arayüz protokolü, donanım sıcaklığı ve yıpranma durumu." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
                         </StackPanel>
-                    </StackPanel>
+
+                        <ui:Button Grid.Column="1"
+                                   Appearance="Secondary"
+                                   Content="Disk Sağlığını Yenile"
+                                   Icon="{ui:SymbolIcon ArrowClockwise20}"
+                                   Command="{Binding LoadSmartHealthCommand}"
+                                   Padding="12,7"/>
+                    </Grid>
                 </ui:Card>
 
+                <!-- Disks List -->
                 <ItemsControl ItemsSource="{Binding SmartDisks}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:SmartDiskHealthItem}">
@@ -358,10 +618,11 @@
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
                                     <!-- Top Row: Disk Model & Health Badge -->
-                                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid Grid.Row="0" Margin="0,0,0,14">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
@@ -372,7 +633,7 @@
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Model}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                                    <TextBlock Text="{Binding InterfaceType}" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                                    <TextBlock Text="{Binding InterfaceType}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                                                     <TextBlock Text="{Binding MediaType}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,10,0"/>
                                                     <TextBlock Text="{Binding FormattedSize, StringFormat='Kapasite: {0}'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </StackPanel>
@@ -394,10 +655,10 @@
                                         </Border>
                                     </Grid>
 
-                                    <Separator Grid.Row="1" Margin="0,0,0,12" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                                    <Separator Grid.Row="1" Margin="0,0,0,14" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
 
-                                    <!-- Bottom Row: Diagnostic Details -->
-                                    <Grid Grid.Row="2">
+                                    <!-- Diagnostic Metrics (4 Columns) -->
+                                    <Grid Grid.Row="2" Margin="0,0,0,14">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
@@ -412,7 +673,7 @@
 
                                         <StackPanel Grid.Column="1">
                                             <TextBlock Text="Tahmini Sıcaklık" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <TextBlock Text="{Binding Temperature}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,3,0,0"/>
+                                            <TextBlock Text="{Binding Temperature}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,3,0,0"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="2">
@@ -425,6 +686,22 @@
                                             <TextBlock Text="{Binding SerialNumber, TargetNullValue='Korumalı'}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
                                         </StackPanel>
                                     </Grid>
+
+                                    <!-- Actions Row: TRIM Optimization -->
+                                    <Grid Grid.Row="3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="SSD / NVMe diskler için periyodik TRIM hücre bloklarını temiz tutar." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                        <ui:Button Grid.Column="1"
+                                                   Appearance="Secondary"
+                                                   Content="TRIM Komutu Gönder"
+                                                   Icon="{ui:SymbolIcon TopSpeed20}"
+                                                   Command="{Binding DataContext.RunTrimCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="C"
+                                                   Padding="12,5"/>
+                                    </Grid>
                                 </Grid>
                             </ui:Card>
                         </DataTemplate>
@@ -433,23 +710,27 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- 3: Content Viewport (Tab 3: Large File Finder 1GB+) -->
+        <!-- ========================================================================= -->
+        <!-- 3: TAB 3 - BÜYÜK DOSYA ANALİZÖRÜ (1GB+) (OVERHAUL)                         -->
+        <!-- ========================================================================= -->
         <Grid Grid.Row="1" Visibility="{Binding IsLargeFilesTab, Converter={StaticResource BoolToVis}}"
               Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Scanner Controls -->
+                <RowDefinition Height="Auto"/> <!-- Scanner Controls & Filters -->
                 <RowDefinition Height="*"/>    <!-- Large Files List -->
             </Grid.RowDefinitions>
 
             <!-- Scanner Toolbar Card -->
-            <ui:Card Grid.Row="0" Padding="16,14" Margin="0,0,0,16">
+            <ui:Card Grid.Row="0" Padding="18,14" Margin="0,0,0,16">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/> <!-- Row 0: Target Drive & Threshold Chips -->
+                        <RowDefinition Height="Auto"/> <!-- Row 1: Category Filter Chips -->
+                        <RowDefinition Height="Auto"/> <!-- Row 2: Progress & Radar Beam -->
                     </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <!-- Row 0: Target Drive & Action Buttons -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -461,12 +742,32 @@
                             
                             <ComboBox ItemsSource="{Binding AvailableDrives}" AutomationProperties.Name="Sürücü filtresi" 
                                       SelectedItem="{Binding SelectedDriveFilter, Mode=TwoWay}"
-                                      MinWidth="140"
+                                      MinWidth="130"
                                       Padding="8,4"
                                       Margin="0,0,16,0"/>
 
-                            <TextBlock Text="Eşik: " FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="1 GB ve Üzeri" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Text="Boyut Eşiği:" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            
+                            <!-- Threshold Preset Chips -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:Button Content="500 MB+" 
+                                           Command="{Binding SetThresholdCommand}" 
+                                           CommandParameter="500" 
+                                           Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="1 GB+ (Önerilen)" 
+                                           Command="{Binding SetThresholdCommand}" 
+                                           CommandParameter="1024" 
+                                           Appearance="Primary"
+                                           Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="2 GB+" 
+                                           Command="{Binding SetThresholdCommand}" 
+                                           CommandParameter="2048" 
+                                           Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="5 GB+" 
+                                           Command="{Binding SetThresholdCommand}" 
+                                           CommandParameter="5120" 
+                                           Padding="8,4"/>
+                            </StackPanel>
                         </StackPanel>
 
                         <!-- Start / Cancel Scan Buttons -->
@@ -488,16 +789,37 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Scan Progress Bar & Animated Beam -->
-                    <Grid Grid.Row="1">
+                    <!-- Row 1: Category Filter Chips & Summary Badge -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Tür Filtresi:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:Button Content="Tümü" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Tümü" Padding="8,3" Margin="0,0,4,0"/>
+                            <ui:Button Content="Videolar" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Video" Padding="8,3" Margin="0,0,4,0"/>
+                            <ui:Button Content="Disk İmajları" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Disk İmajı" Padding="8,3" Margin="0,0,4,0"/>
+                            <ui:Button Content="Arşivler" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Arşiv" Padding="8,3" Margin="0,0,4,0"/>
+                            <ui:Button Content="Kurulum / Oyun" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Kurulum / Oyun" Padding="8,3"/>
+                        </StackPanel>
+
+                        <!-- File Count & Total Size Summary Badge -->
+                        <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,4">
+                            <TextBlock Text="{Binding TotalLargeFilesSizeFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Row 2: Scan Progress & Radar Beam -->
+                    <Grid Grid.Row="2">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Status row: spinner + text -->
+                        <!-- Status text -->
                         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
                             <ui:ProgressRing IsIndeterminate="True"
                                              Width="12" Height="12"
@@ -523,7 +845,6 @@
                         <Border Grid.Row="2"
                                 Height="2"
                                 ClipToBounds="True"
-                                Margin="0,0,0,0"
                                 Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}">
                             <Rectangle HorizontalAlignment="Left" Width="180" Height="2">
                                 <Rectangle.Fill>
@@ -556,7 +877,7 @@
 
             <!-- Large Files Virtualized ListView -->
             <ListView Grid.Row="1" 
-                      ItemsSource="{Binding LargeFiles}"
+                      ItemsSource="{Binding FilteredLargeFiles}"
                       BorderThickness="0"
                       Background="Transparent"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -587,11 +908,12 @@
                         <ui:Card Padding="14,12" ClipToBounds="False">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeExtCol"/> <!-- Extension Icon -->
-                                    <ColumnDefinition Width="2.5*"/> <!-- File Name & Path -->
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeSizeCol"/>  <!-- Formatted Size -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeExtCol"/>  <!-- Extension Badge -->
+                                    <ColumnDefinition Width="2.5*"/>                               <!-- File Name & Path -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeCatCol"/>  <!-- Category Badge -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeSizeCol"/> <!-- Formatted Size -->
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="LargeBarCol"/>  <!-- Visual Space Bar -->
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeActionCol"/> <!-- Action Buttons -->
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeActionCol"/><!-- Action Buttons -->
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Extension Badge -->
@@ -613,8 +935,20 @@
                                     <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
+                                <!-- Category Badge -->
+                                <Border Grid.Column="2" 
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="6" 
+                                        Padding="6,3" 
+                                        VerticalAlignment="Center" 
+                                        Margin="0,0,14,0">
+                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </Border>
+
                                 <!-- Formatted Size -->
-                                <TextBlock Grid.Column="2" 
+                                <TextBlock Grid.Column="3" 
                                            Text="{Binding SizeFormatted}" 
                                            FontSize="14" 
                                            FontWeight="Bold" 
@@ -624,33 +958,44 @@
                                            Margin="0,0,14,0"/>
 
                                 <!-- Visual Size Bar -->
-                                <ProgressBar Grid.Column="3" 
+                                <ProgressBar Grid.Column="4" 
                                              Value="{Binding SizePercentage}" 
                                              Maximum="100" 
                                              Height="6" 
-                                             MinWidth="100"
-                                             MaxWidth="180"
+                                             MinWidth="80"
+                                             MaxWidth="140"
                                              Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
                                              VerticalAlignment="Center" 
                                              Margin="0,0,14,0"/>
 
-                                <!-- Action Buttons -->
-                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                                <!-- Action Buttons: Safe Recycle Bin, Folder Location, Permanent Delete -->
+                                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ui:Button Appearance="Secondary" 
+                                               Icon="{ui:SymbolIcon Delete20}"
+                                               Command="{Binding DataContext.SendToRecycleBinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               ToolTip="Geri Dönüşüm Kutusuna Taşı (Güvenli Silme)"
+                                               Padding="8,6" 
+                                               Margin="0,0,6,0" 
+                                               AutomationProperties.Name="Geri Dönüşüm Kutusuna Taşı"/>
+
                                     <ui:Button Appearance="Secondary" 
                                                Icon="{ui:SymbolIcon FolderOpen20}"
                                                Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                ToolTip="Klasörde Göster"
                                                Padding="8,6" 
-                                               Margin="0,0,6,0" AutomationProperties.Name="Klasörde Göster"/>
+                                               Margin="0,0,6,0" 
+                                               AutomationProperties.Name="Klasörde Göster"/>
 
                                     <ui:Button Appearance="Danger" 
                                                Icon="{ui:SymbolIcon Dismiss20}"
                                                Command="{Binding DataContext.DeleteLargeFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                IsEnabled="{Binding IsDeleting, Converter={StaticResource InverseBool}}"
-                                               ToolTip="Dosyayı Güvenle Sil"
-                                               Padding="8,6" AutomationProperties.Name="Dosyayı Güvenle Sil"/>
+                                               ToolTip="Kalıcı Olarak Sil"
+                                               Padding="8,6" 
+                                               AutomationProperties.Name="Kalıcı Olarak Sil"/>
                                 </StackPanel>
                             </Grid>
                         </ui:Card>

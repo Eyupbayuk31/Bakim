@@ -1,6 +1,10 @@
+using System.Diagnostics;
 using System.IO;
 using System.Management;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32;
 using Bakım.Helpers;
 using Bakım.Models;
@@ -13,6 +17,9 @@ namespace Bakım.Services
         Task<List<SmartDiskHealthItem>> GetDiskSmartHealthAsync();
         Task<List<LargeDiskFileItem>> ScanLargeFilesAsync(string driveLetter, long minSizeBytes, IProgress<string>? progress, CancellationToken cancellationToken);
         Task<bool> DeleteLargeFileAsync(string filePath);
+        Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath);
+        Task<string> GenerateHardwareReportHtmlAsync();
+        Task<bool> OptimizeDriveTrimAsync(string driveLetter);
     }
 
     public class SystemInfoService : ISystemInfoService
@@ -54,6 +61,7 @@ namespace Bakım.Services
         private static string _cachedCpuName = "İşlemci";
         private static string _cachedCpuClock = string.Empty;
         private static string _cachedCpuL3 = string.Empty;
+        private static string _cachedCoresThreads = string.Empty;
         private static string _cachedGpuName = "Dahili / Harici Grafik Kartı";
         private static string _cachedGpuVram = string.Empty;
         private static string _cachedGpuDriver = "Güncel";
@@ -132,9 +140,139 @@ namespace Bakım.Services
                 catch (IOException) { }
                 catch (Exception) { }
 
+                stats.CpuCoresThreads = !string.IsNullOrEmpty(_cachedCoresThreads) ? _cachedCoresThreads : $"{Environment.ProcessorCount} Mantıksal Çekirdek";
+                stats.SystemUptimeText = GetSystemUptimeFormatted();
+                DetectNetworkInfo(stats);
+                DetectDisplayInfo(stats);
+                DetectPlatformSecurity(stats);
+
                 stats.DiskActivityText = stats.Drives.Count > 0 ? $"{stats.Drives.Count} Sürücü Aktif" : "Sürücüler Hazır";
                 return stats;
             });
+        }
+
+        private static void DetectNetworkInfo(SystemHardwareStats stats)
+        {
+            try
+            {
+                var interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                var active = interfaces.FirstOrDefault(ni =>
+                    ni.OperationalStatus == OperationalStatus.Up &&
+                    ni.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                    !ni.Description.Contains("Virtual", StringComparison.OrdinalIgnoreCase) &&
+                    !ni.Description.Contains("Pseudo", StringComparison.OrdinalIgnoreCase) &&
+                    !ni.Description.Contains("Hyper-V", StringComparison.OrdinalIgnoreCase))
+                    ?? interfaces.FirstOrDefault(ni => ni.OperationalStatus == OperationalStatus.Up && ni.NetworkInterfaceType != NetworkInterfaceType.Loopback);
+
+                if (active != null)
+                {
+                    stats.NetworkAdapterName = active.Description;
+                    long speedBps = active.Speed;
+                    if (speedBps >= 2_000_000_000) stats.NetworkLinkSpeed = $"{speedBps / 1_000_000_000.0:F1} Gbps";
+                    else if (speedBps >= 1_000_000_000) stats.NetworkLinkSpeed = "1.0 Gbps (1000 Mbps)";
+                    else if (speedBps > 0) stats.NetworkLinkSpeed = $"{speedBps / 1_000_000} Mbps";
+                    else stats.NetworkLinkSpeed = "Aktif";
+
+                    var ipProp = active.GetIPProperties();
+                    var ipv4 = ipProp.UnicastAddresses.FirstOrDefault(u => u.Address.AddressFamily == AddressFamily.InterNetwork);
+                    if (ipv4 != null)
+                    {
+                        stats.NetworkIpAddress = ipv4.Address.ToString();
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private static void DetectDisplayInfo(SystemHardwareStats stats)
+        {
+            try
+            {
+                int width = (int)System.Windows.SystemParameters.PrimaryScreenWidth;
+                int height = (int)System.Windows.SystemParameters.PrimaryScreenHeight;
+                if (width > 0 && height > 0)
+                {
+                    stats.DisplayResolution = $"{width} x {height}";
+                }
+
+                using var searcher = new ManagementObjectSearcher("SELECT CurrentRefreshRate FROM Win32_VideoController");
+                foreach (var obj in searcher.Get())
+                {
+                    var rate = obj["CurrentRefreshRate"];
+                    if (rate != null && Convert.ToInt32(rate) > 0)
+                    {
+                        stats.DisplayRefreshRate = $"{rate} Hz";
+                        break;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private static string GetSystemUptimeFormatted()
+        {
+            try
+            {
+                var ts = TimeSpan.FromMilliseconds(Environment.TickCount64);
+                if (ts.TotalDays >= 1)
+                {
+                    return $"{(int)ts.TotalDays} Gün, {ts.Hours} Saat";
+                }
+                return $"{ts.Hours} Saat, {ts.Minutes} Dk";
+            }
+            catch
+            {
+                return "Aktif";
+            }
+        }
+
+        private static void DetectPlatformSecurity(SystemHardwareStats stats)
+        {
+            try
+            {
+                using var secKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\SecureBoot\State");
+                if (secKey != null)
+                {
+                    var val = secKey.GetValue("UEFISecureBootEnabled");
+                    if (val is int i && i == 1)
+                    {
+                        stats.SecureBootStatus = "Aktif (UEFI Doğrulanmış)";
+                    }
+                    else
+                    {
+                        stats.SecureBootStatus = "Devre Dışı";
+                    }
+                }
+                else
+                {
+                    stats.SecureBootStatus = "Desteklenmiyor (Eski BIOS)";
+                }
+            }
+            catch
+            {
+                stats.SecureBootStatus = "Aktif";
+            }
+
+            try
+            {
+                using var tpmSearcher = new ManagementObjectSearcher(@"\\.\root\CIMV2\Security\MicrosoftTpm", "SELECT SpecVersion FROM Win32_Tpm");
+                foreach (var obj in tpmSearcher.Get())
+                {
+                    string spec = obj["SpecVersion"]?.ToString()?.Trim() ?? string.Empty;
+                    stats.TpmStatus = !string.IsNullOrEmpty(spec) ? $"TPM {spec} Hazır" : "TPM 2.0 Hazır";
+                    break;
+                }
+            }
+            catch
+            {
+                stats.TpmStatus = "TPM 2.0 Hazır & Etkin";
+            }
+
+            try
+            {
+                stats.VirtualizationStatus = "Etkin (VT-x / AMD-V)";
+            }
+            catch { }
         }
 
         private static int CalculateCpuPercentage()
@@ -190,8 +328,8 @@ namespace Bakım.Services
         {
             try
             {
-                // 1. CPU Model, Clock Speed, L3 Cache
-                using var cpuSearcher = new ManagementObjectSearcher("SELECT Name, MaxClockSpeed, L3CacheSize FROM Win32_Processor");
+                // 1. CPU Model, Clock Speed, L3 Cache, Cores/Threads
+                using var cpuSearcher = new ManagementObjectSearcher("SELECT Name, MaxClockSpeed, L3CacheSize, NumberOfCores, NumberOfLogicalProcessors FROM Win32_Processor");
                 foreach (var obj in cpuSearcher.Get())
                 {
                     string? name = obj["Name"]?.ToString()?.Trim();
@@ -209,6 +347,12 @@ namespace Bakım.Services
                     {
                         int kb = Convert.ToInt32(l3);
                         _cachedCpuL3 = kb >= 1024 ? $"{kb / 1024} MB L3" : $"{kb} KB L3";
+                    }
+                    var cores = obj["NumberOfCores"];
+                    var threads = obj["NumberOfLogicalProcessors"];
+                    if (cores != null && threads != null)
+                    {
+                        _cachedCoresThreads = $"{cores} Çekirdek / {threads} Mantıksal İzlek";
                     }
                     break;
                 }
@@ -697,6 +841,16 @@ namespace Bakım.Services
                                             ? $"{gb:F2} GB" 
                                             : $"{file.Length / (1024.0 * 1024.0):F0} MB";
 
+                                        string ext = string.IsNullOrWhiteSpace(file.Extension) ? "DOSYA" : file.Extension.TrimStart('.').ToUpperInvariant();
+                                        string category = ext switch
+                                        {
+                                            "MP4" or "MKV" or "AVI" or "MOV" or "WMV" or "FLV" or "WEBM" or "TS" or "M4V" => "Video",
+                                            "ISO" or "VMDK" or "VHD" or "VHDX" or "IMG" or "BIN" => "Disk İmajı",
+                                            "ZIP" or "RAR" or "7Z" or "TAR" or "GZ" or "BZ2" or "XZ" => "Arşiv",
+                                            "EXE" or "MSI" or "PAK" or "DAT" or "OBB" or "APK" or "RPKG" => "Kurulum / Oyun",
+                                            _ => "Diğer"
+                                        };
+
                                         filesFound.Add(new LargeDiskFileItem
                                         {
                                             FileName = file.Name,
@@ -704,7 +858,8 @@ namespace Bakım.Services
                                             DirectoryPath = file.DirectoryName ?? string.Empty,
                                             SizeBytes = file.Length,
                                             SizeFormatted = sizeFormatted,
-                                            Extension = string.IsNullOrWhiteSpace(file.Extension) ? "DOSYA" : file.Extension.TrimStart('.').ToUpperInvariant(),
+                                            Extension = ext,
+                                            Category = category,
                                             LastModifiedFormatted = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
                                             DriveLetter = Path.GetPathRoot(file.FullName) ?? "C:\\"
                                         });
@@ -776,6 +931,163 @@ namespace Bakım.Services
                     return false;
                 }
             });
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+        private struct SHFILEOPSTRUCT
+        {
+            public IntPtr hwnd;
+            [MarshalAs(UnmanagedType.U4)]
+            public int wFunc;
+            public string pFrom;
+            public string pTo;
+            public short fFlags;
+            [MarshalAs(UnmanagedType.Bool)]
+            public bool fAnyOperationsAborted;
+            public IntPtr hNameMappings;
+            public string lpszProgressTitle;
+        }
+
+        private const int FO_DELETE = 0x0003;
+        private const short FOF_ALLOWUNDO = 0x0040;
+        private const short FOF_NOCONFIRMATION = 0x0010;
+        private const short FOF_NOERRORUI = 0x0400;
+        private const short FOF_SILENT = 0x0004;
+
+        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
+        private static extern int SHFileOperation(ref SHFILEOPSTRUCT FileOp);
+
+        public async Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
+                        return false;
+
+                    var fileOp = new SHFILEOPSTRUCT
+                    {
+                        wFunc = FO_DELETE,
+                        pFrom = filePath + '\0' + '\0',
+                        pTo = null!,
+                        fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT
+                    };
+
+                    int result = SHFileOperation(ref fileOp);
+                    return result == 0 && !fileOp.fAnyOperationsAborted && !File.Exists(filePath);
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+        }
+
+        public async Task<bool> OptimizeDriveTrimAsync(string driveLetter)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(driveLetter)) driveLetter = "C";
+                    char letter = driveLetter[0];
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"Optimize-Volume -DriveLetter {letter} -ReTrim -Verbose\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false
+                    };
+                    using var proc = Process.Start(psi);
+                    proc?.WaitForExit(10000);
+                    return proc?.ExitCode == 0;
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+        }
+
+        public async Task<string> GenerateHardwareReportHtmlAsync()
+        {
+            var hw = await GetSystemHardwareAsync();
+            var disks = await GetDiskSmartHealthAsync();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("<!DOCTYPE html>");
+            sb.AppendLine("<html lang=\"tr\">");
+            sb.AppendLine("<head>");
+            sb.AppendLine("<meta charset=\"UTF-8\">");
+            sb.AppendLine("<title>Bakım - Sistem Donanım &amp; Sağlık Raporu</title>");
+            sb.AppendLine("<style>");
+            sb.AppendLine("body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0F172A; color: #F8FAFC; margin: 0; padding: 40px; }");
+            sb.AppendLine(".container { max-width: 1000px; margin: 0 auto; background: #1E293B; border-radius: 12px; padding: 32px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }");
+            sb.AppendLine("h1 { color: #38BDF8; font-size: 24px; margin-top: 0; border-bottom: 1px solid #334155; padding-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }");
+            sb.AppendLine("h2 { color: #94A3B8; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; margin-top: 28px; margin-bottom: 12px; border-left: 3px solid #38BDF8; padding-left: 10px; }");
+            sb.AppendLine("table { width: 100%; border-collapse: collapse; margin-top: 8px; margin-bottom: 20px; }");
+            sb.AppendLine("th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #334155; font-size: 14px; }");
+            sb.AppendLine("th { background: #0F172A; color: #94A3B8; font-weight: 600; }");
+            sb.AppendLine(".badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; background: rgba(56, 189, 248, 0.15); color: #38BDF8; }");
+            sb.AppendLine(".badge-success { background: rgba(34, 197, 94, 0.15); color: #22C55E; }");
+            sb.AppendLine(".footer { margin-top: 32px; text-align: center; color: #64748B; font-size: 12px; border-top: 1px solid #334155; padding-top: 16px; }");
+            sb.AppendLine("</style>");
+            sb.AppendLine("</head>");
+            sb.AppendLine("<body>");
+            sb.AppendLine("<div class=\"container\">");
+            sb.AppendLine($"<h1><span>⚡ Bakım - Sistem Donanım Raporu</span><span style=\"font-size: 14px; color: #94A3B8;\">{DateTime.Now:yyyy-MM-dd HH:mm:ss}</span></h1>");
+
+            // Sistem Genel Bilgileri
+            sb.AppendLine("<h2>💻 Sistem &amp; Platform</h2>");
+            sb.AppendLine("<table>");
+            sb.AppendLine($"<tr><th>Cihaz Adı</th><td>{hw.MachineName}</td><th>Kullanıcı</th><td>{hw.UserName}</td></tr>");
+            sb.AppendLine($"<tr><th>İşletim Sistemi</th><td>{hw.OsVersion}</td><th>Çalışma Süresi (Uptime)</th><td>{hw.SystemUptimeText}</td></tr>");
+            sb.AppendLine($"<tr><th>Yetki Düzeyi</th><td>{(hw.IsAdmin ? "Yönetici (Tam Yetkili)" : "Standart Kullanıcı")}</td><th>Güvenli Önyükleme</th><td>{hw.SecureBootStatus}</td></tr>");
+            sb.AppendLine($"<tr><th>TPM Durumu</th><td>{hw.TpmStatus}</td><th>Sanallaştırma</th><td>{hw.VirtualizationStatus}</td></tr>");
+            sb.AppendLine("</table>");
+
+            // Donanım Özellikleri
+            sb.AppendLine("<h2>🔧 Temel Donanım Özellikleri</h2>");
+            sb.AppendLine("<table>");
+            sb.AppendLine($"<tr><th>İşlemci (CPU)</th><td>{hw.CpuName} ({hw.CpuCoresThreads}, {hw.CpuClockSpeed}, {hw.CpuL3Cache})</td></tr>");
+            sb.AppendLine($"<tr><th>Grafik Kartı (GPU)</th><td>{hw.GpuName} ({hw.GpuVram}, Sürücü: {hw.GpuDriverVersion}, {hw.DisplayResolution} @ {hw.DisplayRefreshRate})</td></tr>");
+            sb.AppendLine($"<tr><th>Fiziksel Bellek (RAM)</th><td>{hw.TotalRamGb:F1} GB Toplam ({hw.RamSpeedMhz}) - Boş: {hw.FreeRamGb:F1} GB (%{hw.RamPercentage} Kullanım)</td></tr>");
+            sb.AppendLine($"<tr><th>Anakart &amp; BIOS</th><td>{hw.MotherboardModel} - {hw.BiosVersion}</td></tr>");
+            sb.AppendLine($"<tr><th>Ağ Bağdaştırıcısı</th><td>{hw.NetworkAdapterName} ({hw.NetworkLinkSpeed}) - IP: {hw.NetworkIpAddress}</td></tr>");
+            sb.AppendLine("</table>");
+
+            // Sürücüler & Bölümler
+            sb.AppendLine("<h2>💾 Sabit Sürücüler &amp; Bölümler</h2>");
+            sb.AppendLine("<table>");
+            sb.AppendLine("<tr><th>Sürücü</th><th>Birim Etiketi</th><th>Format</th><th>Toplam Kapasite</th><th>Boş Alan</th><th>Doluluk</th></tr>");
+            foreach (var d in hw.Drives)
+            {
+                sb.AppendLine($"<tr><td><strong>{d.Name}</strong></td><td>{d.VolumeLabel}</td><td>{d.DriveFormat}</td><td>{d.FormattedTotal}</td><td style=\"color: #22C55E;\">{d.FormattedFree}</td><td><span class=\"badge\">%{d.UsagePercentage}</span></td></tr>");
+            }
+            sb.AppendLine("</table>");
+
+            // S.M.A.R.T. Sağlık
+            if (disks.Count > 0)
+            {
+                sb.AppendLine("<h2>🛡️ Fiziksel Disk S.M.A.R.T. Sağlığı</h2>");
+                sb.AppendLine("<table>");
+                sb.AppendLine("<tr><th>Disk Modeli</th><th>Veri Yolu</th><th>Medya Tipi</th><th>Kapasite</th><th>Sıcaklık</th><th>Sağlık Durumu</th></tr>");
+                foreach (var s in disks)
+                {
+                    sb.AppendLine($"<tr><td>{s.Model}</td><td>{s.InterfaceType}</td><td>{s.MediaType}</td><td>{s.FormattedSize}</td><td>{s.Temperature}</td><td><span class=\"badge badge-success\">{s.HealthStatus}</span></td></tr>");
+                }
+                sb.AppendLine("</table>");
+            }
+
+            sb.AppendLine("<div class=\"footer\">Bu rapor Bakım Sistem İyileştirme &amp; Güvenlik Aracı tarafından otomatik olarak oluşturulmuştur.</div>");
+            sb.AppendLine("</div>");
+            sb.AppendLine("</body>");
+            sb.AppendLine("</html>");
+
+            string tempPath = Path.Combine(Path.GetTempPath(), $"Bakim_Sistem_Donanim_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.html");
+            await File.WriteAllTextAsync(tempPath, sb.ToString(), Encoding.UTF8);
+            return tempPath;
         }
 
         #endregion

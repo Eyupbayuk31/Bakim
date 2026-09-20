@@ -1,22 +1,28 @@
-# Bakım v3.14.0 - Sürüm Notları
+# Bakım v3.15.0 - Sürüm Notları
 
-## Windows Tweaker Master-Detail Mimarisi & Zengin Bilgilendirici Hover Kartları
+## Donanım, Depolama & S.M.A.R.T. Modülü Kapsamlı Görsel & Fonksiyonel Revizyonu
 
-- **Tekil & Temiz Kategori Yönetimi (Master-Detail Mimarisi):**
-  - Sol ana gezinme menüsündeki 13 alt butonluk akordiyon karmaşası tek bir sade ve kurumsal "Windows Tweaker" butonuna dönüştürüldü.
-  - Sayfa içindeki açılır pencere (popup flyout) ve 5 adet hardcoded hap buton kaldırıldı; yerine tüm 14 kategoriyi sol tarafta dikey olarak listeleyen, canlı sayaç rozetli (`Aktif/Toplam`) modern bir Kategori Rayı (Navigation Rail) entegre edildi.
-  - Sağ taraftaki çalışma alanında kategoriye özgü filtreleme, genel sistem çapında canlı arama (Ctrl + F / Ctrl + K) ve işlem araç çubuğu kusursuz bir hiyerarşide toplandı.
+- **Modern Fluent 2.0 Segmented Alt Sekme Çubuğu:**
+  - Sayfa üstündeki sade ve farksız butonlar kaldırıldı; aktif sekme durumunu pürüzsüz gösteren modern Fluent Segmented Control entegre edildi (`Donanım & Telemetri`, `S.M.A.R.T. Sağlık`, `Büyük Dosya Analizörü`).
 
-- **Zengin Kategori Bilgilendirme Kartları (Category Hover Cards):**
-  - Kategori butonlarının üzerine gelindiğinde kategorinin ne işe yaradığını, sisteme sağladığı katkıyı ve o kategoride kaç ayarın listelenip kaç tanesinin aktif olduğunu açıklayan zengin Fluent bilgilendirme kartları eklendi.
+- **Bozuk CPU Göstergesinin Giderilmesi & Zengin 6 KPI Kartı:**
+  - CPU kartındaki bozuk, eksik görünen dairesel ilerleme halkası kaldırıldı; yerine yük durumuna göre dinamik renk alan (Yeşil / Sarı / Kırmızı) kristal netliğinde modern **CPU Yük Göstergesi Rozeti** (`%15 YÜK`) ve çekirdek/izlek dökümü getirildi.
+  - Kartlar 6 ana bileşene genişletildi: İşlemci (CPU), Ekran Kartı (GPU & Monitör Çözünürlüğü/Hz), Fiziksel Bellek (RAM), Anakart & Bellenim (Firmware), Ağ Bağdaştırıcısı (LAN/Wi-Fi Hızı & Yerel IP), Cihaz & Uptime (Sistem Çalışma Süresi).
 
-- **Anlaşılır İnce Ayar Hover Kartları (İnsanca Açıklamalar):**
-  - Kullanıcı için anlamsız olan ham Kayıt Defteri (Registry) yolları (`HKCU\Software\...`) ve veri tipleri (`REG_DWORD`) arayüzden tamamen temizlendi.
-  - Her ayar kartının üzerine gelindiğinde açılan yardım penceresinde:
-    - **Ayar Ne İşe Yarar:** Ayarın sisteme ve kullanıcıya sunduğu somut fayda.
-    - **Güvenlik & Uyumluluk:** Ayarın herkes için güvenli mi yoksa kişisel bir tercih mi olduğu.
-    - **Uygulanma Şekli:** Değişikliğin anında mı geçerli olduğu yoksa oturum/bilgisayar yeniden başlatması mı gerektirdiği.
-    - **Geri Alınabilirlik:** Ayarın istendiğinde kapatılıp Windows orijinal varsayılanına dönebileceği bilgisi sade ve anlaşılır Türkçe ile sunuldu.
+- **Etkileşimli Sürücü & Depolama Kartları:**
+  - Tek satırlık pasif çubuk yerine zengin sürücü panelleri tasarlandı.
+  - Kartlar üzerine doğrudan eylem butonları eklendi:
+    - *Disk Temizleme* (Windows cleanmgr o sürücü için başlatılır)
+    - *Büyük Dosyaları Tara* (Doğrudan analizör sekmesine o sürücü seçili olarak geçer ve taramayı başlatır)
+    - *Gezginde Aç* (Sürücü kök dizinini açar)
 
-- **Anti-AI & Kurumsal Tasarım Disiplini:**
-  - Arayüzde yapay zeka yapımı hissi veren uyumsuz simgeler ve çocuksu emojiler kaldırıldı; Microsoft Windows 11 yerel tasarım dili (Wpf.Ui Fluent 2 sembolleri ve Slate Dark renk paleti) eksiksiz uygulandı.
+- **Platform Teşhis & Donanım Güvenlik Paneli:**
+  - Sayfa altındaki boş alan değerlendirildi; Secure Boot (Güvenli Önyükleme), TPM 2.0 Donanım Çipi, CPU Sanallaştırma (VT-x / AMD-V) ve UAC Yetki Düzeyi durumlarını anlık denetleyen 4 sütunlu teşhis paneli inşa edildi.
+
+- **Tek Tıkla Donanım Raporu & Sistem Yönetim Araçları:**
+  - Tek tıkla tüm donanım, sürücü ve güvenlik envanterini koyu temalı profesyonel bir HTML raporuna dönüştürme ve tarayıcıda açma imkanı getirildi.
+  - Tüm sistem özetini temiz metin olarak panoya kopyalama ve Disk Yönetimi (`diskmgmt.msc`) ile Aygıt Yöneticisi (`devmgmt.msc`) açma kısayolları eklendi.
+
+- **Gelişmiş S.M.A.R.T. Sağlık & Büyük Dosya Analizörü:**
+  - Fiziksel disk kartlarına tek tıkla SSD hücre bloklarını optimize eden **TRIM Komutu Gönder** özelliği eklendi.
+  - Büyük Dosyalar sekmesine boyut eşik hapları (`500MB+`, `1GB+`, `2GB+`, `5GB+`), anında filtreleyen dosya türü filtreleri (`Videolar`, `Disk İmajları`, `Arşivler`, `Kurulum / Oyun`), toplam kaplanan alan göstergesi ve **Geri Dönüşüm Kutusuna Taşı (Güvenli Silme)** özelliği eklendi.

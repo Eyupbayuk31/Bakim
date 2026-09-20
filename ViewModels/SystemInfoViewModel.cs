@@ -25,6 +25,7 @@ namespace Bakım.ViewModels
             Drives = new ObservableCollection<DriveInfoItem>();
             SmartDisks = new ObservableCollection<SmartDiskHealthItem>();
             LargeFiles = new ObservableCollection<LargeDiskFileItem>();
+            FilteredLargeFiles = new ObservableCollection<LargeDiskFileItem>();
             AvailableDrives = new ObservableCollection<string> { "Tüm Sürücüler" };
 
             // Sabit sürücü harflerini ekle
@@ -69,6 +70,7 @@ namespace Bakım.ViewModels
         public ObservableCollection<DriveInfoItem> Drives { get; }
         public ObservableCollection<SmartDiskHealthItem> SmartDisks { get; }
         public ObservableCollection<LargeDiskFileItem> LargeFiles { get; }
+        public ObservableCollection<LargeDiskFileItem> FilteredLargeFiles { get; }
         public ObservableCollection<string> AvailableDrives { get; }
 
         [ObservableProperty]
@@ -98,6 +100,12 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private long _minFileSizeThresholdMb = 1024; // 1 GB varsayılan
+
+        [ObservableProperty]
+        private string _selectedCategoryFilter = "Tümü";
+
+        [ObservableProperty]
+        private string _totalLargeFilesSizeFormatted = "0 Dosya (0 GB)";
 
         partial void OnActiveSubTabChanged(string value)
         {
@@ -183,6 +191,7 @@ namespace Bakım.ViewModels
                     LargeFiles.Add(f);
                 }
 
+                UpdateLargeFilesFilter();
                 ScanProgressText = $"Tarama tamamlandı! {found.Count} adet büyük dosya bulundu.";
             }
             catch (OperationCanceledException)
@@ -236,6 +245,7 @@ namespace Bakım.ViewModels
                 if (deleted)
                 {
                     LargeFiles.Remove(file);
+                    UpdateLargeFilesFilter();
                     ScanProgressText = $"'{file.FileName}' başarıyla silindi.";
                 }
                 else
@@ -247,6 +257,194 @@ namespace Bakım.ViewModels
             {
                 file.IsDeleting = false;
             }
+        }
+
+        [RelayCommand]
+        public async Task SendToRecycleBinAsync(LargeDiskFileItem? file)
+        {
+            if (file == null || file.IsDeleting) return;
+
+            file.IsDeleting = true;
+            try
+            {
+                bool moved = await _infoService.DeleteLargeFileToRecycleBinAsync(file.FilePath);
+                if (moved)
+                {
+                    LargeFiles.Remove(file);
+                    UpdateLargeFilesFilter();
+                    ScanProgressText = $"'{file.FileName}' Geri Dönüşüm Kutusuna taşındı.";
+                }
+                else
+                {
+                    ScanProgressText = $"'{file.FileName}' Geri Dönüşüm Kutusuna taşınamadı (kullanımda olabilir).";
+                }
+            }
+            finally
+            {
+                file.IsDeleting = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task SetThresholdAsync(long thresholdMb)
+        {
+            MinFileSizeThresholdMb = thresholdMb;
+            await ScanLargeFilesAsync();
+        }
+
+        [RelayCommand]
+        public void SetCategoryFilter(string category)
+        {
+            SelectedCategoryFilter = category;
+            UpdateLargeFilesFilter();
+        }
+
+        private void UpdateLargeFilesFilter()
+        {
+            FilteredLargeFiles.Clear();
+            var matches = SelectedCategoryFilter == "Tümü"
+                ? LargeFiles
+                : LargeFiles.Where(f => f.Category.Equals(SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase) ||
+                                       f.Category.Contains(SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase));
+
+            long totalBytes = 0;
+            int count = 0;
+            foreach (var file in matches)
+            {
+                FilteredLargeFiles.Add(file);
+                totalBytes += file.SizeBytes;
+                count++;
+            }
+
+            double gb = totalBytes / (1024.0 * 1024.0 * 1024.0);
+            TotalLargeFilesSizeFormatted = count > 0 
+                ? $"{count} Dosya ({gb:F1} GB Toplam Alan)" 
+                : "0 Dosya (0 GB)";
+        }
+
+        [RelayCommand]
+        public void CleanDrive(string? driveName)
+        {
+            try
+            {
+                string drive = string.IsNullOrWhiteSpace(driveName) ? "C:" : driveName.TrimEnd('\\');
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "cleanmgr.exe",
+                    Arguments = $"/d {drive}",
+                    UseShellExecute = true
+                });
+                StatusText = $"{drive} için Windows Disk Temizleme aracı açıldı.";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Disk temizleme açılamadı: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        public void OpenDriveInExplorer(string? driveName)
+        {
+            try
+            {
+                string drive = string.IsNullOrWhiteSpace(driveName) ? "C:\\" : driveName;
+                Process.Start("explorer.exe", drive);
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public async Task ScanDriveForLargeFilesAsync(string? driveName)
+        {
+            if (!string.IsNullOrWhiteSpace(driveName))
+            {
+                var match = AvailableDrives.FirstOrDefault(d => d.StartsWith(driveName.Substring(0, 1), StringComparison.OrdinalIgnoreCase));
+                if (match != null)
+                {
+                    SelectedDriveFilter = match;
+                }
+            }
+            ActiveSubTab = "LargeFiles";
+            await ScanLargeFilesAsync();
+        }
+
+        [RelayCommand]
+        public async Task RunTrimAsync(string? driveName)
+        {
+            string drive = string.IsNullOrWhiteSpace(driveName) ? "C" : driveName.Substring(0, 1);
+            StatusText = $"{drive}: sürücüsüne TRIM komutu gönderiliyor...";
+            bool ok = await _infoService.OptimizeDriveTrimAsync(drive);
+            if (ok)
+            {
+                StatusText = $"{drive}: sürücüsü başarıyla optimize edildi (TRIM tamamlandı).";
+            }
+            else
+            {
+                StatusText = $"{drive}: TRIM komutu uygulanamadı (Yönetici yetkisi gerekebilir).";
+            }
+        }
+
+        [RelayCommand]
+        public void CopySpecsToClipboard()
+        {
+            try
+            {
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("=== BAKIM - SİSTEM DONANIM & PLATFORM ÖZETİ ===");
+                sb.AppendLine($"İşlemci (CPU): {Hardware.CpuName} ({Hardware.CpuCoresThreads}, {Hardware.CpuClockSpeed}, {Hardware.CpuL3Cache})");
+                sb.AppendLine($"Grafik Kartı (GPU): {Hardware.GpuName} ({Hardware.GpuVram}, Sürücü: {Hardware.GpuDriverVersion}, {Hardware.DisplayResolution} @ {Hardware.DisplayRefreshRate})");
+                sb.AppendLine($"Bellek (RAM): {Hardware.TotalRamGb:F1} GB Toplam ({Hardware.RamSpeedMhz}) - Boş: {Hardware.FreeRamGb:F1} GB (%{Hardware.RamPercentage} Yük)");
+                sb.AppendLine($"Anakart & BIOS: {Hardware.MotherboardModel} - {Hardware.BiosVersion}");
+                sb.AppendLine($"Ağ Kartı: {Hardware.NetworkAdapterName} ({Hardware.NetworkLinkSpeed}) - IP: {Hardware.NetworkIpAddress}");
+                sb.AppendLine($"İşletim Sistemi: {Hardware.OsVersion} (Uptime: {Hardware.SystemUptimeText})");
+                sb.AppendLine($"Güvenlik & Bellenim: Secure Boot: {Hardware.SecureBootStatus} | TPM: {Hardware.TpmStatus} | Sanallaştırma: {Hardware.VirtualizationStatus}");
+                sb.AppendLine("--- Sabit Sürücüler ---");
+                foreach (var d in Drives)
+                {
+                    sb.AppendLine($"{d.Name} ({d.VolumeLabel}) - Toplam: {d.FormattedTotal}, Boş: {d.FormattedFree} (%{d.UsagePercentage} Dolu)");
+                }
+
+                System.Windows.Clipboard.SetText(sb.ToString());
+                StatusText = "Sistem donanım özeti panoya başarıyla kopyalandı!";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Panoya kopyalanamadı: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        public async Task ExportReportHtmlAsync()
+        {
+            try
+            {
+                StatusText = "HTML donanım raporu hazırlanıyor...";
+                string path = await _infoService.GenerateHardwareReportHtmlAsync();
+                StatusText = "Rapor oluşturuldu, varsayılan tarayıcıda açılıyor...";
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Rapor oluşturulamadı: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        public void OpenDiskManagement()
+        {
+            try { Process.Start(new ProcessStartInfo("diskmgmt.msc") { UseShellExecute = true }); } catch { }
+        }
+
+        [RelayCommand]
+        public void OpenDeviceManager()
+        {
+            try { Process.Start(new ProcessStartInfo("devmgmt.msc") { UseShellExecute = true }); } catch { }
+        }
+
+        [RelayCommand]
+        public void OpenTaskManager()
+        {
+            try { Process.Start(new ProcessStartInfo("taskmgr.exe") { UseShellExecute = true }); } catch { }
         }
 
         [RelayCommand]

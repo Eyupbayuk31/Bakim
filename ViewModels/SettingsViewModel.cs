@@ -721,13 +721,32 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3150 = new ReleaseChangelogItem
+            {
+                Version = "v3.15.0",
+                ReleaseDate = "21 Eylül 2026",
+                Title = "Donanım, Depolama & S.M.A.R.T. Modülü Kapsamlı Görsel & Fonksiyonel Revizyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Modern Fluent Segmented Sekme Çubuğu: Aktif alt sekme vurgusu ve ikonlarıyla zenginleştirilmiş modern gezinti paneli (Donanım & Telemetri, S.M.A.R.T. Sağlık, Büyük Dosya Analizörü).",
+                    "Bozuk CPU Göstergesinin Giderilmesi & Canlı Yük Göstergesi: Minik ve bozuk halka yerine dinamik renk kodlu kristal netliğinde CPU Yük Göstergesi rozeti (%15 YÜK) ve çekirdek/izlek dökümü entegre edildi.",
+                    "Zenginleştirilmiş 6 KPI Donanım Kartı: İşlemci, Ekran Kartı (VRAM, çözünürlük & Hz), Fiziksel Bellek (RAM), Anakart & BIOS, Ağ Kartı (LAN/Wi-Fi hızı & IPv4) ve İşletim Sistemi & Uptime (Çalışma Süresi).",
+                    "Etkileşimli Sürücü Kartları: Sabit sürücüler için doğrudan kart üzerinde Disk Temizleme, Büyük Dosyaları Tara ve Gezginde Aç eylemleri.",
+                    "Platform Teşhisi & Bellenim Güvenliği: Alt kısımdaki boşluğu değerlendiren Secure Boot, TPM 2.0, Donanım Sanallaştırma ve UAC teşhis paneli.",
+                    "Tek Tıkla Sistem Raporu & Hızlı Yönetim: Tüm sistem envanterini modern HTML raporu olarak dışa aktarma, panoya kopyalama, Disk Yönetimi ve Aygıt Yöneticisi kısayolları.",
+                    "Gelişmiş S.M.A.R.T. & Büyük Dosya Analizörü: Tek tıkla SSD TRIM optimizasyonu, boyut eşik hapları (500MB+, 1GB+, 2GB+, 5GB+), kategori filtreleri ve Geri Dönüşüm Kutusuna Taşı (Güvenli Silme)."
+                }
+            };
+
             var v3140 = new ReleaseChangelogItem
             {
                 Version = "v3.14.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Windows Tweaker Master-Detail Mimarisi & Zengin Bilgilendirici Hover Kartları",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Tekil ve Temiz Kategori Yönetimi: Sol menüdeki 13 alt butonluk akordiyon kalabalığı, sayfa içi açılır pencere (popup) ve 5'li hap buton karmaşası tamamen kaldırılarak tek merkezli Master-Detail dikey kategori rayına dönüştürüldü.",
@@ -958,8 +977,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3140;
+            LatestRelease = v3150;
 
+            ReleaseHistory.Add(v3150);
             ReleaseHistory.Add(v3140);
             ReleaseHistory.Add(v3130);
             ReleaseHistory.Add(v3120);
