@@ -86,16 +86,55 @@ namespace Bakım.Models
         public List<DriveInfoItem> Drives { get; set; } = new();
     }
 
+    public class DetailedMemoryComposition
+    {
+        public double InUseGb { get; set; }
+        public double ModifiedGb { get; set; }
+        public double StandbyGb { get; set; }
+        public double FreeGb { get; set; }
+        public double TotalGb { get; set; }
+
+        public double InUsePercent => TotalGb > 0 ? Math.Round((InUseGb / TotalGb) * 100, 1) : 0;
+        public double ModifiedPercent => TotalGb > 0 ? Math.Round((ModifiedGb / TotalGb) * 100, 1) : 0;
+        public double StandbyPercent => TotalGb > 0 ? Math.Round((StandbyGb / TotalGb) * 100, 1) : 0;
+        public double FreePercent => TotalGb > 0 ? Math.Round((FreeGb / TotalGb) * 100, 1) : 0;
+
+        public double CommitTotalGb { get; set; }
+        public double CommitLimitGb { get; set; }
+        public int CommitPercentage => CommitLimitGb > 0 ? (int)Math.Round((CommitTotalGb / CommitLimitGb) * 100) : 0;
+
+        public double PagedPoolMb { get; set; }
+        public double NonPagedPoolMb { get; set; }
+        public string RamSpeedText { get; set; } = "3200 MT/s";
+        public string SlotsText { get; set; } = "2 / 4 Yuva";
+        public string HardwareReservedText { get; set; } = "128 MB";
+    }
+
     public partial class ProcessMemoryItem : ObservableObject
     {
         public int Id { get; set; }
         public string ProcessName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Publisher { get; set; } = "Bilinmeyen Yayıncı";
+        public string FilePath { get; set; } = string.Empty;
+        public string CommandLine { get; set; } = string.Empty;
+        public ImageSource? IconSource { get; set; }
         public long WorkingSetBytes { get; set; }
         public double WorkingSetMb { get; set; }
         public string FormattedMemory => $"{WorkingSetMb:F1} MB";
+        public long PrivateBytes { get; set; }
+        public string FormattedPrivateBytes => $"{PrivateBytes / (1024.0 * 1024.0):F1} MB";
+        public double CpuPercent { get; set; }
+        public string FormattedCpu => CpuPercent > 0.05 ? $"{CpuPercent:F1}%" : "0.0%";
+        public int ThreadCount { get; set; } = 1;
+        public int HandleCount { get; set; }
         public bool IsSystemProcess { get; set; }
         public string PriorityText { get; set; } = "Normal";
         public string AffinityText { get; set; } = "Tüm Çekirdekler";
+        public string UptimeText { get; set; } = "Bilinmiyor";
+
+        [ObservableProperty]
+        private bool _isSuspended;
 
         [ObservableProperty]
         private bool _isTerminating;

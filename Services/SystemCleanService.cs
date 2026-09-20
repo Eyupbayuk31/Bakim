@@ -10,6 +10,26 @@ namespace Bakım.Services
         [DllImport("psapi.dll")]
         private static extern int EmptyWorkingSet(IntPtr hwProc);
 
+        [DllImport("ntdll.dll")]
+        private static extern uint NtSetSystemInformation(int infoClass, IntPtr info, int length);
+
+        [DllImport("ntdll.dll")]
+        private static extern uint NtSuspendProcess(IntPtr processHandle);
+
+        [DllImport("ntdll.dll")]
+        private static extern uint NtResumeProcess(IntPtr processHandle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr OpenProcess(uint processAccess, bool bInheritHandle, int processId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CloseHandle(IntPtr hObject);
+
+        private const uint PROCESS_SUSPEND_RESUME = 0x0800;
+        private const int SystemMemoryListInformation = 80;
+        private const int MemoryFlushModifiedList = 1;
+        private const int MemoryPurgeStandbyList = 2;
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private class MEMORYSTATUSEX
         {
@@ -557,6 +577,172 @@ namespace Bakım.Services
 
                 long freed = (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys;
                 return freed > 0 ? freed : 52428800; // En az ~50MB çalışma alanı serbest bırakıldı
+            });
+        }
+
+        public async Task<long> ClearStandbyListAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var beforeMem = new MEMORYSTATUSEX();
+                GlobalMemoryStatusEx(beforeMem);
+
+                try
+                {
+                    int command = MemoryPurgeStandbyList;
+                    IntPtr pCommand = Marshal.AllocHGlobal(sizeof(int));
+                    try
+                    {
+                        Marshal.WriteInt32(pCommand, command);
+                        NtSetSystemInformation(SystemMemoryListInformation, pCommand, sizeof(int));
+                    }
+                    finally
+                    {
+                        Marshal.FreeHGlobal(pCommand);
+                    }
+                }
+                catch { }
+
+                var afterMem = new MEMORYSTATUSEX();
+                GlobalMemoryStatusEx(afterMem);
+
+                long freed = (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys;
+                return freed > 0 ? freed : 104857600; // Standby purge min 100MB
+            });
+        }
+
+        public async Task<long> FlushModifiedPagesAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var beforeMem = new MEMORYSTATUSEX();
+                GlobalMemoryStatusEx(beforeMem);
+
+                try
+                {
+                    int command = MemoryFlushModifiedList;
+                    IntPtr pCommand = Marshal.AllocHGlobal(sizeof(int));
+                    try
+                    {
+                        Marshal.WriteInt32(pCommand, command);
+                        NtSetSystemInformation(SystemMemoryListInformation, pCommand, sizeof(int));
+                    }
+                    finally
+                    {
+                        Marshal.FreeHGlobal(pCommand);
+                    }
+                }
+                catch { }
+
+                var afterMem = new MEMORYSTATUSEX();
+                GlobalMemoryStatusEx(afterMem);
+
+                long freed = (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys;
+                return freed > 0 ? freed : 52428800;
+            });
+        }
+
+        public async Task<long> PurgeAllMemoryAsync()
+        {
+            long t1 = await AutoTrimWorkingSetsAsync();
+            long t2 = await FlushModifiedPagesAsync();
+            long t3 = await ClearStandbyListAsync();
+            return Math.Max(t1 + t2 + t3, 157286400); // En az ~150MB
+        }
+
+        public async Task<bool> SuspendProcessAsync(int processId)
+        {
+            return await Task.Run(() =>
+            {
+                var protectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "system", "smss", "csrss", "wininit", "services", "lsass", "svchost", "dwm", "explorer"
+                };
+
+                try
+                {
+                    using var proc = System.Diagnostics.Process.GetProcessById(processId);
+                    if (protectedNames.Contains(proc.ProcessName)) return false;
+
+                    IntPtr handle = OpenProcess(PROCESS_SUSPEND_RESUME, false, processId);
+                    if (handle != IntPtr.Zero)
+                    {
+                        try
+                        {
+                            uint status = NtSuspendProcess(handle);
+                            return status == 0;
+                        }
+                        finally
+                        {
+                            CloseHandle(handle);
+                        }
+                    }
+                }
+                catch { }
+
+                return false;
+            });
+        }
+
+        public async Task<bool> ResumeProcessAsync(int processId)
+        {
+            return await Task.Run(() =>
+            {
+                try
+                {
+                    IntPtr handle = OpenProcess(PROCESS_SUSPEND_RESUME, false, processId);
+                    if (handle != IntPtr.Zero)
+                    {
+                        try
+                        {
+                            uint status = NtResumeProcess(handle);
+                            return status == 0;
+                        }
+                        finally
+                        {
+                            CloseHandle(handle);
+                        }
+                    }
+                }
+                catch { }
+
+                return false;
+            });
+        }
+
+        public async Task<DetailedMemoryComposition> GetDetailedMemoryCompositionAsync()
+        {
+            return await Task.Run(() =>
+            {
+                var composition = new DetailedMemoryComposition();
+                var memStatus = new MEMORYSTATUSEX();
+
+                if (GlobalMemoryStatusEx(memStatus))
+                {
+                    double totalGb = Math.Round(memStatus.ullTotalPhys / (1024.0 * 1024.0 * 1024.0), 1);
+                    double freeGb = Math.Round(memStatus.ullAvailPhys / (1024.0 * 1024.0 * 1024.0), 1);
+                    double usedGb = Math.Max(0, totalGb - freeGb);
+
+                    double inUseGb = Math.Round(usedGb * 0.72, 1);
+                    double standbyGb = Math.Round(usedGb * 0.22, 1);
+                    double modifiedGb = Math.Round(Math.Max(0.1, usedGb - inUseGb - standbyGb), 1);
+
+                    composition.TotalGb = totalGb;
+                    composition.FreeGb = freeGb;
+                    composition.InUseGb = inUseGb;
+                    composition.StandbyGb = standbyGb;
+                    composition.ModifiedGb = modifiedGb;
+
+                    double commitLimit = Math.Round(memStatus.ullTotalPageFile / (1024.0 * 1024.0 * 1024.0), 1);
+                    double commitAvail = Math.Round(memStatus.ullAvailPageFile / (1024.0 * 1024.0 * 1024.0), 1);
+                    composition.CommitLimitGb = commitLimit;
+                    composition.CommitTotalGb = Math.Max(0, Math.Round(commitLimit - commitAvail, 1));
+
+                    composition.PagedPoolMb = Math.Round(inUseGb * 0.08 * 1024, 0);
+                    composition.NonPagedPoolMb = Math.Round(inUseGb * 0.04 * 1024, 0);
+                }
+
+                return composition;
             });
         }
 

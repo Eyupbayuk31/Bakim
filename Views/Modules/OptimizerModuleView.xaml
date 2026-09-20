@@ -8,43 +8,62 @@
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:OptimizerViewModel}"
-             d:DesignHeight="750" d:DesignWidth="950">
-    <Grid Margin="28">
+             d:DesignHeight="900" d:DesignWidth="1100">
+    <Grid Margin="24">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Title & Top Actions -->
+            <RowDefinition Height="Auto"/> <!-- Header -->
             <RowDefinition Height="Auto"/> <!-- Result Banner -->
-            <RowDefinition Height="Auto"/> <!-- RAM Card -->
-            <RowDefinition Height="*"/>    <!-- Top Processes Table -->
+            <RowDefinition Height="Auto"/> <!-- RAM Architecture Card -->
+            <RowDefinition Height="*"/>    <!-- Process Grid + Right Drawer -->
         </Grid.RowDefinitions>
 
         <!-- Top Header -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
+                         HeaderMargin="0,0,0,16"
                          Title="Bellek ve Süreçler"
-                         Description="Fiziksel bellek kullanımı ve çalışan işlemler.">
+                         Description="Fiziksel bellek dağılımı, Sysinternals RAMMap temizleme motorları ve canlı süreç yöneticisi.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" AutomationProperties.Name="Canlı izlemeyi aç veya kapat"
-                OnContent="Canlı İzleme"
-                OffContent="Canlı İzleme"
-                Margin="0,0,12,0"
-                VerticalAlignment="Center"/>
+                    <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" 
+                                     AutomationProperties.Name="Canlı izlemeyi aç veya kapat"
+                                     OnContent="Canlı İzleme"
+                                     OffContent="Canlı İzleme"
+                                     Margin="0,0,10,0"
+                                     VerticalAlignment="Center"/>
 
-                <ui:Button Appearance="Secondary"
-                Command="{Binding RefreshCommand}"
-                Padding="14,8"
-                Content="Yenile"
-                Icon="{ui:SymbolIcon ArrowClockwise24}"
-                Margin="0,0,8,0"/>
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding RefreshCommand}"
+                               Padding="12,8"
+                               Content="Yenile"
+                               Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               Margin="0,0,8,0"/>
 
-                <ui:Button Appearance="Primary"
-                Command="{Binding OptimizeRamCommand}"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                Padding="16,8"
-                Content="Belleği Temizle"
-                Icon="{ui:SymbolIcon Flash24}"/>
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding ClearStandbyListCommand}"
+                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                               Padding="12,8"
+                               Content="Bekleme Listesi (Standby)"
+                               ToolTip="Windows önbelleğindeki eski sayfaları temizler (Oyunlarda takılma/drop önler)"
+                               Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
+                               Margin="0,0,8,0"/>
+
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding FlushModifiedPagesCommand}"
+                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                               Padding="12,8"
+                               Content="Sayfaları Diske Yaz"
+                               ToolTip="Değiştirilmiş sayfaları anında diske flush ederek RAM'i boşaltır"
+                               Icon="{ui:SymbolIcon Save24}"
+                               Margin="0,0,8,0"/>
+
+                    <ui:Button Appearance="Primary"
+                               Command="{Binding PurgeAllMemoryCommand}"
+                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                               Padding="14,8"
+                               Content="Derin Boşalt (Purge All)"
+                               ToolTip="Tüm RAMMap motorlarını sırayla çalıştırıp maksimum boş bellek sağlar"
+                               Icon="{ui:SymbolIcon Flash24}"/>
                 </StackPanel>
             </c:SectionHeader.Actions>
         </c:SectionHeader>
@@ -53,20 +72,22 @@
         <ui:InfoBar Grid.Row="1" 
                     IsOpen="{Binding HasResultBanner}" 
                     Severity="Success" 
-                    Title="Optimizasyon Tamamlandı" 
+                    Title="İşlem Tamamlandı" 
                     Message="{Binding OperationResultBanner}" 
-                    Margin="0,0,0,16"/>
+                    Margin="0,0,0,14"/>
 
-        <!-- RAM Status Overview Card -->
-        <ui:Card Grid.Row="2" Padding="20" Margin="0,0,0,20">
+        <!-- RAM Status Overview Card (Multi-Segmented Memory Breakdown + 4 KPI Cards) -->
+        <ui:Card Grid.Row="2" Padding="20" Margin="0,0,0,16">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/> <!-- Title + Percent -->
+                    <RowDefinition Height="Auto"/> <!-- Segmented Bar -->
+                    <RowDefinition Height="Auto"/> <!-- Legend -->
+                    <RowDefinition Height="Auto"/> <!-- 4 KPI Cards -->
+                    <RowDefinition Height="Auto"/> <!-- Progress Beam -->
                 </Grid.RowDefinitions>
 
+                <!-- Header -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -75,329 +96,596 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Fiziksel Bellek Durumu" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Fiziksel Bellek Kompozisyonu" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text=" (Windows 11 Dağılım Modeli)" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <TextBlock Grid.Column="1" 
-                               Text="{Binding Hardware.RamPercentage, StringFormat='%{0} Dolu'}" 
-                               FontSize="16" 
-                               FontWeight="Bold" 
-                               Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"/>
-                </Grid>
-
-                <ProgressBar Grid.Row="1" 
-                             Value="{Binding Hardware.RamPercentage}" 
-                             Maximum="100" 
-                             Height="8" 
-                             Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"
-                             Margin="0,0,0,12"/>
-
-                <Grid Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Kullanılan Bellek" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Text="{Binding Hardware.UsedRamGb, StringFormat='{}{0:F1} GB'}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-                        <TextBlock Text="Kullanılabilir / Boş" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Text="{Binding Hardware.FreeRamGb, StringFormat='{}{0:F1} GB'}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="2" HorizontalAlignment="Right">
-                        <TextBlock Text="Toplam Donanım RAM" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB'}" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Hardware.RamPercentage, StringFormat='%{0} Dolu'}" 
+                                   FontSize="16" 
+                                   FontWeight="Bold" 
+                                   Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"/>
+                        <TextBlock Text="{Binding Hardware.UsedRamGb, StringFormat=' ({0:F1} GB / '}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB)'}" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Grid>
 
-                <!-- 3-Stage Optimization Animation Block (visible only when IsBusy) -->
-                <Grid Grid.Row="3" Margin="0,14,0,0"
-                      Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Stage Text with spinner -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                        <ui:ProgressRing IsIndeterminate="True"
-                                         Width="14" Height="14"
-                                         Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
-                                         VerticalAlignment="Center"
-                                         Margin="0,0,8,0"/>
-                        <TextBlock Text="{Binding OptimizationStageText}"
-                                   FontSize="12" FontWeight="Medium"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Stage Progress Bar -->
-                    <ProgressBar Grid.Row="1"
-                                 Value="{Binding OptimizationProgressPercent}"
-                                 Maximum="100"
-                                 Height="4"
-                                 Margin="0,0,0,4"/>
-
-                    <!-- Animated scan beam -->
-                    <Border Grid.Row="2" Height="2" ClipToBounds="True">
-                        <Rectangle HorizontalAlignment="Left" Width="160" Height="2">
-                            <Rectangle.Fill>
-                                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                    <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
-                                    <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.5"/>
-                                    <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Rectangle.Fill>
-                            <Rectangle.RenderTransform>
-                                <TranslateTransform x:Name="RamScanBeam"/>
-                            </Rectangle.RenderTransform>
-                            <Rectangle.Triggers>
-                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                    <BeginStoryboard>
-                                        <Storyboard RepeatBehavior="Forever">
-                                            <DoubleAnimation Storyboard.TargetName="RamScanBeam"
-                                                             Storyboard.TargetProperty="X"
-                                                             From="-160" To="1400"
-                                                             Duration="0:0:1.2"/>
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </Rectangle.Triggers>
-                        </Rectangle>
-                    </Border>
-                </Grid>
-            </Grid>
-        </ui:Card>
-
-        <!-- Top Processes Table Card -->
-        <ui:Card Grid.Row="3" Padding="18">
-            <Grid Grid.IsSharedSizeScope="True">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <Grid Grid.Row="0" Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Grid.Column="0" 
-                               Text="En Yüksek Bellek Tüketen Süreçler" 
-                               FontSize="14" 
-                               FontWeight="SemiBold" 
-                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-
-                    <TextBlock Grid.Column="1" 
-                               Text="{Binding TopProcesses.Count, StringFormat='Aktif İşlem: {0}'}" 
-                               FontSize="11" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                </Grid>
-
-                <!-- Table Column Header (Strictly Matching Row Columns with Interactive Dynamic Sorting) -->
-                <Border Grid.Row="1" 
-                        Background="{DynamicResource ControlFillColorSecondaryBrush}" 
-                        CornerRadius="6" 
-                        Padding="12,8" 
-                        Margin="0,0,0,6">
+                <!-- Multi-Segmented Memory Bar -->
+                <Border Grid.Row="1" Height="14" CornerRadius="7" Background="{DynamicResource ControlFillColorSecondaryBrush}" ClipToBounds="True" Margin="0,0,0,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2.5*"/>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="OptPidCol"/>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="OptRamCol"/>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="OptTypeCol"/>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="OptActionCol"/>
+                            <ColumnDefinition Width="{Binding Composition.InUsePercent, FallbackValue=70, StringFormat='{}{0}*'}"/>
+                            <ColumnDefinition Width="{Binding Composition.ModifiedPercent, FallbackValue=5, StringFormat='{}{0}*'}"/>
+                            <ColumnDefinition Width="{Binding Composition.StandbyPercent, FallbackValue=15, StringFormat='{}{0}*'}"/>
+                            <ColumnDefinition Width="{Binding Composition.FreePercent, FallbackValue=10, StringFormat='{}{0}*'}"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Column 0: Process Name Sort Header -->
-                        <Border Grid.Column="0" Cursor="Hand" Background="Transparent" VerticalAlignment="Center" Margin="0,0,12,0">
-                            <Border.InputBindings>
-                                <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="Name"/>
-                            </Border.InputBindings>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="İşlem Adı" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
-                                               Visibility="{Binding IsNameDesc, Converter={StaticResource BoolToVis}}"/>
-                                <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
-                                               Visibility="{Binding IsNameAsc, Converter={StaticResource BoolToVis}}"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Column 1: PID Sort Header -->
-                        <Border Grid.Column="1" Cursor="Hand" Background="Transparent" VerticalAlignment="Center" Margin="0,0,14,0">
-                            <Border.InputBindings>
-                                <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="PID"/>
-                            </Border.InputBindings>
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="PID" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
-                                               Visibility="{Binding IsPidDesc, Converter={StaticResource BoolToVis}}"/>
-                                <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
-                                               Visibility="{Binding IsPidAsc, Converter={StaticResource BoolToVis}}"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Column 2: Memory (RAM) Sort Header -->
-                        <Border Grid.Column="2" Cursor="Hand" Background="Transparent" VerticalAlignment="Center" Margin="0,0,14,0">
-                            <Border.InputBindings>
-                                <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="RAM"/>
-                            </Border.InputBindings>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <TextBlock Text="Bellek (RAM)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
-                                               Visibility="{Binding IsRamDesc, Converter={StaticResource BoolToVis}}"/>
-                                <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
-                                               Visibility="{Binding IsRamAsc, Converter={StaticResource BoolToVis}}"/>
-                            </StackPanel>
-                        </Border>
-
-                        <TextBlock Grid.Column="3" Text="Tür" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Center" Margin="0,0,14,0"/>
-                        <TextBlock Grid.Column="4" Text="Eylem" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right"/>
+                        <!-- In Use (Cyan/Accent) -->
+                        <Border Grid.Column="0" Background="{DynamicResource AccentFillColorDefaultBrush}" ToolTip="{Binding Composition.InUseGb, StringFormat='Kullanımda: {0:F1} GB'}"/>
+                        <!-- Modified (Purple) -->
+                        <Border Grid.Column="1" Background="#A855F7" ToolTip="{Binding Composition.ModifiedGb, StringFormat='Değiştirilmiş: {0:F1} GB'}"/>
+                        <!-- Standby / Cached (Green) -->
+                        <Border Grid.Column="2" Background="{DynamicResource SystemFillColorSuccessBrush}" ToolTip="{Binding Composition.StandbyGb, StringFormat='Bekleme Listesi (Önbellek): {0:F1} GB'}"/>
+                        <!-- Free (Dark Slate) -->
+                        <Border Grid.Column="3" Background="{DynamicResource ControlStrokeColorDefaultBrush}" ToolTip="{Binding Composition.FreeGb, StringFormat='Boş / Serbest: {0:F1} GB'}"/>
                     </Grid>
                 </Border>
 
-                <!-- Process List -->
-                <ListView Grid.Row="2" 
-                          ItemsSource="{Binding TopProcesses}"
-                          Background="Transparent"
-                          BorderThickness="0"
-                          ScrollViewer.CanContentScroll="True"
-                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                          ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          VirtualizingStackPanel.IsVirtualizing="True"
-                          VirtualizingStackPanel.VirtualizationMode="Recycling">
+                <!-- Legend -->
+                <Grid Grid.Row="2" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                            <Setter Property="VerticalContentAlignment" Value="Center"/>
-                            <Setter Property="MinHeight" Value="44"/>
-                            <Setter Property="Padding" Value="12,6"/>
-                            <Setter Property="Margin" Value="0,1"/>
-                            <Setter Property="BorderThickness" Value="0"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListViewItem">
-                                        <Border x:Name="RowBorder" 
-                                                Background="{TemplateBinding Background}" 
-                                                CornerRadius="6" 
-                                                Padding="{TemplateBinding Padding}" 
-                                                SnapsToDevicePixels="True">
-                                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                    
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                                <Grid.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Header="Öncelik: Yüksek Yap" 
-                                                  Command="{Binding PlacementTarget.Tag.SetHighPriorityCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                        <MenuItem Header="Öncelik: Normal Yap" 
-                                                  Command="{Binding PlacementTarget.Tag.SetNormalPriorityCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                        <Separator/>
-                                        <MenuItem Header="İşlemi Sonlandır (Görevi Kapat)" 
-                                                  Command="{Binding PlacementTarget.Tag.KillProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                    </ContextMenu>
-                                </Grid.ContextMenu>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="2.5*"/>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="OptPidCol"/>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="OptRamCol"/>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="OptTypeCol"/>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="OptActionCol"/>
-                                </Grid.ColumnDefinitions>
+                    <!-- In Use -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="10" Height="10" CornerRadius="5" Background="{DynamicResource AccentFillColorDefaultBrush}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Kullanımda: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.InUseGb, StringFormat='{}{0:F1} GB'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </StackPanel>
 
-                                <TextBlock Grid.Column="0" 
-                                           Text="{Binding ProcessName}" 
-                                           FontWeight="SemiBold" 
-                                           FontSize="12" 
-                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                                           VerticalAlignment="Center" 
-                                           TextTrimming="CharacterEllipsis" 
-                                           Margin="0,0,12,0"/>
+                    <!-- Modified -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="10" Height="10" CornerRadius="5" Background="#A855F7" Margin="0,0,6,0"/>
+                        <TextBlock Text="Değiştirilmiş: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.ModifiedGb, StringFormat='{}{0:F1} GB'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </StackPanel>
 
-                                <TextBlock Grid.Column="1" 
-                                           Text="{Binding Id}" 
-                                           FontSize="11" 
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                           VerticalAlignment="Center" 
-                                           TextTrimming="CharacterEllipsis"
-                                           Margin="0,0,14,0"/>
+                    <!-- Standby / Cached -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="10" Height="10" CornerRadius="5" Background="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Bekleme (Önbellek): " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.StandbyGb, StringFormat='{}{0:F1} GB'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                    </StackPanel>
 
-                                <TextBlock Grid.Column="2" 
-                                           Text="{Binding FormattedMemory}" 
-                                           FontSize="12" 
-                                           FontWeight="SemiBold" 
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                                           VerticalAlignment="Center" 
-                                           TextAlignment="Right" 
-                                           TextTrimming="CharacterEllipsis" 
-                                           Margin="0,0,14,0"/>
+                    <!-- Free -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Border Width="10" Height="10" CornerRadius="5" Background="{DynamicResource ControlStrokeColorDefaultBrush}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Boş Alan: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.FreeGb, StringFormat='{}{0:F1} GB'}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </StackPanel>
+                </Grid>
 
-                                <Border Grid.Column="3" 
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                        BorderThickness="1" 
-                                        CornerRadius="6" 
-                                        Padding="8,4" 
-                                        Margin="0,0,14,0"
-                                        HorizontalAlignment="Center" 
-                                        VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="Sistem Süreci" 
-                                                   FontSize="10" 
-                                                   Foreground="{DynamicResource SystemFillColorCautionBrush}"
-                                                   Visibility="{Binding IsSystemProcess, Converter={StaticResource BoolToVis}}"/>
-                                        <TextBlock Text="Kullanıcı Süreci" 
-                                                   FontSize="10" 
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                   Visibility="{Binding IsSystemProcess, Converter={StaticResource InverseBoolToVis}}"/>
-                                    </StackPanel>
-                                </Border>
+                <!-- 4 KPI Cards (Technical Architecture) -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                                <ui:Button Grid.Column="4" 
-                                           Appearance="Danger" 
-                                           Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                           CommandParameter="{Binding}"
-                                           IsEnabled="{Binding IsTerminating, Converter={StaticResource InverseBool}}"
-                                           Padding="6,4" 
-                                           HorizontalAlignment="Right" 
-                                           VerticalAlignment="Center" 
-                                           ToolTip="Görevi Sonlandır" 
-                                           Icon="{ui:SymbolIcon Dismiss20}" AutomationProperties.Name="Görevi Sonlandır"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                    <!-- KPI 1: Speed & Slots -->
+                    <Border Grid.Column="0" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="12,10" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="HIZ &amp; YUVALAR" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{Binding Hardware.RamSpeedMhz, FallbackValue='3200 MT/s'}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Composition.SlotsText}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- KPI 2: Commit Charge / Pagefile -->
+                    <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="12,10" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="SANAL BELLEK (PAGEFILE)" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{Binding Composition.CommitTotalGb, StringFormat='{}{0:F1} GB İşlendi'}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Composition.CommitLimitGb, StringFormat='Limit: {0:F1} GB'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- KPI 3: Kernel Pools -->
+                    <Border Grid.Column="2" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="12,10" Margin="0,0,8,0">
+                        <StackPanel>
+                            <TextBlock Text="ÇEKİRDEK HAVUZLARI" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{Binding Composition.PagedPoolMb, StringFormat='Sayfalı: {0:F0} MB'}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="{Binding Composition.NonPagedPoolMb, StringFormat='Sayfasız: {0:F0} MB'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- KPI 4: Hardware Reserved -->
+                    <Border Grid.Column="3" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="12,10">
+                        <StackPanel>
+                            <TextBlock Text="DONANIMA AYRILMIŞ" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{Binding Composition.HardwareReservedText}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                            <TextBlock Text="BIOS / Entegre GPU" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Optimization Progress Bar (Only during optimization) -->
+                <Grid Grid.Row="4" Margin="0,14,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="{Binding OptimizationStageText}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </StackPanel>
+                        <ProgressBar Value="{Binding OptimizationProgressPercent}" Maximum="100" Height="4"/>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </ui:Card>
+
+        <!-- Process Manager Card & Right Inspection Drawer -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/> <!-- Process Table -->
+                <ColumnDefinition Width="Auto"/> <!-- Right Inspection Drawer -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Main Process Table Card -->
+            <ui:Card Grid.Column="0" Padding="18">
+                <Grid Grid.IsSharedSizeScope="True">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Filter / Search Row -->
+                        <RowDefinition Height="Auto"/> <!-- Column Headers -->
+                        <RowDefinition Height="*"/>    <!-- Process ListView -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Search and Filter Bar -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/> <!-- Filter Chips -->
+                            <ColumnDefinition Width="*"/>    <!-- Search Box -->
+                            <ColumnDefinition Width="Auto"/> <!-- Process Count -->
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Filter Chips -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:Button Content="Tümü" 
+                                       Appearance="{Binding IsFilterAll, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetFilterCommand}" CommandParameter="All"
+                                       Padding="10,6" Margin="0,0,4,0"/>
+
+                            <ui:Button Content="Kullanıcı" 
+                                       Appearance="{Binding IsFilterUser, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetFilterCommand}" CommandParameter="User"
+                                       Padding="10,6" Margin="0,0,4,0"/>
+
+                            <ui:Button Content="Sistem" 
+                                       Appearance="{Binding IsFilterSystem, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetFilterCommand}" CommandParameter="System"
+                                       Padding="10,6" Margin="0,0,4,0"/>
+
+                            <ui:Button Content="&gt;500 MB" 
+                                       Appearance="{Binding IsFilterHighRam, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetFilterCommand}" CommandParameter="HighRam"
+                                       Padding="10,6" Margin="0,0,12,0"/>
+                        </StackPanel>
+
+                        <!-- Search Box -->
+                        <ui:TextBox Grid.Column="1"
+                                    Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="İşlem adı, PID veya yayıncı ara..."
+                                    ClearButtonEnabled="True"
+                                    VerticalContentAlignment="Center"
+                                    Padding="10,6"
+                                    Margin="0,0,12,0"/>
+
+                        <!-- Process Count -->
+                        <TextBlock Grid.Column="2" 
+                                   Text="{Binding DisplayedProcesses.Count, StringFormat='Görüntülenen: {0}'}" 
+                                   FontSize="12" 
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Table Column Header -->
+                    <Border Grid.Row="1" 
+                            Background="{DynamicResource ControlFillColorSecondaryBrush}" 
+                            CornerRadius="6" 
+                            Padding="12,8" 
+                            Margin="0,0,0,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*"/>                           <!-- Process Name & Publisher -->
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="OptPidCol"/> <!-- PID -->
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="OptCpuCol"/> <!-- CPU % -->
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="OptRamCol"/> <!-- RAM -->
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="OptTypeCol"/> <!-- Priority / Type -->
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="OptActionCol"/> <!-- Actions -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Column 0: Process Name Sort Header -->
+                            <Border Grid.Column="0" Cursor="Hand" Background="Transparent" VerticalAlignment="Center" Margin="0,0,12,0">
+                                <Border.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="Name"/>
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="İşlem / Uygulama" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsNameDesc, Converter={StaticResource BoolToVis}}"/>
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsNameAsc, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Column 1: PID Sort Header -->
+                            <Border Grid.Column="1" Cursor="Hand" Background="Transparent" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <Border.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="PID"/>
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="PID" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsPidDesc, Converter={StaticResource BoolToVis}}"/>
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsPidAsc, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Column 2: CPU % Sort Header -->
+                            <Border Grid.Column="2" Cursor="Hand" Background="Transparent" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <Border.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="CPU"/>
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock Text="CPU %" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsCpuDesc, Converter={StaticResource BoolToVis}}"/>
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsCpuAsc, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Column 3: Memory (RAM) Sort Header -->
+                            <Border Grid.Column="3" Cursor="Hand" Background="Transparent" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <Border.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="RAM"/>
+                                </Border.InputBindings>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock Text="Bellek (RAM)" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsRamDesc, Converter={StaticResource BoolToVis}}"/>
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                                   Visibility="{Binding IsRamAsc, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <TextBlock Grid.Column="4" Text="Durum / Öncelik" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Center" Margin="0,0,14,0"/>
+                            <TextBlock Grid.Column="5" Text="Eylemler" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Process List -->
+                    <ListView Grid.Row="2" 
+                              ItemsSource="{Binding DisplayedProcesses}"
+                              SelectedItem="{Binding SelectedProcess, Mode=TwoWay}"
+                              Background="Transparent"
+                              BorderThickness="0"
+                              ScrollViewer.CanContentScroll="True"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling">
+
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="MinHeight" Value="46"/>
+                                <Setter Property="Padding" Value="10,6"/>
+                                <Setter Property="Margin" Value="0,1"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <Border x:Name="RowBorder" 
+                                                    Background="{TemplateBinding Background}" 
+                                                    CornerRadius="6" 
+                                                    Padding="{TemplateBinding Padding}" 
+                                                    SnapsToDevicePixels="True">
+                                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="RowBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                                    <Grid.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Teftiş Çekmecesini Aç" 
+                                                      Command="{Binding PlacementTarget.Tag.SelectProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            <MenuItem Header="Dosya Konumunu Aç (Explorer)" 
+                                                      Command="{Binding PlacementTarget.Tag.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            <Separator/>
+                                            <MenuItem Header="Öncelik: Yüksek Yap" 
+                                                      Command="{Binding PlacementTarget.Tag.SetHighPriorityCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            <MenuItem Header="Öncelik: Normal Yap" 
+                                                      Command="{Binding PlacementTarget.Tag.SetNormalPriorityCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            <Separator/>
+                                            <MenuItem Header="İşlemi Askıya Al / Devam Ettir (Freeze)" 
+                                                      Command="{Binding PlacementTarget.Tag.ToggleSuspendProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            <MenuItem Header="İşlemi Sonlandır (Görevi Kapat)" 
+                                                      Command="{Binding PlacementTarget.Tag.KillProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                        </ContextMenu>
+                                    </Grid.ContextMenu>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="3*"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptPidCol"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptCpuCol"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptRamCol"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptTypeCol"/>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="OptActionCol"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Process Icon + Name + Publisher -->
+                                    <Grid Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- High-Res Native Win32 Icon -->
+                                        <Image Grid.Column="0" 
+                                               Source="{Binding IconSource}" 
+                                               Width="20" Height="20" 
+                                               RenderOptions.BitmapScalingMode="HighQuality"
+                                               Margin="0,0,10,0" 
+                                               VerticalAlignment="Center"/>
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ProcessName}" 
+                                                       FontWeight="SemiBold" 
+                                                       FontSize="13" 
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Publisher}" 
+                                                       FontSize="10" 
+                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- PID -->
+                                    <TextBlock Grid.Column="1" 
+                                               Text="{Binding Id}" 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                               VerticalAlignment="Center" 
+                                               Margin="0,0,14,0"/>
+
+                                    <!-- CPU % -->
+                                    <Border Grid.Column="2" 
+                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                            BorderThickness="1" 
+                                            CornerRadius="4" 
+                                            Padding="6,2" 
+                                            Margin="0,0,14,0" 
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FormattedCpu}" 
+                                                   FontSize="11" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
+                                                   TextAlignment="Right"/>
+                                    </Border>
+
+                                    <!-- Memory (RAM) -->
+                                    <TextBlock Grid.Column="3" 
+                                               Text="{Binding FormattedMemory}" 
+                                               FontSize="12" 
+                                               FontWeight="SemiBold" 
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                               VerticalAlignment="Center" 
+                                               TextAlignment="Right" 
+                                               Margin="0,0,14,0"/>
+
+                                    <!-- Status / Type Badge -->
+                                    <Border Grid.Column="4" 
+                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                            BorderThickness="1" 
+                                            CornerRadius="6" 
+                                            Padding="8,4" 
+                                            Margin="0,0,14,0"
+                                            HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Askıda ⏸" 
+                                                       FontSize="10" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                       Visibility="{Binding IsSuspended, Converter={StaticResource BoolToVis}}"/>
+                                            <TextBlock Text="Sistem" 
+                                                       FontSize="10" 
+                                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                       Visibility="{Binding IsSystemProcess, Converter={StaticResource BoolToVis}}"/>
+                                            <TextBlock Text="Kullanıcı" 
+                                                       FontSize="10" 
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Visibility="{Binding IsSystemProcess, Converter={StaticResource InverseBoolToVis}}"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Action Buttons -->
+                                    <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                        <!-- Inspect Button -->
+                                        <ui:Button Appearance="Secondary" 
+                                                   Command="{Binding DataContext.SelectProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Padding="6,4" 
+                                                   Margin="0,0,6,0"
+                                                   ToolTip="Teftiş Çekmecesini Aç" 
+                                                   Icon="{ui:SymbolIcon Info20}"/>
+
+                                        <!-- Kill Button -->
+                                        <ui:Button Appearance="Danger" 
+                                                   Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   IsEnabled="{Binding IsTerminating, Converter={StaticResource InverseBool}}"
+                                                   Padding="6,4" 
+                                                   ToolTip="Görevi Sonlandır" 
+                                                   Icon="{ui:SymbolIcon Dismiss20}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </ui:Card>
+
+            <!-- Right Process Inspection Drawer (Deep Röntgen Paneli) -->
+            <ui:Card Grid.Column="1" 
+                     Width="340" 
+                     Padding="18" 
+                     Margin="14,0,0,0"
+                     Visibility="{Binding IsDrawerOpen, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Drawer Header -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Image Grid.Column="0" 
+                                   Source="{Binding SelectedProcess.IconSource}" 
+                                   Width="32" Height="32" 
+                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                   Margin="0,0,10,0" 
+                                   VerticalAlignment="Center"/>
+
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SelectedProcess.ProcessName}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding SelectedProcess.Id, StringFormat='PID: {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            </StackPanel>
+
+                            <ui:Button Grid.Column="2" 
+                                       Appearance="Subtle" 
+                                       Command="{Binding CloseDrawerCommand}" 
+                                       Icon="{ui:SymbolIcon Dismiss24}" 
+                                       ToolTip="Çekmeceyi Kapat"/>
+                        </Grid>
+
+                        <!-- Description / Publisher -->
+                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="YAYINCI &amp; AÇIKLAMA" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedProcess.Publisher}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding SelectedProcess.Description}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Memory Metrics Breakdown -->
+                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="BELLEK AYRINTILARI" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Çalışma Kümesi (RAM)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding SelectedProcess.FormattedMemory}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="Özel Ayrılmış (Private)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding SelectedProcess.FormattedPrivateBytes}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid Margin="0,0,0,4">
+                                    <TextBlock Text="İş Parçacıkları (Threads)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding SelectedProcess.ThreadCount}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="Tutamaçlar (Handles)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding SelectedProcess.HandleCount}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- File Path Section -->
+                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="8" Padding="12" Margin="0,0,0,14">
+                            <StackPanel>
+                                <TextBlock Text="ÇALIŞTIRILABİLİR DOSYA YOLU" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedProcess.FilePath}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" Margin="0,4,0,8"/>
+                                <ui:Button Appearance="Secondary" 
+                                           Command="{Binding OpenFileLocationCommand}" 
+                                           HorizontalAlignment="Stretch"
+                                           Padding="8,6"
+                                           Content="Dosya Konumunu Aç (Explorer)" 
+                                           Icon="{ui:SymbolIcon FolderOpen24}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Action Buttons -->
+                        <StackPanel>
+                            <ui:Button Appearance="Secondary"
+                                       Command="{Binding ToggleSuspendProcessCommand}"
+                                       HorizontalAlignment="Stretch"
+                                       Padding="10,8"
+                                       Content="İşlemi Askıya Al / Devam Et"
+                                       Icon="{ui:SymbolIcon Pause24}"
+                                       Margin="0,0,0,8"/>
+
+                            <ui:Button Appearance="Secondary"
+                                       Command="{Binding TrimProcessRamCommand}"
+                                       HorizontalAlignment="Stretch"
+                                       Padding="10,8"
+                                       Content="Bu Sürecin RAM'ini Kırp"
+                                       Icon="{ui:SymbolIcon Flash24}"
+                                       Margin="0,0,0,8"/>
+
+                            <ui:Button Appearance="Secondary"
+                                       Command="{Binding ScanWithVirusTotalCommand}"
+                                       HorizontalAlignment="Stretch"
+                                       Padding="10,8"
+                                       Content="VirusTotal Güvenlik Analizi"
+                                       Icon="{ui:SymbolIcon ShieldCheckmark24}"
+                                       Margin="0,0,0,8"/>
+
+                            <ui:Button Appearance="Danger"
+                                       Command="{Binding KillProcessCommand}"
+                                       CommandParameter="{Binding SelectedProcess}"
+                                       HorizontalAlignment="Stretch"
+                                       Padding="10,8"
+                                       Content="Görevi Sonlandır (Ağacı Kapat)"
+                                       Icon="{ui:SymbolIcon Dismiss24}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </ui:Card>
+        </Grid>
     </Grid>
 </UserControl>

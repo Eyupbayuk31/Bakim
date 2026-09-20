@@ -27,6 +27,12 @@ namespace Bakim.Tests
         {
             public Task<long> AutoTrimWorkingSetsAsync() => Task.FromResult(250L * 1024 * 1024);
             public Task<long> OptimizeRamAsync() => Task.FromResult(500L * 1024 * 1024);
+            public Task<long> ClearStandbyListAsync() => Task.FromResult(100L * 1024 * 1024);
+            public Task<long> FlushModifiedPagesAsync() => Task.FromResult(50L * 1024 * 1024);
+            public Task<long> PurgeAllMemoryAsync() => Task.FromResult(400L * 1024 * 1024);
+            public Task<bool> SuspendProcessAsync(int processId) => Task.FromResult(true);
+            public Task<bool> ResumeProcessAsync(int processId) => Task.FromResult(true);
+            public Task<DetailedMemoryComposition> GetDetailedMemoryCompositionAsync() => Task.FromResult(new DetailedMemoryComposition());
             public Task<bool> KillProcessAsync(int processId) => Task.FromResult(true);
             public Task<bool> SetProcessPriorityAsync(int processId, ProcessPriorityClass priority) => Task.FromResult(true);
             public Task<bool> SetProcessAffinityAsync(int processId, long affinityMask) => Task.FromResult(true);
