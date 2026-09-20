@@ -721,13 +721,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3130 = new ReleaseChangelogItem
+            {
+                Version = "v3.13.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Bellek & Süreçler V2.0: Segmente RAM Barı, Sysinternals RAMMap & Teftiş Çekmecesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Çok Katmanlı Segmente Bellek Barı: Windows 11 Görev Yöneticisi mimarisinde Kullanımda, Değiştirilmiş, Bekleme Listesi (Önbellek) ve Boş RAM oransal renkli gösterimi.",
+                    "4'lü Teknik Donanım KPI Kartı: RAM hızı ve yuvaları (MT/s), Sanal Bellek (Commit Charge), Çekirdek Havuzları (Paged/Non-Paged) ve Donanıma Ayrılmış bellek.",
+                    "Sysinternals RAMMap Temizleme Motorları: Bekleme Listesi (Clear Standby List - oyunlarda FPS drop ve takılmayı önleyen), Sayfaları Diske Yaz (Flush Modified) ve Derin Boşaltma (Purge All).",
+                    "Orijinal Win32 İkonlu Süreç Tablosu: Çalışan uygulamaların gerçek yüksek çözünürlüklü ikonları, anlık arama çubuğu, kategori hapları ve canlı CPU % tüketim ölçümü.",
+                    "Sağ Teftiş Çekmecesi (Process Inspector): Süreç dosya yolu, yayıncı bilgisi, uptime, bellek dağılımı, işlemi dondurma/devam ettirme (Suspend/Resume) ve tek tıkla VirusTotal analizi."
+                }
+            };
+
             var v3120 = new ReleaseChangelogItem
             {
                 Version = "v3.12.0",
                 ReleaseDate = "20 Eylül 2026",
                 Title = "Fluent Tray Flyout & Ghost Mode (Görünmez Başlangıç) Entegrasyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "WPF Fluent Tray Flyout: Eski ve hantal sağ tık (WinForms) menüsü kaldırılarak, Windows 11 Action Center hissiyatında animasyonlu ve gölgeli özel WPF menüsü tasarlandı.",
@@ -925,8 +942,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3120;
+            LatestRelease = v3130;
 
+            ReleaseHistory.Add(v3130);
             ReleaseHistory.Add(v3120);
             ReleaseHistory.Add(v3111);
             ReleaseHistory.Add(v390);
