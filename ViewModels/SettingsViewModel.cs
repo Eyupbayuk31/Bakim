@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
@@ -42,6 +44,7 @@ namespace Bakım.ViewModels
 
             IsAdmin = UacHelper.IsAdministrator();
             LoadSettings();
+            InitializeReleaseHistory();
             _isInitializing = false;
         }
 
@@ -694,6 +697,128 @@ namespace Bakım.ViewModels
             {
                 IsTestingVirusTotalKey = false;
             }
+        }
+
+        #endregion
+
+        #region Sürüm Günlüğü (Release Changelog)
+
+        public ObservableCollection<ReleaseChangelogItem> ReleaseHistory { get; } = new();
+
+        [ObservableProperty]
+        private ReleaseChangelogItem? _latestRelease;
+
+        [RelayCommand]
+        public void ToggleChangelog(ReleaseChangelogItem? item)
+        {
+            if (item != null)
+            {
+                item.IsExpanded = !item.IsExpanded;
+            }
+        }
+
+        private void InitializeReleaseHistory()
+        {
+            ReleaseHistory.Clear();
+
+            var v340 = new ReleaseChangelogItem
+            {
+                Version = "v3.4.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Ağ Operasyon Merkezi, 1000 Mbps Çoklu Akış Hız Testi & Sürüm Günlüğü",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "1000 Mbps Çoklu Akış Hız Testi: Gigabit fiber bağlantılara özel Cloudflare CDN üzerinden 3 paralel soketle kesintisiz 6 saniyelik bant genişliği, canlı Mbps, Ping ve Jitter ölçümü.",
+                    "5 Sekmeli Ağ Merkezi: Canlı Bağlantılar, Dinlenen Portlar, Ağ Adaptörleri & IP Donanımı (Gateway, DNS, MAC, Veri Sayacı) ve Ağ Teşhis Araçları.",
+                    "Ağ Teşhis Araçları: Canlı Ping (RTT gecikme) testi, Tek Tıkla DNS Önbellek Temizleme (Flush DNS) ve TCP Port Açıklık Denetleyicisi.",
+                    "Sağ Teftiş Çekmecesi (Röntgen Paneli): Sürecin dijital imza doğrulaması, ters DNS çözümü, tehdit analizi ve tek tıkla Güvenlik Duvarı engelleme/sonlandırma.",
+                    "Arayüz Dikey Hizalama İyileştirmesi: Ayarlar ve tercihler ekranındaki kartların dikeyde ortalanma hatası giderildi; tepeden hizalama uygulandı.",
+                    "Zengin Sürüm Günlüğü (Changelog): En son güncelleme yenilikleri ve geçmiş sürümlerin detaylı sürüm notları paneli eklendi."
+                }
+            };
+
+            var v330 = new ReleaseChangelogItem
+            {
+                Version = "v3.3.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Ağ Operasyon Merkezi (NOC) & Gigabit Hız Testi Altyapısı",
+                IsLatest = false,
+                IsExpanded = false,
+                Highlights = new List<string>
+                {
+                    "Ağ ve Bağlantı İzleyici modülü GlassWire ve TCPView düzeyinde baştan tasarlandı.",
+                    "Şüpheli portlar ve Temp dizininden dış ağa bağlanan süreçler için güvenlik tehdit analizi eklendi.",
+                    "Ağ kartlarının donanım hızları, IP yapılandırmaları ve oturum trafik sayaçları eklendi."
+                }
+            };
+
+            var v320 = new ReleaseChangelogItem
+            {
+                Version = "v3.2.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Otomatik Güncelleme & Sürüm Bütünlüğü",
+                IsLatest = false,
+                IsExpanded = false,
+                Highlights = new List<string>
+                {
+                    "GitHub Releases CI/CD otomatik güncelleme akışı iyileştirildi.",
+                    "Uygulama bildirimlerinde sürüm tutarlılığı ve manifest kontrolleri sağlandı."
+                }
+            };
+
+            var v310 = new ReleaseChangelogItem
+            {
+                Version = "v3.1.0",
+                ReleaseDate = "20 Eylül 2026",
+                Title = "Kategori Menülü Ayarlar Ekranı & Şeffaf Sidebar",
+                IsLatest = false,
+                IsExpanded = false,
+                Highlights = new List<string>
+                {
+                    "Ayarlar ekranı 6 kategorili modern yan menü (Navigation Rail) mimarisine geçirildi.",
+                    "Gereksiz teknik açıklamalar sadeleştirildi, 1 cümlelik net bilgilendirme sağlandı.",
+                    "Sol gezinti çubuğu (Sidebar) şeffaflaştırılarak başlık çubuğuyla olan renk uyumsuzluğu tamamen giderildi."
+                }
+            };
+
+            var v300 = new ReleaseChangelogItem
+            {
+                Version = "v3.0.0",
+                ReleaseDate = "19 Eylül 2026",
+                Title = "Büyük Tasarım Sistemi & Güvenlik Sertleştirmesi",
+                IsLatest = false,
+                IsExpanded = false,
+                Highlights = new List<string>
+                {
+                    "Dört Tema Desteği: Mica Koyu, AMOLED Saf Siyah, Cyberpunk Neon Mor ve Fluent Açık.",
+                    "Güvenlik: Kaynağa gömülü şifreler kaldırıldı, OWASP PBKDF2-SHA256 parola türetme ve DPAPI şifreleme eklendi.",
+                    "Çalışmayan sistem ayarları (Tepsi simgesi, RAM temizleme, Otomatik çıkış temizliği) gerçek Windows API'lerine bağlandı."
+                }
+            };
+
+            var v250 = new ReleaseChangelogItem
+            {
+                Version = "v2.5.0",
+                ReleaseDate = "17 Eylül 2026",
+                Title = "Bakım Sistem Optimizer İlk Sürüm",
+                IsLatest = false,
+                IsExpanded = false,
+                Highlights = new List<string>
+                {
+                    "Sistem Temizliği, Bellek Optimizasyonu, Başlangıç Programları ve Süreç Yöneticisi modülleri yayınlandı."
+                }
+            };
+
+            LatestRelease = v340;
+
+            ReleaseHistory.Add(v340);
+            ReleaseHistory.Add(v330);
+            ReleaseHistory.Add(v320);
+            ReleaseHistory.Add(v310);
+            ReleaseHistory.Add(v300);
+            ReleaseHistory.Add(v250);
         }
 
         #endregion

@@ -6,6 +6,7 @@
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
+             xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
              d:DesignHeight="850" d:DesignWidth="1050">
@@ -138,12 +139,12 @@
             </Border>
 
             <!-- Right Active Category Settings Viewport -->
-            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <Grid>
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" VerticalContentAlignment="Top">
+                <Grid VerticalAlignment="Top">
                     <!-- ============================================================ -->
                     <!-- 1. CATEGORY: GÖRÜNÜM & TEMA (General)                        -->
                     <!-- ============================================================ -->
-                    <ui:Card Padding="24" Visibility="{Binding IsGeneralSelected, Converter={StaticResource BoolToVis}}">
+                    <ui:Card VerticalAlignment="Top" Padding="24" Visibility="{Binding IsGeneralSelected, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <!-- Section Header -->
                             <StackPanel Margin="0,0,0,16">
@@ -270,7 +271,7 @@
                     <!-- ============================================================ -->
                     <!-- 2. CATEGORY: PERFORMANS & BELLEK (Performance)               -->
                     <!-- ============================================================ -->
-                    <ui:Card Padding="24" Visibility="{Binding IsPerformanceSelected, Converter={StaticResource BoolToVis}}">
+                    <ui:Card VerticalAlignment="Top" Padding="24" Visibility="{Binding IsPerformanceSelected, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -354,7 +355,7 @@
                     <!-- ============================================================ -->
                     <!-- 3. CATEGORY: SİSTEM & BAŞLANGIÇ (Startup)                    -->
                     <!-- ============================================================ -->
-                    <ui:Card Padding="24" Visibility="{Binding IsStartupSelected, Converter={StaticResource BoolToVis}}">
+                    <ui:Card VerticalAlignment="Top" Padding="24" Visibility="{Binding IsStartupSelected, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -425,7 +426,7 @@
                     <!-- ============================================================ -->
                     <!-- 4. CATEGORY: GÜVENLİK & YÖNETİCİ HAKLARI (Security)          -->
                     <!-- ============================================================ -->
-                    <ui:Card Padding="24" Visibility="{Binding IsSecuritySelected, Converter={StaticResource BoolToVis}}">
+                    <ui:Card VerticalAlignment="Top" Padding="24" Visibility="{Binding IsSecuritySelected, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <!-- Current Admin Status Bar -->
                             <Grid Margin="0,0,0,16">
@@ -504,7 +505,7 @@
                     <!-- ============================================================ -->
                     <!-- 5. CATEGORY: MODÜL AYARLARI (Modules)                        -->
                     <!-- ============================================================ -->
-                    <StackPanel Visibility="{Binding IsModulesSelected, Converter={StaticResource BoolToVis}}">
+                    <StackPanel VerticalAlignment="Top" Visibility="{Binding IsModulesSelected, Converter={StaticResource BoolToVis}}">
                         <!-- Group 1: Program Uninstaller & Restore Point -->
                         <ui:Card Padding="22" Margin="0,0,0,16">
                             <StackPanel>
@@ -599,7 +600,7 @@
                     <!-- ============================================================ -->
                     <!-- 6. CATEGORY: HAKKINDA & GÜNLÜKLER (About)                    -->
                     <!-- ============================================================ -->
-                    <ui:Card Padding="24" Visibility="{Binding IsAboutSelected, Converter={StaticResource BoolToVis}}">
+                    <ui:Card VerticalAlignment="Top" Padding="24" Visibility="{Binding IsAboutSelected, Converter={StaticResource BoolToVis}}">
                         <StackPanel>
                             <!-- Header & Actions -->
                             <Grid Margin="0,0,0,16">
@@ -613,7 +614,7 @@
                                         <ui:SymbolIcon Symbol="Info24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                         <TextBlock Text="Uygulama Bilgileri ve Günlük Yönetimi" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </StackPanel>
-                                    <TextBlock Text="Bakım yazılımı sürüm detayları ve sistem çekirdek bilgileri." 
+                                    <TextBlock Text="Bakım yazılımı sürüm detayları, son yenilikler ve geçmiş sürüm notları." 
                                                FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                                 </StackPanel>
 
@@ -717,7 +718,8 @@
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
                                     CornerRadius="6" 
-                                    Padding="12,10">
+                                    Padding="12,10"
+                                    Margin="0,0,0,16">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -732,6 +734,139 @@
                                         <TextBlock Text="{Binding InstalledDirectory}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
+                            </Border>
+
+                            <!-- What's New in Latest Release (En Son Güncellemede Ne Geldi) -->
+                            <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="18"
+                                    Margin="0,0,0,16">
+                                <StackPanel>
+                                    <!-- Header -->
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <ui:SymbolIcon Symbol="Rocket24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
+                                                <TextBlock Text="En Son Güncellemede Ne Geldi?" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding LatestRelease.Title}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                            <Border Background="{DynamicResource SystemFillColorSuccessBrush}" CornerRadius="6" Padding="10,4">
+                                                <TextBlock Text="{Binding LatestRelease.Version, StringFormat='{}{0} - Yayında'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding LatestRelease.ReleaseDate}" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Highlights List -->
+                                    <ItemsControl ItemsSource="{Binding LatestRelease.Highlights}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,3,0,3">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <ui:SymbolIcon Grid.Column="0" Symbol="Checkmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,8,0" VerticalAlignment="Top"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" LineHeight="18"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Version History & Changelog Accordion -->
+                            <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="18">
+                                <StackPanel>
+                                    <StackPanel Margin="0,0,0,14">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ui:SymbolIcon Symbol="History24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                            <TextBlock Text="Sürüm Geçmişi &amp; Değişiklik Günlüğü" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </StackPanel>
+                                        <TextBlock Text="Geçmiş sürümlerde yayınlanan tüm yenilikler ve optimizasyon notları." FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <ItemsControl ItemsSource="{Binding ReleaseHistory}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type models:ReleaseChangelogItem}">
+                                                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                        BorderThickness="1" 
+                                                        CornerRadius="6" 
+                                                        Padding="14,10" 
+                                                        Margin="0,0,0,8">
+                                                    <StackPanel>
+                                                        <!-- Header Row (Clickable) -->
+                                                        <ui:Button Appearance="Transparent" 
+                                                                   Padding="0" 
+                                                                   HorizontalAlignment="Stretch" 
+                                                                   HorizontalContentAlignment="Stretch"
+                                                                   Command="{Binding DataContext.ToggleChangelogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                   CommandParameter="{Binding}">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- Version Badge -->
+                                                                <Border Grid.Column="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="4" Padding="8,3" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding Version}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                                </Border>
+
+                                                                <!-- Title & Date -->
+                                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                                    <TextBlock Text="{Binding ReleaseDate}" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
+                                                                </StackPanel>
+
+                                                                <!-- Chevron Toggle -->
+                                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0,4,0">
+                                                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}"/>
+                                                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Visibility="{Binding IsExpanded, Converter={StaticResource InverseBoolToVis}}"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </ui:Button>
+
+                                                        <!-- Expanded Highlights -->
+                                                        <StackPanel Margin="0,10,0,2" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
+                                                            <Border Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,0,8"/>
+                                                            <ItemsControl ItemsSource="{Binding Highlights}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Grid Margin="0,2,0,2">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <ui:SymbolIcon Grid.Column="0" Symbol="ChevronRight20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,3,6,0" VerticalAlignment="Top"/>
+                                                                            <TextBlock Grid.Column="1" Text="{Binding}" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </Border>
                         </StackPanel>
                     </ui:Card>
