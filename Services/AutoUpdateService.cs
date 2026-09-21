@@ -1,11 +1,14 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 using Bakım.Models;
 
 namespace Bakım.Services
@@ -13,7 +16,7 @@ namespace Bakım.Services
     public class UpdateInfo
     {
         public bool IsUpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = "3.15.1";
+        public string CurrentVersion { get; set; } = "3.15.2";
 
         /// <summary>
         /// Sürüm denetimi için varsayılan zaman aşımı (saniye).
@@ -32,7 +35,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "3.15.1";
+        public const string DefaultCurrentVersion = "3.15.2";
 
         public static Version GetCurrentVersion()
         {
@@ -264,9 +267,15 @@ namespace Bakım.Services
                 return;
             }
 
+            // Paket bilinçli olarak %TEMP% altına indirilmez: Akıllı Uygulama Denetimi,
+            // ASR kuralları ve birçok güvenlik yazılımı geçici dizinden çalıştırılan kurulum
+            // dosyalarını düşük itibarlı kabul edip engeller.
+            string stagingDirectory = GetUpdateStagingDirectory();
+            PurgeStaleInstallers(stagingDirectory);
+
             // Eşzamanlı/eski indirmelerin üzerine yazmaması için benzersiz ad
-            string tempInstallerPath = Path.Combine(
-                Path.GetTempPath(),
+            string installerPath = Path.Combine(
+                stagingDirectory,
                 $"Bakim_Setup_Update_{Guid.NewGuid():N}.exe");
 
             AppLog.Info($"Güncelleme indiriliyor: {downloadUrl}", nameof(AutoUpdateService));
@@ -278,7 +287,7 @@ namespace Bakım.Services
                 long totalBytes = response.Content.Headers.ContentLength ?? -1;
 
                 using (var contentStream = await response.Content.ReadAsStreamAsync())
-                using (var fileStream = new FileStream(tempInstallerPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                using (var fileStream = new FileStream(installerPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
                 {
                     var buffer = new byte[16384];
                     long totalReadBytes = 0;
@@ -298,8 +307,12 @@ namespace Bakım.Services
                 }
             }
 
+            // Mark of the Web temizliği — indirme yolu ileride değişse bile paket
+            // "internetten indirildi" damgasıyla SmartScreen'e takılmasın.
+            RemoveMarkOfTheWeb(installerPath);
+
             // 2) BÜTÜNLÜK DENETİMİ — paket çalıştırılmadan önce imzası ve özeti incelenir.
-            var verdict = Helpers.AuthenticodeVerifier.Verify(tempInstallerPath);
+            var verdict = Helpers.AuthenticodeVerifier.Verify(installerPath);
 
             AppLog.Info(
                 $"Güncelleme paketi doğrulandı — {verdict.Describe()}, SHA-256: {verdict.Sha256}",
@@ -309,7 +322,7 @@ namespace Bakım.Services
             {
                 // Bozulmuş imza kurtarılabilir bir durum değildir: kesin reddedilir.
                 AppLog.Error("Güncelleme paketinin imzası geçersiz; kurulum iptal edildi.", null, nameof(AutoUpdateService));
-                TryDelete(tempInstallerPath);
+                TryDelete(installerPath);
 
                 ShowOnUiThread(() => MessageBox.Show(
                     "İndirilen güncelleme paketinin dijital imzası geçersiz veya dosya değiştirilmiş.\n\n" +
@@ -345,7 +358,7 @@ namespace Bakım.Services
                 if (!proceed)
                 {
                     AppLog.Info("Kullanıcı imzasız güncellemeyi reddetti.", nameof(AutoUpdateService));
-                    TryDelete(tempInstallerPath);
+                    TryDelete(installerPath);
                     return;
                 }
 
@@ -359,8 +372,13 @@ namespace Bakım.Services
             // /CLOSEAPPLICATIONS: Eski açık Bakım uygulamasını arka planda kapatıp dosyaları günceller
             var startInfo = new ProcessStartInfo
             {
-                FileName = tempInstallerPath,
+                FileName = installerPath,
                 Arguments = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS",
+                // Çalışma dizini açıkça paketin klasörüne sabitlenir. Aksi halde süreç, çalışan
+                // uygulamadan "C:\Program Files\Bakım" dizinini miras alır; bu hem gereksiz bir
+                // yazma izni beklentisi doğurur hem de engelleme mesajlarında yanıltıcı bir
+                // dizin adının raporlanmasına yol açar.
+                WorkingDirectory = Path.GetDirectoryName(installerPath) ?? stagingDirectory,
                 UseShellExecute = true,
                 Verb = "runas"
             };
@@ -371,16 +389,8 @@ namespace Bakım.Services
             }
             catch (Exception ex)
             {
-                // Kullanıcı UAC istemini reddettiğinde buraya düşülür.
-                AppLog.Warning("Güncelleme kurulumu başlatılamadı.", ex, nameof(AutoUpdateService));
-                TryDelete(tempInstallerPath);
-
-                ShowOnUiThread(() => MessageBox.Show(
-                    $"Güncelleme kurulumu başlatılamadı: {ex.Message}",
-                    "Güncelleme",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning));
-
+                // UAC reddi, Uygulama Denetimi ilkesi ve yetki hataları burada ayrışır.
+                HandleInstallerLaunchFailure(ex, installerPath);
                 return;
             }
 
@@ -402,6 +412,343 @@ namespace Bakım.Services
             if (dispatcher == null) action();
             else if (dispatcher.CheckAccess()) action();
             else dispatcher.Invoke(action);
+        }
+
+        // Win32 hata kodları (winerror.h)
+        private const int ErrorFileNotFound = 2;
+        private const int ErrorAccessDenied = 5;
+        private const int ErrorCancelled = 1223;
+        private const int ErrorAccessDisabledByPolicy = 1260;
+
+        /// <summary>Akıllı Uygulama Denetimi (Smart App Control) ilke durumları.</summary>
+        private enum SmartAppControlState
+        {
+            Unknown = -1,
+            Off = 0,
+            Enforced = 1,
+            Evaluation = 2
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DeleteFile(string lpFileName);
+
+        /// <summary>
+        /// Güncelleme paketinin indirileceği kalıcı hazırlık dizinini döndürür ve oluşturur.
+        /// Dizin oluşturulamazsa güncelleme akışı durdurulmaz; geçici dizine geri dönülür.
+        /// </summary>
+        private static string GetUpdateStagingDirectory()
+        {
+            try
+            {
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+                if (!string.IsNullOrWhiteSpace(localAppData))
+                {
+                    string stagingDirectory = Path.Combine(localAppData, "Bakim", "Updates");
+                    Directory.CreateDirectory(stagingDirectory);
+                    return stagingDirectory;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning(
+                    "Güncelleme hazırlık dizini oluşturulamadı; geçici dizine dönülüyor.",
+                    ex,
+                    nameof(AutoUpdateService));
+            }
+
+            return Path.GetTempPath();
+        }
+
+        /// <summary>
+        /// Yarım kalan veya kurulumu tamamlanmış önceki paketleri temizler.
+        /// Tek bir dosyanın kilitli olması tüm güncelleme akışını durdurmaz.
+        /// </summary>
+        private static void PurgeStaleInstallers(string stagingDirectory)
+        {
+            try
+            {
+                DateTime threshold = DateTime.UtcNow.AddDays(-1);
+
+                foreach (string file in Directory.EnumerateFiles(stagingDirectory, "Bakim_Setup_Update_*.exe"))
+                {
+                    try
+                    {
+                        if (File.GetLastWriteTimeUtc(file) < threshold)
+                        {
+                            File.Delete(file);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLog.Warning($"Eski güncelleme paketi silinemedi: {file}", ex, nameof(AutoUpdateService));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Eski güncelleme paketleri taranamadı.", ex, nameof(AutoUpdateService));
+            }
+        }
+
+        /// <summary>
+        /// Dosyadan "Mark of the Web" etiketini (Zone.Identifier alternatif veri akışı) kaldırır.
+        /// <see cref="File.Delete(string)"/> alternatif veri akışı yollarını kabul etmediği için
+        /// doğrudan Win32 çağrılır.
+        /// </summary>
+        private static void RemoveMarkOfTheWeb(string filePath)
+        {
+            try
+            {
+                if (DeleteFile(filePath + ":Zone.Identifier")) return;
+
+                int error = Marshal.GetLastWin32Error();
+
+                // Akışın hiç bulunmaması beklenen ve istenen durumdur.
+                if (error != ErrorFileNotFound)
+                {
+                    AppLog.Warning(
+                        $"Zone.Identifier akışı kaldırılamadı (Win32 hata {error}).",
+                        null,
+                        nameof(AutoUpdateService));
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Mark of the Web temizliği başarısız oldu.", ex, nameof(AutoUpdateService));
+            }
+        }
+
+        /// <summary>
+        /// Akıllı Uygulama Denetimi'nin ilke durumunu okur. Değer yalnızca okunur;
+        /// yönetici yetkisi gerektirmez ve sistemde hiçbir değişiklik yapılmaz.
+        /// </summary>
+        private static SmartAppControlState GetSmartAppControlState()
+        {
+            try
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\CI\Policy");
+
+                if (key?.GetValue("VerifiedAndReputablePolicyState") is int state)
+                {
+                    return state switch
+                    {
+                        0 => SmartAppControlState.Off,
+                        1 => SmartAppControlState.Enforced,
+                        2 => SmartAppControlState.Evaluation,
+                        _ => SmartAppControlState.Unknown
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Akıllı Uygulama Denetimi durumu okunamadı.", ex, nameof(AutoUpdateService));
+            }
+
+            return SmartAppControlState.Unknown;
+        }
+
+        /// <summary>
+        /// İstisna zincirini tarayarak ilk <see cref="Win32Exception"/> örneğinin yerel hata
+        /// kodunu döndürür. Zincirde Win32 hatası yoksa <c>null</c> döner.
+        /// </summary>
+        private static int? ExtractWin32ErrorCode(Exception? exception)
+        {
+            for (Exception? current = exception; current != null; current = current.InnerException)
+            {
+                if (current is Win32Exception win32Exception)
+                {
+                    return win32Exception.NativeErrorCode;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Kurulum paketi başlatılamadığında hatayı sınıflandırır ve kullanıcıya ham .NET
+        /// mesajı yerine uygulanabilir bir yönlendirme sunar.
+        /// </summary>
+        private static void HandleInstallerLaunchFailure(Exception ex, string installerPath)
+        {
+            // Process.Start hatayı "An error occurred trying to start process..." metniyle
+            // sarmalayabildiği için kod, istisna zinciri taranarak çıkarılır.
+            int? nativeErrorCode = ExtractWin32ErrorCode(ex);
+
+            switch (nativeErrorCode)
+            {
+                case ErrorCancelled:
+                    AppLog.Info("Kullanıcı güncelleme için yönetici onayı vermedi.", nameof(AutoUpdateService));
+                    TryDelete(installerPath);
+
+                    ShowOnUiThread(() => MessageBox.Show(
+                        "Güncelleme kurulumu için yönetici izni verilmedi.\n\n" +
+                        "Güncellemeyi daha sonra yeniden başlatabilirsiniz.",
+                        "Güncelleme",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information));
+                    break;
+
+                case ErrorAccessDisabledByPolicy:
+                    // Paket bilinçli olarak silinmez: kullanıcı kurulumu elle denemek isteyebilir.
+                    ShowPolicyBlockGuidance(installerPath);
+                    break;
+
+                case ErrorAccessDenied:
+                    AppLog.Warning("Güncelleme paketi erişim reddi nedeniyle başlatılamadı.", ex, nameof(AutoUpdateService));
+
+                    ShowOnUiThread(() => MessageBox.Show(
+                        "Güncelleme kurulumu yetki reddi nedeniyle başlatılamadı.\n\n" +
+                        "Bakım'ı yönetici olarak çalıştırıp güncellemeyi yeniden deneyin.",
+                        "Güncelleme",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning));
+                    break;
+
+                default:
+                    AppLog.Warning(
+                        $"Güncelleme kurulumu başlatılamadı (Win32 hata {nativeErrorCode?.ToString() ?? "yok"}).",
+                        ex,
+                        nameof(AutoUpdateService));
+                    TryDelete(installerPath);
+
+                    ShowOnUiThread(() => MessageBox.Show(
+                        $"Güncelleme kurulumu başlatılamadı: {ex.Message}",
+                        "Güncelleme",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning));
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Uygulama Denetimi ilkesi paketi engellediğinde kullanıcıyı bilgilendirir ve
+        /// engelin kaynağına göre uygun eylemi sunar.
+        /// </summary>
+        private static void ShowPolicyBlockGuidance(string installerPath)
+        {
+            SmartAppControlState state = GetSmartAppControlState();
+
+            AppLog.Warning(
+                $"Güncelleme paketi Uygulama Denetimi ilkesi tarafından engellendi " +
+                $"(Akıllı Uygulama Denetimi: {state}). Paket korundu: {installerPath}",
+                null,
+                nameof(AutoUpdateService));
+
+            bool isSmartAppControlActive =
+                state is SmartAppControlState.Enforced or SmartAppControlState.Evaluation;
+
+            ShowOnUiThread(() =>
+            {
+                if (isSmartAppControlActive)
+                {
+                    var answer = MessageBox.Show(
+                        "Güncelleme paketi Windows'un Akıllı Uygulama Denetimi (Smart App Control) " +
+                        "ilkesi tarafından engellendi.\n\n" +
+                        "Nedeni, kurulum paketinin henüz kod imzalama sertifikasıyla imzalanmamış " +
+                        "olmasıdır. Bu engel uygulama içinden aşılamaz.\n\n" +
+                        "Evet — Akıllı Uygulama Denetimi ayarlarını açar.\n" +
+                        "Hayır — İndirilen paketin klasörünü açar, kurulumu elle deneyebilirsiniz.\n" +
+                        "İptal — Güncellemeyi erteler.\n\n" +
+                        "UYARI: Akıllı Uygulama Denetimi bir kez kapatıldığında, Windows yeniden " +
+                        "kurulmadan tekrar açılamaz.",
+                        "Güncelleme Engellendi",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Warning);
+
+                    if (answer == MessageBoxResult.Yes)
+                    {
+                        OpenSmartAppControlSettings();
+                    }
+                    else if (answer == MessageBoxResult.No)
+                    {
+                        RevealInExplorer(installerPath);
+                    }
+
+                    return;
+                }
+
+                var fallbackAnswer = MessageBox.Show(
+                    "Güncelleme paketi bir Uygulama Denetimi ilkesi tarafından engellendi.\n\n" +
+                    "Akıllı Uygulama Denetimi bu bilgisayarda kapalı görünüyor; engel büyük " +
+                    "olasılıkla kurumsal bir WDAC ilkesinden veya güvenlik yazılımınızdan " +
+                    "kaynaklanıyor. Kısıtlamayı yalnızca sistem yöneticiniz kaldırabilir.\n\n" +
+                    "İndirilen paketin klasörü açılsın mı?",
+                    "Güncelleme Engellendi",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (fallbackAnswer == MessageBoxResult.Yes)
+                {
+                    RevealInExplorer(installerPath);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Windows Güvenliği'ndeki Akıllı Uygulama Denetimi sayfasını açar. Derin bağlantı
+        /// segmenti Windows sürümüne göre değişebildiğinden en özelden en genele doğru denenir.
+        /// </summary>
+        private static void OpenSmartAppControlSettings()
+        {
+            string[] candidateUris =
+            {
+                "windowsdefender://smartappcontrol",
+                "windowsdefender://appbrowser",
+                "windowsdefender://"
+            };
+
+            foreach (string uri in candidateUris)
+            {
+                try
+                {
+                    using var process = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = uri,
+                        UseShellExecute = true
+                    });
+
+                    AppLog.Info($"Windows Güvenliği açıldı: {uri}", nameof(AutoUpdateService));
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Warning($"Ayar sayfası açılamadı: {uri}", ex, nameof(AutoUpdateService));
+                }
+            }
+
+            ShowOnUiThread(() => MessageBox.Show(
+                "Windows Güvenliği açılamadı.\n\n" +
+                "Ayara elle ulaşmak için: Windows Güvenliği > Uygulama ve tarayıcı denetimi > " +
+                "Akıllı Uygulama Denetimi ayarları.",
+                "Güncelleme",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information));
+        }
+
+        /// <summary>İndirilen paketi Dosya Gezgini'nde seçili olarak gösterir.</summary>
+        private static void RevealInExplorer(string installerPath)
+        {
+            try
+            {
+                using var process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{installerPath}\"",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Güncelleme paketinin klasörü açılamadı.", ex, nameof(AutoUpdateService));
+
+                ShowOnUiThread(() => MessageBox.Show(
+                    $"Klasör açılamadı.\n\nPaketin konumu:\n{installerPath}",
+                    "Güncelleme",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information));
+            }
         }
 
         private static void TryDelete(string path)

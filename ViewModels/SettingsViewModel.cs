@@ -721,13 +721,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3152 = new ReleaseChangelogItem
+            {
+                Version = "v3.15.2",
+                ReleaseDate = "21 Eylül 2026",
+                Title = "Güncelleme Kurulumu Engellenme Sorunu & Uygulama Denetimi Yönlendirmesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Kurulum Paketi Konumu: Güncelleme paketi artık %TEMP% yerine %LOCALAPPDATA%\\Bakim\\Updates altına indiriliyor. Akıllı Uygulama Denetimi, ASR kuralları ve güvenlik yazılımları geçici dizinden çalıştırılan kurulumları düşük itibarlı sayıp engellediği için engellenme olasılığı belirgin biçimde azaldı.",
+                    "Çalışma Dizini Düzeltmesi: Kurulum süreci artık çalışan uygulamadan 'C:\\Program Files\\Bakım' dizinini miras almıyor; çalışma dizini paketin kendi klasörüne sabitlendi.",
+                    "Uygulama Denetimi Yönlendirmesi: Kurulum bir ilke tarafından engellendiğinde ham .NET hata metni yerine, Akıllı Uygulama Denetimi ayar ekranını açan veya paketin klasörünü gösteren yönlendirmeli bir bilgilendirme sunuluyor.",
+                    "Ayrıntılı Hata Sınıflandırması: Yönetici onayının reddi, ilke engeli ve yetki reddi durumları Win32 hata koduna göre ayrıştırılarak her biri için ayrı ve anlaşılır mesaj gösteriliyor; ilke engelinde paket silinmeyip elle kurulum imkanı korunuyor.",
+                    "Bakım & Güvenlik: İndirilen paketten Mark of the Web etiketi temizleniyor ve bir günden eski artık kurulum paketleri otomatik olarak siliniyor."
+                }
+            };
+
             var v3151 = new ReleaseChangelogItem
             {
                 Version = "v3.15.1",
                 ReleaseDate = "21 Eylül 2026",
                 Title = "Sistem Bilgisi Simgesi Düzeltmesi & Otomatik XAML Doğrulama Koruması",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Sistem Bilgisi XAML İkon Düzeltmesi: Donanım ve depolama modülündeki HTML raporu oluşturma butonunda tanımsız olan 'OpenInNewWindow20' simgesi yerine geçerli 'ArrowExport20' simgesi entegre edilerek çalışma zamanı XamlParseException hatası giderildi.",
@@ -993,6 +1010,8 @@ namespace Bakım.ViewModels
             };
 
             LatestRelease = v3151;
+
+            ReleaseHistory.Add(v3152);
 
             ReleaseHistory.Add(v3151);
             ReleaseHistory.Add(v3150);
