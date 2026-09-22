@@ -834,11 +834,11 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
-            var v3152 = new ReleaseChangelogItem
+            var v3153 = new ReleaseChangelogItem
             {
-                Version = "v3.15.2",
+                Version = "v3.15.3",
                 ReleaseDate = "22 Eylül 2026",
-                Title = "Windows ile Başlama (Autostart) Kökten Onarımı, Güncelleme İyileştirmeleri & XAML Güvencesi",
+                Title = "Windows ile Başlama (Autostart) Kökten Onarımı & Akıllı Güncelleme Mimarisi",
                 IsLatest = true,
                 IsExpanded = true,
                 Highlights = new List<string>
@@ -849,6 +849,19 @@ namespace Bakım.ViewModels
                     "ControlAppearance & XAML Güvencesi: Sürücü açma butonundaki geçersiz 'Subtle' değeri düzeltildi; tüm XAML sembol ve görünüm değerlerini derleme/test seviyesinde denetleyen otomatik xUnit testleri genişletildi.",
                     "Kurulum Paketi Konumu & Uygulama Denetimi: Güncelleme paketi artık %TEMP% yerine %LOCALAPPDATA%\\Bakim\\Updates altına indiriliyor; Smart App Control / WDAC engelleri ayrıştırılıp yönlendirmeli bilgilendirme sunuluyor.",
                     "Güvenlik & Temizlik: İndirilen paketten Mark of the Web etiketi temizleniyor ve bir günden eski artık kurulum paketleri otomatik olarak siliniyor."
+                }
+            };
+
+            var v3152 = new ReleaseChangelogItem
+            {
+                Version = "v3.15.2",
+                ReleaseDate = "22 Eylül 2026",
+                Title = "Windows ile Başlama (Autostart) Onarımı & XAML Güvencesi",
+                IsLatest = false,
+                IsExpanded = false,
+                Highlights = new List<string>
+                {
+                    "Kusursuz Windows Başlangıç Motoru ve ControlAppearance düzeltmesi ilk dağıtımı."
                 }
             };
 
@@ -1123,8 +1136,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3152;
+            LatestRelease = v3153;
 
+            ReleaseHistory.Add(v3153);
             ReleaseHistory.Add(v3152);
             ReleaseHistory.Add(v3151);
             ReleaseHistory.Add(v3150);

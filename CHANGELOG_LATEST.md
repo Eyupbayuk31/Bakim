@@ -1,4 +1,4 @@
-# Bakım v3.15.2 - Sürüm Notları
+# Bakım v3.15.3 - Sürüm Notları
 
 ## Windows ile Otomatik Başlama (Autostart) Kökten Onarımı & Güncelleme İyileştirmeleri
 
