@@ -187,9 +187,9 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- 3'lü Segment Kategori Çubuğu -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Segment 1: Kaldırılabilir Programlar -->
-                    <ui:Button Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="UserOnly" Padding="14,7" Margin="0,0,6,0">
+                    <ui:Button Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="UserOnly" Padding="14,7" Margin="0,0,6,4">
                         <ui:Button.Style>
                             <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                 <Setter Property="Appearance" Value="Secondary"/>
@@ -207,7 +207,7 @@
                     </ui:Button>
 
                     <!-- Segment 2: Korumalı Sistem Bileşenleri -->
-                    <ui:Button Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="SystemOnly" Padding="14,7" Margin="0,0,6,0">
+                    <ui:Button Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="SystemOnly" Padding="14,7" Margin="0,0,6,4">
                         <ui:Button.Style>
                             <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                 <Setter Property="Appearance" Value="Secondary"/>
@@ -225,7 +225,7 @@
                     </ui:Button>
 
                     <!-- Segment 3: Tümü -->
-                    <ui:Button Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="All" Padding="14,7">
+                    <ui:Button Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="All" Padding="14,7" Margin="0,0,6,4">
                         <ui:Button.Style>
                             <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                 <Setter Property="Appearance" Value="Secondary"/>
@@ -241,11 +241,11 @@
                             <TextBlock Text="{Binding Stats.TotalAppsCount, StringFormat='Tümü ({0})'}" FontWeight="SemiBold" FontSize="12"/>
                         </StackPanel>
                     </ui:Button>
-                </StackPanel>
+                </WrapPanel>
 
                 <!-- Search Box (Sağ Taraf) -->
                 <ui:TextBox Grid.Column="1" 
-                            MinWidth="260" MaxWidth="380"
+                            MinWidth="220" MaxWidth="380"
                             PlaceholderText="Yüklü program veya yayıncı ara..." 
                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                             ClearButtonEnabled="True"
@@ -262,11 +262,11 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Sol Taraf: Sıralama Butonları & Otomatik Temizle -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Sırala:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Sırala:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,4"/>
 
                     <!-- Boyut -->
-                    <ui:Button Content="Boyut" Command="{Binding SetSortCommand}" CommandParameter="Size" Padding="10,5" Margin="0,0,4,0">
+                    <ui:Button Content="Boyut" Command="{Binding SetSortCommand}" CommandParameter="Size" Padding="10,5" Margin="0,0,4,4">
                         <ui:Button.Style>
                             <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                 <Setter Property="Appearance" Value="Secondary"/>
@@ -280,7 +280,7 @@
                     </ui:Button>
 
                     <!-- İsim -->
-                    <ui:Button Content="İsim" Command="{Binding SetSortCommand}" CommandParameter="Name" Padding="10,5" Margin="0,0,4,0">
+                    <ui:Button Content="İsim" Command="{Binding SetSortCommand}" CommandParameter="Name" Padding="10,5" Margin="0,0,4,4">
                         <ui:Button.Style>
                             <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                 <Setter Property="Appearance" Value="Secondary"/>
@@ -294,7 +294,7 @@
                     </ui:Button>
 
                     <!-- Tarih -->
-                    <ui:Button Content="Tarih" Command="{Binding SetSortCommand}" CommandParameter="Date" Padding="10,5" Margin="0,0,4,0">
+                    <ui:Button Content="Tarih" Command="{Binding SetSortCommand}" CommandParameter="Date" Padding="10,5" Margin="0,0,4,4">
                         <ui:Button.Style>
                             <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                 <Setter Property="Appearance" Value="Secondary"/>
@@ -308,7 +308,7 @@
                     </ui:Button>
 
                     <!-- Yayıncı -->
-                    <ui:Button Content="Yayıncı" Command="{Binding SetSortCommand}" CommandParameter="Publisher" Padding="10,5" Margin="0,0,14,0">
+                    <ui:Button Content="Yayıncı" Command="{Binding SetSortCommand}" CommandParameter="Publisher" Padding="10,5" Margin="0,0,14,4">
                         <ui:Button.Style>
                             <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
                                 <Setter Property="Appearance" Value="Secondary"/>
@@ -326,23 +326,23 @@
                                      OnContent="Otomatik Kalıntı Temizle"
                                      OffContent="Kalıntıları Elle Onayla"
                                      VerticalAlignment="Center"
-                                     Margin="0,0,14,0"/>
-                </StackPanel>
+                                     Margin="0,0,14,4"/>
+                </WrapPanel>
 
                 <!-- Sağ Taraf: Toplu Seçim & Kaldırma Butonları -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <ui:Button Appearance="Secondary"
                                Content="Tümünü Seç"
                                Command="{Binding SelectAllAppsCommand}"
                                CommandParameter="true"
                                Padding="10,5"
-                               Margin="0,0,4,0"/>
+                               Margin="0,0,4,4"/>
                     <ui:Button Appearance="Secondary"
                                Content="Seçimi Kaldır"
                                Command="{Binding SelectAllAppsCommand}"
                                CommandParameter="false"
                                Padding="10,5"
-                               Margin="0,0,8,0"
+                               Margin="0,0,8,4"
                                Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}"/>
 
                     <!-- Batch Silent Uninstall Button -->
@@ -351,8 +351,9 @@
                                Icon="{ui:SymbolIcon Delete24}"
                                Command="{Binding BatchUninstallCommand}"
                                Padding="12,5"
+                               Margin="0,0,0,4"
                                Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}"/>
-                </StackPanel>
+                </WrapPanel>
             </Grid>
         </Grid>
 

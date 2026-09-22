@@ -273,15 +273,10 @@
                     </Rectangle>
                 </Border>
 
-                <!-- Row 2: Category Filter Pills (Left) + Quick Presets (Right) -->
-                <Grid Grid.Row="2" Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
+                <!-- Row 2: Category Filter Pills & Quick Presets (Responsive WrapPanel Layout) -->
+                <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
                     <!-- Group Filter Pills -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,6">
                         <TextBlock Text="Kategori:" FontSize="11" FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
@@ -295,25 +290,25 @@
                         <ui:Button Content="Web Tarayıcıları" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
                                    Command="{Binding SetCategoryGroupCommand}" CommandParameter="Web Tarayıcıları"/>
 
-                        <ui:Button Content="Oyunlar &amp; Medya" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
+                        <ui:Button Content="Oyunlar &amp; Medya" Appearance="Secondary" Padding="10,4"
                                    Command="{Binding SetCategoryGroupCommand}" CommandParameter="Oyunlar &amp; Medya"/>
                     </StackPanel>
 
                     <!-- Quick Preset Chips -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
                         <TextBlock Text="Profiller:" FontSize="11" FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
 
-                        <ui:Button Content="🛡️ Hızlı &amp; Güvenli" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
+                        <ui:Button Content="Hızlı &amp; Güvenli" Icon="{ui:SymbolIcon ShieldCheckmark20}" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
                                    Command="{Binding ApplyPresetCommand}" CommandParameter="quick"
                                    ToolTip="Risksiz genel temp ve tarayıcı önbelleklerini seçer."/>
 
-                        <ui:Button Content="🚀 Kapsamlı Derin" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
+                        <ui:Button Content="Kapsamlı Derin" Icon="{ui:SymbolIcon TopSpeed20}" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
                                    Command="{Binding ApplyPresetCommand}" CommandParameter="deep"
                                    ToolTip="Prefetch, loglar, shader ve güncelleme önbellekleri dahil tüm hedefleri seçer."/>
 
-                        <ui:Button Content="🎮 Oyun &amp; Medya" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
+                        <ui:Button Content="Oyun &amp; Medya" Icon="{ui:SymbolIcon Games20}" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
                                    Command="{Binding ApplyPresetCommand}" CommandParameter="gaming"
                                    ToolTip="Steam, Spotify, Epic ve Shader önbelleklerini odaklar."/>
 
@@ -323,7 +318,7 @@
                         <ui:Button Content="Temizle" Appearance="Secondary" Padding="8,4"
                                    Command="{Binding DeselectAllCategoriesCommand}"/>
                     </StackPanel>
-                </Grid>
+                </WrapPanel>
 
                 <!-- Row 3: Categories Grid -->
                 <ItemsControl Grid.Row="3" ItemsSource="{Binding FilteredCategoriesView}">
@@ -482,38 +477,49 @@
                         <RowDefinition Height="*"/>    <!-- Virtualized ListView -->
                     </Grid.RowDefinitions>
 
-                    <!-- Search & Quick Size Filters -->
+                    <!-- Search & Quick Size Filters (Responsive Wrap Layout) -->
                     <Grid Grid.Row="0" Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="280"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Live Search Box -->
-                        <ui:TextBox Grid.Column="0" 
-                                    PlaceholderText="Taranan dosyalarda ara (.log, .tmp)..." 
-                                    Text="{Binding SearchFileQuery, UpdateSourceTrigger=PropertyChanged}" 
-                                    ClearButtonEnabled="True" 
-                                    Icon="{ui:SymbolIcon Search20}" 
-                                    VerticalContentAlignment="Center"
-                                    Padding="10,6"/>
+                        <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Live Search Box -->
+                            <ui:TextBox PlaceholderText="Taranan dosyalarda ara (.log, .tmp)..." 
+                                        Text="{Binding SearchFileQuery, UpdateSourceTrigger=PropertyChanged}" 
+                                        ClearButtonEnabled="True" 
+                                        Icon="{ui:SymbolIcon Search20}" 
+                                        VerticalContentAlignment="Center"
+                                        MinWidth="220" MaxWidth="360"
+                                        Padding="10,6"
+                                        Margin="0,0,12,4"/>
 
-                        <!-- Size Filter Pills -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
-                            <TextBlock Text="Boyut:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            <ui:Button Content="Tümü" Appearance="Secondary" Padding="8,3" Margin="0,0,4,0" Command="{Binding SetSizeFilterCommand}" CommandParameter="All"/>
-                            <ui:Button Content="> 1 MB" Appearance="Secondary" Padding="8,3" Margin="0,0,4,0" Command="{Binding SetSizeFilterCommand}" CommandParameter="1MB"/>
-                            <ui:Button Content="> 10 MB" Appearance="Secondary" Padding="8,3" Margin="0,0,4,0" Command="{Binding SetSizeFilterCommand}" CommandParameter="10MB"/>
-                            <ui:Button Content="> 100 MB" Appearance="Secondary" Padding="8,3" Command="{Binding SetSizeFilterCommand}" CommandParameter="100MB"/>
-                        </StackPanel>
+                            <!-- Size Filter Pills -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,4">
+                                <TextBlock Text="Boyut:" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <ui:Button Content="Tümü" Appearance="Secondary" Padding="8,3" Margin="0,0,4,0" Command="{Binding SetSizeFilterCommand}" CommandParameter="All"/>
+                                <ui:Button Content="> 1 MB" Appearance="Secondary" Padding="8,3" Margin="0,0,4,0" Command="{Binding SetSizeFilterCommand}" CommandParameter="1MB"/>
+                                <ui:Button Content="> 10 MB" Appearance="Secondary" Padding="8,3" Margin="0,0,4,0" Command="{Binding SetSizeFilterCommand}" CommandParameter="10MB"/>
+                                <ui:Button Content="> 100 MB" Appearance="Secondary" Padding="8,3" Command="{Binding SetSizeFilterCommand}" CommandParameter="100MB"/>
+                            </StackPanel>
+                        </WrapPanel>
 
                         <!-- Counter -->
-                        <TextBlock Grid.Column="2"
-                                   Text="{Binding ScannedFiles.Count, StringFormat='Listelenen: {0}'}"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                   VerticalAlignment="Center"/>
+                        <Border Grid.Column="1" 
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                BorderThickness="1" 
+                                CornerRadius="6" 
+                                Padding="10,4"
+                                VerticalAlignment="Center"
+                                Margin="0,0,0,4">
+                            <TextBlock Text="{Binding ScannedFiles.Count, StringFormat='Listelenen: {0}'}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       VerticalAlignment="Center"/>
+                        </Border>
                     </Grid>
 
                     <!-- Table Column Header -->

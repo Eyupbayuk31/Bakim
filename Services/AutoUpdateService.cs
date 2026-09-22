@@ -16,7 +16,7 @@ namespace Bakım.Services
     public class UpdateInfo
     {
         public bool IsUpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = "3.16.2";
+        public string CurrentVersion { get; set; } = "3.16.3";
 
         /// <summary>
         /// Sürüm denetimi için varsayılan zaman aşımı (saniye).
@@ -35,7 +35,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "3.16.2";
+        public const string DefaultCurrentVersion = "3.16.3";
 
         public static Version GetCurrentVersion()
         {

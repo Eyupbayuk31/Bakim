@@ -356,14 +356,14 @@
                                 Icon="{ui:SymbolIcon Search20}"
                                 VerticalContentAlignment="Center"/>
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <ui:Button Appearance="{Binding IsAllFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Tümü" Command="{Binding SetFilterCommand}" CommandParameter="All" Padding="12,7" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="{Binding IsTcpFilter, Converter={StaticResource BoolToNavAppearance}}" Content="TCP" Command="{Binding SetFilterCommand}" CommandParameter="TCP" Padding="12,7" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="{Binding IsUdpFilter, Converter={StaticResource BoolToNavAppearance}}" Content="UDP" Command="{Binding SetFilterCommand}" CommandParameter="UDP" Padding="12,7" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="{Binding IsExternalFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Dış Bağlantılar" Command="{Binding SetFilterCommand}" CommandParameter="External" Padding="12,7" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="{Binding IsListeningFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Dinleme" Command="{Binding SetFilterCommand}" CommandParameter="Listening" Padding="12,7" Margin="0,0,6,0"/>
-                        <ui:Button Appearance="{Binding IsSuspiciousFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Şüpheli / Riskli" Command="{Binding SetFilterCommand}" CommandParameter="Suspicious" Padding="12,7"/>
-                    </StackPanel>
+                    <WrapPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:Button Appearance="{Binding IsAllFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Tümü" Command="{Binding SetFilterCommand}" CommandParameter="All" Padding="12,7" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding IsTcpFilter, Converter={StaticResource BoolToNavAppearance}}" Content="TCP" Command="{Binding SetFilterCommand}" CommandParameter="TCP" Padding="12,7" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding IsUdpFilter, Converter={StaticResource BoolToNavAppearance}}" Content="UDP" Command="{Binding SetFilterCommand}" CommandParameter="UDP" Padding="12,7" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding IsExternalFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Dış Bağlantılar" Command="{Binding SetFilterCommand}" CommandParameter="External" Padding="12,7" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding IsListeningFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Dinleme" Command="{Binding SetFilterCommand}" CommandParameter="Listening" Padding="12,7" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding IsSuspiciousFilter, Converter={StaticResource BoolToNavAppearance}}" Content="Şüpheli / Riskli" Command="{Binding SetFilterCommand}" CommandParameter="Suspicious" Padding="12,7" Margin="0,0,0,4"/>
+                    </WrapPanel>
                 </Grid>
 
                 <!-- Split Grid: Column 0 = Connections List, Column 1 = Inspection Drawer -->

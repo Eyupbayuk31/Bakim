@@ -152,56 +152,59 @@
         <!-- 2. Sub-tab Filter / Search Bar (Only for Events Tab) -->
         <Grid Grid.Row="2" Margin="0,0,0,14" 
               Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Events}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Filter Buttons -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+            <!-- Row 0: Filter Buttons in WrapPanel -->
+            <WrapPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,8">
                 <ui:Button Content="Tümü" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="All"
                            Padding="12,6" 
-                           Margin="0,0,6,0"/>
+                           Margin="0,0,6,4"/>
                 <ui:Button Content="Yalnızca Kritik" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="Kritik"
                            Padding="12,6" 
-                           Margin="0,0,6,0"/>
+                           Margin="0,0,6,4"/>
                 <ui:Button Content="Hatalar" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="Hata"
                            Padding="12,6" 
-                           Margin="0,0,6,0"/>
+                           Margin="0,0,6,4"/>
                 <ui:Button Content="Kernel-Power" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="Kernel"
                            Padding="12,6" 
-                           Margin="0,0,6,0"/>
+                           Margin="0,0,6,4"/>
                 <ui:Button Content="Uygulama Çökmeleri" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="App"
-                           Padding="12,6"/>
-            </StackPanel>
+                           Padding="12,6"
+                           Margin="0,0,0,4"/>
+            </WrapPanel>
 
-            <!-- Search Box -->
-            <ui:TextBox Grid.Column="1" 
+            <!-- Row 1: Search Box & Clear Logs Button -->
+            <ui:TextBox Grid.Row="1" Grid.Column="0" 
                         PlaceholderText="Kaynak, olay ID veya mesaj ara..." 
                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                         ClearButtonEnabled="True"
                         Icon="{ui:SymbolIcon Search24}"
                         VerticalContentAlignment="Center"
-                        MinWidth="220" MaxWidth="360"
                         Padding="12,8"
                         Margin="0,0,10,0" AutomationProperties.Name="Kaynak, olay ID veya mesaj ara..."/>
 
             <!-- Clear Event Logs Button -->
-            <ui:Button Grid.Column="2" 
+            <ui:Button Grid.Row="1" Grid.Column="1" 
                        Appearance="Danger" 
                        Command="{Binding ClearEventLogsCommand}"
-                       Padding="12,8"
+                       Padding="14,8"
                        Content="Günlükleri Temizle"
                        Icon="{ui:SymbolIcon Delete20}"/>
         </Grid>

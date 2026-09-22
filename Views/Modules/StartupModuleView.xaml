@@ -144,50 +144,50 @@
         <!-- ========================================================================= -->
         <!-- ROW 2: FİLTRE ÇİPLERİ VE ARAMA ÇUBUĞU                                     -->
         <!-- ========================================================================= -->
-        <ui:Card Grid.Row="2" Padding="12,10" Margin="0,0,0,16">
+        <ui:Card Grid.Row="2" Padding="14,10" Margin="0,0,0,16">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: Filter Pills -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Left: Filter Pills in WrapPanel -->
+                <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
                     <ui:Button Appearance="{Binding IsAllFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="All"
-                               Content="Tümü" Padding="12,6" Margin="0,0,6,0"/>
+                               Content="Tümü" Padding="12,6" Margin="0,0,6,4"/>
 
                     <ui:Button Appearance="{Binding IsEnabledFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="Enabled"
-                               Content="Etkin" Padding="12,6" Margin="0,0,6,0"/>
+                               Content="Etkin" Padding="12,6" Margin="0,0,6,4"/>
 
                     <ui:Button Appearance="{Binding IsDisabledFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="Disabled"
-                               Content="Devre Dışı" Padding="12,6" Margin="0,0,6,0"/>
+                               Content="Devre Dışı" Padding="12,6" Margin="0,0,6,4"/>
 
                     <ui:Button Appearance="{Binding IsHighImpactFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="HighImpact"
-                               Content="Yüksek Etki" Padding="12,6" Margin="0,0,6,0"/>
+                               Content="Yüksek Etki" Padding="12,6" Margin="0,0,6,4"/>
 
                     <ui:Button Appearance="{Binding IsRegistryFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="Registry"
-                               Content="Kayıt Defteri" Padding="12,6" Margin="0,0,6,0"/>
+                               Content="Kayıt Defteri" Padding="12,6" Margin="0,0,6,4"/>
 
                     <ui:Button Appearance="{Binding IsFolderFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="Folder"
-                               Content="Başlangıç Klasörü" Padding="12,6"/>
-                </StackPanel>
+                               Content="Başlangıç Klasörü" Padding="12,6" Margin="0,0,0,4"/>
+                </WrapPanel>
 
                 <!-- Right: Search Box -->
-                <ui:TextBox Grid.Column="2" 
-                            Width="260"
+                <ui:TextBox Grid.Column="1" 
+                            MinWidth="220" MaxWidth="320"
                             Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" 
                             PlaceholderText="Uygulama adı, yayıncı veya yol ara..." 
                             ClearButtonEnabled="True" 
                             VerticalContentAlignment="Center" 
                             Padding="12,8"
                             Icon="{ui:SymbolIcon Search24}" 
+                            VerticalAlignment="Center"
                             AutomationProperties.Name="Arama"/>
             </Grid>
         </ui:Card>

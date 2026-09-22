@@ -834,13 +834,32 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3163 = new ReleaseChangelogItem
+            {
+                Version = "v3.16.3",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Tüm Modüllerde Küçülen Pencere ve Araç Çubuğu Çakışmalarının Kökten Giderilmesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Global Responsive WrapPanel Mimarisi: Pencere küçültüldüğünde ve yüksek DPI ölçeklemelerinde filtre butonlarının, arama kutularının ve eylem butonlarının üst üste binmesi projedeki tüm modüllerde kökten çözüldü.",
+                    "Temizleyici Modülü (Cleaner): Kategori hapları, hızlı hazır ayarlar ve dosya filtre çubuğu WrapPanel mimarisine geçirilerek esnek satır kaydırma sağlandı; eski emojiler resmi Fluent ikonlarıyla değiştirildi.",
+                    "Hata Analizi Modülü (Crash Analyzer): Olay filtre butonları ile arama kutusu 2 satırlı esnek hiyerarşiye ayrılarak dar pencerelerde sıfır çakışma sağlandı.",
+                    "Başlangıç Yöneticisi (Startup): Başlangıç tipi filtre çipleri dar ekranda taşmayı önleyecek şekilde esnek WrapPanel düzenine kavuşturuldu.",
+                    "Ağ İzleyici (Network Monitor): Canlı bağlantı protokol ve durum filtre butonları dar pencerelerde arama kutusuna basmayacak şekilde uyarlandı.",
+                    "Yazılım Kaldırıcı (Uninstaller): Katman 1 segment butonları ve Katman 2 sıralama/toplu işlem araç çubukları tam responsive WrapPanel ile güçlendirildi.",
+                    "Gizlilik & Bloatware (Privacy): Gizlilik kuralları kategori çipleri WrapPanel yapısına geçirilerek arama kutusuyla çarpışması önlendi."
+                }
+            };
+
             var v3162 = new ReleaseChangelogItem
             {
                 Version = "v3.16.2",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Büyük Dosya Analizörü Araç Çubuğu Tam Responsive Revizyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Tam Responsive WrapPanel Araç Çubuğu: Pencere küçültüldüğünde ve farklı DPI ölçeklemelerinde Hedef Sürücü, Boyut Eşiği ve Tarama butonlarının üst üste binmesi ve kesilmesi kökten çözüldü.",
@@ -1199,8 +1218,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3162;
+            LatestRelease = v3163;
 
+            ReleaseHistory.Add(v3163);
             ReleaseHistory.Add(v3162);
             ReleaseHistory.Add(v3161);
             ReleaseHistory.Add(v3160);

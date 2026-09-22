@@ -208,28 +208,29 @@
             </Grid.ColumnDefinitions>
 
             <!-- Category Pills for Privacy Tab -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
-                        Visibility="{Binding ActiveSubTab, Converter={StaticResource StringToVis}, ConverterParameter=Privacy}">
+            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
+                       Visibility="{Binding ActiveSubTab, Converter={StaticResource StringToVis}, ConverterParameter=Privacy}">
                 <ui:Button Content="Tümü" 
                            Command="{Binding SetCategoryFilterCommand}" 
                            CommandParameter="All"
                            Padding="12,6" 
-                           Margin="0,0,6,0"/>
+                           Margin="0,0,6,4"/>
                 <ui:Button Content="Telemetri &amp; Tanılama" 
                            Command="{Binding SetCategoryFilterCommand}" 
                            CommandParameter="Telemetri &amp; Tanılama"
                            Padding="12,6" 
-                           Margin="0,0,6,0"/>
+                           Margin="0,0,6,4"/>
                 <ui:Button Content="Reklamlar &amp; Öneriler" 
                            Command="{Binding SetCategoryFilterCommand}" 
                            CommandParameter="Reklamlar &amp; Öneriler"
                            Padding="12,6" 
-                           Margin="0,0,6,0"/>
+                           Margin="0,0,6,4"/>
                 <ui:Button Content="Konum &amp; İzinler" 
                            Command="{Binding SetCategoryFilterCommand}" 
                            CommandParameter="Konum &amp; İzinler"
-                           Padding="12,6"/>
-            </StackPanel>
+                           Padding="12,6"
+                           Margin="0,0,6,4"/>
+            </WrapPanel>
 
             <!-- Bloatware Notice for Debloat Tab -->
             <TextBlock Grid.Column="0" 
