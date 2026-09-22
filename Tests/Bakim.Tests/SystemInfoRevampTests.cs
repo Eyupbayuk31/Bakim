@@ -245,4 +245,93 @@ public class SystemInfoRevampTests
         vm.SetCategoryFilterCommand.Execute("Tümü");
         Assert.True(vm.IsCategoryAll);
     }
+
+    [Fact]
+    public async Task SystemInfoViewModel_LiveSearch_FiltersByNameAndExtension()
+    {
+        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        await vm.ScanLargeFilesAsync();
+
+        Assert.Equal(3, vm.FilteredLargeFiles.Count);
+
+        // Search by extension
+        vm.SearchQuery = "mp4";
+        Assert.Single(vm.FilteredLargeFiles);
+        Assert.Equal("movie.mp4", vm.FilteredLargeFiles[0].FileName);
+
+        // Search by partial filename
+        vm.SearchQuery = "backup";
+        Assert.Single(vm.FilteredLargeFiles);
+        Assert.Equal("game_backup.iso", vm.FilteredLargeFiles[0].FileName);
+
+        // Clear search
+        vm.SearchQuery = string.Empty;
+        Assert.Equal(3, vm.FilteredLargeFiles.Count);
+    }
+
+    [Fact]
+    public async Task SystemInfoViewModel_Sorting_OrdersCorrectly()
+    {
+        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        await vm.ScanLargeFilesAsync();
+
+        // Default: SizeDesc (4GB, 2GB, 1.46GB)
+        Assert.Equal("game_backup.iso", vm.FilteredLargeFiles[0].FileName);
+        Assert.Equal("movie.mp4", vm.FilteredLargeFiles[1].FileName);
+        Assert.Equal("archive.zip", vm.FilteredLargeFiles[2].FileName);
+
+        // SizeAsc: (1.46GB, 2GB, 4GB)
+        vm.SetSortMode("SizeAsc");
+        Assert.Equal("archive.zip", vm.FilteredLargeFiles[0].FileName);
+        Assert.Equal("game_backup.iso", vm.FilteredLargeFiles[2].FileName);
+
+        // NameAsc: (archive, game_backup, movie)
+        vm.SetSortMode("NameAsc");
+        Assert.Equal("archive.zip", vm.FilteredLargeFiles[0].FileName);
+        Assert.Equal("game_backup.iso", vm.FilteredLargeFiles[1].FileName);
+        Assert.Equal("movie.mp4", vm.FilteredLargeFiles[2].FileName);
+    }
+
+    [Fact]
+    public async Task SystemInfoViewModel_MultiSelectAndBatchActions_WorkCorrectly()
+    {
+        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        await vm.ScanLargeFilesAsync();
+
+        Assert.Equal(3, vm.FilteredLargeFiles.Count);
+        Assert.False(vm.IsAllSelected);
+        Assert.Equal(0, vm.SelectedFilesCount);
+        Assert.False(vm.HasSelectedFiles);
+
+        // Select All
+        vm.ToggleSelectAllCommand.Execute(null);
+        Assert.True(vm.IsAllSelected);
+        Assert.Equal(3, vm.SelectedFilesCount);
+        Assert.True(vm.HasSelectedFiles);
+
+        // Deselect first item
+        vm.FilteredLargeFiles[0].IsSelected = false;
+        Assert.False(vm.IsAllSelected);
+        Assert.Equal(2, vm.SelectedFilesCount);
+
+        // Batch Recycle
+        await vm.RecycleSelectedFilesAsync();
+        Assert.Single(vm.LargeFiles);
+        Assert.Equal(0, vm.SelectedFilesCount);
+        Assert.False(vm.HasSelectedFiles);
+    }
+
+    [Fact]
+    public async Task SystemInfoViewModel_CategoryStats_CalculatesProportions()
+    {
+        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        await vm.ScanLargeFilesAsync();
+
+        Assert.NotNull(vm.CategoryStats);
+        Assert.True(vm.CategoryStats.HasData);
+        Assert.Equal(3, vm.CategoryStats.FileCount);
+        Assert.True(vm.CategoryStats.VideoBytes > 0);
+        Assert.True(vm.CategoryStats.DiskImageBytes > 0);
+        Assert.True(vm.CategoryStats.ArchiveBytes > 0);
+    }
 }

@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3160 = new ReleaseChangelogItem
+            {
+                Version = "v3.16.0",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Büyük Dosya Analizörü Kapsamlı Yenilenmesi & Profesyonel Depolama Yönetimi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Kusursuz Responsive Araç Çubuğu: Sürücü seçimi, eşik çipleri (100 MB, 500 MB, 1 GB, 2 GB, 5 GB), tür filtreleri, canlı arama ve sıralama menüsü 2 satırlı esnek düzene kavuşturuldu; dar pencerede taşma ve kırpılmalar tamamen yok edildi.",
+                    "Sürücü Depolama Özeti & Hero Boş Durum: Tarama öncesinde devasa karanlık boşluk yerine seçili sürücünün kapasite, kullanım, boş alan ve görsel doluluk grafiği ile 4 tanı kılavuz kartı eklendi.",
+                    "Çoklu Seçim & Toplu İşlemler: 'Tümünü Seç' onay kutusu, seçilen dosya sayısı ve toplam boyut rozeti, tek tıkla toplu 'Geri Dönüşüme Taşı' ve 'Kalıcı Olarak Sil' yetenekleri sunuldu.",
+                    "Canlı Arama & Çoklu Sıralama: Dosya adı ve uzantıya göre anlık arama (SearchBox) ve boyuta, tarihe ve isme göre çift yönlü sıralama motoru eklendi.",
+                    "Gelişmiş Kategori Dağılımı: Taranan dosyaların türlerine göre (Videolar, Disk İmajları, Arşivler, Kurulumlar, Diğer) boyut ve oran dağılımı görselleştirildi."
+                }
+            };
+
             var v3154 = new ReleaseChangelogItem
             {
                 Version = "v3.15.4",
                 ReleaseDate = "22 Eylül 2026",
                 Title = "Donanım & Disk Modülü Kök Onarımı ve Akıllı Filtreleme Deneyimi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Komut Parametresi Kök Onarımı: Büyük dosya analizöründeki eşik butonlarının tip uyuşmazlığı (String -> Int64 ArgumentException) evrensel ve savunmacı komut yapısıyla kökten çözüldü.",
@@ -1149,8 +1166,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3154;
+            LatestRelease = v3160;
 
+            ReleaseHistory.Add(v3160);
             ReleaseHistory.Add(v3154);
             ReleaseHistory.Add(v3153);
             ReleaseHistory.Add(v3152);

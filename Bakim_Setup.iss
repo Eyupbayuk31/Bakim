@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Bakım"
-#define MyAppVersion "3.15.4"
+#define MyAppVersion "3.16.0"
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"
 #define MyAppExeName "Bakim.exe"

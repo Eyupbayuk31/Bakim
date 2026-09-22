@@ -860,6 +860,7 @@ namespace Bakım.Services
                                             SizeFormatted = sizeFormatted,
                                             Extension = ext,
                                             Category = category,
+                                            LastModified = file.LastWriteTime,
                                             LastModifiedFormatted = file.LastWriteTime.ToString("yyyy-MM-dd HH:mm"),
                                             DriveLetter = Path.GetPathRoot(file.FullName) ?? "C:\\"
                                         });
@@ -890,7 +891,7 @@ namespace Bakım.Services
                 }
 
                 // En büyük dosyaları sırala ve oranlarını hesapla
-                var sorted = filesFound.OrderByDescending(f => f.SizeBytes).Take(100).ToList();
+                var sorted = filesFound.OrderByDescending(f => f.SizeBytes).Take(250).ToList();
                 if (sorted.Count > 0)
                 {
                     long maxSize = sorted[0].SizeBytes;

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -40,6 +41,8 @@ namespace Bakım.ViewModels
                 }
             }
             catch { }
+
+            UpdateSelectedDriveSummary();
 
             _ = RefreshAsync();
             _ = LoadSmartHealthAsync();
@@ -104,6 +107,61 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _selectedCategoryFilter = "Tümü";
 
+        [ObservableProperty]
+        private string _searchQuery = string.Empty;
+
+        [ObservableProperty]
+        private string _selectedSortMode = "SizeDesc"; // SizeDesc, SizeAsc, DateDesc, DateAsc, NameAsc, NameDesc
+
+        [ObservableProperty]
+        private bool _hasScanned;
+
+        [ObservableProperty]
+        private bool _hasResults;
+
+        [ObservableProperty]
+        private bool _hasNoResultsAfterScan;
+
+        [ObservableProperty]
+        private LargeFilesCategoryStats _categoryStats = new();
+
+        [ObservableProperty]
+        private bool _isAllSelected;
+
+        [ObservableProperty]
+        private int _selectedFilesCount;
+
+        [ObservableProperty]
+        private string _selectedFilesTotalBytesFormatted = "0 B";
+
+        public bool HasSelectedFiles => SelectedFilesCount > 0;
+
+        // Seçili Sürücü Depolama Özeti (Hero Empty State için)
+        [ObservableProperty]
+        private string _selectedDriveName = string.Empty;
+
+        [ObservableProperty]
+        private string _selectedDriveVolumeLabel = "Yerel Disk";
+
+        [ObservableProperty]
+        private string _selectedDriveFormat = "NTFS";
+
+        [ObservableProperty]
+        private double _selectedDriveTotalGb;
+
+        [ObservableProperty]
+        private double _selectedDriveFreeGb;
+
+        [ObservableProperty]
+        private double _selectedDriveUsedGb;
+
+        [ObservableProperty]
+        private double _selectedDriveUsagePercentage;
+
+        [ObservableProperty]
+        private string _selectedDriveUsageBarBrush = "#38BDF8";
+
+        public bool IsThreshold100Mb => MinFileSizeThresholdMb == 100;
         public bool IsThreshold500Mb => MinFileSizeThresholdMb == 500;
         public bool IsThreshold1Gb => MinFileSizeThresholdMb == 1024;
         public bool IsThreshold2Gb => MinFileSizeThresholdMb == 2048;
@@ -115,8 +173,35 @@ namespace Bakım.ViewModels
         public bool IsCategoryArchive => SelectedCategoryFilter == "Arşiv";
         public bool IsCategoryInstaller => SelectedCategoryFilter == "Kurulum / Oyun";
 
+        partial void OnSelectedDriveFilterChanged(string value)
+        {
+            UpdateSelectedDriveSummary();
+        }
+
+        partial void OnSearchQueryChanged(string value)
+        {
+            UpdateLargeFilesFilter();
+        }
+
+        partial void OnSelectedSortModeChanged(string value)
+        {
+            UpdateLargeFilesFilter();
+        }
+
+        private bool _isUpdatingSelectionInternally;
+        partial void OnIsAllSelectedChanged(bool value)
+        {
+            if (_isUpdatingSelectionInternally) return;
+            foreach (var file in FilteredLargeFiles)
+            {
+                file.IsSelected = value;
+            }
+            UpdateSelectedFilesSummary(skipAllSelectedCheck: true);
+        }
+
         partial void OnMinFileSizeThresholdMbChanged(long value)
         {
+            OnPropertyChanged(nameof(IsThreshold100Mb));
             OnPropertyChanged(nameof(IsThreshold500Mb));
             OnPropertyChanged(nameof(IsThreshold1Gb));
             OnPropertyChanged(nameof(IsThreshold2Gb));
@@ -130,6 +215,7 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(IsCategoryDiskImage));
             OnPropertyChanged(nameof(IsCategoryArchive));
             OnPropertyChanged(nameof(IsCategoryInstaller));
+            UpdateLargeFilesFilter();
         }
 
         [ObservableProperty]
@@ -216,9 +302,17 @@ namespace Bakım.ViewModels
 
                 foreach (var f in found)
                 {
+                    f.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(LargeDiskFileItem.IsSelected))
+                        {
+                            UpdateSelectedFilesSummary();
+                        }
+                    };
                     LargeFiles.Add(f);
                 }
 
+                HasScanned = true;
                 UpdateLargeFilesFilter();
                 ScanProgressText = $"Tarama tamamlandı! {found.Count} adet büyük dosya bulundu.";
             }
@@ -338,7 +432,85 @@ namespace Bakım.ViewModels
         public void SetCategoryFilter(string? category)
         {
             SelectedCategoryFilter = string.IsNullOrWhiteSpace(category) ? "Tümü" : category;
+        }
+
+        [RelayCommand]
+        public void SetSortMode(string? sortMode)
+        {
+            SelectedSortMode = string.IsNullOrWhiteSpace(sortMode) ? "SizeDesc" : sortMode;
+        }
+
+        [RelayCommand]
+        public void ToggleSelectAll()
+        {
+            if (FilteredLargeFiles.Count == 0) return;
+            bool target = !IsAllSelected;
+            _isUpdatingSelectionInternally = true;
+            IsAllSelected = target;
+            foreach (var f in FilteredLargeFiles)
+            {
+                f.IsSelected = target;
+            }
+            _isUpdatingSelectionInternally = false;
+            UpdateSelectedFilesSummary(skipAllSelectedCheck: true);
+        }
+
+        [RelayCommand]
+        public async Task RecycleSelectedFilesAsync()
+        {
+            var selected = FilteredLargeFiles.Where(f => f.IsSelected).ToList();
+            if (selected.Count == 0) return;
+
+            int movedCount = 0;
+            foreach (var file in selected)
+            {
+                file.IsDeleting = true;
+                try
+                {
+                    bool moved = await _infoService.DeleteLargeFileToRecycleBinAsync(file.FilePath);
+                    if (moved)
+                    {
+                        LargeFiles.Remove(file);
+                        movedCount++;
+                    }
+                }
+                finally
+                {
+                    file.IsDeleting = false;
+                }
+            }
+
             UpdateLargeFilesFilter();
+            ScanProgressText = $"{movedCount} dosya Geri Dönüşüm Kutusuna taşındı.";
+        }
+
+        [RelayCommand]
+        public async Task DeleteSelectedFilesAsync()
+        {
+            var selected = FilteredLargeFiles.Where(f => f.IsSelected).ToList();
+            if (selected.Count == 0) return;
+
+            int deletedCount = 0;
+            foreach (var file in selected)
+            {
+                file.IsDeleting = true;
+                try
+                {
+                    bool deleted = await _infoService.DeleteLargeFileAsync(file.FilePath);
+                    if (deleted)
+                    {
+                        LargeFiles.Remove(file);
+                        deletedCount++;
+                    }
+                }
+                finally
+                {
+                    file.IsDeleting = false;
+                }
+            }
+
+            UpdateLargeFilesFilter();
+            ScanProgressText = $"{deletedCount} dosya kalıcı olarak silindi.";
         }
 
         [RelayCommand]
@@ -355,25 +527,199 @@ namespace Bakım.ViewModels
 
         private void UpdateLargeFilesFilter()
         {
-            FilteredLargeFiles.Clear();
-            var matches = SelectedCategoryFilter == "Tümü"
-                ? LargeFiles
-                : LargeFiles.Where(f => f.Category.Equals(SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase) ||
-                                       f.Category.Contains(SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase));
+            IEnumerable<LargeDiskFileItem> query = LargeFiles;
 
-            long totalBytes = 0;
-            int count = 0;
-            foreach (var file in matches)
+            // Kategori Filtresi
+            if (SelectedCategoryFilter != "Tümü")
             {
-                FilteredLargeFiles.Add(file);
-                totalBytes += file.SizeBytes;
-                count++;
+                query = query.Where(f => f.Category.Equals(SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase) ||
+                                         f.Category.Contains(SelectedCategoryFilter, StringComparison.OrdinalIgnoreCase));
             }
 
-            double gb = totalBytes / (1024.0 * 1024.0 * 1024.0);
-            TotalLargeFilesSizeFormatted = count > 0 
-                ? $"{count} Dosya ({gb:F1} GB Toplam Alan)" 
+            // Canlı Arama (dosya adı, dosya yolu veya uzantı)
+            if (!string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                string term = SearchQuery.Trim();
+                query = query.Where(f => f.FileName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                         f.FilePath.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                                         f.Extension.Contains(term, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sıralama
+            query = SelectedSortMode switch
+            {
+                "SizeAsc" => query.OrderBy(f => f.SizeBytes),
+                "DateDesc" => query.OrderByDescending(f => f.LastModified),
+                "DateAsc" => query.OrderBy(f => f.LastModified),
+                "NameAsc" => query.OrderBy(f => f.FileName, StringComparer.OrdinalIgnoreCase),
+                "NameDesc" => query.OrderByDescending(f => f.FileName, StringComparer.OrdinalIgnoreCase),
+                _ => query.OrderByDescending(f => f.SizeBytes) // "SizeDesc"
+            };
+
+            FilteredLargeFiles.Clear();
+            long totalFilteredBytes = 0;
+            foreach (var file in query)
+            {
+                FilteredLargeFiles.Add(file);
+                totalFilteredBytes += file.SizeBytes;
+            }
+
+            double gb = totalFilteredBytes / (1024.0 * 1024.0 * 1024.0);
+            TotalLargeFilesSizeFormatted = FilteredLargeFiles.Count > 0
+                ? $"{FilteredLargeFiles.Count} Dosya ({gb:F1} GB Toplam Alan)"
                 : "0 Dosya (0 GB)";
+
+            HasResults = FilteredLargeFiles.Count > 0;
+            HasNoResultsAfterScan = HasScanned && FilteredLargeFiles.Count == 0;
+
+            UpdateSelectedFilesSummary();
+            RecalculateCategoryStats();
+        }
+
+        private void UpdateSelectedDriveSummary()
+        {
+            try
+            {
+                DriveInfo? target = null;
+                var allDrives = DriveInfo.GetDrives().Where(d => d.IsReady && d.DriveType == DriveType.Fixed).ToList();
+
+                if (SelectedDriveFilter != "Tüm Sürücüler")
+                {
+                    target = allDrives.FirstOrDefault(d => d.Name.Equals(SelectedDriveFilter, StringComparison.OrdinalIgnoreCase) ||
+                                                           d.Name.StartsWith(SelectedDriveFilter.Substring(0, 1), StringComparison.OrdinalIgnoreCase));
+                }
+
+                if (target == null)
+                {
+                    target = allDrives.FirstOrDefault(d => d.Name.StartsWith("C", StringComparison.OrdinalIgnoreCase))
+                             ?? allDrives.FirstOrDefault();
+                }
+
+                if (target != null && target.IsReady)
+                {
+                    SelectedDriveName = target.Name;
+                    SelectedDriveVolumeLabel = string.IsNullOrWhiteSpace(target.VolumeLabel) ? "Yerel Disk" : target.VolumeLabel;
+                    SelectedDriveFormat = target.DriveFormat;
+
+                    double totalGb = target.TotalSize / (1024.0 * 1024.0 * 1024.0);
+                    double freeGb = target.TotalFreeSpace / (1024.0 * 1024.0 * 1024.0);
+                    double usedGb = Math.Max(0, totalGb - freeGb);
+                    double usagePct = totalGb > 0 ? (usedGb / totalGb) * 100.0 : 0;
+
+                    SelectedDriveTotalGb = Math.Round(totalGb, 1);
+                    SelectedDriveFreeGb = Math.Round(freeGb, 1);
+                    SelectedDriveUsedGb = Math.Round(usedGb, 1);
+                    SelectedDriveUsagePercentage = Math.Round(usagePct, 1);
+
+                    SelectedDriveUsageBarBrush = usagePct switch
+                    {
+                        >= 90 => "#EF4444",
+                        >= 75 => "#F59E0B",
+                        _ => "#38BDF8"
+                    };
+                }
+            }
+            catch
+            {
+                // Savunmacı
+            }
+        }
+
+        private void UpdateSelectedFilesSummary(bool skipAllSelectedCheck = false)
+        {
+            var selected = FilteredLargeFiles.Where(f => f.IsSelected).ToList();
+            SelectedFilesCount = selected.Count;
+            long bytes = selected.Sum(f => f.SizeBytes);
+
+            if (bytes >= 1024L * 1024 * 1024)
+                SelectedFilesTotalBytesFormatted = $"{bytes / (1024.0 * 1024 * 1024):F1} GB";
+            else if (bytes >= 1024L * 1024)
+                SelectedFilesTotalBytesFormatted = $"{bytes / (1024.0 * 1024):F1} MB";
+            else
+                SelectedFilesTotalBytesFormatted = $"{bytes / 1024.0:F0} KB";
+
+            if (!skipAllSelectedCheck)
+            {
+                _isUpdatingSelectionInternally = true;
+                IsAllSelected = FilteredLargeFiles.Count > 0 && selected.Count == FilteredLargeFiles.Count;
+                _isUpdatingSelectionInternally = false;
+            }
+
+            OnPropertyChanged(nameof(HasSelectedFiles));
+        }
+
+        private void RecalculateCategoryStats()
+        {
+            long totalBytes = LargeFiles.Sum(f => f.SizeBytes);
+            int totalCount = LargeFiles.Count;
+
+            if (totalCount == 0 || totalBytes == 0)
+            {
+                CategoryStats = new LargeFilesCategoryStats();
+                return;
+            }
+
+            long videoBytes = 0, diskImageBytes = 0, archiveBytes = 0, installerBytes = 0, otherBytes = 0;
+
+            foreach (var f in LargeFiles)
+            {
+                switch (f.Category)
+                {
+                    case "Video":
+                        videoBytes += f.SizeBytes;
+                        break;
+                    case "Disk İmajı":
+                        diskImageBytes += f.SizeBytes;
+                        break;
+                    case "Arşiv":
+                        archiveBytes += f.SizeBytes;
+                        break;
+                    case "Kurulum / Oyun":
+                        installerBytes += f.SizeBytes;
+                        break;
+                    default:
+                        otherBytes += f.SizeBytes;
+                        break;
+                }
+            }
+
+            static string FormatBytes(long bytes)
+            {
+                if (bytes >= 1024L * 1024 * 1024)
+                    return $"{bytes / (1024.0 * 1024 * 1024):F1} GB";
+                if (bytes >= 1024L * 1024)
+                    return $"{bytes / (1024.0 * 1024):F1} MB";
+                return $"{bytes / 1024.0:F0} KB";
+            }
+
+            var stats = new LargeFilesCategoryStats
+            {
+                TotalBytes = totalBytes,
+                TotalFormatted = FormatBytes(totalBytes),
+                FileCount = totalCount,
+
+                VideoBytes = videoBytes,
+                VideoFormatted = FormatBytes(videoBytes),
+                VideoPercent = Math.Round((double)videoBytes / totalBytes * 100.0, 1),
+
+                DiskImageBytes = diskImageBytes,
+                DiskImageFormatted = FormatBytes(diskImageBytes),
+                DiskImagePercent = Math.Round((double)diskImageBytes / totalBytes * 100.0, 1),
+
+                ArchiveBytes = archiveBytes,
+                ArchiveFormatted = FormatBytes(archiveBytes),
+                ArchivePercent = Math.Round((double)archiveBytes / totalBytes * 100.0, 1),
+
+                InstallerBytes = installerBytes,
+                InstallerFormatted = FormatBytes(installerBytes),
+                InstallerPercent = Math.Round((double)installerBytes / totalBytes * 100.0, 1),
+
+                OtherBytes = otherBytes,
+                OtherFormatted = FormatBytes(otherBytes),
+                OtherPercent = Math.Round((double)otherBytes / totalBytes * 100.0, 1)
+            };
+
+            CategoryStats = stats;
         }
 
         [RelayCommand]

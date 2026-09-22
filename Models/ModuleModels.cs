@@ -1,5 +1,6 @@
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Wpf.Ui.Controls;
 
 namespace Bakım.Models
 {
@@ -184,11 +185,62 @@ namespace Bakım.Models
         public string SizeFormatted { get; set; } = string.Empty;
         public string Extension { get; set; } = string.Empty;
         public string Category { get; set; } = "Diğer";
+        public DateTime LastModified { get; set; } = DateTime.MinValue;
         public string LastModifiedFormatted { get; set; } = string.Empty;
         public string DriveLetter { get; set; } = "C:";
         public double SizePercentage { get; set; } = 10;
 
         [ObservableProperty]
+        private bool _isSelected;
+
+        [ObservableProperty]
         private bool _isDeleting;
+
+        public SymbolRegular CategorySymbol => Category switch
+        {
+            "Video" => SymbolRegular.Video24,
+            "Disk İmajı" => SymbolRegular.HardDrive24,
+            "Arşiv" => SymbolRegular.FolderZip24,
+            "Kurulum / Oyun" => SymbolRegular.AppGeneric24,
+            _ => SymbolRegular.Document24
+        };
+
+        public string CategoryColorHex => Category switch
+        {
+            "Video" => "#A855F7",
+            "Disk İmajı" => "#38BDF8",
+            "Arşiv" => "#F59E0B",
+            "Kurulum / Oyun" => "#10B981",
+            _ => "#94A3B8"
+        };
+    }
+
+    public class LargeFilesCategoryStats
+    {
+        public long TotalBytes { get; set; }
+        public string TotalFormatted { get; set; } = "0 GB";
+        public int FileCount { get; set; }
+
+        public long VideoBytes { get; set; }
+        public string VideoFormatted { get; set; } = "0 MB";
+        public double VideoPercent { get; set; }
+
+        public long DiskImageBytes { get; set; }
+        public string DiskImageFormatted { get; set; } = "0 MB";
+        public double DiskImagePercent { get; set; }
+
+        public long ArchiveBytes { get; set; }
+        public string ArchiveFormatted { get; set; } = "0 MB";
+        public double ArchivePercent { get; set; }
+
+        public long InstallerBytes { get; set; }
+        public string InstallerFormatted { get; set; } = "0 MB";
+        public double InstallerPercent { get; set; }
+
+        public long OtherBytes { get; set; }
+        public string OtherFormatted { get; set; } = "0 MB";
+        public double OtherPercent { get; set; }
+
+        public bool HasData => FileCount > 0 && TotalBytes > 0;
     }
 }

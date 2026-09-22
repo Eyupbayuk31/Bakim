@@ -21,7 +21,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Donanım, Depolama &amp; S.M.A.R.T."
+                         Title="Donanım &amp; Depolama"
                          Description="Gerçek zamanlı donanım telemetrisi, NVMe/SSD S.M.A.R.T. sağlık analizi ve akıllı disk temizleme merkezi.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -37,11 +37,11 @@
                             <ui:Button Appearance="{Binding IsHardwareTab, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SwitchSubTabCommand}"
                                        CommandParameter="Hardware"
-                                       Padding="14,7"
+                                       Padding="12,6"
                                        Margin="0,0,4,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="16" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Donanım &amp; Telemetri" VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="16" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Donanım" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </ui:Button>
 
@@ -49,11 +49,11 @@
                             <ui:Button Appearance="{Binding IsSmartTab, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SwitchSubTabCommand}"
                                        CommandParameter="Smart"
-                                       Padding="14,7"
+                                       Padding="12,6"
                                        Margin="0,0,4,0">
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="16" Margin="0,0,8,0"/>
-                                    <TextBlock Text="S.M.A.R.T. Sağlık" VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="16" Margin="0,0,6,0"/>
+                                    <TextBlock Text="S.M.A.R.T." VerticalAlignment="Center"/>
                                 </StackPanel>
                             </ui:Button>
 
@@ -61,10 +61,10 @@
                             <ui:Button Appearance="{Binding IsLargeFilesTab, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SwitchSubTabCommand}"
                                        CommandParameter="LargeFiles"
-                                       Padding="14,7">
+                                       Padding="12,6">
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon Symbol="FolderZip20" FontSize="16" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Büyük Dosya Analizörü" VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="FolderZip20" FontSize="16" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Büyük Dosyalar" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </ui:Button>
                         </StackPanel>
@@ -717,70 +717,76 @@
               Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Scanner Controls & Filters -->
-                <RowDefinition Height="*"/>    <!-- Large Files List -->
+                <RowDefinition Height="*"/>    <!-- Content Area (Empty States or Results) -->
             </Grid.RowDefinitions>
 
-            <!-- Scanner Toolbar Card -->
-            <ui:Card Grid.Row="0" Padding="18,14" Margin="0,0,0,16">
+            <!-- 1. Scanner Toolbar Card (Responsive 2-Row Layout) -->
+            <ui:Card Grid.Row="0" Padding="16,14" Margin="0,0,0,14">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Row 0: Target Drive & Threshold Chips -->
-                        <RowDefinition Height="Auto"/> <!-- Row 1: Category Filter Chips -->
-                        <RowDefinition Height="Auto"/> <!-- Row 2: Progress & Radar Beam -->
+                        <RowDefinition Height="Auto"/> <!-- Row 0: Target Drive, Threshold Chips & Scan Buttons -->
+                        <RowDefinition Height="Auto"/> <!-- Row 1: Category Chips, SearchBox, Sort Selector & Badge -->
+                        <RowDefinition Height="Auto"/> <!-- Row 2: Progress & Radar Scan Beam -->
                     </Grid.RowDefinitions>
 
-                    <!-- Row 0: Target Drive & Action Buttons -->
-                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <!-- Row 0: Target Drive, Threshold Chips & Actions -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Left: Drive Selector & Threshold Preset Chips -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="Search24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
-                            <TextBlock Text="Hedef Sürücü:" FontSize="13" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="Search24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Hedef Sürücü:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             
                             <ComboBox ItemsSource="{Binding AvailableDrives}" AutomationProperties.Name="Sürücü filtresi" 
                                       SelectedItem="{Binding SelectedDriveFilter, Mode=TwoWay}"
-                                      MinWidth="130"
+                                      MinWidth="120"
                                       Padding="8,4"
-                                      Margin="0,0,16,0"/>
+                                      Margin="0,0,14,0"/>
 
-                            <TextBlock Text="Boyut Eşiği:" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Boyut Eşiği:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             
                             <!-- Threshold Preset Chips -->
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:Button Content="100 MB+" 
+                                           Appearance="{Binding IsThreshold100Mb, Converter={StaticResource BoolToNavAppearance}}"
+                                           Command="{Binding SetThresholdCommand}" 
+                                           CommandParameter="100" 
+                                           Padding="8,4" Margin="0,0,4,0"/>
                                 <ui:Button Content="500 MB+" 
                                            Appearance="{Binding IsThreshold500Mb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="500" 
-                                           Padding="10,5" Margin="0,0,6,0"/>
+                                           Padding="8,4" Margin="0,0,4,0"/>
                                 <ui:Button Content="1 GB+ (Önerilen)" 
                                            Appearance="{Binding IsThreshold1Gb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="1024" 
-                                           Padding="10,5" Margin="0,0,6,0"/>
+                                           Padding="8,4" Margin="0,0,4,0"/>
                                 <ui:Button Content="2 GB+" 
                                            Appearance="{Binding IsThreshold2Gb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="2048" 
-                                           Padding="10,5" Margin="0,0,6,0"/>
+                                           Padding="8,4" Margin="0,0,4,0"/>
                                 <ui:Button Content="5 GB+" 
                                            Appearance="{Binding IsThreshold5Gb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="5120" 
-                                           Padding="10,5"/>
+                                           Padding="8,4"/>
                             </StackPanel>
                         </StackPanel>
 
-                        <!-- Start / Cancel Scan Buttons -->
+                        <!-- Right: Scan & Stop Buttons -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:Button Appearance="Primary" 
                                        Content="Büyük Dosyaları Tara" 
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding ScanLargeFilesCommand}"
                                        IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBool}}"
-                                       Padding="16,8" 
+                                       Padding="14,7" 
                                        Margin="0,0,8,0"/>
 
                             <ui:Button Appearance="Danger" 
@@ -788,50 +794,82 @@
                                        Icon="{ui:SymbolIcon Dismiss24}"
                                        Command="{Binding CancelScanCommand}"
                                        IsEnabled="{Binding IsScanning}"
-                                       Padding="14,8"/>
+                                       Padding="12,7"/>
                         </StackPanel>
                     </Grid>
 
-                    <!-- Row 1: Category Filter Chips & Summary Badge -->
+                    <!-- Row 1: Category Filter Chips, Live Search, Sort Selector & Summary Badge -->
                     <Grid Grid.Row="1" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Left: Category Filter Chips -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Tür Filtresi:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ui:Button Content="Tümü" 
                                        Appearance="{Binding IsCategoryAll, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Tümü" 
-                                       Padding="10,4" Margin="0,0,6,0"/>
+                                       Padding="9,4" Margin="0,0,4,0"/>
                             <ui:Button Content="Videolar" 
                                        Appearance="{Binding IsCategoryVideo, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Video" 
-                                       Padding="10,4" Margin="0,0,6,0"/>
+                                       Padding="9,4" Margin="0,0,4,0"/>
                             <ui:Button Content="Disk İmajları" 
                                        Appearance="{Binding IsCategoryDiskImage, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Disk İmajı" 
-                                       Padding="10,4" Margin="0,0,6,0"/>
+                                       Padding="9,4" Margin="0,0,4,0"/>
                             <ui:Button Content="Arşivler" 
                                        Appearance="{Binding IsCategoryArchive, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Arşiv" 
-                                       Padding="10,4" Margin="0,0,6,0"/>
+                                       Padding="9,4" Margin="0,0,4,0"/>
                             <ui:Button Content="Kurulum / Oyun" 
                                        Appearance="{Binding IsCategoryInstaller, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Kurulum / Oyun" 
-                                       Padding="10,4"/>
+                                       Padding="9,4"/>
                         </StackPanel>
 
-                        <!-- File Count & Total Size Summary Badge -->
-                        <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,4">
-                            <TextBlock Text="{Binding TotalLargeFilesSizeFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        </Border>
+                        <!-- Right: SearchBox, Sort Selector & File Count Badge -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <!-- Live SearchBox -->
+                            <ui:TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                        PlaceholderText="Dosya veya uzantı ara..."
+                                        ClearButtonEnabled="True"
+                                        Width="160"
+                                        Padding="8,4"
+                                        Margin="0,0,8,0"
+                                        AutomationProperties.Name="Dosya arama kutusu"/>
+
+                            <!-- Sort Selector -->
+                            <ComboBox SelectedValue="{Binding SelectedSortMode, Mode=TwoWay}"
+                                      SelectedValuePath="Tag"
+                                      Width="135"
+                                      Padding="8,4"
+                                      Margin="0,0,8,0"
+                                      AutomationProperties.Name="Sıralama Seçici">
+                                <ComboBoxItem Content="Boyut (Büyükten)" Tag="SizeDesc"/>
+                                <ComboBoxItem Content="Boyut (Küçükten)" Tag="SizeAsc"/>
+                                <ComboBoxItem Content="Tarih (En Yeni)" Tag="DateDesc"/>
+                                <ComboBoxItem Content="Tarih (En Eski)" Tag="DateAsc"/>
+                                <ComboBoxItem Content="İsim (A-Z)" Tag="NameAsc"/>
+                                <ComboBoxItem Content="İsim (Z-A)" Tag="NameDesc"/>
+                            </ComboBox>
+
+                            <!-- File Count & Total Size Summary Badge -->
+                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                    BorderThickness="1" 
+                                    CornerRadius="6" 
+                                    Padding="10,4">
+                                <TextBlock Text="{Binding TotalLargeFilesSizeFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            </Border>
+                        </StackPanel>
                     </Grid>
 
                     <!-- Row 2: Scan Progress & Radar Beam -->
@@ -898,142 +936,469 @@
                 </Grid>
             </ui:Card>
 
-            <!-- Large Files Virtualized ListView -->
-            <ListView Grid.Row="1" 
-                      ItemsSource="{Binding FilteredLargeFiles}"
-                      BorderThickness="0"
-                      Background="Transparent"
-                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                      VirtualizingStackPanel.IsVirtualizing="True"
-                      VirtualizingStackPanel.VirtualizationMode="Recycling">
-
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="VerticalContentAlignment" Value="Center"/>
-                        <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0,0,0,6"/>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Setter Property="BorderThickness" Value="0"/>
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListViewItem">
-                                    <ContentPresenter/>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ListView.ItemContainerStyle>
-
-                <ListView.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:LargeDiskFileItem}">
-                        <ui:Card Padding="14,12" ClipToBounds="False">
+            <!-- 2. CONTENT AREA: HERO EMPTY STATE / ZERO-RESULTS STATE / RESULTS STATE -->
+            <Grid Grid.Row="1">
+                <!-- 2A. HERO EMPTY STATE (Before Scan) -->
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Visibility="{Binding HasScanned, Converter={StaticResource InverseBoolToVis}}">
+                    <StackPanel Margin="0,0,0,16">
+                        <!-- Sürücü Depolama Özeti Kartı -->
+                        <ui:Card Padding="18,16" Margin="0,0,0,16">
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeExtCol"/>  <!-- Extension Badge -->
-                                    <ColumnDefinition Width="2.5*"/>                               <!-- File Name & Path -->
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeCatCol"/>  <!-- Category Badge -->
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeSizeCol"/> <!-- Formatted Size -->
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeBarCol"/>  <!-- Visual Space Bar -->
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="LargeActionCol"/><!-- Action Buttons -->
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                                <!-- Extension Badge -->
-                                <Border Grid.Column="0" 
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                        BorderThickness="1" 
-                                        CornerRadius="6" 
-                                        Padding="8,4" 
-                                        VerticalAlignment="Center" 
-                                        Margin="0,0,12,0"
-                                        Visibility="{Binding Extension, Converter={StaticResource NullToVisibilityConverter}}">
-                                    <TextBlock Text="{Binding Extension}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                </Border>
+                                <!-- Header: Drive Info & Usage Percent Badge -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- File Name & Full Path -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,14,0">
-                                    <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" Margin="0,2,0,0"/>
-                                </StackPanel>
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="HardDrive24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                        <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center">
+                                            <Run Text="{Binding SelectedDriveName}"/><Run Text=" ("/><Run Text="{Binding SelectedDriveVolumeLabel}"/><Run Text=") - "/><Run Text="{Binding SelectedDriveFormat}"/>
+                                        </TextBlock>
+                                    </StackPanel>
 
-                                <!-- Category Badge -->
-                                <Border Grid.Column="2" 
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                        BorderThickness="1" 
-                                        CornerRadius="6" 
-                                        Padding="6,3" 
-                                        VerticalAlignment="Center" 
-                                        Margin="0,0,14,0">
-                                    <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                </Border>
+                                    <!-- Usage Badge -->
+                                    <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="10,4">
+                                        <TextBlock FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                            <Run Text="% "/><Run Text="{Binding SelectedDriveUsagePercentage}"/><Run Text=" Dolu"/>
+                                        </TextBlock>
+                                    </Border>
+                                </Grid>
 
-                                <!-- Formatted Size -->
-                                <TextBlock Grid.Column="3" 
-                                           Text="{Binding SizeFormatted}" 
-                                           FontSize="14" 
-                                           FontWeight="Bold" 
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                                           VerticalAlignment="Center" 
-                                           TextAlignment="Right" 
-                                           Margin="0,0,14,0"/>
+                                <!-- Visual Drive Usage Bar -->
+                                <ProgressBar Grid.Row="1"
+                                             Value="{Binding SelectedDriveUsagePercentage}"
+                                             Maximum="100"
+                                             Height="8"
+                                             Margin="0,12,0,12"
+                                             Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
 
-                                <!-- Visual Size Bar -->
-                                <ProgressBar Grid.Column="4" 
-                                             Value="{Binding SizePercentage}" 
-                                             Maximum="100" 
-                                             Height="6" 
-                                             MinWidth="80"
-                                             MaxWidth="140"
-                                             Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                                             VerticalAlignment="Center" 
-                                             Margin="0,0,14,0"/>
+                                <!-- 3 Key Storage Metrics -->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- Action Buttons: Copy Path, Safe Recycle Bin, Folder Location, Permanent Delete -->
-                                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ui:Button Appearance="Secondary" 
-                                               Icon="{ui:SymbolIcon Copy20}"
-                                               Command="{Binding DataContext.CopyFilePathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               ToolTip="Dosya Yolunu Panoya Kopyala"
-                                               Padding="8,6" 
-                                               Margin="0,0,6,0" 
-                                               AutomationProperties.Name="Dosya Yolunu Panoya Kopyala"/>
+                                    <!-- Metric 1: Total Capacity -->
+                                    <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Toplam Kapasite" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0">
+                                                <Run Text="{Binding SelectedDriveTotalGb}"/><Run Text=" GB"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
 
-                                    <ui:Button Appearance="Secondary" 
-                                               Icon="{ui:SymbolIcon Delete20}"
-                                               Command="{Binding DataContext.SendToRecycleBinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               ToolTip="Geri Dönüşüm Kutusuna Taşı (Güvenli Silme)"
-                                               Padding="8,6" 
-                                               Margin="0,0,6,0" 
-                                               AutomationProperties.Name="Geri Dönüşüm Kutusuna Taşı"/>
+                                    <!-- Metric 2: Used Space -->
+                                    <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Kullanılan Alan" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0">
+                                                <Run Text="{Binding SelectedDriveUsedGb}"/><Run Text=" GB"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
 
-                                    <ui:Button Appearance="Secondary" 
-                                               Icon="{ui:SymbolIcon FolderOpen20}"
-                                               Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               ToolTip="Klasörde Göster"
-                                               Padding="8,6" 
-                                               Margin="0,0,6,0" 
-                                               AutomationProperties.Name="Klasörde Göster"/>
-
-                                    <ui:Button Appearance="Danger" 
-                                               Icon="{ui:SymbolIcon Dismiss20}"
-                                               Command="{Binding DataContext.DeleteLargeFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               IsEnabled="{Binding IsDeleting, Converter={StaticResource InverseBool}}"
-                                               ToolTip="Kalıcı Olarak Sil"
-                                               Padding="8,6" 
-                                               AutomationProperties.Name="Kalıcı Olarak Sil"/>
-                                </StackPanel>
+                                    <!-- Metric 3: Free Space -->
+                                    <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="12,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Boş Alan" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0">
+                                                <Run Text="{Binding SelectedDriveFreeGb}"/><Run Text=" GB"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
                             </Grid>
                         </ui:Card>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+
+                        <!-- 4 Quick Guidance Cards (2x2 Grid) -->
+                        <Grid Margin="0,0,0,16">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Guide 1: Videos -->
+                            <ui:Card Grid.Row="0" Grid.Column="0" Padding="14,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#20A855F7" BorderBrush="#A855F7" BorderThickness="1" CornerRadius="8" Width="38" Height="38" Margin="0,0,12,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="Video24" FontSize="18" Foreground="#A855F7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Büyük Videolar &amp; Kayıtlar" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="MP4, MKV, AVI, TS. 4K ekran ve oyun kayıtları diskin en büyük kısmını kaplayabilir." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </ui:Card>
+
+                            <!-- Guide 2: Disk Images -->
+                            <ui:Card Grid.Row="0" Grid.Column="2" Padding="14,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#2038BDF8" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="8" Width="38" Height="38" Margin="0,0,12,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="HardDrive24" FontSize="18" Foreground="#38BDF8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Sanal Diskler &amp; İmajlar" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="ISO, VMDK, VHDX, IMG. Kurulum kalıpları ve sanal makineler tek başına onlarca gigabayt yer kaplar." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </ui:Card>
+
+                            <!-- Guide 3: Archives -->
+                            <ui:Card Grid.Row="2" Grid.Column="0" Padding="14,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#20F59E0B" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="8" Width="38" Height="38" Margin="0,0,12,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="FolderZip24" FontSize="18" Foreground="#F59E0B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Arşiv &amp; Sıkıştırılmış Paketler" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="ZIP, RAR, 7Z, TAR. İndirilip açıldıktan sonra unutulan büyük yedek arşivleri." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </ui:Card>
+
+                            <!-- Guide 4: Installers -->
+                            <ui:Card Grid.Row="2" Grid.Column="2" Padding="14,12">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#2010B981" BorderBrush="#10B981" BorderThickness="1" CornerRadius="8" Width="38" Height="38" Margin="0,0,12,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="AppGeneric24" FontSize="18" Foreground="#10B981" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="Kurulum &amp; Oyun Paketleri" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="EXE, MSI, PAK, DAT. Büyük oyun yükleyicileri ve artık gereksiz kurulum paketleri." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </ui:Card>
+                        </Grid>
+
+                        <!-- Hero Scan CTA Callout -->
+                        <ui:Card Padding="24,20" HorizontalAlignment="Stretch">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="Sürücünüzü derinlemesine tarayarak en çok alan kaplayan dosyaları bulun ve güvenle temizleyin." 
+                                           FontSize="13" 
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,12"/>
+                                <ui:Button Appearance="Primary"
+                                           Content="Büyük Dosya Taramasını Başlat"
+                                           Icon="{ui:SymbolIcon Search24}"
+                                           Command="{Binding ScanLargeFilesCommand}"
+                                           Padding="22,10"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Card>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- 2B. ZERO-RESULTS AFTER SCAN STATE -->
+                <ui:Card Padding="32,24" 
+                         VerticalAlignment="Center" 
+                         HorizontalAlignment="Center"
+                         MaxWidth="560"
+                         Visibility="{Binding HasNoResultsAfterScan, Converter={StaticResource BoolToVis}}">
+                    <StackPanel HorizontalAlignment="Center">
+                        <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="42" Foreground="#10B981" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                        <TextBlock Text="Eşik Değerinin Üzerinde Dosya Bulunamadı" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                        <TextBlock Text="Seçili sürücüde belirlenen boyut eşiğini aşan herhangi bir dosya tespit edilmedi. Daha düşük boyutlu dosyaları listelemek için aşağıdaki seçenekleri deneyebilirsiniz:" 
+                                   FontSize="12" 
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                   TextWrapping="Wrap" 
+                                   TextAlignment="Center" 
+                                   Margin="0,0,0,16"/>
+                        
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <ui:Button Appearance="Secondary"
+                                       Content="100 MB+ ile Yeniden Tara"
+                                       Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                       Command="{Binding SetThresholdCommand}"
+                                       CommandParameter="100"
+                                       Padding="14,8"
+                                       Margin="0,0,8,0"/>
+                            <ui:Button Appearance="Secondary"
+                                       Content="500 MB+ ile Yeniden Tara"
+                                       Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                       Command="{Binding SetThresholdCommand}"
+                                       CommandParameter="500"
+                                       Padding="14,8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ui:Card>
+
+                <!-- 2C. RESULTS STATE (Category Bar + Batch Toolbar + Virtualized List) -->
+                <Grid Visibility="{Binding HasResults, Converter={StaticResource BoolToVis}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Category Distribution Legend Bar -->
+                        <RowDefinition Height="Auto"/> <!-- Multi-Select & Batch Actions Bar -->
+                        <RowDefinition Height="*"/>    <!-- Virtualized ListView -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Category Distribution Legend Bar -->
+                    <ui:Card Grid.Row="0" Padding="12,10" Margin="0,0,0,10">
+                        <WrapPanel Orientation="Horizontal">
+                            <!-- Video -->
+                            <Border Background="#20A855F7" BorderBrush="#A855F7" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Video24" FontSize="14" Foreground="#A855F7" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Videolar: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryStats.VideoFormatted}" FontSize="11" FontWeight="Bold" Foreground="#A855F7"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Disk Image -->
+                            <Border Background="#2038BDF8" BorderBrush="#38BDF8" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="HardDrive24" FontSize="14" Foreground="#38BDF8" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Disk İmajı: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryStats.DiskImageFormatted}" FontSize="11" FontWeight="Bold" Foreground="#38BDF8"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Archive -->
+                            <Border Background="#20F59E0B" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="FolderZip24" FontSize="14" Foreground="#F59E0B" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Arşiv: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryStats.ArchiveFormatted}" FontSize="11" FontWeight="Bold" Foreground="#F59E0B"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Installer -->
+                            <Border Background="#2010B981" BorderBrush="#10B981" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="AppGeneric24" FontSize="14" Foreground="#10B981" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Kurulum/Oyun: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryStats.InstallerFormatted}" FontSize="11" FontWeight="Bold" Foreground="#10B981"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Other -->
+                            <Border Background="#2094A3B8" BorderBrush="#94A3B8" BorderThickness="1" CornerRadius="6" Padding="8,3" Margin="0,0,8,4">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Document24" FontSize="14" Foreground="#94A3B8" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Diğer: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryStats.OtherFormatted}" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </ui:Card>
+
+                    <!-- Multi-Select & Batch Actions Toolbar -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: CheckBox & Selected Count Badge -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <CheckBox IsChecked="{Binding IsAllSelected, Mode=TwoWay}"
+                                      Content="Tümünü Seç"
+                                      FontSize="12"
+                                      FontWeight="Medium"
+                                      VerticalAlignment="Center"
+                                      Margin="4,0,12,0"
+                                      AutomationProperties.Name="Tümünü Seç"/>
+
+                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="8,3"
+                                    VerticalAlignment="Center">
+                                <TextBlock FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                    <Run Text="Seçilen: "/><Run Text="{Binding SelectedFilesCount}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/><Run Text=" dosya ("/><Run Text="{Binding SelectedFilesTotalBytesFormatted}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/><Run Text=")"/>
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Right: Batch Recycle & Batch Delete Buttons -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:Button Appearance="Secondary"
+                                       Icon="{ui:SymbolIcon Delete20}"
+                                       Content="Geri Dönüşüme Taşı"
+                                       Command="{Binding RecycleSelectedFilesCommand}"
+                                       IsEnabled="{Binding HasSelectedFiles}"
+                                       Padding="12,6"
+                                       Margin="0,0,8,0"
+                                       ToolTip="Seçili dosyaları güvenle Geri Dönüşüm Kutusuna gönderir"/>
+                            <ui:Button Appearance="Danger"
+                                       Icon="{ui:SymbolIcon Dismiss20}"
+                                       Content="Kalıcı Olarak Sil"
+                                       Command="{Binding DeleteSelectedFilesCommand}"
+                                       IsEnabled="{Binding HasSelectedFiles}"
+                                       Padding="12,6"
+                                       ToolTip="Seçili dosyaları diskten kalıcı olarak siler"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Virtualized ListView -->
+                    <ListView Grid.Row="2" 
+                              ItemsSource="{Binding FilteredLargeFiles}"
+                              BorderThickness="0"
+                              Background="Transparent"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling">
+
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <ContentPresenter/>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:LargeDiskFileItem}">
+                                <ui:Card Padding="12,10" ClipToBounds="False">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>                                <!-- CheckBox -->
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="LargeIconCol"/> <!-- Category Icon Symbol -->
+                                            <ColumnDefinition Width="2.5*"/>                                <!-- File Name & Path -->
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="LargeCatCol"/>  <!-- Category Badge -->
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="LargeSizeCol"/> <!-- Formatted Size -->
+                                            <ColumnDefinition Width="Auto" SharedSizeGroup="LargeActionCol"/><!-- Action Buttons -->
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Multi-Select CheckBox -->
+                                        <CheckBox Grid.Column="0"
+                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,10,0"
+                                                  AutomationProperties.Name="Dosya Seçimi"/>
+
+                                        <!-- Category Icon Symbol -->
+                                        <Border Grid.Column="1" 
+                                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                BorderThickness="1" 
+                                                CornerRadius="6" 
+                                                Padding="8,6" 
+                                                VerticalAlignment="Center" 
+                                                Margin="0,0,12,0">
+                                            <ui:SymbolIcon Symbol="{Binding CategorySymbol}" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                        </Border>
+
+                                        <!-- File Name, Full Path & Date -->
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0">
+                                            <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding LastModifiedFormatted}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
+                                        </StackPanel>
+
+                                        <!-- Category Badge -->
+                                        <Border Grid.Column="3" 
+                                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                BorderThickness="1" 
+                                                CornerRadius="6" 
+                                                Padding="8,4" 
+                                                VerticalAlignment="Center" 
+                                                Margin="0,0,14,0">
+                                            <TextBlock Text="{Binding Category}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        </Border>
+
+                                        <!-- Formatted Size -->
+                                        <TextBlock Grid.Column="4" 
+                                                   Text="{Binding SizeFormatted}" 
+                                                   FontSize="14" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                                   VerticalAlignment="Center" 
+                                                   TextAlignment="Right" 
+                                                   Margin="0,0,16,0"/>
+
+                                        <!-- Action Buttons: Copy Path, Safe Recycle Bin, Folder Location, Permanent Delete -->
+                                        <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <ui:Button Appearance="Secondary" 
+                                                       Icon="{ui:SymbolIcon Copy20}"
+                                                       Command="{Binding DataContext.CopyFilePathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"
+                                                       ToolTip="Dosya Yolunu Panoya Kopyala"
+                                                       Padding="8,6" 
+                                                       Margin="0,0,6,0" 
+                                                       AutomationProperties.Name="Dosya Yolunu Panoya Kopyala"/>
+
+                                            <ui:Button Appearance="Secondary" 
+                                                       Icon="{ui:SymbolIcon Delete20}"
+                                                       Command="{Binding DataContext.SendToRecycleBinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"
+                                                       ToolTip="Geri Dönüşüm Kutusuna Taşı (Güvenli Silme)"
+                                                       Padding="8,6" 
+                                                       Margin="0,0,6,0" 
+                                                       AutomationProperties.Name="Geri Dönüşüm Kutusuna Taşı"/>
+
+                                            <ui:Button Appearance="Secondary" 
+                                                       Icon="{ui:SymbolIcon FolderOpen20}"
+                                                       Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"
+                                                       ToolTip="Klasörde Göster"
+                                                       Padding="8,6" 
+                                                       Margin="0,0,6,0" 
+                                                       AutomationProperties.Name="Klasörde Göster"/>
+
+                                            <ui:Button Appearance="Danger" 
+                                                       Icon="{ui:SymbolIcon Dismiss20}"
+                                                       Command="{Binding DataContext.DeleteLargeFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                       CommandParameter="{Binding}"
+                                                       IsEnabled="{Binding IsDeleting, Converter={StaticResource InverseBool}}"
+                                                       ToolTip="Kalıcı Olarak Sil"
+                                                       Padding="8,6" 
+                                                       AutomationProperties.Name="Kalıcı Olarak Sil"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </ui:Card>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>
