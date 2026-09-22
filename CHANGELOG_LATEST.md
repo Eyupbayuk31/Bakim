@@ -1,18 +1,15 @@
-# Bakım v3.16.1 - Sürüm Notları
+# Bakım v3.16.2 - Sürüm Notları
 
-## Donanım & Telemetri Yönetim Paneli Yenilenmesi ve Arayüz Düzeltmeleri
+## Büyük Dosya Analizörü Araç Çubuğu Tam Responsive Revizyonu
 
-- **Çift Kartlı Modern Alt Panel Mimarisi (Dual-Card Responsive Layout):**
-  - Donanım ve Telemetri sekmesinin en altındaki tek ve sıkışık kart yapısı, amacına göre 2 bağımsız modern karta ayrıldı:
-    - **Sistem Raporu & Dışa Aktarım:** HTML Raporu oluşturma ve sistem özetini panoya kopyalama araçları.
-    - **Windows Yönetim Konsolları:** Disk Yönetimi, Aygıt Yöneticisi ve Görev Yöneticisi hızlı başlatıcıları.
-  - Küçük pencere boyutlarında veya yüksek DPI ölçeklemelerinde başlık ve açıklamaların kırpılması (`Sistem Donanım Raporu & Yönetim Araç...`) tamamen engellendi.
+- **Tam Responsive WrapPanel Araç Çubuğu Düzeni:**
+  - Pencere küçültüldüğünde veya farklı DPI ölçeklemelerinde Hedef Sürücü ComboBox'ı, Boyut Eşiği butonları ve Tarama/Durdurma butonlarının üst üste binmesi ve elemanların kesilme sorunu kökten çözüldü.
+  - Sürücü seçimi ve birincil eylemler (`Büyük Dosyaları Tara` ve `Durdur`) en üst satıra bağımsız olarak taşındı.
+  - Boyut Eşiği ve Tür Filtresi butonları `WrapPanel` içine alınarak ekran daraldığında alt satıra pürüzsüzce kayması sağlandı (sıfır taşma, sıfır çakışma).
 
-- **Font Sembol Glitch Onarımı (Anti-Artifact Fix):**
-  - "HTML Raporu Oluştur" butonunda font eşleme hatasından dolayı çıkan bozuk `"R"` harfi glitçi kaldırıldı; yerine yerel Fluent `DocumentBulletList20` sembolü entegre edildi.
+- **Kompakt Boyut Eşikleri & Genişletilmiş Sıralama Seçici:**
+  - Boyut eşiği butonları kompakt ve eşit genişlikte düzenlendi (`100 MB+`, `500 MB+`, `1 GB+`, `2 GB+`, `5 GB+`).
+  - Sıralama seçici genişletilerek `Boyut (Büyükten)` metninin `Boyut (Büyükt...` olarak kırpılması engellendi.
 
-- **Hızlı Windows Konsolları & Görev Yöneticisi Entegrasyonu:**
-  - Windows yönetim araçlarına tek tıkla `taskmgr.exe` (Görev Yöneticisi) başlatıcı butonu dahil edildi.
-
-- **Dinamik Buton Yerleşimi:**
-  - Butonlar `WrapPanel` içine alınarak ekran daraldığında metinlerin üstüne binmesi yerine pürüzsüzce alt satıra geçmesi sağlandı.
+- **Dinamik Tarama İlerleme Çubuğu:**
+  - Tarama yapılmadığı bekleme durumlarında altta boş gri çizgi oluşturan ilerleme çubuğu gizlenerek kart içi yükseklik ve alan ferahlığı optimize edildi.

@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3162 = new ReleaseChangelogItem
+            {
+                Version = "v3.16.2",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Büyük Dosya Analizörü Araç Çubuğu Tam Responsive Revizyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Tam Responsive WrapPanel Araç Çubuğu: Pencere küçültüldüğünde ve farklı DPI ölçeklemelerinde Hedef Sürücü, Boyut Eşiği ve Tarama butonlarının üst üste binmesi ve kesilmesi kökten çözüldü.",
+                    "Bağımsız Tarama & Eylem Satırı: Sürücü seçimi ve birincil 'Büyük Dosyaları Tara' / 'Durdur' aksiyonları kartın en üstüne bağımsız bir satır olarak taşınarak sıfır çakışma ve ferah kullanım sağlandı.",
+                    "Esnek Kategori ve Eşik Çipleri: Boyut Eşiği ve Tür Filtresi butonları WrapPanel içine alınarak ekran daraldığında alt satıra pürüzsüzce kayması sağlandı.",
+                    "Genişletilmiş Sıralama Seçici: 'Boyut (Büyükten)' metninin 'Boyut (Büyükt...' şeklinde kırpılması MinWidth artırılarak engellendi.",
+                    "Dinamik Tarama Çubuğu: Tarama yapılmadığı anlarda gereksiz gri boşluk yaratan ilerleme çubuğu gizlenerek arayüz ferahlatıldı."
+                }
+            };
+
             var v3161 = new ReleaseChangelogItem
             {
                 Version = "v3.16.1",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Donanım & Telemetri Yönetim Paneli Yenilenmesi ve Arayüz Düzeltmeleri",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Çift Kartlı Modern Alt Panel Mimarisi: Donanım ve Telemetri sekmesinin alt kısmındaki sıkışık ve taşan tek kart, 'Sistem Raporu & Dışa Aktarım' ve 'Windows Yönetim Konsolları' olarak 2 bağımsız esnek karta ayrıldı.",
@@ -1182,8 +1199,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3161;
+            LatestRelease = v3162;
 
+            ReleaseHistory.Add(v3162);
             ReleaseHistory.Add(v3161);
             ReleaseHistory.Add(v3160);
             ReleaseHistory.Add(v3154);

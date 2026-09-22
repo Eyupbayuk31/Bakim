@@ -799,63 +799,32 @@
                 <RowDefinition Height="*"/>    <!-- Content Area (Empty States or Results) -->
             </Grid.RowDefinitions>
 
-            <!-- 1. Scanner Toolbar Card (Responsive 2-Row Layout) -->
+            <!-- 1. Scanner Toolbar Card (Fully Responsive Layout with WrapPanels) -->
             <ui:Card Grid.Row="0" Padding="16,14" Margin="0,0,0,14">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Row 0: Target Drive, Threshold Chips & Scan Buttons -->
-                        <RowDefinition Height="Auto"/> <!-- Row 1: Category Chips, SearchBox, Sort Selector & Badge -->
-                        <RowDefinition Height="Auto"/> <!-- Row 2: Progress & Radar Scan Beam -->
+                        <RowDefinition Height="Auto"/> <!-- Row 0: Target Drive Selector & Primary Actions -->
+                        <RowDefinition Height="Auto"/> <!-- Row 1: Subtle Divider -->
+                        <RowDefinition Height="Auto"/> <!-- Row 2: Threshold Chips & Category Chips (WrapPanel) -->
+                        <RowDefinition Height="Auto"/> <!-- Row 3: Live Search, Multi-Sort & Summary Badge -->
+                        <RowDefinition Height="Auto"/> <!-- Row 4: Progress & Radar Scan Beam -->
                     </Grid.RowDefinitions>
 
-                    <!-- Row 0: Target Drive, Threshold Chips & Actions -->
-                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <!-- Row 0: Target Drive & Primary Actions (Scan & Stop) -->
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Drive Selector & Threshold Preset Chips -->
+                        <!-- Left: Drive Selector -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="Search24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="Hedef Sürücü:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            
+                            <ui:SymbolIcon Symbol="HardDrive24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Hedef Sürücü:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox ItemsSource="{Binding AvailableDrives}" AutomationProperties.Name="Sürücü filtresi" 
                                       SelectedItem="{Binding SelectedDriveFilter, Mode=TwoWay}"
-                                      MinWidth="120"
-                                      Padding="8,4"
-                                      Margin="0,0,14,0"/>
-
-                            <TextBlock Text="Boyut Eşiği:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                            
-                            <!-- Threshold Preset Chips -->
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <ui:Button Content="100 MB+" 
-                                           Appearance="{Binding IsThreshold100Mb, Converter={StaticResource BoolToNavAppearance}}"
-                                           Command="{Binding SetThresholdCommand}" 
-                                           CommandParameter="100" 
-                                           Padding="8,4" Margin="0,0,4,0"/>
-                                <ui:Button Content="500 MB+" 
-                                           Appearance="{Binding IsThreshold500Mb, Converter={StaticResource BoolToNavAppearance}}"
-                                           Command="{Binding SetThresholdCommand}" 
-                                           CommandParameter="500" 
-                                           Padding="8,4" Margin="0,0,4,0"/>
-                                <ui:Button Content="1 GB+ (Önerilen)" 
-                                           Appearance="{Binding IsThreshold1Gb, Converter={StaticResource BoolToNavAppearance}}"
-                                           Command="{Binding SetThresholdCommand}" 
-                                           CommandParameter="1024" 
-                                           Padding="8,4" Margin="0,0,4,0"/>
-                                <ui:Button Content="2 GB+" 
-                                           Appearance="{Binding IsThreshold2Gb, Converter={StaticResource BoolToNavAppearance}}"
-                                           Command="{Binding SetThresholdCommand}" 
-                                           CommandParameter="2048" 
-                                           Padding="8,4" Margin="0,0,4,0"/>
-                                <ui:Button Content="5 GB+" 
-                                           Appearance="{Binding IsThreshold5Gb, Converter={StaticResource BoolToNavAppearance}}"
-                                           Command="{Binding SetThresholdCommand}" 
-                                           CommandParameter="5120" 
-                                           Padding="8,4"/>
-                            </StackPanel>
+                                      MinWidth="140"
+                                      Padding="8,5"/>
                         </StackPanel>
 
                         <!-- Right: Scan & Stop Buttons -->
@@ -877,16 +846,45 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Row 1: Category Filter Chips, Live Search, Sort Selector & Summary Badge -->
-                    <Grid Grid.Row="1" Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <!-- Row 1: Subtle Divider -->
+                    <Separator Grid.Row="1" Margin="0,2,0,10" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
 
-                        <!-- Left: Category Filter Chips -->
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Tür Filtresi:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <!-- Row 2: Filter Presets (Threshold Chips & Category Chips in a WrapPanel) -->
+                    <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                        <!-- Boyut Eşiği Grubu -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,6">
+                            <TextBlock Text="Boyut Eşiği:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:Button Content="100 MB+" 
+                                       Appearance="{Binding IsThreshold100Mb, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetThresholdCommand}" 
+                                       CommandParameter="100" 
+                                       Padding="8,4" Margin="0,0,4,0"/>
+                            <ui:Button Content="500 MB+" 
+                                       Appearance="{Binding IsThreshold500Mb, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetThresholdCommand}" 
+                                       CommandParameter="500" 
+                                       Padding="8,4" Margin="0,0,4,0"/>
+                            <ui:Button Content="1 GB+" 
+                                       ToolTip="Varsayılan ve önerilen boyut eşiği (1 GB ve üzeri)"
+                                       Appearance="{Binding IsThreshold1Gb, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetThresholdCommand}" 
+                                       CommandParameter="1024" 
+                                       Padding="8,4" Margin="0,0,4,0"/>
+                            <ui:Button Content="2 GB+" 
+                                       Appearance="{Binding IsThreshold2Gb, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetThresholdCommand}" 
+                                       CommandParameter="2048" 
+                                       Padding="8,4" Margin="0,0,4,0"/>
+                            <ui:Button Content="5 GB+" 
+                                       Appearance="{Binding IsThreshold5Gb, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetThresholdCommand}" 
+                                       CommandParameter="5120" 
+                                       Padding="8,4"/>
+                        </StackPanel>
+
+                        <!-- Tür Filtresi Grubu -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
+                            <TextBlock Text="Tür Filtresi:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ui:Button Content="Tümü" 
                                        Appearance="{Binding IsCategoryAll, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
@@ -913,24 +911,32 @@
                                        CommandParameter="Kurulum / Oyun" 
                                        Padding="9,4"/>
                         </StackPanel>
+                    </WrapPanel>
 
-                        <!-- Right: SearchBox, Sort Selector & File Count Badge -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Row 3: Live Search, Multi-Sort Selector & Summary Badge -->
+                    <Grid Grid.Row="3" Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: SearchBox & Sort Selector in WrapPanel -->
+                        <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- Live SearchBox -->
                             <ui:TextBox Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
                                         PlaceholderText="Dosya veya uzantı ara..."
                                         ClearButtonEnabled="True"
-                                        Width="160"
-                                        Padding="8,4"
-                                        Margin="0,0,8,0"
+                                        MinWidth="170"
+                                        Padding="8,5"
+                                        Margin="0,0,10,4"
                                         AutomationProperties.Name="Dosya arama kutusu"/>
 
                             <!-- Sort Selector -->
                             <ComboBox SelectedValue="{Binding SelectedSortMode, Mode=TwoWay}"
                                       SelectedValuePath="Tag"
-                                      Width="135"
-                                      Padding="8,4"
-                                      Margin="0,0,8,0"
+                                      MinWidth="150"
+                                      Padding="8,5"
+                                      Margin="0,0,10,4"
                                       AutomationProperties.Name="Sıralama Seçici">
                                 <ComboBoxItem Content="Boyut (Büyükten)" Tag="SizeDesc"/>
                                 <ComboBoxItem Content="Boyut (Küçükten)" Tag="SizeAsc"/>
@@ -939,20 +945,26 @@
                                 <ComboBoxItem Content="İsim (A-Z)" Tag="NameAsc"/>
                                 <ComboBoxItem Content="İsim (Z-A)" Tag="NameDesc"/>
                             </ComboBox>
+                        </WrapPanel>
 
-                            <!-- File Count & Total Size Summary Badge -->
-                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                    BorderThickness="1" 
-                                    CornerRadius="6" 
-                                    Padding="10,4">
+                        <!-- Right: File Count & Total Size Summary Badge -->
+                        <Border Grid.Column="1" 
+                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                BorderThickness="1" 
+                                CornerRadius="6" 
+                                Padding="12,5"
+                                VerticalAlignment="Center"
+                                Margin="0,0,0,4">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="DocumentBulletList20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
                                 <TextBlock Text="{Binding TotalLargeFilesSizeFormatted}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                            </Border>
-                        </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </Grid>
 
-                    <!-- Row 2: Scan Progress & Radar Beam -->
-                    <Grid Grid.Row="2">
+                    <!-- Row 4: Scan Progress & Radar Beam -->
+                    <Grid Grid.Row="4">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -960,7 +972,8 @@
                         </Grid.RowDefinitions>
 
                         <!-- Status text -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,4">
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,2,0,4"
+                                    Visibility="{Binding ScanProgressText, Converter={StaticResource StringToVis}}">
                             <ui:ProgressRing IsIndeterminate="True"
                                              Width="12" Height="12"
                                              Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
@@ -979,7 +992,8 @@
                                      IsIndeterminate="{Binding IsScanning}"
                                      Height="4"
                                      Margin="0,0,0,4"
-                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                     Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}"/>
 
                         <!-- Animated radar scan beam -->
                         <Border Grid.Row="2"
