@@ -138,6 +138,18 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _createRestorePointOnUninstall = true;
 
+        [ObservableProperty]
+        private string _autostartHealthBadgeText = "Denetleniyor...";
+
+        [ObservableProperty]
+        private string _autostartHealthBadgeBrush = "TextFillColorSecondaryBrush";
+
+        [ObservableProperty]
+        private bool _isAutostartBlocked;
+
+        [ObservableProperty]
+        private string _autostartDiagnosticDetails = string.Empty;
+
         #endregion
 
         #region Update & Status Properties
@@ -222,12 +234,26 @@ namespace Bakım.ViewModels
         partial void OnStartWithWindowsChanged(bool value)
         {
             if (_isInitializing) return;
-            if (value && IsTaskSchedulerAutoStart)
+
+            if (value)
             {
-                IsTaskSchedulerAutoStart = false;
-                AdminElevationService.SetTaskSchedulerAutoStart(false);
+                // Önerilen & Güvenilir Yol: Task Scheduler (UAC uyarısız en yüksek yetki)
+                bool ok = AdminElevationService.SetTaskSchedulerAutoStart(true);
+                if (!ok)
+                {
+                    // Fallback: Registry Run (RUNASADMIN engeli olmaması için uyumluluğu temizle)
+                    AdminElevationService.SetAlwaysRunAsAdmin(false);
+                    IsAlwaysRunAsAdmin = false;
+                    ApplyAutostartRegistry(true);
+                }
             }
-            ApplyAutostartRegistry(value);
+            else
+            {
+                AdminElevationService.SetTaskSchedulerAutoStart(false);
+                ApplyAutostartRegistry(false);
+            }
+
+            RefreshAutostartHealthStatus();
             AutoSaveSettings();
         }
 
@@ -235,18 +261,31 @@ namespace Bakım.ViewModels
         {
             if (_isInitializing) return;
             AdminElevationService.SetAlwaysRunAsAdmin(value);
+
+            // Eğer RUNASADMIN açıldıysa ve Registry Run varsa, Task Scheduler'a geçirilmelidir
+            if (value && StartWithWindows && !AdminElevationService.IsTaskSchedulerAutoStartEnabled())
+            {
+                AdminElevationService.SetTaskSchedulerAutoStart(true);
+            }
+
+            RefreshAutostartHealthStatus();
             AutoSaveSettings();
         }
 
         partial void OnIsTaskSchedulerAutoStartChanged(bool value)
         {
             if (_isInitializing) return;
-            if (value && StartWithWindows)
+
+            if (value)
             {
-                StartWithWindows = false;
-                ApplyAutostartRegistry(false);
+                AdminElevationService.SetTaskSchedulerAutoStart(true);
             }
-            AdminElevationService.SetTaskSchedulerAutoStart(value);
+            else
+            {
+                AdminElevationService.SetTaskSchedulerAutoStart(false);
+            }
+
+            RefreshAutostartHealthStatus();
             AutoSaveSettings();
         }
 
@@ -265,7 +304,7 @@ namespace Bakım.ViewModels
                 // seçim durumu eşitlenir, yeniden boyama yapılmaz (titreme olmaz).
                 SyncThemeSelection(_themeService.CurrentTheme);
 
-                LoadAutostartPreference();
+                RefreshAutostartHealthStatus();
             }
             catch (Exception ex)
             {
@@ -398,19 +437,93 @@ namespace Bakım.ViewModels
 
         private void LoadAutostartPreference()
         {
+            RefreshAutostartHealthStatus();
+        }
+
+        public void RefreshAutostartHealthStatus()
+        {
+            var state = AdminElevationService.GetAutostartHealthState();
+            bool prevInit = _isInitializing;
+            _isInitializing = true;
             try
             {
-                using var key = Registry.CurrentUser.OpenSubKey(RunRegistryKey, false);
-                if (key != null)
+                switch (state)
                 {
-                    var val = key.GetValue(AppRegistryValueName) as string;
-                    StartWithWindows = !string.IsNullOrEmpty(val);
+                    case AutostartHealthState.TaskSchedulerActive:
+                        AutostartHealthBadgeText = "Aktif (Görev Zamanlayıcı - UAC Uyarısız Yönetici)";
+                        AutostartHealthBadgeBrush = "SystemFillColorSuccessBrush";
+                        IsAutostartBlocked = false;
+                        AutostartDiagnosticDetails = "Windows açılışında en yüksek yetkiyle, UAC onayı sormadan otomatik ve sessiz başlar.";
+                        StartWithWindows = true;
+                        IsTaskSchedulerAutoStart = true;
+                        break;
+
+                    case AutostartHealthState.RegistryRunActive:
+                        AutostartHealthBadgeText = "Aktif (Kayıt Defteri - Standart Kullanıcı)";
+                        AutostartHealthBadgeBrush = "SystemFillColorCautionBrush";
+                        IsAutostartBlocked = false;
+                        AutostartDiagnosticDetails = "Windows açılışında standart kullanıcı haklarıyla sessizce başlar.";
+                        StartWithWindows = true;
+                        IsTaskSchedulerAutoStart = false;
+                        break;
+
+                    case AutostartHealthState.BlockedByAppCompatAdmin:
+                        AutostartHealthBadgeText = "ENGELLENDİ! (Windows UAC Kısıtlaması Saptandı)";
+                        AutostartHealthBadgeBrush = "SystemFillColorCriticalBrush";
+                        IsAutostartBlocked = true;
+                        AutostartDiagnosticDetails = "Uygulama 'Yönetici Olarak Çalıştır' olarak işaretli olduğu için Windows açılışta Registry Run kaydını sessizce iptal etmektedir. Düzeltmek için 'Başlangıcı Onar & Kur' butonuna tıklayın.";
+                        StartWithWindows = true;
+                        IsTaskSchedulerAutoStart = false;
+                        break;
+
+                    case AutostartHealthState.Disabled:
+                    default:
+                        AutostartHealthBadgeText = "Devre Dışı (Windows ile başlamaz)";
+                        AutostartHealthBadgeBrush = "TextFillColorTertiaryBrush";
+                        IsAutostartBlocked = false;
+                        AutostartDiagnosticDetails = "Uygulama bilgisayar açıldığında çalışmaz.";
+                        StartWithWindows = false;
+                        IsTaskSchedulerAutoStart = false;
+                        break;
                 }
             }
-            catch
+            finally
             {
-                StartWithWindows = false;
+                _isInitializing = prevInit;
             }
+        }
+
+        [RelayCommand]
+        public void RepairAutostart()
+        {
+            try
+            {
+                AutostartDiagnosticDetails = "Windows başlangıç yapılandırması onarılıyor...";
+                _log.Info("Başlangıç onarım işlemi başlatıldı.", nameof(SettingsViewModel));
+                bool ok = AdminElevationService.RepairAutostartConfiguration();
+                RefreshAutostartHealthStatus();
+                if (ok || AdminElevationService.IsTaskSchedulerAutoStartEnabled())
+                {
+                    AutostartDiagnosticDetails = "Başlangıç onarıldı: Görev Zamanlayıcı UAC bypass görevi başarıyla kuruldu!";
+                    _log.Info("Başlangıç başarıyla onarıldı ve Görev Zamanlayıcıya kaydedildi.", nameof(SettingsViewModel));
+                }
+                else
+                {
+                    AutostartDiagnosticDetails = "Onarım tamamlanamadı. Lütfen yönetici hakları onayını doğrulayın.";
+                }
+            }
+            catch (Exception ex)
+            {
+                AutostartDiagnosticDetails = $"Onarım hatası: {ex.Message}";
+                _log.Error("Başlangıç onarımı sırasında istisna oluştu.", ex, nameof(SettingsViewModel));
+            }
+        }
+
+        [RelayCommand]
+        public void RefreshAutostartStatus()
+        {
+            RefreshAutostartHealthStatus();
+            _log.Info("Başlangıç durumu kullanıcı tarafından tazelendi.", nameof(SettingsViewModel));
         }
 
         private void ApplyAutostartRegistry(bool enable)
@@ -724,17 +837,18 @@ namespace Bakım.ViewModels
             var v3152 = new ReleaseChangelogItem
             {
                 Version = "v3.15.2",
-                ReleaseDate = "21 Eylül 2026",
-                Title = "Güncelleme Kurulumu Engellenme Sorunu & Uygulama Denetimi Yönlendirmesi",
+                ReleaseDate = "22 Eylül 2026",
+                Title = "Windows ile Başlama (Autostart) Kökten Onarımı, Güncelleme İyileştirmeleri & XAML Güvencesi",
                 IsLatest = true,
                 IsExpanded = true,
                 Highlights = new List<string>
                 {
-                    "Kurulum Paketi Konumu: Güncelleme paketi artık %TEMP% yerine %LOCALAPPDATA%\\Bakim\\Updates altına indiriliyor. Akıllı Uygulama Denetimi, ASR kuralları ve güvenlik yazılımları geçici dizinden çalıştırılan kurulumları düşük itibarlı sayıp engellediği için engellenme olasılığı belirgin biçimde azaldı.",
-                    "Çalışma Dizini Düzeltmesi: Kurulum süreci artık çalışan uygulamadan 'C:\\Program Files\\Bakım' dizinini miras almıyor; çalışma dizini paketin kendi klasörüne sabitlendi.",
-                    "Uygulama Denetimi Yönlendirmesi: Kurulum bir ilke tarafından engellendiğinde ham .NET hata metni yerine, Akıllı Uygulama Denetimi ayar ekranını açan veya paketin klasörünü gösteren yönlendirmeli bir bilgilendirme sunuluyor.",
-                    "Ayrıntılı Hata Sınıflandırması: Yönetici onayının reddi, ilke engeli ve yetki reddi durumları Win32 hata koduna göre ayrıştırılarak her biri için ayrı ve anlaşılır mesaj gösteriliyor; ilke engelinde paket silinmeyip elle kurulum imkanı korunuyor.",
-                    "Bakım & Güvenlik: İndirilen paketten Mark of the Web etiketi temizleniyor ve bir günden eski artık kurulum paketleri otomatik olarak siliniyor."
+                    "Kusursuz Windows Başlangıç Motoru: 'RUNASADMIN' ve Registry Run çakışması (Windows açılışında programın sessizce engellenmesi sorunu) Task Scheduler XML mimarisiyle kökten çözüldü.",
+                    "Canlı Başlangıç Durum Göstergesi (Autostart Health Diagnostics): Ayarlar ekranında başlangıcın gerçek Windows durumunu (Görev Zamanlayıcı, Kayıt Defteri veya Engellenmiş) anlık gösteren rozet ve teşhis detayları eklendi.",
+                    "Tek Tıkla 'Başlangıcı Onar & Kur': Çakışan kayıtları temizleyen, UAC uyarısız en yüksek yetkili başlangıç görevini kuran ve durumu garantileyen onarım aracı entegre edildi.",
+                    "ControlAppearance & XAML Güvencesi: Sürücü açma butonundaki geçersiz 'Subtle' değeri düzeltildi; tüm XAML sembol ve görünüm değerlerini derleme/test seviyesinde denetleyen otomatik xUnit testleri genişletildi.",
+                    "Kurulum Paketi Konumu & Uygulama Denetimi: Güncelleme paketi artık %TEMP% yerine %LOCALAPPDATA%\\Bakim\\Updates altına indiriliyor; Smart App Control / WDAC engelleri ayrıştırılıp yönlendirmeli bilgilendirme sunuluyor.",
+                    "Güvenlik & Temizlik: İndirilen paketten Mark of the Web etiketi temizleniyor ve bir günden eski artık kurulum paketleri otomatik olarak siliniyor."
                 }
             };
 
@@ -1009,10 +1123,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3151;
+            LatestRelease = v3152;
 
             ReleaseHistory.Add(v3152);
-
             ReleaseHistory.Add(v3151);
             ReleaseHistory.Add(v3150);
             ReleaseHistory.Add(v3140);

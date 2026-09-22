@@ -1,29 +1,27 @@
 # Bakım v3.15.2 - Sürüm Notları
 
-## Güncelleme Kurulumu Engellenme Sorunu & Uygulama Denetimi Yönlendirmesi
+## Windows ile Otomatik Başlama (Autostart) Kökten Onarımı & Güncelleme İyileştirmeleri
 
-- **Kurulum Paketi Konumu Değişti (Ana Düzeltme):**
-  - Güncelleme paketi artık `%TEMP%` yerine `%LOCALAPPDATA%\Bakim\Updates` dizinine indiriliyor.
-  - Akıllı Uygulama Denetimi (Smart App Control), ASR kuralları ve birçok güvenlik yazılımı geçici dizinden çalıştırılan kurulum dosyalarını düşük itibarlı kabul edip engellediği için engellenme olasılığı belirgin biçimde azaltıldı.
-  - Bir günden eski artık kurulum paketleri otomatik olarak temizleniyor.
+- **Kusursuz Windows Başlangıç Motoru (Task Scheduler XML):**
+  - Uygulama `RUNASADMIN` ile işaretlendiğinde Windows Logon mimarisinin standart Kayıt Defteri (`Run` anahtarı) başlangıcını sessizce engellemesi sorunu kökten çözüldü.
+  - Windows Görev Zamanlayıcısı (`Task Scheduler`) XML tabanlı garantili kayıt mimarisine geçirildi. Tırnak, boşluk ve Türkçe karakter sorunları bertaraf edildi.
+  - Standart kullanıcı modunda çalışırken tek seferlik UAC işçisi (`--register-autostart`) ile UAC uyarısız en yüksek yetkili başlangıç kaydı sorunsuz oluşturulmaktadır.
 
-- **Çalışma Dizini Düzeltmesi:**
-  - Kurulum süreci artık çalışan uygulamadan `C:\Program Files\Bakım` dizinini miras almıyor; çalışma dizini paketin kendi klasörüne sabitlendi.
-  - Engelleme mesajlarında yanıltıcı dizin adı raporlanması giderildi.
+- **Canlı Başlangıç Durum Teşhisi (Autostart Health Diagnostics):**
+  - Ayarlar -> Sistem Başlangıcı sekmesine Windows başlangıcının gerçek durumunu anlık denetleyen akıllı durum rozeti eklendi:
+    - 🟢 *Aktif (Görev Zamanlayıcı - UAC Uyarısız Yönetici)*
+    - 🟡 *Aktif (Kayıt Defteri - Standart Kullanıcı)*
+    - 🔴 *Engellendi (Windows UAC Kısıtlaması)*
+    - ⚪ *Devre Dışı*
 
-- **Uygulama Denetimi Yönlendirmesi:**
-  - Kurulum bir ilke tarafından engellendiğinde ham .NET hata metni yerine yönlendirmeli bir bilgilendirme gösteriliyor.
-  - Akıllı Uygulama Denetimi etkinse, kullanıcı doğrudan ilgili Windows Güvenliği ayar ekranına yönlendirilebiliyor veya paketin klasörü açılarak elle kurulum yapılabiliyor.
-  - Akıllı Uygulama Denetimi kapalıysa engelin kurumsal WDAC ilkesinden ya da güvenlik yazılımından kaynaklandığı açıkça belirtiliyor.
-  - Ayarın bir kez kapatıldığında Windows yeniden kurulmadan geri açılamayacağı uyarısı kullanıcıya açıkça sunuluyor.
+- **Tek Tıkla "Başlangıcı Onar & Kur" Aracı:**
+  - Çakışan AppCompat ve yetkisiz Run kayıtlarını temizleyen, doğru Görev Zamanlayıcı kaydını kuran ve Windows açılışını garanti altına alan onarım mekanizması entegre edildi.
 
-- **Ayrıntılı Hata Sınıflandırması:**
-  - Yönetici onayının reddi, Uygulama Denetimi ilke engeli ve yetki reddi durumları Win32 hata koduna göre ayrıştırılarak her biri için ayrı ve anlaşılır mesaj gösteriliyor.
-  - İlke engeli durumunda indirilen paket silinmiyor; kullanıcının elle kurulum yapabilmesi için korunuyor.
+- **ControlAppearance & XAML Doğrulama Güvencesi:**
+  - Sürücü açma butonundaki tanımsız `Appearance="Subtle"` değeri `Appearance="Secondary"` olarak düzeltildi (`Subtle is not a valid value for ControlAppearance` hatası giderildi).
+  - Projedeki tüm XAML dosyalarındaki `ControlAppearance` ve `SymbolRegular` değerlerini derleme/test seviyesinde denetleyen xUnit birim testleri sisteme dahil edildi.
 
-- **Güvenlik:**
-  - İndirilen paketten Mark of the Web (`Zone.Identifier`) etiketi temizleniyor.
-  - Mevcut imza ve SHA-256 bütünlük denetimleri aynen korunuyor.
-
-- **Sürüm Bütünlüğü:**
-  - Tüm manifesto, güncelleme servisleri ve kurulum betikleri v3.15.2 sürümüne güncellendi.
+- **Güncelleme Kurulumu & Uygulama Denetimi İyileştirmeleri:**
+  - Güncelleme paketi artık `%TEMP%` yerine `%LOCALAPPDATA%\Bakim\Updates` dizinine indirilerek Smart App Control / WDAC engeli olasılığı düşürüldü.
+  - Bir günden eski artık kurulum paketleri otomatik temizleniyor ve indirilen paketten Mark of the Web (`Zone.Identifier`) etiketi kaldırılıyor.
+  - Kurulum bir ilke tarafından engellendiğinde yönlendirmeli bilgilendirme ve klasörü açma seçeneği sunuluyor.
