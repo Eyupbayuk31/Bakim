@@ -834,21 +834,34 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3154 = new ReleaseChangelogItem
+            {
+                Version = "v3.15.4",
+                ReleaseDate = "22 Eylül 2026",
+                Title = "Donanım & Disk Modülü Kök Onarımı ve Akıllı Filtreleme Deneyimi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Komut Parametresi Kök Onarımı: Büyük dosya analizöründeki eşik butonlarının tip uyuşmazlığı (String -> Int64 ArgumentException) evrensel ve savunmacı komut yapısıyla kökten çözüldü.",
+                    "Dinamik Eşik & Filtre Vurgulaması: 500 MB, 1 GB, 2 GB ve 5 GB eşik çipleri ile Tür Filtresi butonları artık seçili olan seçeneği anlık olarak parlatıyor (Primary vurgusu).",
+                    "Dosya Yolunu Kopyalama: Büyük dosyalar listesine tek tıkla dosya yolunu panoya kopyalama aksiyonu eklendi.",
+                    "Otomatik Test Güvencesi: Komut parametrelerinin tip güvenliğini doğrulayan yeni xUnit testleri entegre edildi (139 testin tamamı başarılı)."
+                }
+            };
+
             var v3153 = new ReleaseChangelogItem
             {
                 Version = "v3.15.3",
                 ReleaseDate = "22 Eylül 2026",
                 Title = "Windows ile Başlama (Autostart) Kökten Onarımı & Akıllı Güncelleme Mimarisi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
-                    "Kusursuz Windows Başlangıç Motoru: 'RUNASADMIN' ve Registry Run çakışması (Windows açılışında programın sessizce engellenmesi sorunu) Task Scheduler XML mimarisiyle kökten çözüldü.",
-                    "Canlı Başlangıç Durum Göstergesi (Autostart Health Diagnostics): Ayarlar ekranında başlangıcın gerçek Windows durumunu (Görev Zamanlayıcı, Kayıt Defteri veya Engellenmiş) anlık gösteren rozet ve teşhis detayları eklendi.",
-                    "Tek Tıkla 'Başlangıcı Onar & Kur': Çakışan kayıtları temizleyen, UAC uyarısız en yüksek yetkili başlangıç görevini kuran ve durumu garantileyen onarım aracı entegre edildi.",
-                    "ControlAppearance & XAML Güvencesi: Sürücü açma butonundaki geçersiz 'Subtle' değeri düzeltildi; tüm XAML sembol ve görünüm değerlerini derleme/test seviyesinde denetleyen otomatik xUnit testleri genişletildi.",
-                    "Kurulum Paketi Konumu & Uygulama Denetimi: Güncelleme paketi artık %TEMP% yerine %LOCALAPPDATA%\\Bakim\\Updates altına indiriliyor; Smart App Control / WDAC engelleri ayrıştırılıp yönlendirmeli bilgilendirme sunuluyor.",
-                    "Güvenlik & Temizlik: İndirilen paketten Mark of the Web etiketi temizleniyor ve bir günden eski artık kurulum paketleri otomatik olarak siliniyor."
+                    "Kusursuz Windows Başlangıç Motoru: 'RUNASADMIN' ve Registry Run çakışması Task Scheduler XML mimarisiyle kökten çözüldü.",
+                    "Canlı Başlangıç Durum Göstergesi & Tek Tıkla Onar: Ayarlar ekranında gerçek başlangıç durum rozeti ve onarım aracı.",
+                    "Akıllı Güncelleme Mimarisi: Güncellemeler %LOCALAPPDATA% altına indirilerek Smart App Control engeli giderildi."
                 }
             };
 
@@ -1136,8 +1149,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3153;
+            LatestRelease = v3154;
 
+            ReleaseHistory.Add(v3154);
             ReleaseHistory.Add(v3153);
             ReleaseHistory.Add(v3152);
             ReleaseHistory.Add(v3151);

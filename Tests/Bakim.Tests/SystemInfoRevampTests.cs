@@ -191,4 +191,58 @@ public class SystemInfoRevampTests
 
         try { File.Delete(reportPath); } catch { }
     }
+
+    [Fact]
+    public async Task SystemInfoViewModel_SetThreshold_AcceptsStringOrNumberWithoutException()
+    {
+        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+
+        // 1. String parametre ("500") geçildiğinde hata vermemeli ve 500 MB eşiğini seçmeli
+        vm.SetThresholdCommand.Execute("500");
+        Assert.Equal(500, vm.MinFileSizeThresholdMb);
+        Assert.True(vm.IsThreshold500Mb);
+        Assert.False(vm.IsThreshold1Gb);
+
+        // 2. String parametre ("2048") geçildiğinde 2 GB seçilmeli
+        vm.SetThresholdCommand.Execute("2048");
+        Assert.Equal(2048, vm.MinFileSizeThresholdMb);
+        Assert.True(vm.IsThreshold2Gb);
+        Assert.False(vm.IsThreshold500Mb);
+
+        // 3. Sayısal parametre (5120L) geçildiğinde 5 GB seçilmeli
+        vm.SetThresholdCommand.Execute(5120L);
+        Assert.Equal(5120, vm.MinFileSizeThresholdMb);
+        Assert.True(vm.IsThreshold5Gb);
+
+        // 4. Null veya geçersiz parametrede varsayılan 1024'e düşmeli
+        vm.SetThresholdCommand.Execute(null);
+        Assert.Equal(1024, vm.MinFileSizeThresholdMb);
+        Assert.True(vm.IsThreshold1Gb);
+    }
+
+    [Fact]
+    public void SystemInfoViewModel_CategoryFilterChips_UpdateComputedSelectionBooleans()
+    {
+        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+
+        Assert.True(vm.IsCategoryAll);
+        Assert.False(vm.IsCategoryVideo);
+
+        vm.SetCategoryFilterCommand.Execute("Video");
+        Assert.False(vm.IsCategoryAll);
+        Assert.True(vm.IsCategoryVideo);
+
+        vm.SetCategoryFilterCommand.Execute("Disk İmajı");
+        Assert.True(vm.IsCategoryDiskImage);
+        Assert.False(vm.IsCategoryVideo);
+
+        vm.SetCategoryFilterCommand.Execute("Arşiv");
+        Assert.True(vm.IsCategoryArchive);
+
+        vm.SetCategoryFilterCommand.Execute("Kurulum / Oyun");
+        Assert.True(vm.IsCategoryInstaller);
+
+        vm.SetCategoryFilterCommand.Execute("Tümü");
+        Assert.True(vm.IsCategoryAll);
+    }
 }

@@ -751,22 +751,25 @@
                             <!-- Threshold Preset Chips -->
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:Button Content="500 MB+" 
+                                           Appearance="{Binding IsThreshold500Mb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="500" 
-                                           Padding="8,4" Margin="0,0,4,0"/>
+                                           Padding="10,5" Margin="0,0,6,0"/>
                                 <ui:Button Content="1 GB+ (Önerilen)" 
+                                           Appearance="{Binding IsThreshold1Gb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="1024" 
-                                           Appearance="Primary"
-                                           Padding="8,4" Margin="0,0,4,0"/>
+                                           Padding="10,5" Margin="0,0,6,0"/>
                                 <ui:Button Content="2 GB+" 
+                                           Appearance="{Binding IsThreshold2Gb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="2048" 
-                                           Padding="8,4" Margin="0,0,4,0"/>
+                                           Padding="10,5" Margin="0,0,6,0"/>
                                 <ui:Button Content="5 GB+" 
+                                           Appearance="{Binding IsThreshold5Gb, Converter={StaticResource BoolToNavAppearance}}"
                                            Command="{Binding SetThresholdCommand}" 
                                            CommandParameter="5120" 
-                                           Padding="8,4"/>
+                                           Padding="10,5"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -798,11 +801,31 @@
 
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Tür Filtresi:" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <ui:Button Content="Tümü" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Tümü" Padding="8,3" Margin="0,0,4,0"/>
-                            <ui:Button Content="Videolar" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Video" Padding="8,3" Margin="0,0,4,0"/>
-                            <ui:Button Content="Disk İmajları" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Disk İmajı" Padding="8,3" Margin="0,0,4,0"/>
-                            <ui:Button Content="Arşivler" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Arşiv" Padding="8,3" Margin="0,0,4,0"/>
-                            <ui:Button Content="Kurulum / Oyun" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Kurulum / Oyun" Padding="8,3"/>
+                            <ui:Button Content="Tümü" 
+                                       Appearance="{Binding IsCategoryAll, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetCategoryFilterCommand}" 
+                                       CommandParameter="Tümü" 
+                                       Padding="10,4" Margin="0,0,6,0"/>
+                            <ui:Button Content="Videolar" 
+                                       Appearance="{Binding IsCategoryVideo, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetCategoryFilterCommand}" 
+                                       CommandParameter="Video" 
+                                       Padding="10,4" Margin="0,0,6,0"/>
+                            <ui:Button Content="Disk İmajları" 
+                                       Appearance="{Binding IsCategoryDiskImage, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetCategoryFilterCommand}" 
+                                       CommandParameter="Disk İmajı" 
+                                       Padding="10,4" Margin="0,0,6,0"/>
+                            <ui:Button Content="Arşivler" 
+                                       Appearance="{Binding IsCategoryArchive, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetCategoryFilterCommand}" 
+                                       CommandParameter="Arşiv" 
+                                       Padding="10,4" Margin="0,0,6,0"/>
+                            <ui:Button Content="Kurulum / Oyun" 
+                                       Appearance="{Binding IsCategoryInstaller, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetCategoryFilterCommand}" 
+                                       CommandParameter="Kurulum / Oyun" 
+                                       Padding="10,4"/>
                         </StackPanel>
 
                         <!-- File Count & Total Size Summary Badge -->
@@ -968,8 +991,17 @@
                                              VerticalAlignment="Center" 
                                              Margin="0,0,14,0"/>
 
-                                <!-- Action Buttons: Safe Recycle Bin, Folder Location, Permanent Delete -->
+                                <!-- Action Buttons: Copy Path, Safe Recycle Bin, Folder Location, Permanent Delete -->
                                 <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ui:Button Appearance="Secondary" 
+                                               Icon="{ui:SymbolIcon Copy20}"
+                                               Command="{Binding DataContext.CopyFilePathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               ToolTip="Dosya Yolunu Panoya Kopyala"
+                                               Padding="8,6" 
+                                               Margin="0,0,6,0" 
+                                               AutomationProperties.Name="Dosya Yolunu Panoya Kopyala"/>
+
                                     <ui:Button Appearance="Secondary" 
                                                Icon="{ui:SymbolIcon Delete20}"
                                                Command="{Binding DataContext.SendToRecycleBinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"

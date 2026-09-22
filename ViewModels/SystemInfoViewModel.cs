@@ -104,6 +104,34 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _selectedCategoryFilter = "Tümü";
 
+        public bool IsThreshold500Mb => MinFileSizeThresholdMb == 500;
+        public bool IsThreshold1Gb => MinFileSizeThresholdMb == 1024;
+        public bool IsThreshold2Gb => MinFileSizeThresholdMb == 2048;
+        public bool IsThreshold5Gb => MinFileSizeThresholdMb == 5120;
+
+        public bool IsCategoryAll => SelectedCategoryFilter == "Tümü";
+        public bool IsCategoryVideo => SelectedCategoryFilter == "Video";
+        public bool IsCategoryDiskImage => SelectedCategoryFilter == "Disk İmajı";
+        public bool IsCategoryArchive => SelectedCategoryFilter == "Arşiv";
+        public bool IsCategoryInstaller => SelectedCategoryFilter == "Kurulum / Oyun";
+
+        partial void OnMinFileSizeThresholdMbChanged(long value)
+        {
+            OnPropertyChanged(nameof(IsThreshold500Mb));
+            OnPropertyChanged(nameof(IsThreshold1Gb));
+            OnPropertyChanged(nameof(IsThreshold2Gb));
+            OnPropertyChanged(nameof(IsThreshold5Gb));
+        }
+
+        partial void OnSelectedCategoryFilterChanged(string value)
+        {
+            OnPropertyChanged(nameof(IsCategoryAll));
+            OnPropertyChanged(nameof(IsCategoryVideo));
+            OnPropertyChanged(nameof(IsCategoryDiskImage));
+            OnPropertyChanged(nameof(IsCategoryArchive));
+            OnPropertyChanged(nameof(IsCategoryInstaller));
+        }
+
         [ObservableProperty]
         private string _totalLargeFilesSizeFormatted = "0 Dosya (0 GB)";
 
@@ -286,17 +314,43 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
-        public async Task SetThresholdAsync(long thresholdMb)
+        public async Task SetThresholdAsync(object? parameter)
         {
-            MinFileSizeThresholdMb = thresholdMb;
+            long threshold = 1024;
+            if (parameter is long l)
+            {
+                threshold = l;
+            }
+            else if (parameter is int i)
+            {
+                threshold = i;
+            }
+            else if (parameter is string s && long.TryParse(s, out long parsed))
+            {
+                threshold = parsed;
+            }
+
+            MinFileSizeThresholdMb = threshold;
             await ScanLargeFilesAsync();
         }
 
         [RelayCommand]
-        public void SetCategoryFilter(string category)
+        public void SetCategoryFilter(string? category)
         {
-            SelectedCategoryFilter = category;
+            SelectedCategoryFilter = string.IsNullOrWhiteSpace(category) ? "Tümü" : category;
             UpdateLargeFilesFilter();
+        }
+
+        [RelayCommand]
+        public void CopyFilePath(LargeDiskFileItem? file)
+        {
+            if (file == null || string.IsNullOrWhiteSpace(file.FilePath)) return;
+            try
+            {
+                System.Windows.Clipboard.SetText(file.FilePath);
+                ScanProgressText = $"Dosya yolu panoya kopyalandı: {file.FileName}";
+            }
+            catch { }
         }
 
         private void UpdateLargeFilesFilter()
