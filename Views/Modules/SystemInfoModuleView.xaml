@@ -525,53 +525,132 @@
                     </Grid>
                 </ui:Card>
 
-                <!-- 2. Tek Tıkla Sistem Raporu & Sistem Araçları Paneli -->
-                <ui:Card Padding="18">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                <!-- 2. Tek Tıkla Sistem Raporu & Yönetim Konsolları (2-Kartlı Modern Düzen) -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="14"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                <ui:SymbolIcon Symbol="DocumentText20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="Sistem Donanım Raporu &amp; Yönetim Araçları" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </StackPanel>
-                            <TextBlock Text="Tüm donanım ve depolama dökümünü tek tıkla HTML formatında dışa aktarın veya panoya kopyalayın." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        </StackPanel>
+                    <!-- Kart 1: Sistem Donanım Raporu & Paylaşım -->
+                    <ui:Card Grid.Column="0" Padding="18,16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <!-- Actions -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:Button Appearance="Primary"
-                                       Content="HTML Raporu Oluştur"
-                                       Icon="{ui:SymbolIcon ArrowExport20}"
-                                       Command="{Binding ExportReportHtmlCommand}"
-                                       Padding="14,8"
-                                       Margin="0,0,8,0"/>
+                            <Grid Grid.Row="0" Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <ui:Button Appearance="Secondary"
-                                       Content="Özeti Panoya Kopyala"
-                                       Icon="{ui:SymbolIcon Copy20}"
-                                       Command="{Binding CopySpecsToClipboardCommand}"
-                                       Padding="12,8"
-                                       Margin="0,0,8,0"/>
+                                <Border Grid.Column="0" 
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Width="40" Height="40"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
 
-                            <ui:Button Appearance="Secondary"
-                                       Content="Disk Yönetimi"
-                                       Icon="{ui:SymbolIcon HardDrive20}"
-                                       Command="{Binding OpenDiskManagementCommand}"
-                                       Padding="10,8"
-                                       Margin="0,0,6,0"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Sistem Raporu &amp; Dışa Aktarım" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Tüm donanım ve depolama dökümünü HTML sayfası olarak kaydedin veya panoya kopyalayın." 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Grid>
 
-                            <ui:Button Appearance="Secondary"
-                                       Content="Aygıt Yöneticisi"
-                                       Icon="{ui:SymbolIcon Settings20}"
-                                       Command="{Binding OpenDeviceManagerCommand}"
-                                       Padding="10,8"/>
-                        </StackPanel>
-                    </Grid>
-                </ui:Card>
+                            <!-- Actions -->
+                            <WrapPanel Grid.Row="1" Orientation="Horizontal">
+                                <ui:Button Appearance="Primary"
+                                           Content="HTML Raporu Oluştur"
+                                           Icon="{ui:SymbolIcon DocumentBulletList20}"
+                                           Command="{Binding ExportReportHtmlCommand}"
+                                           Padding="14,8"
+                                           Margin="0,0,8,0"
+                                           ToolTip="Tüm donanım dökümünü zengin HTML sayfası olarak dışa aktarır ve tarayıcıda açar"/>
+
+                                <ui:Button Appearance="Secondary"
+                                           Content="Özeti Panoya Kopyala"
+                                           Icon="{ui:SymbolIcon Copy20}"
+                                           Command="{Binding CopySpecsToClipboardCommand}"
+                                           Padding="13,8"
+                                           ToolTip="Sistem özetini panoya kopyalar"/>
+                            </WrapPanel>
+                        </Grid>
+                    </ui:Card>
+
+                    <!-- Kart 2: Windows Hızlı Yönetim Konsolları -->
+                    <ui:Card Grid.Column="2" Padding="18,16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" 
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Width="40" Height="40"
+                                        Margin="0,0,12,0"
+                                        VerticalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="WindowDevTools20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Windows Yönetim Konsolları" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Diskler, aygıtlar ve arka plan süreçleri için yerel Windows araçlarını doğrudan başlatın." 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Actions -->
+                            <WrapPanel Grid.Row="1" Orientation="Horizontal">
+                                <ui:Button Appearance="Secondary"
+                                           Content="Disk Yönetimi"
+                                           Icon="{ui:SymbolIcon HardDrive20}"
+                                           Command="{Binding OpenDiskManagementCommand}"
+                                           Padding="11,8"
+                                           Margin="0,0,8,0"
+                                           ToolTip="Windows Disk Yönetimi konsolunu (diskmgmt.msc) açar"/>
+
+                                <ui:Button Appearance="Secondary"
+                                           Content="Aygıt Yöneticisi"
+                                           Icon="{ui:SymbolIcon Settings20}"
+                                           Command="{Binding OpenDeviceManagerCommand}"
+                                           Padding="11,8"
+                                           Margin="0,0,8,0"
+                                           ToolTip="Windows Aygıt Yöneticisi konsolunu (devmgmt.msc) açar"/>
+
+                                <ui:Button Appearance="Secondary"
+                                           Content="Görev Yöneticisi"
+                                           Icon="{ui:SymbolIcon TopSpeed20}"
+                                           Command="{Binding OpenTaskManagerCommand}"
+                                           Padding="11,8"
+                                           ToolTip="Windows Görev Yöneticisi aracını (taskmgr.exe) açar"/>
+                            </WrapPanel>
+                        </Grid>
+                    </ui:Card>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
 

@@ -834,13 +834,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3161 = new ReleaseChangelogItem
+            {
+                Version = "v3.16.1",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Donanım & Telemetri Yönetim Paneli Yenilenmesi ve Arayüz Düzeltmeleri",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Çift Kartlı Modern Alt Panel Mimarisi: Donanım ve Telemetri sekmesinin alt kısmındaki sıkışık ve taşan tek kart, 'Sistem Raporu & Dışa Aktarım' ve 'Windows Yönetim Konsolları' olarak 2 bağımsız esnek karta ayrıldı.",
+                    "Sıfır Metin Kırpılması & Esnek Buton Düzeni: Küçük pencere ve farklı DPI ölçeklerinde yaşanan başlık/açıklama metni kırpılmaları ve buton taşmaları WrapPanel ve dinamik Grid yapısıyla tamamen giderildi.",
+                    "Segoe MDL2 Glitch Onarımı: HTML raporu butonundaki yazı tipi sembol eşleme hatasından kaynaklanan 'R' harfi bozukluğu giderilerek resmi Fluent DocumentBulletList sembolü ile değiştirildi.",
+                    "Hızlı Görev Yöneticisi Erişimi: Windows yönetim konsolları paneline tek tıkla doğrudan Görev Yöneticisi'ni (taskmgr.exe) açan kısayol butonu entegre edildi."
+                }
+            };
+
             var v3160 = new ReleaseChangelogItem
             {
                 Version = "v3.16.0",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Büyük Dosya Analizörü Kapsamlı Yenilenmesi & Profesyonel Depolama Yönetimi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Kusursuz Responsive Araç Çubuğu: Sürücü seçimi, eşik çipleri (100 MB, 500 MB, 1 GB, 2 GB, 5 GB), tür filtreleri, canlı arama ve sıralama menüsü 2 satırlı esnek düzene kavuşturuldu; dar pencerede taşma ve kırpılmalar tamamen yok edildi.",
@@ -1166,8 +1182,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3160;
+            LatestRelease = v3161;
 
+            ReleaseHistory.Add(v3161);
             ReleaseHistory.Add(v3160);
             ReleaseHistory.Add(v3154);
             ReleaseHistory.Add(v3153);
