@@ -1,14 +1,22 @@
-# Bakım v3.15.1 - Sürüm Notları
+# Bakım v3.15.2 - Sürüm Notları
 
-## Sistem Bilgisi Simgesi Düzeltmesi & Otomatik XAML Doğrulama Koruması
+## Windows ile Otomatik Başlama (Autostart) Kökten Onarımı & XAML Güvencesi
 
-- **Sistem Bilgisi XAML İkon Düzeltmesi (Hotfix):**
-  - Donanım ve depolama modülündeki HTML raporu oluşturma butonunda tanımsız olan `OpenInNewWindow20` simgesi yerine Lepo Wpf.Ui kütüphanesinin geçerli `ArrowExport20` Fluent simgesi entegre edildi.
-  - Uygulama başlatılırken veya Sistem Bilgisi sekmesine geçildiğinde meydana gelen `XamlParseException: 'OpenInNewWindow20' metninden 'SymbolRegular' oluşturulamadı` hatası tamamen giderildi.
+- **Kusursuz Windows Başlangıç Motoru (Task Scheduler XML):**
+  - Uygulama `RUNASADMIN` ile işaretlendiğinde Windows Logon mimarisinin standart Kayıt Defteri (`Run` anahtarı) başlangıcını sessizce engellemesi sorunu kökten çözüldü.
+  - Windows Görev Zamanlayıcısı (`Task Scheduler`) XML tabanlı garantili kayıt mimarisine geçirildi. Tırnak, boşluk ve Türkçe karakter sorunları bertaraf edildi.
+  - Standart kullanıcı modunda çalışırken tek seferlik UAC işçisi (`--register-autostart`) ile UAC uyarısız en yüksek yetkili başlangıç kaydı sorunsuz oluşturulmaktadır.
 
-- **Otomatik XAML Sembol Doğrulayıcı (SymbolValidator Testi):**
-  - Gelecekte hatalı, eksik veya uydurma `SymbolRegular` simgelerinin projeye eklenmesini derleme ve birim test seviyesinde önleyen otomatik xUnit test mekanizması (`SymbolValidator.cs`) sisteme kazandırıldı.
-  - Projedeki tüm XAML dosyaları taranarak kullanılan tüm sembollerin resmi Fluent 2 kütüphanesindeki varlığı doğrulandı.
+- **Canlı Başlangıç Durum Teşhisi (Autostart Health Diagnostics):**
+  - Ayarlar -> Sistem Başlangıcı sekmesine Windows başlangıcının gerçek durumunu anlık denetleyen akıllı durum rozeti eklendi:
+    - 🟢 *Aktif (Görev Zamanlayıcı - UAC Uyarısız Yönetici)*
+    - 🟡 *Aktif (Kayıt Defteri - Standart Kullanıcı)*
+    - 🔴 *Engellendi (Windows UAC Kısıtlaması)*
+    - ⚪ *Devre Dışı*
 
-- **Sürüm Bütünlüğü:**
-  - Tüm manifesto, güncelleme servisleri ve kurulum betikleri v3.15.1 sürümüne güncellendi.
+- **Tek Tıkla "Başlangıcı Onar & Kur" Aracı:**
+  - Çakışan AppCompat ve yetkisiz Run kayıtlarını temizleyen, doğru Görev Zamanlayıcı kaydını kuran ve Windows açılışını garanti altına alan onarım mekanizması entegre edildi.
+
+- **ControlAppearance & XAML Doğrulama Güvencesi:**
+  - Sürücü açma butonundaki tanımsız `Appearance="Subtle"` değeri `Appearance="Secondary"` olarak düzeltildi (`Subtle is not a valid value for ControlAppearance` hatası giderildi).
+  - Projedeki tüm XAML dosyalarındaki `ControlAppearance` ve `SymbolRegular` değerlerini derleme/test seviyesinde denetleyen xUnit birim testleri sisteme dahil edildi.

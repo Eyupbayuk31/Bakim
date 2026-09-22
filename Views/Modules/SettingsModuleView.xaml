@@ -366,21 +366,88 @@
                                            FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                             </StackPanel>
 
-                            <!-- Item 1: Start with Windows -->
+                            <!-- Item 1: Start with Windows & Health Diagnostic -->
                             <Grid Margin="0,0,0,14">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+
+                                <!-- Title & Toggle -->
+                                <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock Text="Windows ile Birlikte Başlat" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text="Bilgisayar açıldığında uygulamayı otomatik olarak başlatır." 
+                                    <TextBlock Text="Bilgisayar açıldığında uygulamayı otomatik olarak başlatır (UAC uyarısız en yüksek yetki)." 
                                                FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
-                                <ui:ToggleSwitch Grid.Column="1" 
+                                <ui:ToggleSwitch Grid.Row="0" Grid.Column="1" 
                                                  IsChecked="{Binding StartWithWindows, Mode=TwoWay}"
                                                  AutomationProperties.Name="Windows ile birlikte başlat"
                                                  VerticalAlignment="Center"/>
+
+                                <!-- Diagnostic Status & Actions Container -->
+                                <Border Grid.Row="1" Grid.ColumnSpan="2" 
+                                        Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="8" 
+                                        Padding="14,10" 
+                                        Margin="0,10,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,3">
+                                                <TextBlock Text="Başlangıç Durumu:" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{Binding AutostartHealthBadgeText}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding AutostartDiagnosticDetails}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                            <ui:Button Appearance="Primary" 
+                                                       Content="Başlangıcı Onar &amp; Kur" 
+                                                       Icon="{ui:SymbolIcon Wrench20}" 
+                                                       Command="{Binding RepairAutostartCommand}" 
+                                                       Padding="10,6" 
+                                                       Margin="0,0,6,0"
+                                                       ToolTip="Windows Görev Zamanlayıcısına UAC uyarısız en yüksek yetkili başlangıç görevini kaydeder ve çakışan anahtarları temizler."/>
+                                            <ui:Button Appearance="Secondary" 
+                                                       Icon="{ui:SymbolIcon ArrowClockwise20}" 
+                                                       Command="{Binding RefreshAutostartStatusCommand}" 
+                                                       Padding="8,6" 
+                                                       ToolTip="Başlangıç durumunu yeniden denetle"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <!-- Warning banner if blocked -->
+                                <Border Grid.Row="2" Grid.ColumnSpan="2" 
+                                        Visibility="{Binding IsAutostartBlocked, Converter={StaticResource BoolToVis}}"
+                                        Background="#22EF4444" 
+                                        BorderBrush="#88EF4444" 
+                                        BorderThickness="1" 
+                                        CornerRadius="8" 
+                                        Padding="12,10" 
+                                        Margin="0,8,0,0">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ui:SymbolIcon Symbol="Warning24" FontSize="18" Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="11.5" Foreground="#FCA5A5">
+                                            <Run FontWeight="Bold">Kritik Windows UAC Engeli:</Run> Uygulama 'Yönetici Olarak Çalıştır' olarak işaretlendiği için standart Kayıt Defteri başlangıcı Windows tarafından sessizce engellenmektedir. Programın sorunsuz başlaması için lütfen yukarıdaki <Run FontWeight="Bold">'Başlangıcı Onar &amp; Kur'</Run> butonunu kullanın.
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
                             </Grid>
 
                             <Border Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1" Margin="0,0,0,14"/>

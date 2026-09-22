@@ -424,7 +424,7 @@
                                                        Command="{Binding DataContext.ScanDriveForLargeFilesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding Name}"/>
 
-                                            <ui:Button Appearance="Subtle"
+                                            <ui:Button Appearance="Secondary"
                                                        Padding="8,4"
                                                        Icon="{ui:SymbolIcon FolderOpen20}"
                                                        ToolTip="Sürücüyü Gezginde Aç"

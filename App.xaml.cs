@@ -49,6 +49,30 @@ namespace Bakım
         {
             base.OnStartup(e);
 
+            // Başlangıç kayıt / onarım parametresi (Tek seferlik UAC işçisi)
+            if (e.Args != null && e.Args.Length > 0)
+            {
+                string firstArg = e.Args[0].Trim().ToLowerInvariant();
+                if (firstArg == "--register-autostart")
+                {
+                    bool ok = AdminElevationService.RegisterTaskSchedulerInternal();
+                    Shutdown(ok ? 0 : 1);
+                    return;
+                }
+                if (firstArg == "--unregister-autostart")
+                {
+                    bool ok = AdminElevationService.UnregisterTaskSchedulerInternal();
+                    Shutdown(ok ? 0 : 1);
+                    return;
+                }
+                if (firstArg == "--repair-autostart")
+                {
+                    bool ok = AdminElevationService.RepairAutostartInternal();
+                    Shutdown(ok ? 0 : 1);
+                    return;
+                }
+            }
+
             // 0. Günlükleme: her şeyden önce ayağa kalkmalı ki başlangıç hataları da kaydedilsin.
             _logService = new FileLogService();
             AppLog.Initialize(_logService);
@@ -110,14 +134,17 @@ namespace Bakım
             MainWindow = mainWindow;
 
             bool isSilentStart = false;
-            foreach (var arg in e.Args)
+            if (e.Args != null)
             {
-                if (arg.Equals("--autostart", StringComparison.OrdinalIgnoreCase) ||
-                    arg.Equals("--minimized", StringComparison.OrdinalIgnoreCase) ||
-                    arg.Equals("--tray", StringComparison.OrdinalIgnoreCase))
+                foreach (var arg in e.Args)
                 {
-                    isSilentStart = true;
-                    break;
+                    if (arg.Equals("--autostart", StringComparison.OrdinalIgnoreCase) ||
+                        arg.Equals("--minimized", StringComparison.OrdinalIgnoreCase) ||
+                        arg.Equals("--tray", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isSilentStart = true;
+                        break;
+                    }
                 }
             }
 

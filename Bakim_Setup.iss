@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Bakım"
-#define MyAppVersion "3.15.1"
+#define MyAppVersion "3.15.2"
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"
 #define MyAppExeName "Bakim.exe"
@@ -50,7 +50,7 @@ Name: "startmenu"; Description: "Başlat Menüsü simgesi oluştur"; GroupDescri
 
 ; Yönetici Hakları & Başlangıç Otomasyonu (İstenen Özellikler)
 Name: "alwaysadmin"; Description: "Her zaman Yönetici Olarak Çalıştır (RUNASADMIN Uyumluluk Katmanı)"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
-Name: "autostart"; Description: "Bilgisayar açıldığında otomatik başlat (En Yüksek Yönetici Yetkisiyle - UAC Uyarısız)"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: unchecked
+Name: "autostart"; Description: "Bilgisayar açıldığında otomatik başlat (En Yüksek Yönetici Yetkisiyle - UAC Uyarısız)"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
 
 [Files]
 Source: "Releases\Bakim.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -68,14 +68,15 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags
 
 [Run]
 ; Bilgisayar açılışında UAC istemi olmadan en yüksek yönetici yetkisiyle başlatma (Task Scheduler)
-Filename: "schtasks.exe"; Parameters: "/create /tn ""Bakım_Admin_AutoStart"" /tr """"{app}\{#MyAppExeName}"""" /sc onlogon /rl highest /f"; Flags: runhidden; Tasks: autostart
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-autostart"; Flags: runhidden; Tasks: autostart
 
 ; Kurulum tamamlandıktan sonra uygulamayı başlatma seçeneği (shellexec ile Hata 740 önlenir, sessiz güncellemede otomatik açılır)
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall shellexec
 
 [UninstallRun]
 ; Kaldırma esnasında Görev Zamanlayıcı kaydını temizle
-Filename: "schtasks.exe"; Parameters: "/delete /tn ""Bakım_Admin_AutoStart"" /f"; Flags: runhidden; RunOnceId: "DeleteBakimAutoStartTask"
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--unregister-autostart"; Flags: runhidden; RunOnceId: "DeleteBakimAutoStartTask"
+Filename: "schtasks.exe"; Parameters: "/delete /tn ""Bakım_Admin_AutoStart"" /f"; Flags: runhidden; RunOnceId: "DeleteBakimAutoStartTaskFallback"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
