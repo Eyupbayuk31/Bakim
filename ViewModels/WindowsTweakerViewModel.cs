@@ -17,7 +17,6 @@ namespace Bakım.ViewModels
         private readonly IDesktopTaskbarTweaksService _desktopTaskbarService;
         private readonly IContextMenuShortcutsService _contextMenuService;
         private readonly ISystemToolsService _toolsService;
-        private readonly IClassicAppsService _classicAppsService;
         private readonly IWindows11TweaksService _win11Service;
         private readonly IAppearanceTweaksService _appearanceService;
         private readonly IAdvancedAppearanceService _advancedAppearanceService;
@@ -33,7 +32,6 @@ namespace Bakım.ViewModels
             IDesktopTaskbarTweaksService desktopTaskbarService,
             IContextMenuShortcutsService contextMenuService,
             ISystemToolsService toolsService,
-            IClassicAppsService classicAppsService,
             IWindows11TweaksService win11Service,
             IAppearanceTweaksService appearanceService,
             IAdvancedAppearanceService advancedAppearanceService,
@@ -48,7 +46,6 @@ namespace Bakım.ViewModels
             _desktopTaskbarService = desktopTaskbarService;
             _contextMenuService = contextMenuService;
             _toolsService = toolsService;
-            _classicAppsService = classicAppsService;
             _win11Service = win11Service;
             _appearanceService = appearanceService;
             _advancedAppearanceService = advancedAppearanceService;
@@ -60,7 +57,6 @@ namespace Bakım.ViewModels
             PrivacyDebloat.TweaksStateChanged += UpdateCategoryCounts;
 
             AllTweaks = new ObservableCollection<SystemTweakItem>();
-            ClassicTools = new ObservableCollection<ClassicAppItem>();
             OemInfo = new OemInfoData();
             Metrics = new WindowMetricsData();
 
@@ -76,7 +72,6 @@ namespace Bakım.ViewModels
 
         public PrivacyDebloatViewModel PrivacyDebloat { get; }
         public ObservableCollection<SystemTweakItem> AllTweaks { get; }
-        public ObservableCollection<ClassicAppItem> ClassicTools { get; }
         public ObservableCollection<TweakerCategoryModel> CategoryList { get; } = new();
         public ICollectionView FilteredTweaks => _filteredTweaks;
 
@@ -90,7 +85,7 @@ namespace Bakım.ViewModels
         private TweakerStats _stats = new();
 
         [ObservableProperty]
-        private string _activeCategory = "All"; // All, Windows11, Behavior, BootLogon, DesktopTaskbar, ContextMenu, Appearance, AdvancedAppearance, FileExplorer, SettingsCpl, Edge, Tools, ClassicApps, PrivacyDebloat
+        private string _activeCategory = "All"; // All, Windows11, Behavior, BootLogon, DesktopTaskbar, ContextMenu, Appearance, AdvancedAppearance, FileExplorer, SettingsCpl, Edge, Tools, PrivacyDebloat
 
         partial void OnActiveCategoryChanged(string value)
         {
@@ -101,15 +96,13 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(ActiveCategoryDisplayName));
             OnPropertyChanged(nameof(IsTweaksListVisible));
             OnPropertyChanged(nameof(IsToolsTabVisible));
-            OnPropertyChanged(nameof(IsClassicAppsTabVisible));
             OnPropertyChanged(nameof(IsAdvancedAppearanceTabVisible));
             OnPropertyChanged(nameof(IsPrivacyDebloatVisible));
             _filteredTweaks.Refresh();
         }
 
-        public bool IsTweaksListVisible => !string.IsNullOrWhiteSpace(SearchText) || (ActiveCategory != "Tools" && ActiveCategory != "ClassicApps" && ActiveCategory != "AdvancedAppearance" && ActiveCategory != "PrivacyDebloat");
+        public bool IsTweaksListVisible => !string.IsNullOrWhiteSpace(SearchText) || (ActiveCategory != "Tools" && ActiveCategory != "AdvancedAppearance" && ActiveCategory != "PrivacyDebloat");
         public bool IsToolsTabVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "Tools";
-        public bool IsClassicAppsTabVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "ClassicApps";
         public bool IsAdvancedAppearanceTabVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "AdvancedAppearance";
         public bool IsPrivacyDebloatVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "PrivacyDebloat";
 
@@ -126,7 +119,6 @@ namespace Bakım.ViewModels
             "SettingsCpl" => "Ayarlar & Denetim Masası",
             "Edge" => "Microsoft Edge",
             "Tools" => "Sistem Araçları",
-            "ClassicApps" => "Klasik Uygulamalar",
             "PrivacyDebloat" => "Gizlilik & Debloat",
             _ => "Tüm İnce Ayarlar"
         };
@@ -187,7 +179,6 @@ namespace Bakım.ViewModels
         {
             OnPropertyChanged(nameof(IsTweaksListVisible));
             OnPropertyChanged(nameof(IsToolsTabVisible));
-            OnPropertyChanged(nameof(IsClassicAppsTabVisible));
             OnPropertyChanged(nameof(IsAdvancedAppearanceTabVisible));
             OnPropertyChanged(nameof(IsPrivacyDebloatVisible));
             OnPropertyChanged(nameof(IsSearchActive));
@@ -298,11 +289,7 @@ namespace Bakım.ViewModels
                 foreach (var sc in settingsCpl) AllTweaks.Add(sc);
                 foreach (var ed in edge) AllTweaks.Add(ed);
 
-                // Klasik Araçlar, OEM Bilgisi & WindowMetrics
-                var tools = await _classicAppsService.GetClassicToolsAsync();
-                ClassicTools.Clear();
-                foreach (var t in tools) ClassicTools.Add(t);
-
+                // OEM Bilgisi & WindowMetrics
                 OemInfo = await _toolsService.GetOemInfoAsync();
                 Metrics = await _advancedAppearanceService.GetWindowMetricsAsync();
 
@@ -902,59 +889,6 @@ namespace Bakım.ViewModels
 
         #endregion
 
-        #region Classic Apps Commands
-
-        [RelayCommand]
-        public async Task ActivateWindowsPhotoViewerAsync()
-        {
-            if (!IsAdmin)
-            {
-                OperationResultBanner = "Klasik Windows Fotoğraf Görüntüleyicisi'ni etkinleştirmek için Yönetici yetkisi gereklidir.";
-                ResultBannerSeverity = InfoBarSeverity.Warning;
-                HasResultBanner = true;
-                return;
-            }
-
-            bool ok = await _classicAppsService.ActivateWindowsPhotoViewerAsync();
-            if (ok)
-            {
-                var photoApp = ClassicTools.FirstOrDefault(t => t.Id == "photo_viewer");
-                if (photoApp != null) photoApp.IsActivated = true;
-
-                OperationResultBanner = "Klasik Windows Fotoğraf Görüntüleyicisi başarıyla tüm resim formatları (.jpg, .png vb.) için sisteme kaydedildi!";
-                ResultBannerSeverity = InfoBarSeverity.Success;
-                HasResultBanner = true;
-            }
-            else
-            {
-                OperationResultBanner = "Klasik Windows Fotoğraf Görüntüleyicisi etkinleştirilemedi.";
-                ResultBannerSeverity = InfoBarSeverity.Error;
-                HasResultBanner = true;
-            }
-        }
-
-        [RelayCommand]
-        public async Task LaunchClassicToolAsync(ClassicAppItem? app)
-        {
-            if (app == null) return;
-
-            if (app.Id == "photo_viewer")
-            {
-                await ActivateWindowsPhotoViewerAsync();
-                return;
-            }
-
-            bool ok = await _classicAppsService.LaunchClassicToolAsync(app.Id);
-            if (!ok)
-            {
-                OperationResultBanner = $"'{app.Title}' başlatılamadı. Aracın Windows üzerinde yüklü olduğunu kontrol edin.";
-                ResultBannerSeverity = InfoBarSeverity.Error;
-                HasResultBanner = true;
-            }
-        }
-
-        #endregion
-
         [RelayCommand]
         public void RestartAsAdmin()
         {
@@ -977,8 +911,7 @@ namespace Bakım.ViewModels
                 SettingsControlPanelTweaksCount = AllTweaks.Count(t => t.Category.Contains("Ayarlar")),
                 EdgeTweaksCount = AllTweaks.Count(t => t.Category.Contains("Edge")),
                 AdvancedAppearanceCount = 7,
-                ToolsCount = 4,
-                ClassicAppsCount = ClassicTools.Count
+                ToolsCount = 4
             };
             UpdateCategoryCounts();
         }
@@ -1085,14 +1018,6 @@ namespace Bakım.ViewModels
             });
             CategoryList.Add(new TweakerCategoryModel
             {
-                Key = "ClassicApps",
-                DisplayName = "Klasik Uygulamalar",
-                IconSymbol = "WindowApps24",
-                ShortDescription = "Eski Windows Fotoğraf Görüntüleyici ve klasik sistem konsolları.",
-                BenefitSummary = "Hızlı ve kararlı klasik Windows yardımcı araçlarını tek tıkla geri getirir."
-            });
-            CategoryList.Add(new TweakerCategoryModel
-            {
                 Key = "PrivacyDebloat",
                 DisplayName = "Gizlilik & Debloat",
                 IconSymbol = "Shield24",
@@ -1154,10 +1079,6 @@ namespace Bakım.ViewModels
                     case "Tools":
                         cat.TotalCount = 4;
                         cat.ActiveCount = 4;
-                        break;
-                    case "ClassicApps":
-                        cat.TotalCount = ClassicTools.Count;
-                        cat.ActiveCount = ClassicTools.Count(c => c.IsActivated);
                         break;
                     case "PrivacyDebloat":
                         cat.TotalCount = PrivacyDebloat?.Stats?.TotalTweaksCount ?? 0;

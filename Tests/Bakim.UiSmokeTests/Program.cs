@@ -143,11 +143,13 @@ internal static class Program
             _ = mainVm.WindowsTweaker;
             _ = mainVm.TweakerCategories;
             _ = mainVm.Settings;
-            Console.WriteLine("  GECTI  | MainViewModel 14 alt modulu (TweakerCategories dahil) basariyla cozuldu");
+            _ = mainVm.Store;
+            Console.WriteLine("  GECTI  | MainViewModel 15 alt modulu (TweakerCategories ve Store dahil) basariyla cozuldu");
 
             main.Close();
 
             RunTweakerNavigationChecks(provider);
+            RunStoreTabChecks(provider);
 
             // NOT: provider bilerek dispose EDILMEZ — sonraki diyalog kontrolu
             // App.Services uzerinden ayni konteyneri kullanir.
@@ -336,7 +338,7 @@ internal static class Program
 
         string[] keys =
         {
-            "All", "Appearance", "Behavior", "BootLogon", "ClassicApps",
+            "All", "Appearance", "Behavior", "BootLogon",
             "ContextMenu", "DesktopTaskbar", "Edge", "FileExplorer",
             "SettingsCpl", "Tools", "AdvancedAppearance", "PrivacyDebloat",
         };
@@ -370,6 +372,34 @@ internal static class Program
         }
     }
 
+    private static void RunStoreTabChecks(IServiceProvider provider)
+    {
+        Console.WriteLine();
+        Console.WriteLine("STORE SEKME GEZINMESI");
+        Console.WriteLine("=====================");
+
+        try
+        {
+            var store = provider.GetRequiredService<Bakım.ViewModels.StoreViewModel>();
+            store.SwitchToCatalog();
+            if (!store.IsCatalogTab) throw new InvalidOperationException("Catalog tab secilemedi.");
+            Console.WriteLine("  GECTI  | Uygulama Kataloğu (Tab 0)");
+
+            store.SwitchToPresets();
+            if (!store.IsPresetsTab) throw new InvalidOperationException("Presets tab secilemedi.");
+            Console.WriteLine("  GECTI  | Hazır Paketler (Tab 1)");
+
+            store.SwitchToClassicTools();
+            if (!store.IsClassicToolsTab) throw new InvalidOperationException("ClassicTools tab secilemedi.");
+            Console.WriteLine("  GECTI  | Windows Konsolları & Klasik Araçlar (Tab 2)");
+        }
+        catch (Exception ex)
+        {
+            Failures.Add("store:tabs");
+            Console.WriteLine($"  COKTU  | Store sekmeleri -> {ex.GetType().Name}: {ex.Message}");
+        }
+    }
+
     private static void RunViewChecks()
     {
         var views = new (string Name, Func<FrameworkElement> Create)[]
@@ -387,6 +417,7 @@ internal static class Program
             ("AnalyzerView",  () => new AnalyzerView()),
             ("WindowsTweakerModuleView", () => new WindowsTweakerModuleView()),
             ("SettingsModuleView",       () => new SettingsModuleView()),
+            ("StoreModuleView",          () => new StoreModuleView()),
 
             ("Controls/SectionHeader",   () => new SectionHeader { Title = "Başlık", Description = "Açıklama", Icon = "Shield24" }),
             ("Controls/MetricChip",      () => new MetricChip { Icon = "TopSpeed24", Label = "RAM:", Value = "%58", Intent = Intent.Accent }),

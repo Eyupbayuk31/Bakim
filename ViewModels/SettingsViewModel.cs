@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3182 = new ReleaseChangelogItem
+            {
+                Version = "v3.18.2",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Windows Sistem Konsolları & Klasik Araçlar Mağaza Entegrasyonu (Tab 3) & Tweaker Sadeleştirmesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "24 Windows Sistem Konsolu & Klasik Araçlar Taşıması: Tweaker içindeki karışıklığı önlemek için Aygıt Yöneticisi, Regedit, Olay Görüntüleyici, Hizmetler ve DirectX gibi 24 kritik araç Yazılım & Runtimes Mağazası'na (Tab 3: Sistem Konsolları & Klasik Araçlar) taşındı.",
+                    "Windows Fotoğraf Görüntüleyicisi 1-Tıkla Aktifleştirme Hero Banner'ı: Canlı kayıt defteri algılamasıyla Fotoğraf Görüntüleyicisi'nin durumunu gösteren, tek tıkla aktifleştiren modern Fluent 2 kartı.",
+                    "5'li Kategori Filtre Çipleri & Anlık Arama: 'Tümü', 'Sistem', 'Donanım & Disk', 'Ağ & Güvenlik' ve 'Hızlı Erişim' filtreleme butonları ile araçlar arasında anında arama yeteneği.",
+                    "Etkileşimli 24 Konsol Kartları: Çalıştırılabilir dosya etiketleri (.msc, .exe), resmi Fluent WindowWrench24 ve Play24 ikonları, tek tıkla doğrudan konsolu başlatma.",
+                    "Windows Tweaker Sol Menü Optimizasyonu: Tweaker sol navigasyon rayı yalnızca kayıt defteri ve sistem ince ayarlarına odaklanacak şekilde sadeleştirildi; kategori sayısı dinamik olarak bağlandı."
+                }
+            };
+
             var v3181 = new ReleaseChangelogItem
             {
                 Version = "v3.18.1",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Gizlilik & Debloat Master-Detail Entegrasyonu, Kesintisiz Sol Menü & Fluent 2 Tasarım Devrimi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Kesintisiz Sol Kategori Menüsü (Master-Detail Persistence): 'Gizlilik & Debloat' kategorisine tıklandığında sol menünün (KATEGORİLER 14) kaybolma ve bağlamı koparma sorunu kökten çözüldü; sol ray sabit kalarak kategoriler arası akıcı ve çift yönlü geçiş sağlandı.",
@@ -1372,8 +1389,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3181;
+            LatestRelease = v3182;
 
+            ReleaseHistory.Add(v3182);
             ReleaseHistory.Add(v3181);
             ReleaseHistory.Add(v3180);
             ReleaseHistory.Add(v3179);

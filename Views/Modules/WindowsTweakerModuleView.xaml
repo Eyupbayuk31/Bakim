@@ -192,7 +192,7 @@
                             <ui:SymbolIcon Grid.Column="0" Symbol="Grid24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="1" Text="KATEGORİLER" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                             <Border Grid.Column="2" CornerRadius="10" Padding="6,2" Background="{DynamicResource SubtleFillColorTertiaryBrush}">
-                                <TextBlock Text="14" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding CategoryList.Count}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </Border>
                         </Grid>
                     </Border>
@@ -729,103 +729,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- 4.3. Viewport: Classic Apps Tab Content -->
-        <ScrollViewer Grid.Row="1" 
-                      VerticalScrollBarVisibility="Auto" 
-                      HorizontalScrollBarVisibility="Disabled"
-                      Visibility="{Binding IsClassicAppsTabVisible, Converter={StaticResource BoolToVis}}">
-            <StackPanel>
-                <!-- Hero Tool: Windows Photo Viewer -->
-                <ui:Card Padding="20" Margin="0,0,0,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                <ui:SymbolIcon Symbol="Image24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
-                                <TextBlock Text="Klasik Windows Fotoğraf Görüntüleyicisi (Photo Viewer)" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </StackPanel>
-                            <TextBlock Text="Windows 10 ve 11'in yavaş açılan 'Fotoğraflar' UWP uygulaması yerine, Windows 7'nin anında açılan ve renkleri doğru veren efsanevi Photo Viewer motorunu tüm formatlar (.jpg, .png, .bmp, .gif, .tiff) için sisteme geri getirir." 
-                                       FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                        </StackPanel>
-                        <ui:Button Grid.Column="1" 
-                                   Appearance="Primary"
-                                   Content="Fotoğraf Görüntüleyicisini Sisteme Tanımla &amp; Aç"
-                                   Icon="{ui:SymbolIcon CheckmarkCircle24}"
-                                   Command="{Binding ActivateWindowsPhotoViewerCommand}"
-                                   VerticalAlignment="Center"
-                                   Padding="18,10"/>
-                    </Grid>
-                </ui:Card>
-
-                <TextBlock Text="Klasik Windows Sistem &amp; Yönetim Araçları" 
-                           FontSize="16" FontWeight="SemiBold" 
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                           Margin="0,0,0,14"/>
-
-                <!-- Classic Tools Grid (2 Columns) -->
-                <ItemsControl ItemsSource="{Binding ClassicTools}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <UniformGrid Columns="2"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:ClassicAppItem}">
-                            <ui:Card Padding="14" Margin="4,4,4,8" Style="{StaticResource InteractiveCard}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/> <!-- Icon -->
-                                        <ColumnDefinition Width="*"/>    <!-- Title + Category + Description -->
-                                        <ColumnDefinition Width="Auto"/> <!-- Action Button -->
-                                    </Grid.ColumnDefinitions>
-
-                                    <!-- Icon Box -->
-                                    <Border Grid.Column="0" 
-                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                            BorderThickness="1"
-                                            Width="44" Height="44" 
-                                            CornerRadius="10" 
-                                            Margin="0,0,12,0"
-                                            VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
-                                                       FontSize="22" 
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-
-                                    <!-- Title + Category + Description -->
-                                    <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                            <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="4" Padding="5,1">
-                                                <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                            </Border>
-                                        </StackPanel>
-                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,3,0,0" MaxHeight="30" TextTrimming="CharacterEllipsis"/>
-                                    </StackPanel>
-
-                                    <!-- Action Button -->
-                                    <ui:Button Grid.Column="2" 
-                                               Appearance="Secondary"
-                                               Content="Başlat"
-                                               Icon="{ui:SymbolIcon Play20}"
-                                               Command="{Binding DataContext.LaunchClassicToolCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               VerticalAlignment="Center"
-                                               Padding="12,6"/>
-                                </Grid>
-                            </ui:Card>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- 4.4. Viewport: Advanced Appearance & Window Metrics Tab Content -->
+        <!-- 4.3. Viewport: Advanced Appearance & Window Metrics Tab Content -->
         <ScrollViewer Grid.Row="1" 
                       VerticalScrollBarVisibility="Auto" 
                       HorizontalScrollBarVisibility="Disabled"

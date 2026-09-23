@@ -329,6 +329,18 @@ namespace Bakım.ViewModels
                         {
                             NavigateToTweakerCategory(parts[1]);
                         }
+                        else if (parts.Length == 2 && parts[0] == "Store")
+                        {
+                            Navigate("Store");
+                            if (parts[1] == "ClassicTools")
+                            {
+                                Store.SwitchToClassicTools();
+                            }
+                            else if (parts[1] == "Presets")
+                            {
+                                Store.SwitchToPresets();
+                            }
+                        }
                     }
                     else
                     {

@@ -313,12 +313,12 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Tweaker: Klasik Uygulamalar",
-                    Category = "Windows Tweaker",
-                    Description = "Klasik Windows Fotoğraf Görüntüleyici ve Hesap Makinesi.",
-                    IconName = "Apps24",
+                    Title = "Yazılım Mağazası: Sistem Konsolları & Klasik Araçlar",
+                    Category = "Yazılım & Runtimes",
+                    Description = "24+ Windows yönetim konsolu, klasik Fotoğraf Görüntüleyici ve sistem araçları.",
+                    IconName = "WindowWrench24",
                     ActionKind = CommandActionKind.Navigate,
-                    TargetParameter = "WindowsTweaker:ClassicApps"
+                    TargetParameter = "Store:ClassicTools"
                 }
             };
         }

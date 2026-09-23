@@ -1,34 +1,29 @@
-# Bakım v3.18.1 - Sürüm Notları
+# Bakım v3.18.2 - Sürüm Notları
 
-## Gizlilik & Debloat Master-Detail Entegrasyonu, Kesintisiz Sol Menü & Fluent 2 Tasarım Devrimi 🛡️✨
+## Windows Sistem Konsolları & Klasik Araçlar Mağaza Entegrasyonu (Tab 3) & Tweaker Sadeleştirmesi 🛠️⚡
 
-### 1. Kesintisiz Sol Kategori Menüsü (Master-Detail Persistence)
-- **Sol Menünün Yok Olması Kökten Çözüldü:** Windows Tweaker sol rayındaki ("KATEGORİLER 14") "Gizlilik & Debloat" seçeneğine tıklandığında uygulamanın harici sayfaya atlayıp sol menüyü yok etmesi sorunu giderildi.
-- **Birinci Sınıf Entegre Kategori:** "Gizlilik & Debloat" doğrudan Tweaker Master-Detail çalışma alanının yerel bir kategorisi haline getirildi. Tıklandığında sol menü sabit kalarak aktif kategori neon mavi vurgu kazanır ve kullanıcı dilediği an diğer 13 kategoriye (Windows 11, Dosya Gezgini vb.) tek tıkla pürüzsüzce geri dönebilir.
-- **Canlı Sayaç Rozeti (Dynamic Badge):** Sol menüdeki "Gizlilik & Debloat" satırı artık statik veya boş değil; aktif ve toplam koruma kuralını (örn: `6/12`) canlı olarak yansıtır.
+### 1. 24 Windows Sistem Konsolu & Klasik Araçlar Taşıması
+- **Tweaker Karmaşasına Son:** Kayıt defteri ve sistem ince ayarlarına odaklanan Windows Tweaker'dan sistem yönetim konsolları ayrılarak, doğrudan ait olduğu **Yazılım & Runtimes Mağazası** içerisine **3. Bağımsız Çalışma Alanı (Tab 3: Sistem Konsolları & Klasik Araçlar)** olarak entegre edildi.
+- **24 Güçlü Windows Yönetim Aracı:** Aygıt Yöneticisi, Bilgisayar Yönetimi, Windows Hizmetleri (Services), Kayıt Defteri Düzenleyicisi (Regedit), Yerel Grup İlkesi (GPEdit), Olay Görüntüleyici, Görev Zamanlayıcı, DirectX Teşhis (DxDiag), Disk Yönetimi, Ağ Bağlantıları (NCPA), God Mode, Windows Terminal, Kaynak İzleyicisi ve daha fazlası tek merkezde toplandı.
 
-### 2. Dörtlü Canlı KPI Gösterge Kartları
-- **Gizlilik Koruma Skoru (%50):** Koruma yüzdesini dinamik renk kodlu (yeşil/sarı/kırmızı) başarı rozetiyle sunan modern metrik kartı.
-- **Aktif Koruma Kuralı (6 / 12):** Telemetri ve veri toplama engellerinin anlık durumunu raporlar.
-- **Önerilen Korumalar:** Güvenli ve stabil Microsoft temel koruma seviyesi.
-- **Yüklü Bloatware:** Sistemde gereksiz RAM ve disk tüketen kurulu UWP paket sayısı.
+### 2. Windows Fotoğraf Görüntüleyicisi 1-Tıkla Aktifleştirme Hero Banner'ı
+- **Akıllı Canlı Durum Algılama:** Kayıt Defteri üzerinden Windows Fotoğraf Görüntüleyicisi'nin sistemde aktif olup olmadığını arka planda otomatik denetleyen canlı durum rozeti ("Etkin / Hazır" veya "Devre Dışı").
+- **1-Tıkla Aktifleştirme & İlişkilendirme:** Windows 10/11'de gizlenen klasik hızlı Fotoğraf Görüntüleyicisi'ni tek tıkla aktifleştiren, sistem dosya uzantılarını (.jpg, .png vb.) otomatik kaydeden hero kartı ve anında durum güncellemesi.
 
-### 3. Segmented Sub-Tab Switcher & Filtre Çipleri
-- **Akıcı Mod Seçici:** Kart yüzeyinde yerel Windows 11 Fluent 2 segmented hap kontrolü ile "Gizlilik & Telemetri" ve "Bloatware Kaldırıcı" arasında tek tıkla geçiş.
-- **Kategori Filtre Çipleri:** "Tümü", "Telemetri & Tanılama", "Reklamlar & Öneriler", "Konum & İzinler" butonları; her kategorinin kural adet rozetleri ve seçili çipte `#38BDF8` mavi vurgu.
+### 3. Zengin Filtreleme, Kategori Çipleri & Anlık Arama
+- **5 Kategori Filtre Çipi:** "Tümü", "Sistem", "Donanım & Disk", "Ağ & Güvenlik" ve "Hızlı Erişim" çipleri ile 24 konsol arasında amaca yönelik anında süzme.
+- **Anlık Arama Kutusu:** Konsol adı, dosya uzantısı (.msc, .exe) veya açıklamasına göre milisaniyeler içinde canlı arama desteği.
 
-### 4. Solid Border Tweak & Bloatware Kartları (Sıfır Hipnoz, Yüksek Netlik)
-- **Sağlam Kart Mimarisi:** `#1E293B` Slate Dark kart tabanı, belirgin `#334155` gri sınır çizgisi, `CornerRadius="10"` ve fareyle üzerine gelindiğinde parıldayan neon mavi hover efekti.
-- **İç Ayırıcı Çizgi (Card Separator):** Başlık, rozetler ve açıklama ile alt eylem/durum butonları arasına yatay ayrık çizgi çekilerek görsel karmaşa önlendi.
-- **Risk Seviyesi Rozetleri:** "Önerilen Koruma" (yeşil), "Gelişmiş Kural" (kehribar) ve "İsteğe Bağlı" (mavi) rozetleriyle kullanıcıya net güvenlik bilgisi.
-- **Durum Rozeti:** "Koruma Aktif" (yeşil onay) ve "Pasif / Açık" (gri çarpı) göstergeleri.
+### 4. Kusursuz Kart Mimarisi & Çalıştırılabilir Dosya Etiketleri
+- **Solid Border & Fluent 2 Tasarım:** `#1E293B` Slate Dark kart tabanı, `#334155` solid sınır çizgileri, hover parlama efekti ve 2 sütunlu düzenli ızgara.
+- **Teknik Dosya Etiketi:** Her konsol için çalıştırılan gerçek Win32 komut etiketi (örn: `devmgmt.msc`, `regedit.exe`, `ncpa.cpl`) ve resmi Fluent `WindowWrench24` ile `Play24` "Başlat" butonu.
 
-### 5. Toplu Güvenli Bloatware Temizliği
-- **Tek Tıkla Toplu Kaldırma:** "Tüm Güvenli Bloatware'leri Kaldır" eylemi ile Hesap Makinesi ve Windows Mağazası gibi temel sistem bileşenleri güvenle korunarak, gereksiz tüm reklam ve OEM bloatware paketleri tek seferde temizlenir.
-- **Gelişmiş Korumalı Rozeti:** Kritik sistem uygulamalarında sarı kilitli "Korumalı" rozeti ile yanlışlıkla silinme engellenir.
+### 5. Windows Tweaker Sol Menü Optimizasyonu
+- **Odaklanmış Temiz Navigasyon:** Tweaker sol navigasyon rayı yalnızca Windows ince ayarlarına (Windows 11, Görev Çubuğu, Dosya Gezgini, Performans vb.) odaklanacak şekilde sadeleştirildi.
+- **Dinamik Kategori Rozeti:** Tweaker başlığındaki kategori adedi statik değerden çıkarılarak `{Binding CategoryList.Count}` ile dinamik ve senkronize hale getirildi.
 
-### 6. Pre-flight & Test Doğrulaması
+### 6. Pre-flight, Test ve Kalite Doğrulaması
 - **147/147 Birim Testi:** Tüm testler %100 başarıyla geçti.
-- **UI Smoke Testleri:** Tüm modül görünümleri, 4 tema ve diyaloglar sıfır hatayla doğrulandı.
-- **9.235 Sembol & Token %100 Geçerli:** Sıfır geçersiz sembol ve eksiksiz token haritası.
-- **Yerel .NET 10 SDK Release Derlemesi:** 0 Hata ve 0 Uyarı.
+- **UI Smoke Testleri:** Tüm modül görünümleri, 4 tema, 3 mağaza sekmesi ve diyaloglar hatasız doğrulandı.
+- **9.235 Sembol & Token %100 Geçerli:** `verify-symbols.py` ve `verify-tokens.py` ile sıfır geçersiz sembol kanıtlandı.
+- **Sıfır Uyarı / Sıfır Hata:** .NET 10 Release derlemesi temiz tamamlandı.
