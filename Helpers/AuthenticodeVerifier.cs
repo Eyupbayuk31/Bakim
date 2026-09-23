@@ -37,6 +37,7 @@ namespace Bakım.Helpers
         private const uint WtdRevokeNone = 0;
         private const uint WtdChoiceFile = 1;
         private const uint WtdStateActionVerify = 1;
+        private const uint WtdStateActionClose = 2;
         private const uint TrustEProvidedUnknown = 0x800B0001;
         private const uint TrustENosignature = 0x800B0100;
         private const uint CertEUntrustedRoot = 0x800B0109;

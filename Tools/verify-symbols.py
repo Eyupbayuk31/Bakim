@@ -3,10 +3,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
-SYMBOL_FILE = ROOT / "Tools" / "SymbolRegular.cs"
+SYMBOL_FILE = ROOT / "Tools" / "SymbolRegular.txt"
 
 if not SYMBOL_FILE.exists():
-    print("HATA: Tools/SymbolRegular.cs bulunamadi!")
+    print("HATA: Tools/SymbolRegular.txt bulunamadi!")
     sys.exit(1)
 
 # Extract valid symbols
