@@ -1017,9 +1017,9 @@ namespace Bakım.Services
 
             var readOutputTask = Task.Run(async () =>
             {
-                while (!process.StandardOutput.EndOfStream)
+                string? line;
+                while ((line = await process.StandardOutput.ReadLineAsync(ct)) != null)
                 {
-                    var line = await process.StandardOutput.ReadLineAsync(ct);
                     if (!string.IsNullOrWhiteSpace(line))
                     {
                         if (line.Contains("%"))

@@ -259,7 +259,7 @@
                                VerticalAlignment="Center"
                                Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
                              <StackPanel>
-                                  <TextBlock Text="BAKIM v3.17.3" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                  <TextBlock Text="BAKIM v3.17.4" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                  <TextBlock Text="Sistem Optimize &amp; Güvenlik" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                              </StackPanel>
                          </Grid>
