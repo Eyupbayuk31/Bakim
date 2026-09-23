@@ -197,6 +197,7 @@ namespace Bakım.Models
         public string Id { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = "Sistem";
         public string IconSymbol { get; set; } = "Apps24";
         public string ExecutablePath { get; set; } = string.Empty;
 

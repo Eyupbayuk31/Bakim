@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3178 = new ReleaseChangelogItem
+            {
+                Version = "v3.17.8",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Araçlar Ekosistemi Genişletmesi: 24+ Klasik Sistem Konsolu & 13 Yeni Güçlü Yazılım",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "WPF-UI Hata Çözümü (ControlAppearance.Transparent): Mağaza kartlarındaki geçersiz 'Subtle' değeri 'Transparent' olarak düzeltildi ve tüm XAML testlerinden sıfır hatayla geçti.",
+                    "24 Adet Güçlü Windows Yönetim Konsolu (Sistem Araçları): Aygıt Yöneticisi, Bilgisayar Yönetimi, Windows Hizmetleri, Kayıt Defteri (Regedit), Grup İlkesi (GPEdit), Olay Görüntüleyici, DirectX Teşhis (DxDiag), God Mode, Windows Terminal, Ağ Adaptörleri (NCPA), Sertifika Yöneticisi ve Karakter Eşlem eklendi.",
+                    "13 Yeni Popüler Donanım, Medya & Verimlilik Aracı: Mağaza vitrinine HWiNFO64, CrystalDiskInfo, CrystalDiskMark, FurMark 2, MSI Afterburner, Ventoy, balenaEtcher, DDU (Display Driver Uninstaller), QuickLook, AutoHotkey, EarTrumpet, ScreenToGif ve LosslessCut eklendi.",
+                    "Temizlik ve Kaldırıcı Çakışmalarının Önlenmesi: Bakım'ın yerleşik Sistem Temizliği ve Kaldırıcısı ile çakışacak gereksiz veya rakip araçlar elenerek yalnızca sistem teşhis, benchmark ve masaüstü güçlendirici araçlara odaklanıldı.",
+                    "Yenilenmiş Sistem Araçları Kartları: Klasik araçlar vitrini kategori etiketleri, resmi Fluent ikonları ve etkileşimli kart stiliyle donatıldı."
+                }
+            };
+
             var v3177 = new ReleaseChangelogItem
             {
                 Version = "v3.17.7",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Mağaza Kartları Fluent 2 Tasarım Revizyonu: Kategori Vurguları, Akıllı Seçim & Ayrık Eylem Barı",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Dinamik Kategori Vurgulu İkon Squirclerı: Tüm uygulamaların aynı donuk mavi renkte görünmesi sorunu çözüldü; Runtimes (Açık Mavi), Oyun (Neon Mor), Müzik & Medya (Kehribar Sarı), Yazılım & Sistem (Zümrüt Yeşil), Tarayıcılar (Mavi), İletişim (Mercan Pembe) ve Geliştirici (Fuşya Mor) renkleriyle canlandırıldı.",
@@ -1302,8 +1319,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3177;
+            LatestRelease = v3178;
 
+            ReleaseHistory.Add(v3178);
             ReleaseHistory.Add(v3177);
             ReleaseHistory.Add(v3176);
             ReleaseHistory.Add(v3175);

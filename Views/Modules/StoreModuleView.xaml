@@ -407,7 +407,7 @@
                                                     </Border>
 
                                                     <!-- Subtle Reinstall / Repair Button -->
-                                                    <ui:Button Appearance="Subtle"
+                                                    <ui:Button Appearance="Transparent"
                                                                Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                                CommandParameter="{Binding}"
                                                                Width="30" Height="28"

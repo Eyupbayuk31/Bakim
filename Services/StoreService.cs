@@ -272,6 +272,19 @@ namespace Bakım.Services
                     WingetId = "GOG.Galaxy",
                     RegistryDetectKeyword = "GOG GALAXY"
                 },
+                new()
+                {
+                    Id = "msi_afterburner",
+                    Name = "MSI Afterburner",
+                    Description = "Oyun içi anlık FPS/sıcaklık OSD göstergesi, fan eğrisi optimizasyonu ve ekran kartı hız aşırtma aracı.",
+                    Category = StoreCategory.Gaming,
+                    CategoryDisplayName = "Oyun",
+                    IconSymbol = "TopSpeed24",
+                    Publisher = "Guru3D / MSI",
+                    SizeText = "54 MB",
+                    WingetId = "Guru3D.Afterburner",
+                    RegistryDetectKeyword = "MSI Afterburner"
+                },
 
                 // ==========================================
                 // 3. MÜZİK, MEDYA & YAYIN
@@ -366,6 +379,32 @@ namespace Bakım.Services
                     SizeText = "32 MB",
                     WingetId = "ShareX.ShareX",
                     RegistryDetectKeyword = "ShareX"
+                },
+                new()
+                {
+                    Id = "screentogif",
+                    Name = "ScreenToGif",
+                    Description = "Ekranın belirli bir bölgesini, web kamerasını veya çizimleri kaydedip anında optimize edilmiş GIF ve videoya dönüştüren araç.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "Record24",
+                    Publisher = "Nicke Manarin",
+                    SizeText = "70 MB",
+                    WingetId = "NickeManarin.ScreenToGif",
+                    RegistryDetectKeyword = "ScreenToGif"
+                },
+                new()
+                {
+                    Id = "lossless_cut",
+                    Name = "LosslessCut",
+                    Description = "Büyük video ve ses dosyalarını kalite kaybı olmadan ve yeniden kodlamadan saniyeler içinde kırpan süper hızlı araç.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "Video24",
+                    Publisher = "Mikael Finstad",
+                    SizeText = "110 MB",
+                    WingetId = "ch.LosslessCut",
+                    RegistryDetectKeyword = "LosslessCut"
                 },
 
                 // ==========================================
@@ -513,6 +552,136 @@ namespace Bakım.Services
                     SizeText = "32 MB",
                     WingetId = "qBittorrent.qBittorrent",
                     RegistryDetectKeyword = "qBittorrent"
+                },
+                new()
+                {
+                    Id = "hwinfo64",
+                    Name = "HWiNFO64",
+                    Description = "Dünyanın 1 numaralı donanım teşhis, ayrıntılı bileşen sensörü, voltaj ve sıcaklık izleme yazılımı.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "DeveloperBoard24",
+                    Publisher = "REALiX",
+                    SizeText = "12 MB",
+                    WingetId = "REALiX.HWiNFO",
+                    RegistryDetectKeyword = "HWiNFO"
+                },
+                new()
+                {
+                    Id = "crystaldiskinfo",
+                    Name = "CrystalDiskInfo",
+                    Description = "SSD ve sabit disklerin S.M.A.R.T. sağlık durumunu, ömür yüzdesini ve sıcaklığını takip eden teşhis aracı.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "HardDrive24",
+                    Publisher = "CrystalDewWorld",
+                    SizeText = "6 MB",
+                    WingetId = "CrystalDewWorld.CrystalDiskInfo",
+                    RegistryDetectKeyword = "CrystalDiskInfo"
+                },
+                new()
+                {
+                    Id = "crystaldiskmark",
+                    Name = "CrystalDiskMark",
+                    Description = "NVMe, SSD ve HDD sürücülerinin sıralı ve rastgele gerçek okuma/yazma hızlarını ölçen benchmark aracı.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "TopSpeed24",
+                    Publisher = "CrystalDewWorld",
+                    SizeText = "4 MB",
+                    WingetId = "CrystalDewWorld.CrystalDiskMark",
+                    RegistryDetectKeyword = "CrystalDiskMark"
+                },
+                new()
+                {
+                    Id = "furmark2",
+                    Name = "Geeks3D FurMark 2",
+                    Description = "Ekran kartının sınırlarını zorlayan, aşırı yük altında GPU sıcaklık ve güç kararlılığını test eden benchmark.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "Fire24",
+                    Publisher = "Geeks3D",
+                    SizeText = "15 MB",
+                    WingetId = "Geeks3D.FurMark.2",
+                    RegistryDetectKeyword = "FurMark"
+                },
+                new()
+                {
+                    Id = "ventoy",
+                    Name = "Ventoy",
+                    Description = "USB belleği bir kez formatlayıp içine birden fazla Windows/Linux ISO dosyasını kopyalayarak önyükleme yapan dahi araç.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "UsbStick24",
+                    Publisher = "Ventoy Team",
+                    SizeText = "16 MB",
+                    WingetId = "Ventoy.Ventoy",
+                    RegistryDetectKeyword = "Ventoy"
+                },
+                new()
+                {
+                    Id = "balena_etcher",
+                    Name = "balenaEtcher",
+                    Description = "SD kart ve USB disklere güvenli, doğrulamalı ve tek tıkla işletim sistemi imajı (ISO/IMG) yazma yazılımı.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "HardDrive24",
+                    Publisher = "Balena",
+                    SizeText = "140 MB",
+                    WingetId = "Balena.Etcher",
+                    RegistryDetectKeyword = "balenaEtcher"
+                },
+                new()
+                {
+                    Id = "ddu",
+                    Name = "Display Driver Uninstaller (DDU)",
+                    Description = "Ekran kartı sürücüsü değişimi ve çökme sorunlarında eski sürücüleri güvenli modda kalıntısız ve tertemiz kaldıran araç.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "Desktop24",
+                    Publisher = "Wagnardsoft",
+                    SizeText = "2 MB",
+                    WingetId = "Wagnardsoft.DisplayDriverUninstaller",
+                    RegistryDetectKeyword = "Display Driver Uninstaller"
+                },
+                new()
+                {
+                    Id = "quicklook",
+                    Name = "QuickLook",
+                    Description = "Dosya Gezgininde herhangi bir dosyanın üzerine gelip Boşluk (Space) tuşuna basıldığında anında önizleme açan verimlilik aracı.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "Eye24",
+                    Publisher = "QL-Win",
+                    SizeText = "50 MB",
+                    WingetId = "QL-Win.QuickLook",
+                    RegistryDetectKeyword = "QuickLook"
+                },
+                new()
+                {
+                    Id = "autohotkey",
+                    Name = "AutoHotkey",
+                    Description = "Klavye ve fare kısayolları atama, hızlı metin genişletme ve Windows masaüstü görevlerini otomatikleştirme motoru.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "Keyboard24",
+                    Publisher = "AutoHotkey Foundation",
+                    SizeText = "3 MB",
+                    WingetId = "AutoHotkey.AutoHotkey",
+                    RegistryDetectKeyword = "AutoHotkey"
+                },
+                new()
+                {
+                    Id = "eartrumpet",
+                    Name = "EarTrumpet",
+                    Description = "Windows sistem tepsisinde her açık uygulamanın ses düzeyini ayrı ayrı kontrol etmeyi sağlayan modern ses mikseri.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "Speaker224",
+                    Publisher = "File-New-Project",
+                    SizeText = "15 MB",
+                    WingetId = "File-New-Project.EarTrumpet",
+                    RegistryDetectKeyword = "EarTrumpet"
                 },
 
                 // ==========================================

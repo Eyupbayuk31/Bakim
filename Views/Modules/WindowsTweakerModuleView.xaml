@@ -773,22 +773,45 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:ClassicAppItem}">
-                            <ui:Card Padding="16" Margin="4">
+                            <ui:Card Padding="14" Margin="4,4,4,8" Style="{StaticResource InteractiveCard}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/> <!-- Icon -->
+                                        <ColumnDefinition Width="*"/>    <!-- Title + Category + Description -->
+                                        <ColumnDefinition Width="Auto"/> <!-- Action Button -->
                                     </Grid.ColumnDefinitions>
 
-                                    <StackPanel Grid.Column="0" Margin="0,0,14,0">
-                                        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    <!-- Icon Box -->
+                                    <Border Grid.Column="0" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            Width="44" Height="44" 
+                                            CornerRadius="10" 
+                                            Margin="0,0,12,0"
+                                            VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
+                                                       FontSize="22" 
+                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Title + Category + Description -->
+                                    <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Title}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                                            <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="4" Padding="5,1">
+                                                <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,3,0,0" MaxHeight="30" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
 
-                                     <ui:Button Grid.Column="1" 
+                                    <!-- Action Button -->
+                                    <ui:Button Grid.Column="2" 
                                                Appearance="Secondary"
-                                               Content="Aracı Başlat"
-                                               Icon="{ui:SymbolIcon Play24}"
+                                               Content="Başlat"
+                                               Icon="{ui:SymbolIcon Play20}"
                                                Command="{Binding DataContext.LaunchClassicToolCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                VerticalAlignment="Center"
