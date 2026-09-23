@@ -873,7 +873,7 @@ namespace Bakım.Services
                 progress?.Report(100, "Tebrikler! 2005-2022 tüm C++ kütüphaneleri başarıyla kuruldu.");
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 try { if (File.Exists(zipFile)) File.Delete(zipFile); } catch { }
                 try { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); } catch { }
@@ -1103,5 +1103,13 @@ namespace Bakım.Services
         }
 
         #endregion
+    }
+
+    internal static class ActionProgressExtensions
+    {
+        public static void Report(this Action<int, string>? action, int percentage, string status)
+        {
+            action?.Invoke(percentage, status);
+        }
     }
 }
