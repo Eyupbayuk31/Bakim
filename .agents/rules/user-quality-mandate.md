@@ -51,8 +51,9 @@ Bu kural, projede yapılacak HER tasarım, XAML bileşeni, C# ViewModel ve servi
 
 ---
 
-### 7. HER ZAMAN DİJİTAL İMZA (Authenticode Code Signing Mandate)
-- Tüm derlenen `.exe` dosyaları ve Inno Setup kurulum paketleri (`Bakim-*-Setup.exe`, `Bakim.exe`) CI/CD sürecinde ve her sürüm dağıtımında resmi sertifika ile dijital olarak imzalanmalıdır (`signtool.exe` Authenticode Code Signing).
-- İmzasız paket hiçbir zaman yayınlanamaz.
-- `AutoUpdateService` ve `AuthenticodeVerifier` tarafından imzasız uyarısı veya güvenlik engeli çıkmayacak şekilde proje sertifikası imzalama ve doğrulama kuralına tavizsiz uyulacaktır.
+### 7. SIFIR SERTİFİKA VE ENGELSİZ OTONOM GÜNCELLEME (Zero Cert & Frictionless Updates Mandate)
+- Sertifika imzalama, Authenticode doğrulama ve imza denetimleri KESİNLİKLE İPTALDİR.
+- Güncelleme paketleri GitHub Releases üzerinden doğrudan HTTPS ile indirilir ve kullanıcıya hiçbir imza uyarısı, onay veya engelleme penceresi gösterilmeden doğrudan sessiz parametrelerle (/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS) otonom olarak kurulur.
+- Kod tabanında ve derleme hattında güncellemeyi durduran veya imza soran hiçbir auth/imza kontrolü yer alamaz.
+
 

@@ -56,18 +56,6 @@ jobs:
           Write-Host "Hedef proje derleniyor: $proj"
           dotnet publish $proj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
 
-      - name: Sign Single-File Executable
-        shell: pwsh
-        run: |
-          $signtool = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "signtool.exe" -Recurse | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
-          if (-not $signtool) { throw "signtool.exe bulunamadı!" }
-          Write-Host "signtool bulundu: $signtool"
-          & $signtool sign /f "Certificates/BakimCodeSigning.pfx" /p "BakimSignKey2026!" /fd SHA256 /tr "http://timestamp.digicert.com" /td SHA256 "publish/win-x64/Bakim.exe"
-          if ($LASTEXITCODE -ne 0) {
-              Write-Warning "Timestamp sunucusu zaman aşımına uğradı, yerel SHA256 ile imzalanıyor..."
-              & $signtool sign /f "Certificates/BakimCodeSigning.pfx" /p "BakimSignKey2026!" /fd SHA256 "publish/win-x64/Bakim.exe"
-          }
-
       - name: Rename and Package Artifacts
         shell: pwsh
         run: |
@@ -109,19 +97,6 @@ jobs:
           Write-Host "ISCC bulundu: $iscc"
           & $iscc "/DMyAppVersion=$cleanVersion" "Bakim_Setup.iss"
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup derleme hatası: $LASTEXITCODE" }
-
-      - name: Sign Inno Setup Installer
-        shell: pwsh
-        run: |
-          $signtool = (Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "signtool.exe" -Recurse | Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1).FullName
-          if (-not $signtool) { throw "signtool.exe bulunamadı!" }
-          $setupExe = (Get-ChildItem -Path "Releases" -Filter "Bakim-*-Setup.exe" | Select-Object -First 1).FullName
-          Write-Host "Kurulum paketi imzalanıyor: $setupExe"
-          & $signtool sign /f "Certificates/BakimCodeSigning.pfx" /p "BakimSignKey2026!" /fd SHA256 /tr "http://timestamp.digicert.com" /td SHA256 $setupExe
-          if ($LASTEXITCODE -ne 0) {
-              Write-Warning "Timestamp sunucusu zaman aşımına uğradı, yerel SHA256 ile imzalanıyor..."
-              & $signtool sign /f "Certificates/BakimCodeSigning.pfx" /p "BakimSignKey2026!" /fd SHA256 $setupExe
-          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

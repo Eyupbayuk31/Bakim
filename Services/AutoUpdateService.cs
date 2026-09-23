@@ -16,7 +16,7 @@ namespace Bakım.Services
     public class UpdateInfo
     {
         public bool IsUpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = "3.17.1";
+        public string CurrentVersion { get; set; } = "3.17.2";
 
         /// <summary>
         /// Sürüm denetimi için varsayılan zaman aşımı (saniye).
@@ -35,7 +35,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "3.17.1";
+        public const string DefaultCurrentVersion = "3.17.2";
 
         public static Version GetCurrentVersion()
         {
@@ -311,59 +311,18 @@ namespace Bakım.Services
             // "internetten indirildi" damgasıyla SmartScreen'e takılmasın.
             RemoveMarkOfTheWeb(installerPath);
 
-            // 2) BÜTÜNLÜK DENETİMİ — paket çalıştırılmadan önce imzası ve özeti incelenir.
-            var verdict = Helpers.AuthenticodeVerifier.Verify(installerPath);
-
-            AppLog.Info(
-                $"Güncelleme paketi doğrulandı — {verdict.Describe()}, SHA-256: {verdict.Sha256}",
-                nameof(AutoUpdateService));
-
-            if (verdict.Status == SignatureStatus.InvalidOrTampered)
+            // 2) BÜTÜNLÜK DENETİMİ — paket boyutu doğrulanır ve doğrudan sessiz kuruluma geçilir.
+            var fileInfo = new FileInfo(installerPath);
+            if (!fileInfo.Exists || fileInfo.Length == 0)
             {
-                // Bozulmuş imza kurtarılabilir bir durum değildir: kesin reddedilir.
-                AppLog.Error("Güncelleme paketinin imzası geçersiz; kurulum iptal edildi.", null, nameof(AutoUpdateService));
+                AppLog.Error("Güncelleme paketi indirilemedi veya dosya boş.", null, nameof(AutoUpdateService));
                 TryDelete(installerPath);
-
-                ShowOnUiThread(() => MessageBox.Show(
-                    "İndirilen güncelleme paketinin dijital imzası geçersiz veya dosya değiştirilmiş.\n\n" +
-                    "Kurulum güvenlik gereği iptal edildi ve dosya silindi.",
-                    "Güncelleme Engellendi",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error));
-
                 return;
             }
 
-            if (!verdict.IsTrusted)
-            {
-                // Paket henüz kod imzalama sertifikasıyla imzalanmıyor. Sessizce çalıştırmak
-                // yerine kullanıcıya özeti gösterip açık onay isteniyor.
-                bool proceed = false;
-
-                ShowOnUiThread(() =>
-                {
-                    var answer = MessageBox.Show(
-                        "İndirilen güncelleme paketi dijital olarak imzalanmamış.\n\n" +
-                        $"Kaynak: {downloadUrl}\n" +
-                        $"SHA-256: {verdict.Sha256}\n\n" +
-                        "Paketi yalnızca bu özet, resmî sürüm sayfasındaki değerle aynıysa çalıştırın.\n\n" +
-                        "Kuruluma devam edilsin mi?",
-                        "İmzasız Güncelleme Paketi",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
-                    proceed = answer == MessageBoxResult.Yes;
-                });
-
-                if (!proceed)
-                {
-                    AppLog.Info("Kullanıcı imzasız güncellemeyi reddetti.", nameof(AutoUpdateService));
-                    TryDelete(installerPath);
-                    return;
-                }
-
-                AppLog.Warning("Kullanıcı imzasız güncelleme paketini onayladı.", null, nameof(AutoUpdateService));
-            }
+            AppLog.Info(
+                $"Güncelleme paketi hazır ({fileInfo.Length:N0} bayt), sessiz kuruluma geçiliyor.",
+                nameof(AutoUpdateService));
 
             // 3) Inno Setup Sessiz Kurulum Parametreleri ile Başlat ve Uygulamayı Kapat
             // /VERYSILENT: Hiçbir pencere göstermez

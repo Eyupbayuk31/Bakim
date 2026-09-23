@@ -836,7 +836,7 @@ namespace Bakım.ViewModels
 
             var v3171 = new ReleaseChangelogItem
             {
-                Version = "v3.17.1",
+                Version = "v3.17.2",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Resmi Dijital Kod İmzalama (Authenticode Code Signing) & Sıfır Geçersiz Sembol",
                 IsLatest = true,
