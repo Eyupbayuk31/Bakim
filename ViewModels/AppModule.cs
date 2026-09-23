@@ -25,7 +25,8 @@ namespace Bakım.ViewModels
         Uninstaller,
         Analyzer,
         WindowsTweaker,
-        Settings
+        Settings,
+        Store
     }
 
     /// <summary>XAML'deki metin anahtarlarını modüllere çeviren tek kayıt tablosu.</summary>
@@ -46,6 +47,10 @@ namespace Bakım.ViewModels
                 ["CrashAnalyzer"] = AppModule.CrashAnalyzer,
                 ["Uninstaller"] = AppModule.Uninstaller,
                 ["Analyzer"] = AppModule.Analyzer,
+                ["Store"] = AppModule.Store,
+                ["Magaza"] = AppModule.Store,
+                ["Apps"] = AppModule.Store,
+                ["SoftwareHub"] = AppModule.Store,
                 // Eski anahtarlar alias olarak korunur: kayıtlı durum, komut
                 // paleti kısayolları ve dış bağlantılar kırılmasın.
                 ["Autoruns"] = AppModule.Analyzer,

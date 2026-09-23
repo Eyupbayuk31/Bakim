@@ -218,6 +218,16 @@ namespace Bakım.Services
                 },
                 new()
                 {
+                    Title = "Yazılım & Runtimes Mağazası",
+                    Category = "Sayfa Navigasyonu",
+                    Description = "Format sonrası All-in-One VC++ kütüphaneleri, DirectX ve 45+ popüler yazılımı tek tıkla kurun.",
+                    IconName = "AppsAddIn24",
+                    ActionKind = CommandActionKind.Navigate,
+                    TargetParameter = "Store",
+                    KeyboardShortcut = "Mağaza"
+                },
+                new()
+                {
                     Title = "Analizör — Kalıcılık & Dosya Röntgeni",
                     Category = "Sayfa Navigasyonu",
                     Description = "Sysinternals seviyesinde 8 kalıcılık noktası, WinVerifyTrust ve VirusTotal taraması.",

@@ -834,13 +834,32 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3170 = new ReleaseChangelogItem
+            {
+                Version = "v3.17.0",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Yazılım & All-in-One Runtimes Mağazası (13. Modül & Format Kurtarıcı)",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "13. Bağımsız Modül: Yazılım & Runtimes Mağazası (Store Hub): Format sonrası ihtiyaç duyulan tüm temel kütüphaneler ve popüler yazılımlar tek merkezde toplandı.",
+                    "TechPowerUp Visual C++ All-in-One Entegrasyonu: 2005'ten 2022'ye kadar olan tüm x86/x64 VC++ Redistributable paketlerini TechPowerUp sunucularından doğrudan ve güvenli indiren, otomatik çıkaran ve install_all.bat ile sessiz kuran otonom kurulum motoru.",
+                    "DirectX End-User Runtimes Otomasyonu: Microsoft resmi sunucularından dxwebsetup.exe indirip /Q parametresiyle arka planda sessiz ve eksiksiz kurma yeteneği.",
+                    "45+ Popüler Uygulama Kataloğu: 7 kategori altında (Runtimes, Oyun & İstemciler, Müzik & Medya, Yazılım & Sistem Araçları, Web Tarayıcıları, İletişim, Geliştirici & Kodlama) Steam, Discord, Chrome, Spotify, VS Code vb. en popüler uygulamalar.",
+                    "4 Adet Akıllı Hazır Paket (Quick Presets): 'Format Kurtarıcı', 'Oyuncu Paketi', 'Ofis & Medya Paketi' ve 'Geliştirici Paketi' ile tek tıkla toplu seçim ve toplu kurulum.",
+                    "Akıllı Kurulu Yazılım Tespiti: Windows Kayıt Defteri (Registry 32-bit & 64-bit) üzerinden sistemde halihazırda kurulu olan uygulamaları anında tespit edip 'Yüklü' rozeti verme.",
+                    "Toplu Kurulum Sırası & Canlı Konsol: Sıraya eklenen tüm uygulamaları sırayla indiren ve sessiz kuran, canlı log çıktısı ve ilerleme çubuğu sunan interaktif kurulum paneli."
+                }
+            };
+
             var v3163 = new ReleaseChangelogItem
             {
                 Version = "v3.16.3",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Tüm Modüllerde Küçülen Pencere ve Araç Çubuğu Çakışmalarının Kökten Giderilmesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Global Responsive WrapPanel Mimarisi: Pencere küçültüldüğünde ve yüksek DPI ölçeklemelerinde filtre butonlarının, arama kutularının ve eylem butonlarının üst üste binmesi projedeki tüm modüllerde kökten çözüldü.",
@@ -1218,8 +1237,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3163;
+            LatestRelease = v3170;
 
+            ReleaseHistory.Add(v3170);
             ReleaseHistory.Add(v3163);
             ReleaseHistory.Add(v3162);
             ReleaseHistory.Add(v3161);

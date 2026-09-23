@@ -46,6 +46,7 @@ namespace Bakım.ViewModels
         private readonly Lazy<WindowsTweakerViewModel> _windowsTweaker;
         private readonly Lazy<SettingsViewModel> _settings;
         private readonly Lazy<TweakerCategoriesViewModel> _tweakerCategories;
+        private readonly Lazy<StoreViewModel> _store;
 
         /// <summary>Şu an etkin olan modül; gezinirken devre dışı bırakılır.</summary>
         private IModuleViewModel? _activeModule;
@@ -99,6 +100,7 @@ namespace Bakım.ViewModels
             _windowsTweaker = Lazy(_services.GetRequiredService<WindowsTweakerViewModel>);
             _settings = Lazy(_services.GetRequiredService<SettingsViewModel>);
             _tweakerCategories = Lazy(_services.GetRequiredService<TweakerCategoriesViewModel>);
+            _store = Lazy(_services.GetRequiredService<StoreViewModel>);
 
             navigationService.NavigationRequested += target => Navigate(target);
             navigationService.TweakerCategoryRequested += NavigateToTweakerCategory;
@@ -135,6 +137,7 @@ namespace Bakım.ViewModels
         public WindowsTweakerViewModel WindowsTweaker => _windowsTweaker.Value;
         public SettingsViewModel Settings => _settings.Value;
         public TweakerCategoriesViewModel TweakerCategories => _tweakerCategories.Value;
+        public StoreViewModel Store => _store.Value;
 
         #endregion
 
@@ -518,6 +521,7 @@ namespace Bakım.ViewModels
                 AppModule.Analyzer => Analyzer,
                 AppModule.WindowsTweaker => WindowsTweaker,
                 AppModule.Settings => Settings,
+                AppModule.Store => Store,
                 _ => Dashboard
             };
 

@@ -1,0 +1,493 @@
+<UserControl x:Class="Bakım.Views.Modules.StoreModuleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
+             xmlns:models="clr-namespace:Bakım.Models"
+             xmlns:vm="clr-namespace:Bakım.ViewModels"
+             mc:Ignorable="d" 
+             d:DataContext="{d:DesignInstance Type=vm:StoreViewModel}"
+             d:DesignHeight="950" d:DesignWidth="1200">
+
+    <Grid Margin="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0. Header -->
+            <RowDefinition Height="Auto"/> <!-- 1. Hero Banner: All-in-One Runtimes -->
+            <RowDefinition Height="Auto"/> <!-- 2. KPI Cards -->
+            <RowDefinition Height="Auto"/> <!-- 3. 1-Click Presets & Quick Actions -->
+            <RowDefinition Height="Auto"/> <!-- 4. Category Tabs & Search Bar -->
+            <RowDefinition Height="*"/>    <!-- 5. App Cards Grid -->
+            <RowDefinition Height="Auto"/> <!-- 6. Live Queue & Console Drawer -->
+        </Grid.RowDefinitions>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 0: SECTION HEADER                                                     -->
+        <!-- ========================================================================= -->
+        <c:SectionHeader Grid.Row="0"
+                         IsPageTitle="True"
+                         HeaderMargin="0,0,0,16"
+                         Title="Yazılım &amp; Runtimes Mağazası"
+                         Description="Format sonrası eksik oyun kütüphanelerini (TechPowerUp VC++ AIO, DirectX), temel araçları ve en popüler 45+ yazılımı tek tıkla sessizce kurun.">
+            <c:SectionHeader.Actions>
+                <StackPanel Orientation="Horizontal">
+                    <ui:Button Appearance="Primary"
+                               Command="{Binding InstallSelectedBatchCommand}"
+                               Content="{Binding SelectedAppsText}"
+                               Icon="{ui:SymbolIcon ArrowDownload24}"
+                               Padding="14,8"
+                               Margin="0,0,8,0"
+                               ToolTip="Seçili tüm uygulamaları sırayla arka planda sessizce kur."/>
+
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding ToggleQueueDrawerCommand}"
+                               Content="İlerleme &amp; Konsol"
+                               Icon="{ui:SymbolIcon WindowConsole24}"
+                               Padding="12,8"
+                               Margin="0,0,8,0"
+                               ToolTip="Canlı indirme kuyruğunu ve log akışını aç/kapat."/>
+
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding RefreshInstalledStatusCommand}"
+                               Content="Yenile"
+                               Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               Padding="12,8"
+                               ToolTip="Sistemdeki kurulu programları ve kütüphaneleri yeniden tara."/>
+                </StackPanel>
+            </c:SectionHeader.Actions>
+        </c:SectionHeader>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 1: HERO BANNER: ALL-IN-ONE RUNTIMES                                   -->
+        <!-- ========================================================================= -->
+        <Border Grid.Row="1" 
+                Margin="0,0,0,16" 
+                Padding="20,16" 
+                CornerRadius="12" 
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                BorderThickness="1.5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" 
+                        Background="{DynamicResource Brush.Accent.Subtle}" 
+                        Width="56" Height="56" 
+                        CornerRadius="28" 
+                        Margin="0,0,16,0"
+                        VerticalAlignment="Center">
+                    <ui:SymbolIcon Symbol="Flash24" FontSize="28" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="Format Sonrası Can Kurtaran: All-in-One Runtimes Paketi" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="6" Padding="6,2" Margin="10,0,0,0">
+                            <TextBlock Text="Oyun &amp; Yazılım Garantili" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="TechPowerUp üzerinden Visual C++ (2005-2022 x86/x64) tüm kütüphanelerini, DirectX Web Setup ve .NET Desktop çalışma ortamlarını tek tuşla otomatik indirip sessizce kurar." 
+                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <ui:Button Grid.Column="2" 
+                           Appearance="Primary" 
+                           Command="{Binding InstallAllRuntimesCommand}"
+                           Padding="18,10" 
+                           VerticalAlignment="Center"
+                           Icon="{ui:SymbolIcon TopSpeed24}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Tüm Runtimes'ları Kur" FontWeight="Bold" FontSize="13"/>
+                    </StackPanel>
+                </ui:Button>
+            </Grid>
+        </Border>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 2: 4 ADET KPI METRİK KARTI                                             -->
+        <!-- ========================================================================= -->
+        <Grid Grid.Row="2" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Card 1: Toplam Paket -->
+            <ui:Card Grid.Column="0" Padding="14" Style="{StaticResource InteractiveCard}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Toplam Katalog" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding TotalAppsCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
+                        <TextBlock Text="Hazır paket &amp; kütüphane" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Accent.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Apps24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </ui:Card>
+
+            <!-- Card 2: Kurulu Paketler -->
+            <ui:Card Grid.Column="2" Padding="14" Style="{StaticResource InteractiveCard}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Sistemde Kurulu" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding InstalledAppsCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,2"/>
+                        <TextBlock Text="Kullanıma hazır" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Success.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </ui:Card>
+
+            <!-- Card 3: Kurulabilir / Eksik -->
+            <ui:Card Grid.Column="4" Padding="14" Style="{StaticResource InteractiveCard}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Kurulabilir / Eksik" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding AvailableAppsCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
+                        <TextBlock Text="İndirilmeye hazır" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Accent.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </ui:Card>
+
+            <!-- Card 4: Seçili Paketler -->
+            <ui:Card Grid.Column="6" Padding="14" Style="{StaticResource InteractiveCard}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Seçili Kurulum" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding SelectedAppsCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,2"/>
+                        <TextBlock Text="Kuyruğa eklendi" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="{DynamicResource Brush.Caution.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="CheckboxChecked24" FontSize="20" Foreground="{DynamicResource SystemFillColorCautionBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </Grid>
+            </ui:Card>
+        </Grid>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 3: 1-CLICK PRESETS (AKILLI PAKETLER)                                  -->
+        <!-- ========================================================================= -->
+        <Border Grid.Row="3" Margin="0,0,0,14" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="8" Padding="12,8">
+            <WrapPanel VerticalAlignment="Center">
+                <TextBlock Text="Hızlı Paketler:" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+
+                <ui:Button Appearance="Secondary" Command="{Binding ApplyPresetFormatEssentialsCommand}" Margin="0,0,8,4" Padding="10,5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🚀 Format Kurtarıcı (VC++, DirectX, Chrome, WinRAR, Spotify)" FontSize="11"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <ui:Button Appearance="Secondary" Command="{Binding ApplyPresetGamerCommand}" Margin="0,0,8,4" Padding="10,5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🎮 Oyuncu Paketi (Steam, Epic, Discord, Spotify, VC++ AIO)" FontSize="11"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <ui:Button Appearance="Secondary" Command="{Binding ApplyPresetOfficeCommand}" Margin="0,0,8,4" Padding="10,5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="💼 Ofis &amp; Günlük (Chrome, WhatsApp, Telegram, 7-Zip, PowerToys)" FontSize="11"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <ui:Button Appearance="Secondary" Command="{Binding ApplyPresetDeveloperCommand}" Margin="0,0,8,4" Padding="10,5">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="💻 Geliştirici (VS Code, Git, Python, Node, Terminal)" FontSize="11"/>
+                    </StackPanel>
+                </ui:Button>
+
+                <ui:Button Appearance="Secondary" Command="{Binding ClearSelectionCommand}" Margin="0,0,0,4" Padding="10,5" ToolTip="Tüm seçimleri kaldır">
+                    <TextBlock Text="❌ Temizle" FontSize="11"/>
+                </ui:Button>
+            </WrapPanel>
+        </Border>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 4: KATEGORİ SEKMELERİ (PILLS) & ARAMA ÇUBUĞU                         -->
+        <!-- ========================================================================= -->
+        <Grid Grid.Row="4" Margin="0,0,0,14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Kategori Butonları -->
+            <WrapPanel Grid.Row="0" Margin="0,0,0,10">
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="All" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="🌟 Tümü" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="Runtimes" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="⚡ Runtimes &amp; Sistem" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="Gaming" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="🎮 Oyun" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="Music" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="🎵 Müzik &amp; Medya" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="Software" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="🛠️ Yazılım &amp; Araçlar" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="Browsers" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="🌐 Tarayıcılar" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="Social" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="💬 İletişim &amp; Sosyal" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+                <ui:Button Appearance="Secondary" Command="{Binding SetCategoryCommand}" CommandParameter="Developer" Margin="0,0,6,6" Padding="12,6">
+                    <TextBlock Text="💻 Geliştirici" FontSize="12" FontWeight="SemiBold"/>
+                </ui:Button>
+            </WrapPanel>
+
+            <!-- Arama & Hızlı Filtre Barı -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ui:TextBox Grid.Column="0" 
+                            Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" 
+                            PlaceholderText="Uygulama adı, açıklama veya yayıncı ara..." 
+                            Icon="{ui:SymbolIcon Search24}"
+                            Margin="0,0,12,0"
+                            AutomationProperties.Name="Uygulama Arama"/>
+
+                <CheckBox Grid.Column="1" 
+                          IsChecked="{Binding OnlyUninstalled, Mode=TwoWay}" 
+                          Content="Yalnızca Kurulu Olmayanlar" 
+                          VerticalAlignment="Center" 
+                          Margin="0,0,12,0"
+                          AutomationProperties.Name="Yalnızca Kurulu Olmayanlar"/>
+
+                <ui:Button Grid.Column="2" 
+                           Appearance="Secondary" 
+                           Command="{Binding SelectAllVisibleCommand}" 
+                           Content="Görünenleri Seç" 
+                           Icon="{ui:SymbolIcon CheckboxChecked24}"
+                           Padding="12,6"/>
+            </Grid>
+        </Grid>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 5: UYGULAMA KARTLARI IZGARASI (VIRTUALIZED ITEMSCONTROL)              -->
+        <!-- ========================================================================= -->
+        <ScrollViewer Grid.Row="5" 
+                      VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Disabled"
+                      Focusable="False">
+            <ItemsControl ItemsSource="{Binding DisplayApps}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:StoreAppItem}">
+                        <ui:Card Width="360" Margin="0,0,14,14" Padding="16" Style="{StaticResource InteractiveCard}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- Header: Icon + Title + Category -->
+                                    <RowDefinition Height="Auto"/> <!-- Description -->
+                                    <RowDefinition Height="Auto"/> <!-- Size & Publisher -->
+                                    <RowDefinition Height="Auto"/> <!-- Action Bar + Progress -->
+                                </Grid.RowDefinitions>
+
+                                <!-- Header: Icon, Name, Category -->
+                                <Grid Grid.Row="0" Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- App Icon Box -->
+                                    <Border Grid.Column="0" 
+                                            Background="{DynamicResource Brush.Accent.Subtle}" 
+                                            Width="44" Height="44" 
+                                            CornerRadius="10" 
+                                            Margin="0,0,10,0">
+                                        <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
+                                                       FontSize="22" 
+                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Name + Publisher -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Publisher}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- CheckBox -->
+                                    <CheckBox Grid.Column="2" 
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                              VerticalAlignment="Top" 
+                                              ToolTip="Toplu kurulum için seç"/>
+                                </Grid>
+
+                                <!-- Description -->
+                                <TextBlock Grid.Row="1" 
+                                           Text="{Binding Description}" 
+                                           FontSize="12" 
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                           TextWrapping="Wrap" 
+                                           MaxHeight="36" 
+                                           TextTrimming="CharacterEllipsis" 
+                                           Margin="0,0,0,10"/>
+
+                                <!-- Size & Status Badge -->
+                                <Grid Grid.Row="2" Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0" Background="{DynamicResource CardStrokeColorDefaultBrush}" CornerRadius="4" Padding="6,2">
+                                        <TextBlock Text="{Binding SizeText}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </Border>
+
+                                    <Border Grid.Column="2" 
+                                            Background="{DynamicResource Brush.Success.Subtle}" 
+                                            CornerRadius="4" 
+                                            Padding="6,2"
+                                            Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon Symbol="Checkmark20" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
+                                            <TextBlock Text="Kurulu" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Action Button & In-Card Progress -->
+                                <StackPanel Grid.Row="3">
+                                    <!-- In-Card Progress Bar (Visible when installing/downloading) -->
+                                    <Grid Margin="0,0,0,6" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0" Text="{Binding StatusMessage}" FontSize="10" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,0,2"/>
+                                        <ProgressBar Grid.Row="1" Value="{Binding ProgressPercentage}" Maximum="100" Height="4"/>
+                                    </Grid>
+
+                                    <!-- Action Button -->
+                                    <ui:Button Appearance="Secondary" 
+                                               HorizontalAlignment="Stretch" 
+                                               HorizontalContentAlignment="Center"
+                                               Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               Content="{Binding ActionButtonText}"
+                                               Padding="12,6"/>
+                                </StackPanel>
+                            </Grid>
+                        </ui:Card>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 6: LIVE QUEUE & CONSOLE DRAWER                                        -->
+        <!-- ========================================================================= -->
+        <Border Grid.Row="6" 
+                Margin="0,14,0,0" 
+                Padding="16" 
+                CornerRadius="8" 
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                BorderThickness="1"
+                Visibility="{Binding IsQueueDrawerOpen, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Drawer Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Canlı Kurulum Kuyruğu: " FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="{Binding CurrentAppName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"/>
+                        <TextBlock Text=" (" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding QueueProgressSummary}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text=")" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="1" Text="{Binding CurrentStatusText}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0"/>
+
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <ui:Button Appearance="Secondary" 
+                                   Command="{Binding CancelCurrentOperationCommand}" 
+                                   Content="Durdur" 
+                                   Icon="{ui:SymbolIcon Dismiss24}"
+                                   Margin="0,0,8,0"
+                                   Visibility="{Binding IsInstalling, Converter={StaticResource BoolToVis}}"/>
+
+                        <ui:Button Appearance="Secondary" 
+                                   Command="{Binding ToggleQueueDrawerCommand}" 
+                                   Content="Gizle" 
+                                   Icon="{ui:SymbolIcon ChevronDown24}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Overall Progress Bar -->
+                <ProgressBar Grid.Row="1" Value="{Binding OverallProgress}" Maximum="100" Height="6" Margin="0,0,0,8"/>
+
+                <!-- Console Output Box -->
+                <TextBox Grid.Row="2" 
+                         Text="{Binding ConsoleLogs, Mode=OneWay}" 
+                         IsReadOnly="True" 
+                         Height="90" 
+                         FontFamily="Consolas, Cascadia Code, Courier New" 
+                         FontSize="11" 
+                         Background="#080C14" 
+                         Foreground="#A5B4FC" 
+                         BorderThickness="0" 
+                         VerticalScrollBarVisibility="Auto" 
+                         HorizontalScrollBarVisibility="Disabled"
+                         AutomationProperties.Name="Konsol Günlükleri"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

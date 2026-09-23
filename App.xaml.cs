@@ -243,6 +243,7 @@ namespace Bakım
             services.AddSingleton<ITelemetryService, TelemetryService>();
             services.AddSingleton<ICommandPaletteService, CommandPaletteService>();
             services.AddSingleton<IFileThreatAnalyzerService, FileThreatAnalyzerService>();
+            services.AddSingleton<IStoreService, StoreService>();
             services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
 
             // Otomasyon & Yaşam Döngüsü Servisleri
@@ -267,6 +268,7 @@ namespace Bakım
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();
+            services.AddTransient<StoreViewModel>();
             services.AddTransient<LoginViewModel>();
 
             // Windows

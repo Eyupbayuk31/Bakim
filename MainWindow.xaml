@@ -64,6 +64,9 @@
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <modules:SettingsModuleView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StoreViewModel}">
+            <modules:StoreModuleView/>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -256,7 +259,7 @@
                                VerticalAlignment="Center"
                                Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
                              <StackPanel>
-                                  <TextBlock Text="BAKIM v3.16.2" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                  <TextBlock Text="BAKIM v3.17.0" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                  <TextBlock Text="Sistem Optimize &amp; Güvenlik" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                              </StackPanel>
                          </Grid>
@@ -412,7 +415,23 @@
                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
                             </ui:Button>
 
-                            <!-- 11. Analizör — Kalıcılık & Dosya Röntgeni Modülü -->
+                            <!-- 11. Yazılım & Runtimes Mağazası Button -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Store'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Store"
+                                       Icon="{ui:SymbolIcon AppsAddIn24}"
+                                       ToolTip="Yazılım &amp; Runtimes Mağazası">
+                                <TextBlock Text="Yazılım &amp; Runtimes" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 12. Analizör — Kalıcılık & Dosya Röntgeni Modülü -->
                             <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Analyzer'}"
                                        HorizontalAlignment="Stretch" 
                                        HorizontalContentAlignment="Left"
