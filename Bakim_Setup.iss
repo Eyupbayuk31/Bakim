@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Bakım"
-#define MyAppVersion "3.17.8"
+#define MyAppVersion "3.17.9"
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"
 #define MyAppExeName "Bakim.exe"
@@ -51,6 +51,7 @@ Name: "startmenu"; Description: "Başlat Menüsü simgesi oluştur"; GroupDescri
 ; Yönetici Hakları & Başlangıç Otomasyonu (İstenen Özellikler)
 Name: "alwaysadmin"; Description: "Her zaman Yönetici Olarak Çalıştır (RUNASADMIN Uyumluluk Katmanı)"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
 Name: "autostart"; Description: "Bilgisayar açıldığında otomatik başlat (En Yüksek Yönetici Yetkisiyle - UAC Uyarısız)"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
+Name: "uninstallcontextmenu"; Description: "Masaüstü ve Dosya Sağ Tık Menüsüne 'Bakım ile Kaldır' Ekle"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
 
 [Files]
 Source: "Releases\Bakim.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -66,6 +67,19 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilen
 Root: HKLM; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#MyAppExeName}"; ValueData: "~ RUNASADMIN"; Flags: uninsdeletevalue; Tasks: alwaysadmin
 Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#MyAppExeName}"; ValueData: "~ RUNASADMIN"; Flags: uninsdeletevalue; Tasks: alwaysadmin
 
+; Sağ Tık Menüsü Entegrasyonu ("Bakım ile Kaldır")
+Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+
+Root: HKCR; Subkey: "exefile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "exefile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "exefile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+
+Root: HKCR; Subkey: "Directory\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "Directory\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "Directory\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+
 [Run]
 ; Bilgisayar açılışında UAC istemi olmadan en yüksek yönetici yetkisiyle başlatma (Task Scheduler)
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-autostart"; Flags: runhidden; Tasks: autostart
@@ -74,7 +88,8 @@ Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-autostart"; Flags: ru
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall shellexec
 
 [UninstallRun]
-; Kaldırma esnasında Görev Zamanlayıcı kaydını temizle
+; Kaldırma esnasında Görev Zamanlayıcı ve Sağ Tık kaydını temizle
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--unregister-contextmenu"; Flags: runhidden; RunOnceId: "UnregisterBakimContextMenu"
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--unregister-autostart"; Flags: runhidden; RunOnceId: "DeleteBakimAutoStartTask"
 Filename: "schtasks.exe"; Parameters: "/delete /tn ""Bakım_Admin_AutoStart"" /f"; Flags: runhidden; RunOnceId: "DeleteBakimAutoStartTaskFallback"
 

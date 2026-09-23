@@ -73,7 +73,8 @@ public class DependencyInjectionTests
         var skipDialogFactories = new HashSet<string>
         {
             "ResidualCleanupViewModel",
-            "ThreatAnalysisViewModel"
+            "ThreatAnalysisViewModel",
+            "DeepUninstallWizardViewModel"
         };
 
         var viewModels = typeof(MainViewModel).Assembly.GetTypes()

@@ -23,6 +23,7 @@ namespace Bakım.ViewModels
         private readonly IInstallerMonitorService _monitorService;
         private readonly IHunterService _hunterService;
         private readonly IAppSettingsService _settingsService;
+        private readonly IShellContextMenuService _shellContextMenuService;
 
         // v3.1: Null geçen eski zincirleme yapıcılar kaldırıldı. Bunlar hem DI
         // konteynerinin yanlış yapıcıyı seçmesine yol açıyor hem de servislerin
@@ -32,13 +33,17 @@ namespace Bakım.ViewModels
             IResidualScannerEngine residualScanner,
             IInstallerMonitorService monitorService,
             IHunterService hunterService,
-            IAppSettingsService settingsService)
+            IAppSettingsService settingsService,
+            IShellContextMenuService shellContextMenuService)
         {
             _settingsService = settingsService;
             _residualScanner = residualScanner;
             _deepUninstaller = deepUninstaller;
             _monitorService = monitorService;
             _hunterService = hunterService;
+            _shellContextMenuService = shellContextMenuService;
+
+            _isContextMenuEnabled = _shellContextMenuService.IsContextMenuRegistered();
 
             Apps = new ObservableCollection<InstalledAppItem>();
             Leftovers = new ObservableCollection<LeftoverItem>();
@@ -47,6 +52,18 @@ namespace Bakım.ViewModels
             _filteredApps.Filter = FilterAppItem;
 
             _ = RefreshAppsAsync();
+        }
+
+        [ObservableProperty]
+        private bool _isContextMenuEnabled;
+
+        [RelayCommand]
+        public void ToggleContextMenu()
+        {
+            IsContextMenuEnabled = _shellContextMenuService.ToggleContextMenu();
+            StatusMessage = IsContextMenuEnabled
+                ? "Sağ tık menüsüne 'Bakım ile Kaldır' seçeneği başarıyla eklendi."
+                : "Sağ tık menüsünden 'Bakım ile Kaldır' seçeneği kaldırıldı.";
         }
 
         private readonly ICollectionView _filteredApps;
@@ -287,83 +304,24 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            string autoCleanNotice = IsAutoCleanEnabled
-                ? "Kaldırma sonrası güvenli kalıntılar (%100 eşleşmeler) otomatik olarak temizlenecektir."
-                : "Kaldırma sonrası bulunan tüm kalıntılar onayınız için listelenecektir.";
-
-            var confirm = MessageBox.Show(
-                $"{app.DisplayName} uygulamasını kaldırmak istiyor musunuz?\n\n{autoCleanNotice}",
-                "Program Kaldır",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (confirm != MessageBoxResult.Yes) return;
-
-            // Restore Point Confirmation & Settings Evaluation
-            var settings = _settingsService.Current;
-            bool createRestorePoint = false;
-
-            if (settings.PromptRestorePointBeforeUninstall)
-            {
-                var restoreChoice = MessageBox.Show(
-                    $"{app.DisplayName} uygulaması kaldırılmak üzere.\n\n" +
-                    "Sistem kararlılığını korumak için kaldırma işlemine başlamadan önce bir Windows Geri Yükleme Noktası oluşturulsun mu?\n\n" +
-                    "• [Evet] -> Geri Yükleme Noktası Oluştur ve Kaldır (~15 sn)\n" +
-                    "• [Hayır] -> Nokta Oluşturmadan Doğrudan Kaldır (Hızlı)\n" +
-                    "• [İptal] -> Kaldırma İşlemini İptal Et",
-                    "Kaldırma Güvenliği - Geri Yükleme Noktası",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Question);
-
-                if (restoreChoice == MessageBoxResult.Cancel) return;
-                createRestorePoint = (restoreChoice == MessageBoxResult.Yes);
-            }
-            else
-            {
-                createRestorePoint = settings.CreateRestorePointOnUninstall;
-            }
-
             SelectedApp = app;
-            app.IsBusy = true;
-            IsBusy = true;
 
             try
             {
-                // 1. Restore Point (if requested or enabled)
-                if (createRestorePoint)
+                bool wasCleaned = false;
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    StatusMessage = $"{app.DisplayName} için Windows Geri Yükleme Noktası oluşturuluyor...";
-                    await _deepUninstaller.CreateRestorePointAsync(app.DisplayName);
-                }
-
-                // 2. Launch Uninstaller
-                StatusMessage = $"{app.DisplayName} kaldırıcısı çalıştırılıyor...";
-                bool launched = await _deepUninstaller.LaunchUninstallAsync(app, silent: false);
-
-                if (!launched)
-                {
-                    var askForce = MessageBox.Show(
-                        $"{app.DisplayName} standart kaldırıcısı çalıştırılamadı veya eksik. Zorla Kaldır (Force Uninstall) motoru ile temizlensin mi?",
-                        "Kaldırıcı Hatası",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
-                    if (askForce == MessageBoxResult.Yes)
+                    var wizardVm = new DeepUninstallWizardViewModel(app, _deepUninstaller, _residualScanner);
+                    var wizardWindow = new Bakım.Views.Windows.DeepUninstallWizardWindow(wizardVm);
+                    if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
                     {
-                        await ForceUninstallAsync(app);
+                        wizardWindow.Owner = Application.Current.MainWindow;
                     }
-                    return;
-                }
+                    wasCleaned = wizardWindow.ShowDialog() == true;
+                });
 
-                // 3. Post-Uninstall Process Exit -> Auto or Interactive Residual Engine (V42.0)
-                StatusMessage = $"{app.DisplayName} kaldırıldı. Kalıntı taraması yürütülüyor...";
-
-                if (IsAutoCleanEnabled)
+                if (wasCleaned)
                 {
-                    long cleanedBytes = await _deepUninstaller.ExecuteAutoCleanResidualsAsync(app);
-                    string cleanedFormatted = FormatBytes(cleanedBytes);
-                    LastAutoCleanReport = $"{app.DisplayName} kaldırıldı ve {cleanedFormatted} kalıntı otomatik temizlendi.";
-
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         Apps.Remove(app);
@@ -371,27 +329,15 @@ namespace Bakım.ViewModels
 
                     UpdateStats();
                     UpdateSelectedAppsCount();
-
-                    MessageBox.Show(
-                        $"{app.DisplayName} başarıyla kaldırıldı!\n\nOtomatik Temizlenen Kalıntı: {cleanedFormatted}",
-                        "Kaldırma & Kalıntı Temizliği Başarılı",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    await ShowResidualCleanupDialogAsync(app);
+                    StatusMessage = $"{app.DisplayName} başarıyla kaldırıldı ve kalıntıları temizlendi.";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Kaldırma sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Kaldırma sihirbazı sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            finally
-            {
-                app.IsBusy = false;
-                IsBusy = false;
-            }
+
+            await Task.CompletedTask;
         }
 
         #endregion

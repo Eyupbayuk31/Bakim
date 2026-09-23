@@ -71,6 +71,20 @@ namespace Bakım
                     Shutdown(ok ? 0 : 1);
                     return;
                 }
+                if (firstArg == "--register-contextmenu")
+                {
+                    var cms = new ShellContextMenuService();
+                    bool ok = cms.RegisterContextMenu();
+                    Shutdown(ok ? 0 : 1);
+                    return;
+                }
+                if (firstArg == "--unregister-contextmenu")
+                {
+                    var cms = new ShellContextMenuService();
+                    bool ok = cms.UnregisterContextMenu();
+                    Shutdown(ok ? 0 : 1);
+                    return;
+                }
             }
 
             // 0. Günlükleme: her şeyden önce ayağa kalkmalı ki başlangıç hataları da kaydedilsin.
@@ -127,7 +141,28 @@ namespace Bakım
             // 6. Arka plan bakım motoru (otomatik RAM temizliği, yüksek RAM uyarısı)
             GetService<IBackgroundMaintenanceService>().Start();
 
-            // 7. İlk pencere konteynerden çözülür.
+            // 7. Hedef Kaldırma Parametresi Denetimi (--uninstall-target "<path>")
+            string? uninstallTarget = null;
+            if (e.Args != null)
+            {
+                for (int i = 0; i < e.Args.Length; i++)
+                {
+                    if (e.Args[i].Equals("--uninstall-target", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length)
+                    {
+                        uninstallTarget = e.Args[i + 1];
+                        break;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(uninstallTarget))
+            {
+                _logService.Info($"Hedef kaldırma parametresi saptandı: {uninstallTarget}", "Startup");
+                LaunchUninstallTargetMode(uninstallTarget);
+                return;
+            }
+
+            // 8. İlk pencere konteynerden çözülür.
             //    StartupUri kullanılmıyor: o yol pencereyi WPF'in kendisi üretir ve
             //    DI'ı tamamen atlar; ViewModel'ler de XAML'den örneklenmek zorunda kalırdı.
             var mainWindow = GetService<MainWindow>();
@@ -160,6 +195,42 @@ namespace Bakım
             }
 
             _logService.Info("Başlangıç tamamlandı.", "Startup");
+        }
+
+        private async void LaunchUninstallTargetMode(string path)
+        {
+            try
+            {
+                var resolver = GetService<IShellUninstallResolverService>();
+                var targetApp = await resolver.ResolveTargetAppAsync(path);
+
+                if (targetApp == null)
+                {
+                    MessageBox.Show(
+                        $"Kaldırılacak hedef program veya kısayol çözümlenemedi:\n\n{path}",
+                        "Kaldırıcı Hatası",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    Shutdown(1);
+                    return;
+                }
+
+                var deepUninstaller = GetService<IDeepUninstallerService>();
+                var residualScanner = GetService<IResidualScannerEngine>();
+
+                var wizardVm = new ViewModels.DeepUninstallWizardViewModel(targetApp, deepUninstaller, residualScanner);
+                var wizardWindow = new Views.Windows.DeepUninstallWizardWindow(wizardVm);
+
+                MainWindow = wizardWindow;
+                wizardWindow.Closed += (s, ev) => Shutdown(0);
+                wizardWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Hedef kaldırma sihirbazı başlatılırken hata oluştu.", ex, "Startup");
+                MessageBox.Show($"Kaldırma sihirbazı başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown(1);
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -224,6 +295,8 @@ namespace Bakım
             services.AddSingleton<IBootLogonTweaksService, BootLogonTweaksService>();
             services.AddSingleton<IDesktopTaskbarTweaksService, DesktopTaskbarTweaksService>();
             services.AddSingleton<IContextMenuShortcutsService, ContextMenuShortcutsService>();
+            services.AddSingleton<IShellContextMenuService, ShellContextMenuService>();
+            services.AddSingleton<IShellUninstallResolverService, ShellUninstallResolverService>();
             services.AddSingleton<ISystemToolsService, SystemToolsService>();
             services.AddSingleton<IClassicAppsService, ClassicAppsService>();
             services.AddSingleton<IWindows11TweaksService, Windows11TweaksService>();

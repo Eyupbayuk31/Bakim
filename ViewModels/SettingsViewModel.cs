@@ -834,13 +834,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3179 = new ReleaseChangelogItem
+            {
+                Version = "v3.17.9",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Sağ Tık Menüsü Entegrasyonu & Aşırı Gelişmiş Kaldırma ve Kalıntı Sihirbazı",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Windows Sağ Tık Menüsü 'Bakım ile Kaldır' Entegrasyonu: Masaüstü kısayollarına (.lnk), .exe dosyalarına ve program klasörlerine sağ tıklandığında tek tıkla derin kaldırma imkanı.",
+                    "Akıllı Kısayol & Hedef Çözücü Motoru (ShellUninstallResolverService): .lnk kısayollarını orijinal .exe hedefine çözümleyip Kayıt Defterindeki 32/64-bit resmi uninstaller kaydıyla otomatik eşleştiren akıllı motor.",
+                    "Aşırı Gelişmiş Kaldırma & Kalıntı Sihirbazı (DeepUninstallWizardWindow): 5 aşamalı (Hazırlık, Kaldırma, Derin Tarama, Kalıntı Seçimi, Rapor) modern Fluent 2 Slate Dark sihirbaz penceresi.",
+                    "İnteraktif Kalıntı Yönetim Ekranı ('Şunu Silme' Seçimi): 'Kaldırma Başarılı' ekranında bulunan tüm kalıntılar (Kayıt Defteri, Klasör, Dosya, Kısayol) aranabilir ve filtrelenebilir olarak listelenir; kullanıcı dilediği kalıntının işaretini kaldırarak korunmasını sağlayabilir.",
+                    "Savunmacı Kayıt Defteri Yedeği (.reg): Kalıntılar silinmeden önce kullanıcı tercihine bağlı olarak otomatik .reg yedeği alınarak tam güvenlik sağlanır.",
+                    "Tek Tıkla Sağ Tık Menüsü Yönetimi: Program Kaldırıcı modülünden ve Inno Setup kurulumundan tek tıkla sağ tık menüsünü açma/kapatma desteği."
+                }
+            };
+
             var v3178 = new ReleaseChangelogItem
             {
                 Version = "v3.17.8",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Araçlar Ekosistemi Genişletmesi: 24+ Klasik Sistem Konsolu & 13 Yeni Güçlü Yazılım",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "WPF-UI Hata Çözümü (ControlAppearance.Transparent): Mağaza kartlarındaki geçersiz 'Subtle' değeri 'Transparent' olarak düzeltildi ve tüm XAML testlerinden sıfır hatayla geçti.",
@@ -1319,8 +1337,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3178;
+            LatestRelease = v3179;
 
+            ReleaseHistory.Add(v3179);
             ReleaseHistory.Add(v3178);
             ReleaseHistory.Add(v3177);
             ReleaseHistory.Add(v3176);

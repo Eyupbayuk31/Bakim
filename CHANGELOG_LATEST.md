@@ -1,40 +1,40 @@
-# Bakım v3.17.8 - Sürüm Notları
+# Bakım v3.17.9 - Sürüm Notları
 
-## Araçlar Ekosistemi Genişletmesi: 24+ Klasik Sistem Konsolu & 13 Yeni Güçlü Yazılım ⚡🛠️
+## Windows Sağ Tık Menüsü "Bakım ile Kaldır" Entegrasyonu & Aşırı Gelişmiş Kalıntı Yönetim Sihirbazı 🚀🧹
 
-### 1. WPF-UI Hata Çözümü (ControlAppearance.Transparent)
-- **Kritik XAML Düzeltmesi:** Mağaza kartlarındaki geçersiz `Appearance="Subtle"` değeri WPF-UI standartlarına uygun `Appearance="Transparent"` olarak düzeltildi.
-- **Sıfır Çökme Güvencesi:** XAML ayrıştırıcı hatası giderilerek `Bakim.Tests.SymbolValidator.All_Xaml_ControlAppearance_Values_Must_Be_Valid` birim testi ile %100 doğrulandı.
+### 1. Windows Sağ Tık Menüsü Entegrasyonu ("Bakım ile Kaldır")
+- **Doğrudan Masaüstünden Kaldırma:** Masaüstündeki kısayollara (`.lnk`), `.exe` dosyalarına ve uygulama klasörlerine (`Directory`) sağ tıklandığında beliren resmi Bakım ikonlu **"Bakım ile Kaldır"** menü girdisi eklendi.
+- **Tek Tıkla Yönetim:** Program Kaldırıcı (Uninstaller) modülünün üst araç çubuğuna eklenen **"Sağ Tık Menüsü"** butonu veya Inno Setup kurulum sihirbazı üzerinden tek tıkla aktif/pasif edebilme desteği sağlandı (`--register-contextmenu` & `--unregister-contextmenu`).
 
-### 2. 24 Adet Güçlü Windows Yönetim Konsolu (Sistem Araçları)
-Windows Tweaker modülü altındaki Klasik Sistem Araçları vitrini 8 araçtan 24 tam teşekküllü yönetim konsoluna çıkarıldı ve kategorize edildi:
-- **Sistem:** Aygıt Yöneticisi (`devmgmt.msc`), Bilgisayar Yönetimi (`compmgmt.msc`), Windows Hizmetleri (`services.msc`), Kayıt Defteri Düzenleyicisi (`regedit.exe`), Yerel Grup İlkesi (`gpedit.msc`), Olay Görüntüleyici (`eventvwr.msc`), Sistem Özellikleri (`sysdm.cpl`), Sistem Yapılandırması (`msconfig`).
-- **Donanım & Disk:** Disk Yönetimi (`diskmgmt.msc`), Disk Temizleme (`cleanmgr.exe`), DirectX Teşhis Aracı (`dxdiag.exe`), Kaynak İzleyicisi (`resmon.exe`).
-- **Ağ & Güvenlik:** Ağ Bağlantıları / Adaptörler (`ncpa.cpl`), Sertifika Yöneticisi (`certmgr.msc`), Yerel Kullanıcılar ve Gruplar (`lusrmgr.msc`), Yerel Güvenlik İlkesi (`secpol.msc`).
-- **Hızlı Erişim & Yardımcılar:** Windows God Mode (`explorer.exe shell:::{...}`), Klasik Denetim Masası (`control.exe`), Windows Terminal (`wt.exe` / fallback `powershell`), Karakter Eşlem (`charmap.exe`), Hesap Makinesi, Not Defteri, WordPad, Klasik Windows Fotoğraf Görüntüleyici.
-- **Gelişmiş Kart Tasarımı:** Her araç için kategori rozeti (`Sistem`, `Donanım & Disk`, `Ağ & Güvenlik`, `Hızlı Erişim`), Fluent ikon squircle'ı ve modern etkileşimli kart stili eklendi.
+### 2. Akıllı Kısayol & Hedef Çözücü Motoru (ShellUninstallResolverService)
+- **Kısayol Hedefini Çözümleme:** Kullanıcı bir `.lnk` kısayoluna tıkladığında Windows WScript COM katmanı ile asıl hedef `.exe` ve çalışma dizini saniyeler içinde çözülür.
+- **Kayıt Defteri Eşleme:** Çözümlenen yol üzerinden HKLM/HKCU 32/64-bit Windows Uninstall veritabanı taranarak resmi kaldırma dizesi (`UninstallString`), sürüm, yayıncı ve ikon bilgileri otomatik eşleştirilir.
+- **Heuristik Kurtarma:** Kayıt defterinde kaydı bulunmayan veya taşınabilir (portable) uygulamalar için `FileVersionInfo` analizinden anında akıllı kaldırma profili oluşturulur.
 
-### 3. 13 Yeni Popüler Donanım, Medya & Verimlilik Aracı (Mağaza Vitrini)
-Bakım'ın yerleşik Sistem Temizliği, Uygulama Kaldırıcısı ve Ağ Trafiği İzleyicisi ile çakışmayacak, piyasada kendini kanıtlamış dünya standardı araçlar Mağaza Hub'ına eklendi:
-- **Donanım & Benchmark:**
-  - 📊 **HWiNFO64** (`REALiX.HWiNFO`): Kapsamlı donanım analizi, canlı sensör telemetrisi ve sıcaklık izleme.
-  - 💽 **CrystalDiskInfo** (`CrystalDewWorld.CrystalDiskInfo`): Disk SMART sağlık, yıpranma ve sıcaklık durumu takibi.
-  - ⚡ **CrystalDiskMark** (`CrystalDewWorld.CrystalDiskMark`): SSD/NVMe/HDD okuma-yazma hız testleri.
-  - 🔥 **Geeks3D FurMark 2** (`Geeks3D.FurMark.2`): Ekran kartı OpenGL/Vulkan stres testi ve kıyaslama.
-  - 🎮 **MSI Afterburner** (`Guru3D.Afterburner`): GPU hız aşırtma (overclock), fan eğrisi yönetimi ve RTSS FPS OSD.
-- **Format & USB Medya:**
-  - 💾 **Ventoy** (`Ventoy.Ventoy`): Tek bir USB belleğe birden fazla ISO kopyalayarak multiboot başlatma aracı.
-  - 📀 **balenaEtcher** (`Balena.Etcher`): Hızlı, güvenli ve doğrulamalı USB / SD kart kalıp yazdırma aracı.
-- **Masaüstü, Ses & Video Verimliliği:**
-  - 👁️ **QuickLook** (`QL-Win.QuickLook`): macOS tarzı Space tuşuyla dosya, görsel ve arşiv önizleme.
-  - ⌨️ **AutoHotkey** (`AutoHotkey.AutoHotkey`): Güçlü klavye/fare kısayolları ve masaüstü otomasyon betiği motoru.
-  - 🎧 **EarTrumpet** (`File-New-Project.EarTrumpet`): Windows için gelişmiş per-app ses mikseri ve ses seviyesi kontrolü.
-  - 🎬 **ScreenToGif** (`NickeManarin.ScreenToGif`): Ekran kaydı alıp GIF/video olarak düzenleme ve dışa aktarma aracı.
-  - ✂️ **LosslessCut** (`ch.LosslessCut`): Yeniden kodlama yapmadan (kayıpsız) anında video kesme ve birleştirme aracı.
-- **Sürücü Kurtarma:**
-  - 🧹 **Display Driver Uninstaller (DDU)** (`Wagnardsoft.DisplayDriverUninstaller`): GPU sürücülerini kalıntısız temizleyip temiz kurulum yapma aracı.
+### 3. Aşırı Gelişmiş Kaldırma ve Kalıntı Sihirbazı (DeepUninstallWizardWindow)
+Windows 11 Fluent 2 Slate Dark tasarım dilinde 880x680 boyutlarında, 5 aşamalı akıllı durum makinesi ile yönetilen yeni pencere:
+- **Aşama 1: Program Analiz & Hazırlık:**
+  - Yüksek çözünürlüklü program simgesi, adı, yayıncısı, versiyonu, kurulum konumu ve disk boyutu kartı.
+  - Güvenlik seçenekleri: "Windows Geri Yükleme Noktası Oluştur", "İlişkili Çalışan Süreçleri Otomatik Kapat" ve "Kayıt Defteri Yedeği (.reg) Al".
+- **Aşama 2: Resmi Kaldırıcı Yürütme & Canlı İzleme:**
+  - Programın kendi uninstaller penceresi başlatılır ve arka planda kapanana kadar canlı süreç takibi yapılır.
+- **Aşama 3: Derin Kalıntı Taraması:**
+  - Kaldırıcı kapandığı anda otomatik olarak HKLM/HKCU Registry, AppData, LocalAppData, ProgramData, Program Files, Temp ve Masaüstü/Başlat Menüsü kısayollarında derin kalıntı taraması yürütülür.
+- **Aşama 4: "Kaldırma Başarılı!" & İnteraktif Kalıntı Yönetim Paneli:**
+  - Büyük yeşil başarı rozeti: `✔ [Program Adı] Başarıyla Kaldırıldı!`
+  - Canlı Arama Kutusu: Kalıntı adı veya yoluna göre anında filtreleme.
+  - Kategori Filtre Sekmeleri: `Tümü`, `Kayıt Defteri`, `Klasörler`, `Dosyalar`.
+  - **"Şunu Silme" Seçimi:** Listelenen her kalıntının yanında onay kutusu (CheckBox) yer alır; kullanıcı dilediği kalıntının işaretini kaldırarak silinmesini engelleyebilir.
+  - Güvenlik Rozetleri: `%100 Güvenli`, `İnceleyin` etiketleri.
+  - Sağ Tık Menüsü: Dosya Gezgininde / Regedit'te Göster ve Yolu Kopyala.
+  - Alt Bar: Toplam seçilen kalıntı sayısı ve temizlenecek disk alanı özeti.
+- **Aşama 5: Temizlik Tamamlandı Raporu:**
+  - Silinen kalıntı adedi, kurtarılan alan ve alınan `.reg` yedeğine tek tıkla erişim butonu.
 
-### 4. Kusursuz Savunmacı Mimari & Pre-flight Doğrulama
-- **9.235 Sembol & Token %100 Geçerli:** `verify-symbols.py` ve `verify-tokens.py` ile sıfır hata doğrulandı.
-- **143 Birim Testi:** `dotnet test` ile tüm testler başarıyla geçti.
-- **Yerel .NET 10 SDK Derlemesi:** Release modunda 0 hata ve 0 uyarı ile derleme tamamlandı.
+### 4. Savunmacı Kayıt Defteri Yedeği (.reg)
+- Kalıntı temizleme öncesinde `AppData\Local\Bakim\Backups` klasörüne `Windows Registry Editor Version 5.00` formatında tam uyumlu silme yedeği alınır.
+
+### 5. Pre-flight & Test Doğrulaması
+- **147/147 Birim Testi:** `ShellUninstallResolverTests` dahil tüm testler başarıyla geçti.
+- **9.235 Sembol & Token %100 Geçerli:** Sıfır geçersiz sembol ve token.
+- **Yerel .NET 10 SDK Release Derlemesi:** 0 Hata ve 0 Uyarı ile başarıyla tamamlandı.
