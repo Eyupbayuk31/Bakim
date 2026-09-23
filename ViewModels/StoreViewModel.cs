@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
 using Bakım.Services;
+using Wpf.Ui.Controls;
 
 namespace Bakım.ViewModels
 {
@@ -21,6 +22,29 @@ namespace Bakım.ViewModels
         private CancellationTokenSource? _currentCts;
 
         public ObservableCollection<StoreAppItem> DisplayApps { get; } = new();
+        public ObservableCollection<StorePresetItem> Presets { get; } = new();
+
+        #region Store Tab Navigation
+
+        [ObservableProperty]
+        private int _selectedStoreTabIndex = 0; // 0 = Uygulama Kataloğu, 1 = Hazır Paketler & Format Kurtarıcı
+
+        public bool IsCatalogTab => SelectedStoreTabIndex == 0;
+        public bool IsPresetsTab => SelectedStoreTabIndex == 1;
+
+        partial void OnSelectedStoreTabIndexChanged(int value)
+        {
+            OnPropertyChanged(nameof(IsCatalogTab));
+            OnPropertyChanged(nameof(IsPresetsTab));
+        }
+
+        [RelayCommand]
+        public void SwitchToCatalog() => SelectedStoreTabIndex = 0;
+
+        [RelayCommand]
+        public void SwitchToPresets() => SelectedStoreTabIndex = 1;
+
+        #endregion
 
         #region KPI Metrics
 
@@ -98,6 +122,8 @@ namespace Bakım.ViewModels
 
             ApplyFilters();
             UpdateKpiMetrics();
+            InitializePresets();
+            UpdatePresetMetrics();
         }
 
         public async Task OnActivatedAsync()
@@ -115,6 +141,7 @@ namespace Bakım.ViewModels
         {
             await _storeService.CheckInstalledStatusesAsync(_masterCatalog);
             UpdateKpiMetrics();
+            UpdatePresetMetrics();
             ApplyFilters();
         }
 
@@ -181,58 +208,137 @@ namespace Bakım.ViewModels
 
         #endregion
 
-        #region 1-Click Presets
+        #region 1-Click Presets & Curated Bundles
+
+        private void InitializePresets()
+        {
+            if (Presets.Count > 0) return;
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "format_essentials",
+                Title = "Format Sonrası Temel Paket",
+                Subtitle = "VC++ AIO, DirectX, Chrome, WinRAR, 7-Zip, Spotify, VLC, Discord",
+                Badge = "Format Kurtarıcı",
+                Description = "Temiz kurulum sonrası oyunların ve programların açılması için zorunlu C++ ve DirectX kütüphaneleri, en popüler web tarayıcı, arşiv yöneticileri ve medya araçları.",
+                IconSymbol = SymbolRegular.Flash24,
+                IncludedApps = new List<string> { "VC++ 2005-2022 AIO", "DirectX Web Setup", "Google Chrome", "WinRAR", "7-Zip", "Spotify", "VLC Player", "Discord" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "tpu_vcredist_aio", "directx_web_setup", "chrome", "winrar", "seven_zip", "spotify", "vlc_player", "discord_gaming"
+                }
+            });
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "gamer_pack",
+                Title = "Oyuncu & Gaming Platformları",
+                Subtitle = "Steam, Epic Games, Discord, Spotify, VC++ AIO, DirectX, WinRAR",
+                Badge = "Oyun & İstemciler",
+                Description = "Oyunların eksik DLL (d3dx9, msvcp) hatalarını giderir; Steam, Epic Games, Discord sesli iletişim ve müzik servislerini tek tıkla hazır hale getirir.",
+                IconSymbol = SymbolRegular.Games24,
+                IncludedApps = new List<string> { "Steam", "Epic Games", "Discord", "Spotify", "VC++ AIO", "DirectX Web", "WinRAR" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "tpu_vcredist_aio", "directx_web_setup", "steam", "epic_games", "discord_gaming", "spotify", "winrar"
+                }
+            });
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "office_daily",
+                Title = "Ofis, Üretkenlik & İletişim",
+                Subtitle = "Chrome, WhatsApp, Telegram, 7-Zip, Notepad++, PowerToys, VLC",
+                Badge = "İş & Günlük",
+                Description = "Ofis çalışanları, öğrenciler ve ev kullanıcıları için modern web tarayıcı, masaüstü mesajlaşma, gelişmiş metin editörü ve sistem verimlilik araçları.",
+                IconSymbol = SymbolRegular.Briefcase24,
+                IncludedApps = new List<string> { "Google Chrome", "WhatsApp", "Telegram", "7-Zip", "Notepad++", "Microsoft PowerToys", "VLC Player" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "chrome", "whatsapp", "telegram", "seven_zip", "notepad_plus_plus", "powertoys", "vlc_player"
+                }
+            });
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "developer_pack",
+                Title = "Yazılımcı & Geliştirici Ortamı",
+                Subtitle = "VS Code, Git, Python 3, Node.js LTS, Terminal, PowerToys, 7-Zip",
+                Badge = "Kodlama & DevOps",
+                Description = "Yazılım geliştiriciler için dünyanın en popüler kod editörü VS Code, Git sürüm kontrolü, Python, Node.js LTS ve modern Windows Terminal.",
+                IconSymbol = SymbolRegular.Code24,
+                IncludedApps = new List<string> { "VS Code", "Git for Windows", "Python 3", "Node.js LTS", "Windows Terminal", "PowerToys", "7-Zip" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "vscode", "git_for_windows", "python_3", "nodejs_lts", "windows_terminal", "powertoys", "seven_zip"
+                }
+            });
+        }
+
+        private void UpdatePresetMetrics()
+        {
+            foreach (var preset in Presets)
+            {
+                preset.TotalCount = preset.TargetIds.Count;
+                preset.InstalledCount = _masterCatalog.Count(a => preset.TargetIds.Contains(a.Id) && a.IsInstalled);
+                preset.IsSelected = preset.TargetIds.All(id =>
+                {
+                    var app = _masterCatalog.FirstOrDefault(a => a.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+                    return app != null && (app.IsSelected || app.IsInstalled);
+                });
+            }
+        }
+
+        [RelayCommand]
+        public void ApplyPreset(StorePresetItem preset)
+        {
+            if (preset == null) return;
+            SelectSpecificIds(preset.TargetIds);
+            UpdatePresetMetrics();
+            AppendLog($"📦 [Paket Seçildi] {preset.Title} — {preset.TargetIds.Count} uygulama kuyruğa işaretlendi.");
+        }
+
+        [RelayCommand]
+        public void ApplyPresetAndSwitchToCatalog(StorePresetItem preset)
+        {
+            ApplyPreset(preset);
+            SelectedStoreTabIndex = 0; // Kataloğa geç
+        }
+
+        [RelayCommand]
+        public async Task InstallPresetImmediatelyAsync(StorePresetItem preset)
+        {
+            if (preset == null) return;
+            ApplyPreset(preset);
+            await InstallSelectedBatchAsync();
+        }
 
         [RelayCommand]
         public void ApplyPresetFormatEssentials()
         {
-            // Format Kurtarıcı: VC++ AIO, DirectX, Chrome, WinRAR, 7-Zip, Spotify, VLC, Discord
-            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "tpu_vcredist_aio", "directx_web_setup", "chrome", "winrar", "seven_zip", "spotify", "vlc_player", "discord_gaming"
-            };
-
-            SelectSpecificIds(ids);
-            AppendLog("🚀 [Preset Seçildi] Format Kurtarıcı Paketi (Runtimes + Tarayıcı + Arşiv + Medya)");
+            var p = Presets.FirstOrDefault(x => x.Id == "format_essentials");
+            if (p != null) ApplyPreset(p);
         }
 
         [RelayCommand]
         public void ApplyPresetGamer()
         {
-            // Oyuncu Paketi: VC++ AIO, DirectX, Steam, Epic Games, Discord, Spotify, WinRAR
-            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "tpu_vcredist_aio", "directx_web_setup", "steam", "epic_games", "discord_gaming", "spotify", "winrar"
-            };
-
-            SelectSpecificIds(ids);
-            AppendLog("🎮 [Preset Seçildi] Oyuncu Paketi (Oyun Platformları + VC++ AIO + DirectX)");
+            var p = Presets.FirstOrDefault(x => x.Id == "gamer_pack");
+            if (p != null) ApplyPreset(p);
         }
 
         [RelayCommand]
         public void ApplyPresetOffice()
         {
-            // Ofis Paketi: Chrome, WhatsApp, Telegram, 7-Zip, Notepad++, PowerToys, VLC
-            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "chrome", "whatsapp", "telegram", "seven_zip", "notepad_plus_plus", "powertoys", "vlc_player"
-            };
-
-            SelectSpecificIds(ids);
-            AppendLog("💼 [Preset Seçildi] Ofis & Günlük Paket (Tarayıcı + İletişim + Araçlar)");
+            var p = Presets.FirstOrDefault(x => x.Id == "office_daily");
+            if (p != null) ApplyPreset(p);
         }
 
         [RelayCommand]
         public void ApplyPresetDeveloper()
         {
-            // Geliştirici Paketi: VS Code, Git, Python 3, Node.js, Windows Terminal, PowerToys, 7-Zip
-            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "vscode", "git_for_windows", "python_3", "nodejs_lts", "windows_terminal", "powertoys", "seven_zip"
-            };
-
-            SelectSpecificIds(ids);
-            AppendLog("💻 [Preset Seçildi] Geliştirici Paketi (VS Code + Git + Python + Node + Terminal)");
+            var p = Presets.FirstOrDefault(x => x.Id == "developer_pack");
+            if (p != null) ApplyPreset(p);
         }
 
         private void SelectSpecificIds(HashSet<string> targetIds)
