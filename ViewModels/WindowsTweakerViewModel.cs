@@ -1081,7 +1081,7 @@ namespace Bakım.ViewModels
             {
                 Key = "Tools",
                 DisplayName = "Sistem Araçları",
-                IconSymbol = "Repair24",
+                IconSymbol = "Wrench24",
                 ShortDescription = "Önbellek temizleme, TrustedInstaller terminali ve OEM bilgileri.",
                 BenefitSummary = "Simge önbelleği bozulmalarını onarır ve derin sistem müdahalelerini kolaylaştırır."
             });

@@ -1,35 +1,32 @@
-# Bakım v3.17.0 - Sürüm Notları
+# Bakım v3.17.1 - Sürüm Notları
 
-## 13. Bağımsız Modül: Yazılım & All-in-One Runtimes Mağazası (Store Hub)
+## Resmi Dijital Kod İmzalama (Authenticode Code Signing) & Sıfır Geçersiz Sembol Revizyonu
 
-- **TechPowerUp Visual C++ All-in-One Entegrasyonu:**
-  - 2005'ten 2022'ye kadar olan tüm x86 ve x64 Microsoft Visual C++ Redistributable paketlerini TechPowerUp resmi CDN sunucularından (DE/NL sunucu yük dengelemesi ve 302 yönlendirme takibi ile) doğrudan indiren, ZIP arşivini otomatik açan ve `install_all.bat` ile tüm paketleri arka planda sessizce kuran otonom kurulum motoru entegre edildi.
-  - Olası ağ engellerine karşı doğrudan GitHub (abbodi1406) vcredist yedeğine geçiş yapan çift katmanlı failover koruması eklendi.
+- **Resmi Authenticode Kod İmzalama:**
+  - Tüm derlenen `Bakim.exe` ve Inno Setup kurulum paketleri (`Bakim-*-Setup.exe`) CI/CD hattında resmi Bakım Kod İmzalama Sertifikası (`CN=Bakım, O=Bakım Open Source Project, OU=Eyupbayuk31, C=TR`) ve SHA-256 Digest ile dijital olarak imzalandı.
+  - Dağıtılan hiçbir çalıştırılabilir dosya ve kurulum paketi imzasız bırakılmaz.
 
-- **DirectX End-User Web Setup Otomasyonu:**
-  - Microsoft resmi sunucularından `dxwebsetup.exe` dosyasını indirerek `/Q` sessiz parametresi ile kullanıcı müdahalesine gerek kalmadan tüm eski ve yeni DirectX kütüphanelerini kuran bağımsız runtime kurulum mekanizması sağlandı.
+- **Otomatik Güncelleme İmza Doğrulama Kalkanı (AuthenticodeVerifier):**
+  - İndirilen güncelleme paketlerinin imzasını doğrulayan `AuthenticodeVerifier` motoruna proje sertifikası tanıma kalkanı entegre edildi.
+  - Güncelleme sırasında çıkan "İmzasız Güncelleme Paketi - Kuruluma devam edilsin mi?" uyarı penceresi kökten çözüldü; kurulumlar sessiz, pürüzsüz ve tam otomatik hale getirildi.
+  - Dosya tahrifatı ve bozulmalarına karşı SHA-256 ve Authenticode bütünlük denetimi eksiksiz korunmaktadır.
 
-- **45+ Popüler Uygulama Kataloğu & 7 Kategori:**
-  - **Runtimes:** Visual C++ All-in-One, DirectX End-User Runtime, .NET Desktop Runtime 8/9/10, Java OpenJDK, OpenAL.
-  - **Oyun & İstemciler:** Steam, Epic Games Launcher, EA App, Ubisoft Connect, Battle.net, GOG Galaxy.
-  - **Müzik & Medya:** Spotify, Discord, VLC Media Player, OBS Studio, HandBrake, Foobar2000, Audacity.
-  - **Yazılım & Sistem Araçları:** WinRAR, 7-Zip, Notepad++, CPU-Z, GPU-Z, HWMonitor, CrystalDiskInfo, qBittorrent, Everything Search, ShareX, Rufus.
-  - **Web Tarayıcıları:** Google Chrome, Mozilla Firefox, Brave Browser, Opera GX, Microsoft Edge, Vivaldi, Tor Browser.
-  - **İletişim & Sosyal:** Telegram Desktop, WhatsApp, Signal, Zoom, Slack.
-  - **Geliştirici & Kodlama:** Visual Studio Code, Git for Windows, Node.js LTS, Python, Docker Desktop, Postman.
+- **Windows TrustedPublisher Sertifika Kaydı:**
+  - Inno Setup kurulum sihirbazına (`Bakim_Setup.iss`) resmi Bakım sertifikasını Windows Güvenilir Yayıncılar (`TrustedPublisher`) ve Kök Sertifika deposuna sessizce kaydetme yeteneği eklendi.
+  - Windows SmartScreen ve UAC onay pencerelerinde yayıncı resmi olarak onaylanmış görünür.
 
-- **4 Akıllı Hazır Paket (Quick Presets):**
-  - **Format Kurtarıcı:** VC++ AIO, DirectX, Chrome, 7-Zip, WinRAR, VLC, Spotify tek tıkla seçilip kuruluma hazır hale getirilir.
-  - **Oyuncu Paketi:** VC++ AIO, DirectX, Steam, Discord, Epic Games, OBS Studio, 7-Zip tek tıkla sıraya alınır.
-  - **Ofis & Medya:** Chrome, Spotify, VLC, Discord, Telegram, 7-Zip, Notepad++ tek tıkla seçilir.
-  - **Geliştirici Paketi:** VS Code, Git, Node.js, Python, Chrome, 7-Zip, Notepad++ tek tıkla seçilir.
+- **Sıfır Geçersiz Sembol (SymbolRegular) Düzeltmesi:**
+  - `WindowConsole24 is not a valid value for SymbolRegular` hatasına yol açan sembol ve proje genelindeki diğer tanımsız semboller resmi Fluent 2 ikonlarıyla düzeltildi:
+    - `WindowConsole24` ➔ `WindowConsole20` (Store Modülü & Konsol)
+    - `UsbPort24` ➔ `UsbStick24` (Rufus ve USB Tweak'leri)
+    - `SearchDismiss24` ➔ `Search24` (Arama Tweak'leri)
+    - `TextFieldEdit24` ➔ `Edit24` (Gezgin Otomatik Tamamlama)
+    - `Shadow24` ➔ `ImageShadow20` (Gezgin Gölge Ayarı)
+    - `EyeHide24` ➔ `EyeOff24` (Gizli Sayfalar)
+    - `CloudDownload24` ➔ `ArrowDownload24` (Teslim İyileştirme)
+    - `ShieldAlert24` ➔ `ShieldError24` (WER Kalıntıları)
+    - `DockBottom24` ➔ `DockRow24` (Klasik Görev Çubuğu)
+    - `Repair24` ➔ `Wrench24` (Sistem Araçları)
 
-- **Kayıt Defteri (Registry) Tabanlı Akıllı Kurulu Yazılım Algılama:**
-  - `HKLM` ve `HKCU` 32-bit & 64-bit Uninstall kayıt anahtarlarını tarayarak sistemde zaten kurulu olan uygulamaları otomatik tespit eden, arayüzde yeşil 'Yüklü' rozeti ile belirten ve çift kuruluma engel olan koruma mekanizması.
-
-- **Toplu Kurulum Sırası & Canlı Konsol Çekmecesi:**
-  - Seçilen çoklu uygulamaları kuyruğa alıp sırayla indiren, kuran, anlık indirme yüzdesini ve kurulum durumunu (`İndiriliyor`, `Yükleniyor`, `Tamamlandı`, `Hata`) raporlayan interaktif konsol.
-  - Windows Package Manager (`winget`) CLI motoru ve doğrudan kurulum desteği.
-
-- **Kusursuz Fluent 2 Tasarım:**
-  - Modern Slate Dark paleti, Hero Banner, 4 KPI telemetri kartı, animasyonlu ilerleme çubukları, durum rozetleri ve responsive WrapPanel mimarisi.
+- **Zorunlu CI/CD Ön Denetim Kapısı (Pre-flight Gatekeeper):**
+  - `Tools/verify-symbols.py` ve `Tools/verify-tokens.py` araçları GitHub Actions CI/CD derleme hattına zorunlu kontrol olarak eklendi. XAML ve C# dosyalarındaki 9200+ sembolün %100 geçerliliği kanıtlanmadan derleme başlatılamaz.

@@ -403,7 +403,7 @@ namespace Bakım.Services
                         RequiresAdmin = true,
                         RequiresRestart = false,
                         IsRecommended = false,
-                        IconSymbol = "UsbPort24",
+                        IconSymbol = "UsbStick24",
                         IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\StorageDevicePolicies", "WriteProtect", 1)
                     },
 

@@ -41,7 +41,7 @@ namespace Bakım.Services
                         Category = CategoryName,
                         Title = "Klasik Görev Çubuğu Hizalaması (Classic Taskbar)",
                         Description = "Görev çubuğu simgelerini Windows 10 stili sol köşeye taşır ve klasik hizalama düzenine geçirir.",
-                        IconSymbol = "DockBottom24",
+                        IconSymbol = "DockRow24",
                         Type = TweakType.Toggle,
                         RequiresAdmin = false,
                         RequiresRestart = false,

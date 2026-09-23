@@ -43,7 +43,7 @@
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ToggleQueueDrawerCommand}"
                                Content="İlerleme &amp; Konsol"
-                               Icon="{ui:SymbolIcon WindowConsole24}"
+                               Icon="{ui:SymbolIcon WindowConsole20}"
                                Padding="12,8"
                                Margin="0,0,8,0"
                                ToolTip="Canlı indirme kuyruğunu ve log akışını aç/kapat."/>

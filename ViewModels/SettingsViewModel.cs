@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3171 = new ReleaseChangelogItem
+            {
+                Version = "v3.17.1",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Resmi Dijital Kod İmzalama (Authenticode Code Signing) & Sıfır Geçersiz Sembol",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Resmi Dijital Kod İmzalama (Authenticode Code Signing): Tüm derlenen Bakim.exe ve Inno Setup kurulum paketleri (Bakim-*-Setup.exe) CI/CD hattında resmi Bakım Sertifikası ve SHA-256 Digest ile dijital olarak imzalandı.",
+                    "Otomatik Güncelleme İmza Doğrulaması (AuthenticodeVerifier): Güncelleme servisindeki imzasız paket uyarısı ve 'Devam edilsin mi?' engeli proje sertifikası tanıma kalkanı ile kökten çözüldü; kurulumlar sessiz ve güvenli akışa bağlandı.",
+                    "Windows TrustedPublisher Entegrasyonu: Kurulum esnasında resmi Bakım sertifikası Windows Güvenilir Yayıncılar deposuna kaydedilerek Windows SmartScreen ve UAC uyarıları minimize edildi.",
+                    "Sıfır Geçersiz Sembol (SymbolRegular) Kalkanı: Mağaza ve ince ayar modüllerindeki 'WindowConsole24', 'UsbPort24', 'SearchDismiss24' vb. hatalı sembol adları resmi Fluent sembolleriyle (WindowConsole20, UsbStick24, Search24, Edit24, ImageShadow20, EyeOff24, ArrowDownload24, ShieldError24, DockRow24, Wrench24) değiştirildi.",
+                    "Zorunlu Otomatik Sembol Doğrulayıcı (verify-symbols.py): Gelecekte hatalı bir sembolün depoya veya derlemeye girmesini derleme öncesi engelleyen CI/CD doğrulama kapısı kuruldu."
+                }
+            };
+
             var v3170 = new ReleaseChangelogItem
             {
                 Version = "v3.17.0",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Yazılım & All-in-One Runtimes Mağazası (13. Modül & Format Kurtarıcı)",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "13. Bağımsız Modül: Yazılım & Runtimes Mağazası (Store Hub): Format sonrası ihtiyaç duyulan tüm temel kütüphaneler ve popüler yazılımlar tek merkezde toplandı.",
@@ -1237,8 +1254,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3170;
+            LatestRelease = v3171;
 
+            ReleaseHistory.Add(v3171);
             ReleaseHistory.Add(v3170);
             ReleaseHistory.Add(v3163);
             ReleaseHistory.Add(v3162);

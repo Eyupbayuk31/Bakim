@@ -41,3 +41,18 @@ Bu kural, projede yapılacak HER tasarım, XAML bileşeni, C# ViewModel ve servi
   - Sürüm numaralarını ilgili tüm dosyalarda (`.csproj`, `.iss`, `.manifest`, `AutoUpdateService`, `GitHubUpdateService`, `SettingsViewModel`, `MainWindow.xaml`) eksiksiz artır.
   - `CHANGELOG_LATEST.md` dosyasını yeni sürümün zengin notlarıyla güncelle.
   - Değişiklikleri commit'le, yeni sürüm tag'ini (`vX.X.X`) oluştur ve doğrudan GitHub'a pushlayarak CI/CD deploy'unu otomatik tetikle.
+
+---
+
+### 6. SIFIR GEÇERSİZ SEMBOL VE ZORUNLU ÖN TEST DİSİPLİNİ (Zero Invalid Symbols & Pre-flight Testing)
+- Hiçbir XAML veya C# dosyasında rastgele, uydurma veya tanımsız sembol (`SymbolRegular`) kullanılamaz!
+- Her deploy öncesinde `Tools/verify-symbols.py` ve `Tools/verify-tokens.py` çalıştırılarak tüm sembollerin ve tokenların %100 geçerli olduğu kanıtlanmadan ASLA commit ve push yapılamaz.
+- CI/CD derleme hattına sembol ve token doğrulama adımları zorunlu kontrol (gatekeeper) olarak eklenir.
+
+---
+
+### 7. HER ZAMAN DİJİTAL İMZA (Authenticode Code Signing Mandate)
+- Tüm derlenen `.exe` dosyaları ve Inno Setup kurulum paketleri (`Bakim-*-Setup.exe`, `Bakim.exe`) CI/CD sürecinde ve her sürüm dağıtımında resmi sertifika ile dijital olarak imzalanmalıdır (`signtool.exe` Authenticode Code Signing).
+- İmzasız paket hiçbir zaman yayınlanamaz.
+- `AutoUpdateService` ve `AuthenticodeVerifier` tarafından imzasız uyarısı veya güvenlik engeli çıkmayacak şekilde proje sertifikası imzalama ve doğrulama kuralına tavizsiz uyulacaktır.
+

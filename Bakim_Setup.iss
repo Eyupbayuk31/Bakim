@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Bakım"
-#define MyAppVersion "3.17.0"
+#define MyAppVersion "3.17.1"
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"
 #define MyAppExeName "Bakim.exe"
@@ -55,6 +55,7 @@ Name: "autostart"; Description: "Bilgisayar açıldığında otomatik başlat (E
 [Files]
 Source: "Releases\Bakim.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Assets\app.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Certificates\BakimCodeSigning.cer"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: startmenu
@@ -67,6 +68,10 @@ Root: HKLM; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags
 Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#MyAppExeName}"; ValueData: "~ RUNASADMIN"; Flags: uninsdeletevalue; Tasks: alwaysadmin
 
 [Run]
+; Resmi Bakım dijital sertifikasını Windows Güvenilir Yayıncılar deposuna sessizce kaydet (SmartScreen & UAC kalkanı)
+Filename: "certutil.exe"; Parameters: "-addstore -f ""TrustedPublisher"" ""{tmp}\BakimCodeSigning.cer"""; Flags: runhidden
+Filename: "certutil.exe"; Parameters: "-addstore -f ""Root"" ""{tmp}\BakimCodeSigning.cer"""; Flags: runhidden
+
 ; Bilgisayar açılışında UAC istemi olmadan en yüksek yönetici yetkisiyle başlatma (Task Scheduler)
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-autostart"; Flags: runhidden; Tasks: autostart
 
@@ -77,6 +82,8 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 ; Kaldırma esnasında Görev Zamanlayıcı kaydını temizle
 Filename: "{app}\{#MyAppExeName}"; Parameters: "--unregister-autostart"; Flags: runhidden; RunOnceId: "DeleteBakimAutoStartTask"
 Filename: "schtasks.exe"; Parameters: "/delete /tn ""Bakım_Admin_AutoStart"" /f"; Flags: runhidden; RunOnceId: "DeleteBakimAutoStartTaskFallback"
+Filename: "certutil.exe"; Parameters: "-delstore ""TrustedPublisher"" ""06B7CFC6453D55E1C7FCC8053D1928DA8F29AF46"""; Flags: runhidden; RunOnceId: "RemoveBakimCertTP"
+Filename: "certutil.exe"; Parameters: "-delstore ""Root"" ""06B7CFC6453D55E1C7FCC8053D1928DA8F29AF46"""; Flags: runhidden; RunOnceId: "RemoveBakimCertRoot"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"

@@ -62,7 +62,7 @@ namespace Bakım.Services
                         RequiresAdmin = true,
                         RequiresRestart = true,
                         IsRecommended = true,
-                        IconSymbol = "SearchDismiss24",
+                        IconSymbol = "Search24",
                         IsEnabled = CheckWebSearchDisabled()
                     },
 

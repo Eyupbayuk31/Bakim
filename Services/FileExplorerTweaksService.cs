@@ -230,7 +230,7 @@ namespace Bakım.Services
                         RequiresAdmin = false,
                         RequiresRestart = true,
                         IsRecommended = true,
-                        IconSymbol = "TextFieldEdit24",
+                        IconSymbol = "Edit24",
                         IsEnabled = CheckRegistryString(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete", "AutoSuggest", "yes")
                     },
 
@@ -365,7 +365,7 @@ namespace Bakım.Services
                         RequiresAdmin = false,
                         RequiresRestart = true,
                         IsRecommended = false,
-                        IconSymbol = "Shadow24",
+                        IconSymbol = "ImageShadow20",
                         IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "ThumbnailShadow", 0)
                     }
                 };

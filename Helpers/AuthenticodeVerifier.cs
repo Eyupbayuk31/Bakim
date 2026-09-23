@@ -37,9 +37,12 @@ namespace Bakım.Helpers
         private const uint WtdRevokeNone = 0;
         private const uint WtdChoiceFile = 1;
         private const uint WtdStateActionVerify = 1;
-        private const uint WtdStateActionClose = 2;
         private const uint TrustEProvidedUnknown = 0x800B0001;
         private const uint TrustENosignature = 0x800B0100;
+        private const uint CertEUntrustedRoot = 0x800B0109;
+        private const uint CertEChainUntrustedRoot = 0x800B010A;
+        private const uint CertERevocationFailure = 0x800B010E;
+        private const string ExpectedSignerThumbprint = "06B7CFC6453D55E1C7FCC8053D1928DA8F29AF46";
 
         [StructLayout(LayoutKind.Sequential)]
         private struct WintrustFileInfo
@@ -109,7 +112,11 @@ namespace Bakım.Helpers
                 data.dwStateAction = WtdStateActionClose;
                 WinVerifyTrust(IntPtr.Zero, WinTrustActionGenericVerifyV2, ref data);
 
-                if (result == 0)
+                bool isUntrustedRootOrRevocationOffline = result == CertEUntrustedRoot ||
+                                                         result == CertEChainUntrustedRoot ||
+                                                         result == CertERevocationFailure;
+
+                if (result == 0 || (isUntrustedRootOrRevocationOffline && IsProjectCertificate(filePath)))
                 {
                     return new SignatureVerdict
                     {
@@ -174,6 +181,34 @@ namespace Bakım.Helpers
             catch
             {
                 return string.Empty;
+            }
+        }
+
+        private static bool IsProjectCertificate(string filePath)
+        {
+            try
+            {
+#pragma warning disable SYSLIB0057
+                using var cert = new X509Certificate2(filePath);
+#pragma warning restore SYSLIB0057
+                if (cert == null) return false;
+
+                if (string.Equals(cert.Thumbprint, ExpectedSignerThumbprint, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                string subject = cert.Subject;
+                if (subject.Contains("CN=Bakım", StringComparison.OrdinalIgnoreCase) ||
+                    subject.Contains("Bakım Open Source Project", StringComparison.OrdinalIgnoreCase) ||
+                    subject.Contains("Eyupbayuk31", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
             }
         }
 

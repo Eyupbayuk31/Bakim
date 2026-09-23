@@ -90,7 +90,7 @@ namespace Bakım.Services
                         RequiresAdmin = true,
                         RequiresRestart = false,
                         IsRecommended = false,
-                        IconSymbol = "EyeHide24",
+                        IconSymbol = "EyeOff24",
                         IsEnabled = CheckRegistryString(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", "SettingsPageVisibility", "hide:feedback;diagnostics;windowsinsider")
                     },
 

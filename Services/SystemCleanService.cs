@@ -148,7 +148,7 @@ namespace Bakım.Services
                     TargetPath = Path.Combine(winDir, "SoftwareDistribution", "DeliveryOptimization", "Cache"),
                     AdditionalPaths = new List<string> { Path.Combine(localApp, "Microsoft", "Windows", "DeliveryOptimization") },
                     GroupName = "Windows & Sistem",
-                    IconSymbol = "CloudDownload24",
+                    IconSymbol = "ArrowDownload24",
                     RequiresAdmin = true,
                     IsSelected = true
                 },
@@ -184,7 +184,7 @@ namespace Bakım.Services
                     TargetPath = Path.Combine(localApp, "Microsoft", "Windows", "WER"),
                     AdditionalPaths = new List<string> { Path.Combine(progData, "Microsoft", "Windows", "WER") },
                     GroupName = "Windows & Sistem",
-                    IconSymbol = "ShieldAlert24",
+                    IconSymbol = "ShieldError24",
                     RequiresAdmin = false,
                     IsSelected = false
                 },
