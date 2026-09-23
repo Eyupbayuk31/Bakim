@@ -15,9 +15,9 @@
     <AssemblyName>Bakim</AssemblyName>
     <!-- Yalnızca sistem tepsisi simgesi (NotifyIcon) için; WPF-UI 4.x tray desteği içermiyor. -->
     <UseWindowsForms>true</UseWindowsForms>
-    <Version>3.18.0</Version>
-    <AssemblyVersion>3.18.0.0</AssemblyVersion>
-    <FileVersion>3.18.0.0</FileVersion>
+    <Version>3.18.1</Version>
+    <AssemblyVersion>3.18.1.0</AssemblyVersion>
+    <FileVersion>3.18.1.0</FileVersion>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!--

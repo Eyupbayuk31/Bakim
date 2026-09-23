@@ -464,15 +464,8 @@ namespace Bakım.ViewModels
                 CurrentTweakerCategory = categoryKey;
                 TweakerCategories.SetSelectedCategorySilent(categoryKey);
 
-                if (string.Equals(categoryKey, "PrivacyDebloat", StringComparison.OrdinalIgnoreCase))
-                {
-                    Navigate("PrivacyDebloat");
-                }
-                else
-                {
-                    WindowsTweaker.SwitchCategory(categoryKey);
-                    Navigate("Tweaker");
-                }
+                WindowsTweaker.SwitchCategory(categoryKey);
+                Navigate("Tweaker");
 
                 if (IsSidebarExpanded) IsTweakerMenuExpanded = true;
             }
@@ -490,6 +483,12 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public void Navigate(string target)
         {
+            if (string.Equals(target, "PrivacyDebloat", StringComparison.OrdinalIgnoreCase))
+            {
+                WindowsTweaker.SwitchCategory("PrivacyDebloat");
+                target = "Tweaker";
+            }
+
             if (!AppModuleRegistry.TryResolve(target, out var module))
             {
                 // Sessizce Panoya düşmek yerine sorunu görünür kıl.

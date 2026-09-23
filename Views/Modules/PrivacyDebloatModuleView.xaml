@@ -4,136 +4,40 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:PrivacyDebloatViewModel}"
              d:DesignHeight="750" d:DesignWidth="1050">
 
-    <UserControl.Resources>
-        <!-- Risk Level Badge Style -->
-        <Style x:Key="RiskBadgeStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="8,2"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding RiskLevel}" Value="Önerilen">
-                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding RiskLevel}" Value="İsteğe Bağlı">
-                    <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding RiskLevel}" Value="Gelişmiş">
-                    <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style x:Key="RiskBadgeTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding RiskLevel}" Value="Önerilen">
-                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding RiskLevel}" Value="İsteğe Bağlı">
-                    <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                </DataTrigger>
-                <DataTrigger Binding="{Binding RiskLevel}" Value="Gelişmiş">
-                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
-
-    <Grid Margin="28">
+    <Grid Margin="0">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Title & Top Controls -->
-            <RowDefinition Height="Auto"/> <!-- Metric Cards -->
-            <RowDefinition Height="Auto"/> <!-- Search & Filters -->
-            <RowDefinition Height="*"/>    <!-- Active Content (Privacy Tweaks or Bloatware List) -->
-            <RowDefinition Height="Auto"/> <!-- Bottom Status Bar -->
+            <RowDefinition Height="Auto"/> <!-- 0: Metric KPI Cards -->
+            <RowDefinition Height="Auto"/> <!-- 1: Action Toolbar & Segmented Switcher -->
+            <RowDefinition Height="Auto"/> <!-- 2: Category Filter Chips & Info -->
+            <RowDefinition Height="*"/>    <!-- 3: Active Content (Privacy Tweaks or Bloatware List) -->
+            <RowDefinition Height="Auto"/> <!-- 4: Bottom Status Bar -->
         </Grid.RowDefinitions>
 
-        <!-- 1. Header Section -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
-                         Title="Gizlilik &amp; Telemetri Engelleyici"
-                         Description="Microsoft telemetri, veri toplama, reklam kimliği ve gereksiz AppX bloatware optimizasyonu.">
-            <c:SectionHeader.Actions>
-                <!-- Sub-Tab Switcher & Action Buttons -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Sub-Tab Switcher -->
-                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="4"
-                Margin="0,0,12,0">
-                <StackPanel Orientation="Horizontal">
-                <ui:Button Content="Gizlilik &amp; Telemetri"
-                Command="{Binding SwitchSubTabCommand}"
-                CommandParameter="Privacy"
-                Padding="14,6"
-                Margin="0,0,4,0"/>
-                <ui:Button Content="Bloatware Kaldırıcı"
-                Command="{Binding SwitchSubTabCommand}"
-                CommandParameter="Debloat"
-                Padding="14,6"/>
-                </StackPanel>
-                </Border>
-
-                <!-- Actions -->
-                <ui:Button Appearance="Primary"
-                Command="{Binding ApplyRecommendedCommand}"
-                Padding="14,8"
-                Margin="0,0,8,0"
-                Content="Önerilenleri Koru"
-                Icon="{ui:SymbolIcon ShieldCheckmark24}"/>
-
-                <ui:Button Appearance="Secondary"
-                Command="{Binding CreateRestorePointCommand}"
-                Padding="12,8"
-                Margin="0,0,8,0"
-                Content="Geri Yükleme Noktası"
-                Icon="{ui:SymbolIcon History24}"/>
-
-                <ui:Button Appearance="Secondary"
-                Command="{Binding RestoreDefaultsCommand}"
-                Padding="12,8"
-                Margin="0,0,8,0"
-                Content="Varsayılanlara Dön"
-                Icon="{ui:SymbolIcon ArrowReset24}"/>
-
-                <ui:Button Appearance="Secondary"
-                Command="{Binding RefreshAllCommand}"
-                Padding="12,8"
-                Content="Yenile"
-                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-                </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
-
-        <!-- 2. Metric Overview Cards -->
-        <Grid Grid.Row="1" Margin="0,0,0,18">
+        <!-- 0. Metric Overview Cards -->
+        <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Card 1: Privacy Score -->
-            <ui:Card Grid.Column="0" Padding="16,14">
+            <Border Grid.Column="0" 
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="14,12">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -146,12 +50,17 @@
                             <TextBlock Text="{Binding Stats.ProtectionPercentage}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                         </StackPanel>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="ShieldCheckmark24" FontSize="24" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Grid.Column="1" Symbol="ShieldCheckmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Card 2: Active Tweaks -->
-            <ui:Card Grid.Column="2" Padding="16,14">
+            <Border Grid.Column="2" 
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="14,12">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -165,12 +74,17 @@
                             <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="CheckmarkCircle24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Grid.Column="1" Symbol="CheckmarkCircle24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Card 3: Recommended Tweaks Active -->
-            <ui:Card Grid.Column="4" Padding="16,14">
+            <Border Grid.Column="4" 
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="14,12">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -180,12 +94,17 @@
                         <TextBlock Text="Önerilen Korumalar" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding Stats.RecommendedActiveCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Star24" FontSize="24" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Grid.Column="1" Symbol="Star24" FontSize="22" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Card 4: Installed Bloatware -->
-            <ui:Card Grid.Column="6" Padding="16,14">
+            <Border Grid.Column="6" 
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="14,12">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -195,68 +114,190 @@
                         <TextBlock Text="Yüklü Bloatware" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding Stats.InstalledBloatwareCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Apps24" FontSize="24" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
+                    <ui:SymbolIcon Grid.Column="1" Symbol="Apps24" FontSize="22" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
                 </Grid>
-            </ui:Card>
+            </Border>
         </Grid>
 
-        <!-- 3. Search & Filter Bar -->
-        <Grid Grid.Row="2" Margin="0,0,0,14">
+        <!-- 1. Action Toolbar & Segmented Switcher -->
+        <Grid Grid.Row="1" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Category Pills for Privacy Tab -->
-            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
-                       Visibility="{Binding ActiveSubTab, Converter={StaticResource StringToVis}, ConverterParameter=Privacy}">
-                <ui:Button Content="Tümü" 
-                           Command="{Binding SetCategoryFilterCommand}" 
-                           CommandParameter="All"
-                           Padding="12,6" 
-                           Margin="0,0,6,4"/>
-                <ui:Button Content="Telemetri &amp; Tanılama" 
-                           Command="{Binding SetCategoryFilterCommand}" 
-                           CommandParameter="Telemetri &amp; Tanılama"
-                           Padding="12,6" 
-                           Margin="0,0,6,4"/>
-                <ui:Button Content="Reklamlar &amp; Öneriler" 
-                           Command="{Binding SetCategoryFilterCommand}" 
-                           CommandParameter="Reklamlar &amp; Öneriler"
-                           Padding="12,6" 
-                           Margin="0,0,6,4"/>
-                <ui:Button Content="Konum &amp; İzinler" 
-                           Command="{Binding SetCategoryFilterCommand}" 
-                           CommandParameter="Konum &amp; İzinler"
-                           Padding="12,6"
-                           Margin="0,0,6,4"/>
-            </WrapPanel>
+            <!-- Segmented Sub-Tab Switcher (Left) -->
+            <Border Grid.Column="0" 
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="3">
+                <StackPanel Orientation="Horizontal">
+                    <ui:Button Appearance="{Binding IsPrivacyTab, Converter={StaticResource BoolToNavAppearance}}"
+                               Content="Gizlilik &amp; Telemetri"
+                               Icon="{ui:SymbolIcon ShieldCheckmark20}"
+                               Command="{Binding SwitchSubTabCommand}"
+                               CommandParameter="Privacy"
+                               Padding="14,6"
+                               Margin="0,0,4,0"/>
+                    <ui:Button Appearance="{Binding IsDebloatTab, Converter={StaticResource BoolToNavAppearance}}"
+                               Content="Bloatware Kaldırıcı"
+                               Icon="{ui:SymbolIcon Delete20}"
+                               Command="{Binding SwitchSubTabCommand}"
+                               CommandParameter="Debloat"
+                               Padding="14,6"/>
+                </StackPanel>
+            </Border>
 
-            <!-- Bloatware Notice for Debloat Tab -->
-            <TextBlock Grid.Column="0" 
-                       Text="Sistem kararlılığı için temel hesap makinesi ve mağaza uygulamaları korumalıdır." 
-                       FontSize="12" 
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                       VerticalAlignment="Center"
-                       Visibility="{Binding ActiveSubTab, Converter={StaticResource StringToVis}, ConverterParameter=Debloat}"/>
-
-            <!-- Search Input Box -->
+            <!-- Search Input Box (Center-Right) -->
             <ui:TextBox Grid.Column="1" 
                         PlaceholderText="Gizlilik kuralı veya uygulama ara..." 
-                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                         ClearButtonEnabled="True"
                         Icon="{ui:SymbolIcon Search24}"
                         VerticalContentAlignment="Center"
-                        Padding="12,8"
-                        MinWidth="220"
-                        MaxWidth="360" AutomationProperties.Name="Gizlilik kuralı veya uygulama ara..."/>
+                        Padding="10,6"
+                        Margin="12,0,12,0"
+                        HorizontalAlignment="Right"
+                        MinWidth="240"
+                        MaxWidth="340" AutomationProperties.Name="Gizlilik kuralı veya uygulama ara..."/>
+
+            <!-- Action Buttons (Right) -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Privacy Tab Actions -->
+                <StackPanel Orientation="Horizontal" Visibility="{Binding IsPrivacyTab, Converter={StaticResource BoolToVis}}">
+                    <ui:Button Appearance="Primary"
+                               Command="{Binding ApplyRecommendedCommand}"
+                               Padding="12,6"
+                               Margin="0,0,6,0"
+                               Content="Önerilenleri Koru"
+                               Icon="{ui:SymbolIcon ShieldCheckmark20}"/>
+
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding CreateRestorePointCommand}"
+                               Padding="10,6"
+                               Margin="0,0,6,0"
+                               Content="Geri Yükleme Noktası"
+                               Icon="{ui:SymbolIcon History20}"/>
+
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding RestoreDefaultsCommand}"
+                               Padding="10,6"
+                               Margin="0,0,6,0"
+                               Content="Varsayılanlara Dön"
+                               Icon="{ui:SymbolIcon ArrowCounterclockwise20}"/>
+                </StackPanel>
+
+                <!-- Debloat Tab Actions -->
+                <StackPanel Orientation="Horizontal" Visibility="{Binding IsDebloatTab, Converter={StaticResource BoolToVis}}">
+                    <ui:Button Appearance="Danger"
+                               Command="{Binding RemoveAllSafeBloatwareCommand}"
+                               Padding="12,6"
+                               Margin="0,0,6,0"
+                               Content="Tüm Güvenli Bloatware'leri Kaldır"
+                               Icon="{ui:SymbolIcon Delete20}"/>
+                </StackPanel>
+
+                <!-- Common Refresh Action -->
+                <ui:Button Appearance="Secondary"
+                           Command="{Binding RefreshAllCommand}"
+                           Padding="10,6"
+                           Content="Yenile"
+                           Icon="{ui:SymbolIcon ArrowClockwise20}"/>
+            </StackPanel>
         </Grid>
 
-        <!-- 4. Active Content Area -->
+        <!-- 2. Category Filter Chips & Info -->
+        <Grid Grid.Row="2" Margin="0,0,0,12">
+            <!-- Privacy Filter Chips -->
+            <WrapPanel Orientation="Horizontal" VerticalAlignment="Center"
+                       Visibility="{Binding IsPrivacyTab, Converter={StaticResource BoolToVis}}">
+                <ui:Button Appearance="{Binding IsFilterAll, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetCategoryFilterCommand}" 
+                           CommandParameter="All"
+                           Padding="12,5" 
+                           Margin="0,0,6,4">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="AppsList20" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Tümü" FontSize="12" VerticalAlignment="Center"/>
+                        <Border CornerRadius="8" Padding="5,1" Background="{DynamicResource SubtleFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="10" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                </ui:Button>
+
+                <ui:Button Appearance="{Binding IsFilterTelemetry, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetCategoryFilterCommand}" 
+                           CommandParameter="Telemetri &amp; Tanılama"
+                           Padding="12,5" 
+                           Margin="0,0,6,4">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Telemetri &amp; Tanılama" FontSize="12" VerticalAlignment="Center"/>
+                        <Border CornerRadius="8" Padding="5,1" Background="{DynamicResource SubtleFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding TelemetryCount}" FontSize="10" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                </ui:Button>
+
+                <ui:Button Appearance="{Binding IsFilterAds, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetCategoryFilterCommand}" 
+                           CommandParameter="Reklamlar &amp; Öneriler"
+                           Padding="12,5" 
+                           Margin="0,0,6,4">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Megaphone20" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Reklamlar &amp; Öneriler" FontSize="12" VerticalAlignment="Center"/>
+                        <Border CornerRadius="8" Padding="5,1" Background="{DynamicResource SubtleFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding AdsCount}" FontSize="10" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                </ui:Button>
+
+                <ui:Button Appearance="{Binding IsFilterLocation, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetCategoryFilterCommand}" 
+                           CommandParameter="Konum &amp; İzinler"
+                           Padding="12,5" 
+                           Margin="0,0,6,4">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Location20" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Konum &amp; İzinler" FontSize="12" VerticalAlignment="Center"/>
+                        <Border CornerRadius="8" Padding="5,1" Background="{DynamicResource SubtleFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding LocationCount}" FontSize="10" FontWeight="SemiBold"/>
+                        </Border>
+                    </StackPanel>
+                </ui:Button>
+            </WrapPanel>
+
+            <!-- Bloatware Notice for Debloat Tab -->
+            <Border Visibility="{Binding IsDebloatTab, Converter={StaticResource BoolToVis}}"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:SymbolIcon Grid.Column="0" Symbol="LockClosed20" FontSize="16" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="Hesap Makinesi, Windows Mağazası gibi temel sistem bileşenleri sistem kararlılığı için kilitlidir ve silinemez. Gereksiz OEM ve reklam uygulamalarını güvenle kaldırabilirsiniz." 
+                               FontSize="11.5" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                               VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 3. Active Content Area -->
         <Grid Grid.Row="3">
-            <!-- View 1: Privacy Tweaks List -->
+            <!-- View 1: Privacy Tweaks List (Solid Border Cards with Separator Lines) -->
             <ListView ItemsSource="{Binding FilteredTweaks}"
-                      Visibility="{Binding ActiveSubTab, Converter={StaticResource StringToVis}, ConverterParameter=Privacy}"
+                      Visibility="{Binding IsPrivacyTab, Converter={StaticResource BoolToVis}}"
                       BorderThickness="0"
                       Background="Transparent"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -266,7 +307,8 @@
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="Padding" Value="0,0,0,8"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0,0,0,8"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Template">
@@ -280,65 +322,229 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:PrivacyTweakItem}">
-                        <ui:Card Padding="18,14" Margin="0,0,0,8" ClipToBounds="False">
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="16,14">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- Main Header & Details -->
+                                    <RowDefinition Height="Auto"/> <!-- Separator Line -->
+                                    <RowDefinition Height="Auto"/> <!-- Footer Status & Action -->
+                                </Grid.RowDefinitions>
 
-                                <!-- Left Details -->
-                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                                    <!-- Badges Row -->
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                        <!-- Category Badge -->
-                                        <Border CornerRadius="4" Padding="8,2" 
-                                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                BorderThickness="1" 
-                                                Margin="0,0,8,0"
-                                                Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
-                                            <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                        </Border>
+                                <!-- Row 0: Icon + Info & Description -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                        <!-- Risk Level Badge -->
-                                        <Border Style="{StaticResource RiskBadgeStyle}"
-                                                Visibility="{Binding RiskLevel, Converter={StaticResource NullToVisibilityConverter}}">
-                                            <TextBlock Text="{Binding RiskLevel}" Style="{StaticResource RiskBadgeTextStyle}"/>
-                                        </Border>
+                                    <!-- Category Tinted Icon Box -->
+                                    <Border Grid.Column="0" 
+                                            Width="38" Height="38" 
+                                            CornerRadius="8" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                            BorderThickness="1" 
+                                            Margin="0,0,12,0" 
+                                            VerticalAlignment="Top">
+                                        <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Main Details -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,14,0">
+                                        <!-- Badges Row -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <!-- Category Badge -->
+                                            <Border CornerRadius="4" Padding="6,2" 
+                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}" 
+                                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                    BorderThickness="1" 
+                                                    Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            </Border>
+
+                                            <!-- Risk Level Badge: Önerilen (Green) -->
+                                            <Border CornerRadius="4" Padding="6,2" 
+                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}"
+                                                    BorderBrush="{DynamicResource SystemFillColorSuccessBrush}"
+                                                    BorderThickness="1"
+                                                    Margin="0,0,6,0">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding RiskLevel}" Value="Önerilen">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="Checkmark16" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Önerilen Koruma" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Risk Level Badge: Gelişmiş (Caution) -->
+                                            <Border CornerRadius="4" Padding="6,2" 
+                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}"
+                                                    BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                                                    BorderThickness="1"
+                                                    Margin="0,0,6,0">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding RiskLevel}" Value="Gelişmiş">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="Warning16" FontSize="11" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Gelişmiş Kural" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Risk Level Badge: İsteğe Bağlı (Accent) -->
+                                            <Border CornerRadius="4" Padding="6,2" 
+                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}"
+                                                    BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                    BorderThickness="1">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding RiskLevel}" Value="İsteğe Bağlı">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="Info16" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="İsteğe Bağlı" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Title -->
+                                        <TextBlock Text="{Binding Title}" 
+                                                   FontSize="13.5" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
+                                                   TextWrapping="Wrap"/>
+
+                                        <!-- Description -->
+                                        <TextBlock Text="{Binding Description}" 
+                                                   FontSize="11.5" 
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                                   TextWrapping="Wrap" 
+                                                   Margin="0,3,0,0"/>
                                     </StackPanel>
 
-                                    <!-- Title -->
-                                    <TextBlock Text="{Binding Title}" 
-                                               FontSize="14" 
-                                               FontWeight="SemiBold" 
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                                               TextWrapping="Wrap"/>
+                                    <!-- Right Toggle Switch -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=OneWay}" 
+                                                         AutomationProperties.Name="{Binding Title}"
+                                                         Command="{Binding DataContext.ToggleTweakCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                         CommandParameter="{Binding}"
+                                                         IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"/>
+                                    </StackPanel>
+                                </Grid>
 
-                                    <!-- Description -->
-                                    <TextBlock Text="{Binding Description}" 
-                                               FontSize="12" 
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                               TextWrapping="Wrap" 
-                                               Margin="0,4,0,0"/>
-                                </StackPanel>
+                                <!-- Row 1: Interior Separator Line -->
+                                <Border Grid.Row="1" Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Opacity="0.5" Margin="0,10,0,8"/>
 
-                                <!-- Right Toggle Switch -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                    <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=OneWay}" AutomationProperties.Name="{Binding Title}"
-                                                     Command="{Binding DataContext.ToggleTweakCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                     CommandParameter="{Binding}"
-                                                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"/>
-                                </StackPanel>
+                                <!-- Row 2: Status & Details Footer -->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="Info16" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Kayıt Defteri &amp; Servis Düzeyi Müdahale • Anında Etkili" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+
+                                    <!-- Active State Indicator -->
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Border CornerRadius="4" Padding="6,2">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <StackPanel Orientation="Horizontal">
+                                                <ui:SymbolIcon Symbol="Checkmark16" FontSize="11" Margin="0,0,4,0" VerticalAlignment="Center">
+                                                    <ui:SymbolIcon.Style>
+                                                        <Style TargetType="ui:SymbolIcon">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                                    <Setter Property="Symbol" Value="Checkmark16"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                                    <Setter Property="Symbol" Value="Dismiss16"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ui:SymbolIcon.Style>
+                                                </ui:SymbolIcon>
+                                                <TextBlock FontSize="10.5" FontWeight="SemiBold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                                    <Setter Property="Text" Value="Koruma Aktif"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                                                                    <Setter Property="Text" Value="Pasif / Açık"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
-                        </ui:Card>
+                        </Border>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
 
-            <!-- View 2: Bloatware Remover List -->
+            <!-- View 2: Bloatware Remover List (Solid Border Cards with Separator Lines) -->
             <ListView ItemsSource="{Binding FilteredBloatware}"
-                      Visibility="{Binding ActiveSubTab, Converter={StaticResource StringToVis}, ConverterParameter=Debloat}"
+                      Visibility="{Binding IsDebloatTab, Converter={StaticResource BoolToVis}}"
                       BorderThickness="0"
                       Background="Transparent"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -348,7 +554,8 @@
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                        <Setter Property="Padding" Value="0,0,0,8"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0,0,0,8"/>
                         <Setter Property="Background" Value="Transparent"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="Template">
@@ -362,140 +569,173 @@
                 </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:BloatwareAppItem}">
-                        <ui:Card Padding="18,14" Margin="0,0,0,8" ClipToBounds="False">
+                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="16,14">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/> <!-- App Info & Badges -->
+                                    <RowDefinition Height="Auto"/> <!-- Separator Line -->
+                                    <RowDefinition Height="Auto"/> <!-- Action & Status Bar -->
+                                </Grid.RowDefinitions>
 
-                                <!-- App Icon -->
-                                <Border Grid.Column="0" 
-                                        Width="34" Height="34" 
-                                        CornerRadius="8" 
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1" 
-                                        Margin="0,0,12,0"
-                                        VerticalAlignment="Center" 
-                                        HorizontalAlignment="Left">
-                                    <ui:SymbolIcon Symbol="Apps24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                </Border>
+                                <!-- Row 0: App Details -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- App Info -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding DisplayName}" 
-                                                   FontSize="14" 
-                                                   FontWeight="SemiBold" 
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <!-- App Icon Box -->
+                                    <Border Grid.Column="0" 
+                                            Width="38" Height="38" 
+                                            CornerRadius="8" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                            BorderThickness="1" 
+                                            Margin="0,0,12,0" 
+                                            VerticalAlignment="Top">
+                                        <ui:SymbolIcon Symbol="Apps20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
 
-                                        <Border CornerRadius="4" Padding="6,2" 
-                                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                BorderThickness="1" 
-                                                Margin="10,0,0,0"
-                                                Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
-                                            <TextBlock Text="{Binding Category}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                        </Border>
+                                    <!-- App Text Details -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,14,0">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <TextBlock Text="{Binding DisplayName}" 
+                                                       FontSize="14" 
+                                                       FontWeight="SemiBold" 
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
-                                        <!-- Essential Badge if applicable -->
-                                        <Border CornerRadius="4" Padding="6,2" 
-                                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                BorderBrush="{DynamicResource SystemFillColorCautionBrush}" 
-                                                BorderThickness="1" 
-                                                Margin="6,0,0,0"
-                                                Visibility="{Binding IsEssential, Converter={StaticResource BoolToVis}}">
-                                            <TextBlock Text="Temel Sistem Bileşeni" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                                        </Border>
+                                            <!-- Category Badge -->
+                                            <Border CornerRadius="4" Padding="6,2" 
+                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}" 
+                                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                    BorderThickness="1" 
+                                                    Margin="10,0,0,0"
+                                                    Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
+                                                <TextBlock Text="{Binding Category}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            </Border>
+
+                                            <!-- Essential Badge -->
+                                            <Border CornerRadius="4" Padding="6,2" 
+                                                    Background="{DynamicResource SubtleFillColorTertiaryBrush}" 
+                                                    BorderBrush="{DynamicResource SystemFillColorCautionBrush}" 
+                                                    BorderThickness="1" 
+                                                    Margin="6,0,0,0"
+                                                    Visibility="{Binding IsEssential, Converter={StaticResource BoolToVis}}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <ui:SymbolIcon Symbol="LockClosed16" FontSize="11" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="Temel Sistem Bileşeni" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Description -->
+                                        <TextBlock Text="{Binding Description}" 
+                                                   FontSize="11.5" 
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                                   TextWrapping="Wrap"/>
                                     </StackPanel>
 
-                                    <!-- Package Name -->
-                                    <TextBlock Text="{Binding PackageName}" 
-                                               FontSize="11" 
-                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
-                                               Margin="0,2,0,0"/>
+                                    <!-- Action Button / Protected State -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <!-- Protected Badge -->
+                                        <Border CornerRadius="6" Padding="10,5" 
+                                                Background="{DynamicResource SubtleFillColorTertiaryBrush}"
+                                                BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                                                BorderThickness="1"
+                                                Visibility="{Binding IsEssential, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <ui:SymbolIcon Symbol="LockClosed16" FontSize="13" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Korumalı" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                                            </StackPanel>
+                                        </Border>
 
-                                    <!-- Description -->
-                                    <TextBlock Text="{Binding Description}" 
-                                               FontSize="12" 
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                               Margin="0,2,0,0"/>
-                                </StackPanel>
+                                        <!-- Uninstall Button -->
+                                        <ui:Button Appearance="Danger" 
+                                                   Content="Kaldır" 
+                                                   Icon="{ui:SymbolIcon Delete20}"
+                                                   Command="{Binding DataContext.RemoveBloatwareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                                                   Padding="14,6">
+                                            <ui:Button.Style>
+                                                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsEssential}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsInstalled}" Value="False">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ui:Button.Style>
+                                        </ui:Button>
 
-                                <!-- Action Buttons / Status -->
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                    <!-- When App is Essential -->
-                                    <Border CornerRadius="6" Padding="10,6" 
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                            BorderThickness="1"
-                                            Visibility="{Binding IsEssential, Converter={StaticResource BoolToVis}}">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="ShieldKeyhole20" FontSize="14" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Korumalı" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                                        </StackPanel>
-                                    </Border>
+                                        <!-- Uninstalled Badge -->
+                                        <Border CornerRadius="6" Padding="10,5" 
+                                                Background="{DynamicResource SubtleFillColorTertiaryBrush}"
+                                                BorderBrush="{DynamicResource SystemFillColorSuccessBrush}"
+                                                BorderThickness="1">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <MultiDataTrigger>
+                                                            <MultiDataTrigger.Conditions>
+                                                                <Condition Binding="{Binding IsEssential}" Value="False"/>
+                                                                <Condition Binding="{Binding IsInstalled}" Value="False"/>
+                                                            </MultiDataTrigger.Conditions>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </MultiDataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <ui:SymbolIcon Symbol="Checkmark16" FontSize="13" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Kaldırıldı" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
 
-                                    <!-- When App is Not Essential and Installed -->
-                                    <ui:Button Appearance="Danger" 
-                                               Content="Kaldır" 
-                                               Icon="{ui:SymbolIcon Delete20}"
-                                               Command="{Binding DataContext.RemoveBloatwareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}">
-                                        <ui:Button.Style>
-                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsEssential}" Value="True">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding IsInstalled}" Value="False">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ui:Button.Style>
-                                    </ui:Button>
+                                <!-- Row 1: Interior Separator Line -->
+                                <Border Grid.Row="1" Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Opacity="0.5" Margin="0,10,0,8"/>
 
-                                    <!-- When App has been Uninstalled -->
-                                    <Border CornerRadius="6" Padding="10,6" 
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                            BorderBrush="{DynamicResource SystemFillColorSuccessBrush}"
-                                            BorderThickness="1">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                <Style.Triggers>
-                                                    <MultiDataTrigger>
-                                                        <MultiDataTrigger.Conditions>
-                                                            <Condition Binding="{Binding IsEssential}" Value="False"/>
-                                                            <Condition Binding="{Binding IsInstalled}" Value="False"/>
-                                                        </MultiDataTrigger.Conditions>
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                    </MultiDataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="Checkmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
-                                            <TextBlock Text="Kaldırıldı" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
+                                <!-- Row 2: Package Details Footer -->
+                                <Grid Grid.Row="2">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="Code20" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding PackageName}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
-                        </ui:Card>
+                        </Border>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
         </Grid>
 
-        <!-- 5. Bottom Status Bar -->
+        <!-- 4. Bottom Status Bar -->
         <Border Grid.Row="4" 
-                Margin="0,12,0,0" 
-                Padding="12,8" 
+                Margin="0,10,0,0" 
+                Padding="12,7" 
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                 BorderThickness="1" 

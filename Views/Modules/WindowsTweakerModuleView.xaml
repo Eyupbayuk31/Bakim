@@ -7,6 +7,7 @@
              xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
+             xmlns:local="clr-namespace:Bakım.Views.Modules"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:WindowsTweakerViewModel}"
              d:DesignHeight="850" d:DesignWidth="1100">
@@ -283,7 +284,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Row 0: Search & Active Category Header Bar -->
-                <Grid Grid.Row="0" Margin="0,0,0,14">
+                <Grid Grid.Row="0" Margin="0,0,0,14" Visibility="{Binding IsPrivacyDebloatVisible, Converter={StaticResource InverseBoolToVis}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -981,6 +982,14 @@
                     </Grid>
                 </ui:Card>
             </StackPanel>
+        </ScrollViewer>
+
+        <!-- 4.5. Viewport: Privacy & Debloat Tab Content -->
+        <ScrollViewer Grid.Row="1" 
+                      VerticalScrollBarVisibility="Auto" 
+                      HorizontalScrollBarVisibility="Disabled"
+                      Visibility="{Binding IsPrivacyDebloatVisible, Converter={StaticResource BoolToVis}}">
+            <local:PrivacyDebloatModuleView DataContext="{Binding PrivacyDebloat}"/>
         </ScrollViewer>
             </Grid>
         </Grid>

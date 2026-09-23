@@ -38,14 +38,34 @@ namespace Bakım.ViewModels
         public ObservableCollection<PrivacyTweakItem> Tweaks { get; }
         public ObservableCollection<BloatwareAppItem> BloatwareApps { get; }
 
+        public event Action? TweaksStateChanged;
+
         [ObservableProperty]
         private string _activeSubTab = "Privacy"; // Privacy, Debloat
+
+        public bool IsPrivacyTab => ActiveSubTab == "Privacy";
+        public bool IsDebloatTab => ActiveSubTab == "Debloat";
+
+        partial void OnActiveSubTabChanged(string value)
+        {
+            OnPropertyChanged(nameof(IsPrivacyTab));
+            OnPropertyChanged(nameof(IsDebloatTab));
+        }
 
         [ObservableProperty]
         private string _searchText = string.Empty;
 
         [ObservableProperty]
         private string _selectedCategory = "All";
+
+        public bool IsFilterAll => SelectedCategory == "All";
+        public bool IsFilterTelemetry => SelectedCategory == "Telemetri & Tanılama";
+        public bool IsFilterAds => SelectedCategory == "Reklamlar & Öneriler";
+        public bool IsFilterLocation => SelectedCategory == "Konum & İzinler";
+
+        public int TelemetryCount => Tweaks.Count(t => t.Category == "Telemetri & Tanılama");
+        public int AdsCount => Tweaks.Count(t => t.Category == "Reklamlar & Öneriler");
+        public int LocationCount => Tweaks.Count(t => t.Category == "Konum & İzinler");
 
         [ObservableProperty]
         private PrivacyStats _stats = new();
@@ -65,6 +85,10 @@ namespace Bakım.ViewModels
         partial void OnSelectedCategoryChanged(string value)
         {
             _filteredTweaks.Refresh();
+            OnPropertyChanged(nameof(IsFilterAll));
+            OnPropertyChanged(nameof(IsFilterTelemetry));
+            OnPropertyChanged(nameof(IsFilterAds));
+            OnPropertyChanged(nameof(IsFilterLocation));
         }
 
         private bool FilterTweakItem(object obj)
@@ -159,6 +183,10 @@ namespace Bakım.ViewModels
                 TotalBloatwareCount = BloatwareApps.Count,
                 InstalledBloatwareCount = BloatwareApps.Count(a => a.IsInstalled && !a.IsEssential)
             };
+            OnPropertyChanged(nameof(TelemetryCount));
+            OnPropertyChanged(nameof(AdsCount));
+            OnPropertyChanged(nameof(LocationCount));
+            TweaksStateChanged?.Invoke();
         }
 
         [RelayCommand]
@@ -291,6 +319,50 @@ namespace Bakım.ViewModels
             finally
             {
                 app.IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task RemoveAllSafeBloatwareAsync()
+        {
+            var safeApps = BloatwareApps.Where(a => !a.IsEssential && a.IsInstalled).ToList();
+            if (safeApps.Count == 0)
+            {
+                MessageBox.Show("Sisteminizde kaldırılacak temel olmayan yüklü bloatware bulunamadı.", "Temiz Sistem", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                $"{safeApps.Count} adet temel olmayan bloatware uygulamasını sistemden kaldırmak istiyor musunuz?\n\n(Hesap Makinesi, Windows Mağazası gibi temel sistem bileşenleri güvenle korunacaktır.)",
+                "Toplu Bloatware Temizliği",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            IsBusy = true;
+            int removed = 0;
+            try
+            {
+                foreach (var app in safeApps)
+                {
+                    StatusMessage = $"{app.DisplayName} kaldırılıyor...";
+                    app.IsBusy = true;
+                    bool ok = await _privacyService.RemoveBloatwareAsync(app);
+                    app.IsBusy = false;
+                    if (ok)
+                    {
+                        app.IsInstalled = false;
+                        removed++;
+                    }
+                }
+                UpdateStats();
+                MessageBox.Show($"{removed} adet gereksiz bloatware uygulaması başarıyla temizlendi.", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            finally
+            {
+                IsBusy = false;
+                StatusMessage = $"Gizlilik Skoru: %{Stats.ProtectionPercentage}";
             }
         }
     }

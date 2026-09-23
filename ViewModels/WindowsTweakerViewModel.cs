@@ -40,7 +40,8 @@ namespace Bakım.ViewModels
             ITweaksSnapshotService snapshotService,
             IEdgeTweaksService edgeService,
             ISettingsControlPanelTweaksService settingsCplService,
-            IFileExplorerTweaksService fileExplorerService)
+            IFileExplorerTweaksService fileExplorerService,
+            PrivacyDebloatViewModel privacyDebloat)
         {
             _behaviorService = behaviorService;
             _bootLogonService = bootLogonService;
@@ -55,6 +56,8 @@ namespace Bakım.ViewModels
             _edgeService = edgeService;
             _settingsCplService = settingsCplService;
             _fileExplorerService = fileExplorerService;
+            PrivacyDebloat = privacyDebloat;
+            PrivacyDebloat.TweaksStateChanged += UpdateCategoryCounts;
 
             AllTweaks = new ObservableCollection<SystemTweakItem>();
             ClassicTools = new ObservableCollection<ClassicAppItem>();
@@ -71,6 +74,7 @@ namespace Bakım.ViewModels
             _ = RefreshAllAsync();
         }
 
+        public PrivacyDebloatViewModel PrivacyDebloat { get; }
         public ObservableCollection<SystemTweakItem> AllTweaks { get; }
         public ObservableCollection<ClassicAppItem> ClassicTools { get; }
         public ObservableCollection<TweakerCategoryModel> CategoryList { get; } = new();
@@ -86,7 +90,7 @@ namespace Bakım.ViewModels
         private TweakerStats _stats = new();
 
         [ObservableProperty]
-        private string _activeCategory = "All"; // All, Windows11, Behavior, BootLogon, DesktopTaskbar, ContextMenu, Appearance, AdvancedAppearance, FileExplorer, SettingsCpl, Edge, Tools, ClassicApps
+        private string _activeCategory = "All"; // All, Windows11, Behavior, BootLogon, DesktopTaskbar, ContextMenu, Appearance, AdvancedAppearance, FileExplorer, SettingsCpl, Edge, Tools, ClassicApps, PrivacyDebloat
 
         partial void OnActiveCategoryChanged(string value)
         {
@@ -99,13 +103,15 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(IsToolsTabVisible));
             OnPropertyChanged(nameof(IsClassicAppsTabVisible));
             OnPropertyChanged(nameof(IsAdvancedAppearanceTabVisible));
+            OnPropertyChanged(nameof(IsPrivacyDebloatVisible));
             _filteredTweaks.Refresh();
         }
 
-        public bool IsTweaksListVisible => !string.IsNullOrWhiteSpace(SearchText) || (ActiveCategory != "Tools" && ActiveCategory != "ClassicApps" && ActiveCategory != "AdvancedAppearance");
+        public bool IsTweaksListVisible => !string.IsNullOrWhiteSpace(SearchText) || (ActiveCategory != "Tools" && ActiveCategory != "ClassicApps" && ActiveCategory != "AdvancedAppearance" && ActiveCategory != "PrivacyDebloat");
         public bool IsToolsTabVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "Tools";
         public bool IsClassicAppsTabVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "ClassicApps";
         public bool IsAdvancedAppearanceTabVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "AdvancedAppearance";
+        public bool IsPrivacyDebloatVisible => string.IsNullOrWhiteSpace(SearchText) && ActiveCategory == "PrivacyDebloat";
 
         public string ActiveCategoryDisplayName => ActiveCategory switch
         {
@@ -121,6 +127,7 @@ namespace Bakım.ViewModels
             "Edge" => "Microsoft Edge",
             "Tools" => "Sistem Araçları",
             "ClassicApps" => "Klasik Uygulamalar",
+            "PrivacyDebloat" => "Gizlilik & Debloat",
             _ => "Tüm İnce Ayarlar"
         };
 
@@ -182,6 +189,7 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(IsToolsTabVisible));
             OnPropertyChanged(nameof(IsClassicAppsTabVisible));
             OnPropertyChanged(nameof(IsAdvancedAppearanceTabVisible));
+            OnPropertyChanged(nameof(IsPrivacyDebloatVisible));
             OnPropertyChanged(nameof(IsSearchActive));
             _filteredTweaks.Refresh();
             OnPropertyChanged(nameof(SearchResultsText));
@@ -190,11 +198,6 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public void SwitchCategory(string category)
         {
-            if (string.Equals(category, "PrivacyDebloat", StringComparison.OrdinalIgnoreCase))
-            {
-                NavigationService.Instance.Navigate("PrivacyDebloat");
-                return;
-            }
             ActiveCategory = category;
         }
 
@@ -208,11 +211,6 @@ namespace Bakım.ViewModels
         public void SelectCategoryAndClosePicker(string categoryKey)
         {
             IsCategoryPickerOpen = false;
-            if (string.Equals(categoryKey, "PrivacyDebloat", StringComparison.OrdinalIgnoreCase))
-            {
-                NavigationService.Instance.Navigate("PrivacyDebloat");
-                return;
-            }
             ActiveCategory = categoryKey;
         }
 
@@ -1162,8 +1160,8 @@ namespace Bakım.ViewModels
                         cat.ActiveCount = ClassicTools.Count(c => c.IsActivated);
                         break;
                     case "PrivacyDebloat":
-                        cat.TotalCount = 0;
-                        cat.ActiveCount = 0;
+                        cat.TotalCount = PrivacyDebloat?.Stats?.TotalTweaksCount ?? 0;
+                        cat.ActiveCount = PrivacyDebloat?.Stats?.ActiveTweaksCount ?? 0;
                         break;
                 }
             }

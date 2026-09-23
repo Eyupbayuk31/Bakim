@@ -834,13 +834,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3181 = new ReleaseChangelogItem
+            {
+                Version = "v3.18.1",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Gizlilik & Debloat Master-Detail Entegrasyonu, Kesintisiz Sol Menü & Fluent 2 Tasarım Devrimi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Kesintisiz Sol Kategori Menüsü (Master-Detail Persistence): 'Gizlilik & Debloat' kategorisine tıklandığında sol menünün (KATEGORİLER 14) kaybolma ve bağlamı koparma sorunu kökten çözüldü; sol ray sabit kalarak kategoriler arası akıcı ve çift yönlü geçiş sağlandı.",
+                    "Canlı Sayaç Rozeti Entegrasyonu: Sol menüdeki 'Gizlilik & Debloat' öğesi dinamik aktif/toplam koruma kuralı sayacıyla (örn: 6/12) güçlendirildi.",
+                    "4 Yeni KPI Gösterge Kartı: Gizlilik Koruma Skoru (%50), Aktif Koruma Kuralları, Önerilen Korumalar ve Yüklü Bloatware sayısı için şık gösterge paneli.",
+                    "Solid Border Tweak & Bloatware Kartları: Slate Dark yüzey, belirgin #334155 sınır çizgileri, neon mavi hover parlama ve iç ayırıcı çizgi ile görsel netlik sağlandı.",
+                    "Segmented Sub-Tab Switcher & Filtre Çipleri: 'Gizlilik & Telemetri' ve 'Bloatware Kaldırıcı' modları arasında akıcı geçiş, kural sayılarını gösteren zengin filtre çipleri.",
+                    "Toplu Güvenli Bloatware Kaldırma: Hesap Makinesi ve Mağaza gibi temel sistem bileşenlerini koruyarak tek tıkla tüm gereksiz bloatware uygulamalarını temizleme yeteneği."
+                }
+            };
+
             var v3180 = new ReleaseChangelogItem
             {
                 Version = "v3.18.0",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Yazılım Mağazası Kart Mimarisi Revizyonu, Ayrık Çizgiler, Çift Görünüm Modu & Fluent İkonlar",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Kusursuz Kenarlıklı Kart Mimarisi (Solid Border Card): Mağaza kartlarındaki stil çakışması (kenarlıksız ve havada asılı durma) kökten çözüldü; derin Slate Dark yüzey, belirgin #334155 sınır çizgileri ve akıcı hover parlama efektleri uygulandı.",
@@ -1354,8 +1372,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3180;
+            LatestRelease = v3181;
 
+            ReleaseHistory.Add(v3181);
             ReleaseHistory.Add(v3180);
             ReleaseHistory.Add(v3179);
             ReleaseHistory.Add(v3178);
