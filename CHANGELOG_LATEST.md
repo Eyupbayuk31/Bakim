@@ -1,23 +1,33 @@
-# Bakım v3.17.6 - Sürüm Notları
+# Bakım v3.17.7 - Sürüm Notları
 
-## Mağaza UI/UX Devrimi: Kompakt Metrik Şeridi, Aktif Kategori Vurgusu & Ferah Kart Alanı 💎⚡
+## Mağaza Kartları Fluent 2 Tasarım Devrimi: Kategori Vurguları, Akıllı Seçim & Ayrık Eylem Barı 💎🎨
 
-### 1. Tek Satır Entegre Gezinti & Metrik Şeridi (Vertical Space Reclaim)
-- **120+ Piksel Dikey Alan Tasarrufu:** Sayfa dikey alanının yaklaşık %40'ını tüketen ve kartları ekran dışına iten 4 devasa KPI kutucuğu (~110px) tamamen kaldırıldı.
-- **Entegre Üst Şerit:** Sol tarafta ferah sekme değiştirici (`📦 Uygulama Kataloğu` / `⚡ Hazır Paketler`), sağ tarafta ise 4 adet şık ve kompakt telemetri rozeti (`Katalog: 45`, `Kurulu: X`, `Eksik: Y`, `Seçili: Z`) tek bir satırda kusursuzca harmanlandı.
+### 1. Dinamik Kategori Vurgulu İkon Squirclerı (Category Aesthetics)
+- **45 Uygulama İçin Özel Renk Kodlaması:** Mağazadaki tüm uygulamaların aynı koyu camgöbeği/mavi kare içinde monoton ve ayırt edilemez görünmesi sorunu kökten çözüldü.
+- **Kategori Paleti:**
+  - 🌐 **Runtimes & Sistem:** Gökyüzü Mavisi / Cyan (`#38BDF8`)
+  - 🎮 **Oyun & İstemciler:** Neon Mor / Indigo (`#A78BFA`)
+  - 🎵 **Müzik & Medya:** Kehribar Sarısı / Gold (`#FBBF24`)
+  - 🛠️ **Yazılım & Araçlar:** Zümrüt Yeşili / Mint (`#34D399`)
+  - 🧭 **Web Tarayıcıları:** Canlı Mavi (`#60A5FA`)
+  - 💬 **İletişim & Sosyal:** Mercan Pembe / Rose (`#FB7185`)
+  - 💻 **Geliştirici & Kodlama:** Fuşya Mor (`#C084FC`)
+- Her ikon kutusu kendi kategorisinin %15 saydam renk tonu, zarif dış çerçevesi ve keskin Fluent sembolüyle canlandırıldı.
 
-### 2. Çift Buton Karmaşasının & Mantıksız Gezintinin Kaldırılması
-- **Mükerrer Buton Temizliği:** Arama ve filtreleme araç çubuğunda yer alan ve üst sekmeyle çelişen "⚡ Hazır Paketler" butonu kaldırıldı.
-- **Odaklanmış Arama ve Seçim Araçları:** Arama çubuğu satırı artık yalnızca hızlı arama kutusuna ve toplu seçim aksiyonlarına (`Görünenleri Seç`, `Seçimi Temizle`) odaklandı.
+### 2. Akıllı Kart Seçim Işıltısı (Visual Selection State)
+- **Aktif Seçim Geri Bildirimi:** Sağ üstteki seçim kutucuğu (`CheckBox`) işaretlendiğinde kart çerçevesi parlak Fluent Accent (`#0078D4`) rengine bürünür ve kart zemini hafif vurgu tonuyla aydınlanır.
+- **Korumalı Dokunmatik Alan:** Checkbox ögesi rastgele havada duran ham bir kontrol yerine kartın sağ üst köşesine sabitlenmiş şık yuvarlatılmış bir rozet içine alındı.
 
-### 3. Dinamik Aktif Kategori Vurgusu (Visual Feedback)
-- **Akıllı Kategori Durumu:** Kategori hap butonları (`Tümü`, `Runtimes`, `Oyun & İstemciler`, `Müzik & Medya`, `Yazılım`, `Tarayıcılar`, `İletişim`, `Geliştirici`) `StringToNavAppearanceConverter` ile bağlandı.
-- **Fluent Primary Glow:** Seçili olan aktif kategori Windows 11 Fluent Primary vurgu rengi ve belirgin kontrastla parlayarak kullanıcının anlık nerede olduğunu kristal netliğinde gösterir.
+### 3. Sadeleştirilmiş Ayrık Alt Eylem Barı (Eliminated Clunky Buttons)
+- **Hantal Blok Butonlara Son:** Kartın altını kaplayan ve ekranı devasa gri kalıplarla dolduran 100% genişlikteki kaba buton kaldırıldı.
+- **Dengeli Ayrık Düzen:**
+  - Sol tarafta indirme ikonu ve dosya boyutu hapı (`[ 💾 32.1 MB ]`).
+  - Sağ tarafta ise şık, kompakt ve modern `[ ⬇ Yükle ]` (`Appearance="Primary"`, 30px) eylem butonu.
 
-### 4. Ferah Uygulama Kartı Alanı & Pürüzsüz Kaydırma
-- **Sıfır Kart Kesilmesi:** Konsol çekmecesi açıldığında dahi uygulama kartlarının rahatça görülebilmesi için çalışma alanı genişletildi ve `ScrollViewer` düzeni optimize edildi.
-- **Kesintisiz Fare Tekerleği Deneyimi:** Donanım ivmeli akıcı kaydırma ve `PreviewMouseWheel` ile menüler arası pürüzsüz geçiş sağlandı.
+### 4. Mükerrer "Kurulu" Karmaşasına Son
+- Sistemde halihazırda kurulu olan uygulamalarda hem "Kurulu" rozeti hem de altında ikinci bir devasa "Kurulu" butonunun yer alması kafa karışıklığını giderildi.
+- Artık kurulu uygulamalar sağ altta zarif yeşil durum rozeti (`[ ✔ Kurulu ]`) ve hemen yanında tek tıkla onarım/yeniden kurulum yapmayı sağlayan kompakt bir simge butonu (`[ 🔄 ]`) olarak görüntülenir.
 
-### 5. Sıfır Sertifika & Engelsiz Otonom Güncelleme & Yerel SDK Doğrulaması
-- GitHub Releases üzerinden doğrudan HTTPS indirme ve sıfır imza sürtünmesiyle otonom kurulum standardı korunmuştur.
-- Tüm XAML sembolleri (`verify-symbols.py`), renk tokenları (`verify-tokens.py`) ve Release derlemesi yerel .NET 10 SDK ile %100 sıfır hata/uyarı ile doğrulanmıştır.
+### 5. Kararlı Kart Yüksekliği & Akıcı Kaydırma
+- Kart açıklamaları sabit satır yüksekliğine (`LineHeight="16"`, `Height="34"`) oturtularak farklı metin uzunluklarının kart hizalarını bozması engellendi; 3 ve 4 sütunlu ızgara düzeni kusursuz simetriye kavuştu.
+- .NET 10 SDK ile Release derlemesi yerel ortamda %100 sıfır hata/uyarı ile test edildi.

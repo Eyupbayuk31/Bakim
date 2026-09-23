@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3177 = new ReleaseChangelogItem
+            {
+                Version = "v3.17.7",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Mağaza Kartları Fluent 2 Tasarım Revizyonu: Kategori Vurguları, Akıllı Seçim & Ayrık Eylem Barı",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Dinamik Kategori Vurgulu İkon Squirclerı: Tüm uygulamaların aynı donuk mavi renkte görünmesi sorunu çözüldü; Runtimes (Açık Mavi), Oyun (Neon Mor), Müzik & Medya (Kehribar Sarı), Yazılım & Sistem (Zümrüt Yeşil), Tarayıcılar (Mavi), İletişim (Mercan Pembe) ve Geliştirici (Fuşya Mor) renkleriyle canlandırıldı.",
+                    "Akıllı Kart Seçim Işıltısı (Visual Selection Feedback): Toplu kurulum kutucuğu işaretlendiğinde kart çerçevesi parlak Fluent Accent rengine bürünür ve arka plan hafif vurgu tonuyla aydınlanır.",
+                    "Sadeleştirilmiş Ayrık Alt Eylem Barı: Kartın altını kaplayan hantal ve kaba tek parça koyu gri buton tamamen kaldırıldı; sol tarafa dosya boyutu hapı, sağ tarafa ise kompakt şık 'Yükle' butonu yerleştirildi.",
+                    "Mükerrer 'Kurulu' Karmaşasına Son: Sistemde mevcut olan uygulamalarda gereksiz 'Kurulu' butonu yerine zarif yeşil durum rozeti ve yanında tek tıkla onarım/yeniden kurulum simgesi entegre edildi.",
+                    "Hizalı & Kararlı Kart Yüksekliği: Açıklama metinleri sabit yükseklik ve satır aralığına oturtularak tüm kartların sütun ve satırlarda milimetrik hizalanması sağlandı."
+                }
+            };
+
             var v3176 = new ReleaseChangelogItem
             {
                 Version = "v3.17.6",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Mağaza UI/UX Devrimi: Kompakt Metrik Şeridi, Aktif Kategori Vurgusu & Ferah Kart Alanı",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Tek Satır Entegre Gezinti & Metrik Şeridi: Sayfa yüksekliğini tüketen 4 adet devasa KPI kutucuğu kaldırılarak sol tarafta sekmeler, sağ tarafta 4'lü kompakt metrik rozetleri (Katalog, Kurulu, Eksik, Seçili) tek bir şık şeritte birleştirildi.",
@@ -1285,8 +1302,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3176;
+            LatestRelease = v3177;
 
+            ReleaseHistory.Add(v3177);
             ReleaseHistory.Add(v3176);
             ReleaseHistory.Add(v3175);
             ReleaseHistory.Add(v3171);
