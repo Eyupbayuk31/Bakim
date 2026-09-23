@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3176 = new ReleaseChangelogItem
+            {
+                Version = "v3.17.6",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Mağaza UI/UX Devrimi: Kompakt Metrik Şeridi, Aktif Kategori Vurgusu & Ferah Kart Alanı",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Tek Satır Entegre Gezinti & Metrik Şeridi: Sayfa yüksekliğini tüketen 4 adet devasa KPI kutucuğu kaldırılarak sol tarafta sekmeler, sağ tarafta 4'lü kompakt metrik rozetleri (Katalog, Kurulu, Eksik, Seçili) tek bir şık şeritte birleştirildi.",
+                    "Gereksiz & Çift Buton Karmaşasının Temizlenmesi: Arama ve filtre araç çubuğunda üst menüyle mükerrer olan 'Hazır Paketler' butonu kaldırılarak arayüz tamamen sadeleştirildi.",
+                    "Aktif Kategori Vurgusu: Filtreleme hap butonları (Tümü, Runtimes, Oyun vb.) seçildiğinde Fluent Primary vurgu rengiyle parlayarak hangi kategorinin incelendiğini anında belli eder hale getirildi.",
+                    "Ferah Uygulama Kartı Çalışma Alanı: Dikeyde 120 pikselden fazla tasarruf sağlanarak uygulama kartlarının konsol çekmecesi açıldığında dahi kesilmeden pürüzsüzce kaydırılabilmesi sağlandı.",
+                    "Akıcı Kaydırma & Fare Tekerleği İyileştirmesi: Mağaza içerik alanı için fare tekerleği yönlendirmesi ve donanım ivmeli pürüzsüz piksel kaydırma korundu."
+                }
+            };
+
             var v3175 = new ReleaseChangelogItem
             {
                 Version = "v3.17.5",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Yüksek Hızlı İndirme & Akıcı Kaydırma & Sıfır UI Kilitlenmesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Ultra Yüksek Hızlı İndirme Motoru: abbodi1406 resmi GitHub Gigabit CDN'inden doğrudan Visual C++ AIO tek dosya (.exe - 32.1 MB) entegrasyonu sağlandı. 10 kat daha hızlı indirme ve anında sessiz kurulum.",
@@ -1268,8 +1285,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3175;
+            LatestRelease = v3176;
 
+            ReleaseHistory.Add(v3176);
             ReleaseHistory.Add(v3175);
             ReleaseHistory.Add(v3171);
             ReleaseHistory.Add(v3170);

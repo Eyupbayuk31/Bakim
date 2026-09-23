@@ -1,24 +1,23 @@
-# Bakım v3.17.5 - Sürüm Notları
+# Bakım v3.17.6 - Sürüm Notları
 
-## Ultra Yüksek Hızlı İndirme, Akıcı Kaydırma & Sıfır UI Kilitlenmesi 🚀⚡
+## Mağaza UI/UX Devrimi: Kompakt Metrik Şeridi, Aktif Kategori Vurgusu & Ferah Kart Alanı 💎⚡
 
-### 1. Ultra Yüksek Hızlı Doğrudan Gigabit CDN İndirme Motoru
-- **abbodi1406 Resmi Gigabit CDN Entegrasyonu:** TechPowerUp'ın bot engeli ve 405/403 hız kısıtlamalarına takılan indirme mimarisi terk edildi; abbodi1406'nın resmi GitHub CDN'i üzerinden doğrudan tek dosya `VisualCppRedist_AIO_x86_x64.exe` (32.1 MB) indirme motoru devreye alındı.
-- **10 Kat Daha Hızlı:** 82 MB'lık zip indirme ve arşiv çıkarma adımları ortadan kaldırılarak dosya boyutu %60 küçültüldü ve doğrudan hat hızında (tarayıcı hızıyla birebir) indirme sağlandı.
-- **Tek Tıkla Sessiz Kurulum:** İndirilen paket `/ai /gm2` parametreleriyle arka planda 2005'ten 2022'ye kadar (x86/x64) tüm Visual C++ kütüphanelerini tek hamlede kurar.
+### 1. Tek Satır Entegre Gezinti & Metrik Şeridi (Vertical Space Reclaim)
+- **120+ Piksel Dikey Alan Tasarrufu:** Sayfa dikey alanının yaklaşık %40'ını tüketen ve kartları ekran dışına iten 4 devasa KPI kutucuğu (~110px) tamamen kaldırıldı.
+- **Entegre Üst Şerit:** Sol tarafta ferah sekme değiştirici (`📦 Uygulama Kataloğu` / `⚡ Hazır Paketler`), sağ tarafta ise 4 adet şık ve kompakt telemetri rozeti (`Katalog: 45`, `Kurulu: X`, `Eksik: Y`, `Seçili: Z`) tek bir satırda kusursuzca harmanlandı.
 
-### 2. Sıfır UI Kilitlenmesi & Non-Blocking Asenkron Mimari
-- **WPF Dispatcher Queue Koruması:** İndirilen her 80 KB'lık blokta UI thread'ini senkron (`Dispatcher.Invoke`) olarak kilitleyen ve binlerce satır log üreten eski mekanizma kaldırıldı.
-- **Stopwatch Tabanlı 150ms Throttler:** Ağ soketi kesintisiz okuma yaparken, arayüz ilerleme raporları ve anlık hız hesabı (MB/s) en fazla 150 ms'de bir `DispatcherPriority.Background` üzerinden gönderilerek UI'ın kilitlenmesi ("program yanıt vermiyor" uyarısı) %100 engellendi.
-- **Tam Bağımsız Gezinme:** İndirme veya kurulum arka planda sürerken kullanıcı sol menüden Dashboard, Temizleyici, Analizör veya Tweaker modüllerine 60 FPS hızında takılmadan geçiş yapabilir.
+### 2. Çift Buton Karmaşasının & Mantıksız Gezintinin Kaldırılması
+- **Mükerrer Buton Temizliği:** Arama ve filtreleme araç çubuğunda yer alan ve üst sekmeyle çelişen "⚡ Hazır Paketler" butonu kaldırıldı.
+- **Odaklanmış Arama ve Seçim Araçları:** Arama çubuğu satırı artık yalnızca hızlı arama kutusuna ve toplu seçim aksiyonlarına (`Görünenleri Seç`, `Seçimi Temizle`) odaklandı.
 
-### 3. Pürüzsüz Piksel Kaydırma (ScrollViewer & MouseWheel Düzeltmesi)
-- **Akıcı Kart Kaydırma:** Uygulama Kataloğu ve Hazır Paketler sekmelerindeki `ScrollViewer` bileşenlerine `CanContentScroll="False"` ve `PreviewMouseWheel` yönlendirmesi eklendi; kartların ve fare tekerleğinin takılması tamamen giderildi.
+### 3. Dinamik Aktif Kategori Vurgusu (Visual Feedback)
+- **Akıllı Kategori Durumu:** Kategori hap butonları (`Tümü`, `Runtimes`, `Oyun & İstemciler`, `Müzik & Medya`, `Yazılım`, `Tarayıcılar`, `İletişim`, `Geliştirici`) `StringToNavAppearanceConverter` ile bağlandı.
+- **Fluent Primary Glow:** Seçili olan aktif kategori Windows 11 Fluent Primary vurgu rengi ve belirgin kontrastla parlayarak kullanıcının anlık nerede olduğunu kristal netliğinde gösterir.
 
-### 4. Canlı Konsol Kontrol Çekmecesi & Gelişmiş Araç Çubuğu
-- **Canlı Ağ Hız Göstergesi:** İndirme hızını gerçek zamanlı MB/s formatında başlıkta gösterme.
-- **Otomatik Kaydırma (Auto-Scroll) & Metin Koruması:** Yeni log geldiğinde en alta otomatik kaydırma ve istenildiğinde durdurabilme anahtarı.
-- **Konsol Araçları:** Konsolu tek tıkla temizleme ("Temizle"), panoya kopyalama ("Kopyala") ve konsol yüksekliğini büyütüp küçültme ("Genişlet" 260px / "Küçült" 110px).
+### 4. Ferah Uygulama Kartı Alanı & Pürüzsüz Kaydırma
+- **Sıfır Kart Kesilmesi:** Konsol çekmecesi açıldığında dahi uygulama kartlarının rahatça görülebilmesi için çalışma alanı genişletildi ve `ScrollViewer` düzeni optimize edildi.
+- **Kesintisiz Fare Tekerleği Deneyimi:** Donanım ivmeli akıcı kaydırma ve `PreviewMouseWheel` ile menüler arası pürüzsüz geçiş sağlandı.
 
-### 5. Yerel .NET 10 SDK & Pre-Flight Gatekeeper
-- Kullanıcı bilgisayarına resmi Microsoft .NET 10 SDK (v10.0.401) kurularak tüm Release derlemelerinin (`dotnet build -c Release`) ve sembol doğrulamalarının yerel makinede %100 sıfır hata ile geçmesi sağlandı.
+### 5. Sıfır Sertifika & Engelsiz Otonom Güncelleme & Yerel SDK Doğrulaması
+- GitHub Releases üzerinden doğrudan HTTPS indirme ve sıfır imza sürtünmesiyle otonom kurulum standardı korunmuştur.
+- Tüm XAML sembolleri (`verify-symbols.py`), renk tokenları (`verify-tokens.py`) ve Release derlemesi yerel .NET 10 SDK ile %100 sıfır hata/uyarı ile doğrulanmıştır.
