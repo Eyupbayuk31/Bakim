@@ -82,7 +82,7 @@ namespace Bakım.Services
                     CategoryDisplayName = "Runtimes",
                     IconSymbol = "DeveloperBoard24",
                     Publisher = "TechPowerUp / abbodi1406",
-                    SizeText = "82.4 MB",
+                    SizeText = "32.1 MB",
                     InstallerType = StoreInstallerType.TechPowerUpVcAio,
                     RegistryDetectKeyword = "Visual C++ 2015-2022"
                 },
@@ -787,52 +787,104 @@ namespace Bakım.Services
             }
         }
 
-        #region TechPowerUp Visual C++ All-in-One Downloader & Silent Installer
+        #region TechPowerUp / abbodi1406 Visual C++ All-in-One Downloader & Silent Installer
 
         private async Task<bool> InstallTechPowerUpVcAioAsync(StoreAppItem app, Action<int, string>? progress, CancellationToken ct)
         {
-            string tempDir = Path.Combine(Path.GetTempPath(), "Bakim_VCRedist_AIO");
+            string exeFile = Path.Combine(Path.GetTempPath(), "VisualCppRedist_AIO_x86_x64.exe");
             string zipFile = Path.Combine(Path.GetTempPath(), "Visual-C-Runtimes-All-in-One.zip");
+            string tempDir = Path.Combine(Path.GetTempPath(), "Bakim_VCRedist_AIO");
 
             try
             {
-                progress?.Report(5, "TechPowerUp sunucuları taranıyor...");
-                string downloadUrl = await ResolveTechPowerUpUrlAsync();
+                app.Status = StoreInstallStatus.Downloading;
+                progress?.Report(5, "Yüksek hızlı CDN sunucularına bağlanılıyor...");
 
-                if (string.IsNullOrWhiteSpace(downloadUrl))
+                // 1. Birincil ve en hızlı kaynak: abbodi1406 resmi GitHub Gigabit CDN doğrudan tek exe (32.1 MB)
+                string directExeUrl = "https://github.com/abbodi1406/vcredist/releases/latest/download/VisualCppRedist_AIO_x86_x64.exe";
+                bool exeDownloadSuccess = false;
+
+                try
                 {
-                    // Fallback to official GitHub Release of abbodi1406
-                    progress?.Report(10, "Ayna sunucuya geçiliyor (GitHub Mirror)...");
-                    downloadUrl = "https://github.com/abbodi1406/vcredist/releases/latest/download/Visual-C-Runtimes-All-in-One-May-2026.zip";
+                    progress?.Report(10, "Visual C++ AIO paketi indiriliyor (32.1 MB)...");
+                    await DownloadFileWithProgressAsync(directExeUrl, exeFile, (pct, status) =>
+                    {
+                        int overall = 10 + (int)(pct * 0.65);
+                        app.ProgressPercentage = overall;
+                        app.StatusMessage = status;
+                        progress?.Report(overall, status);
+                    }, ct);
+
+                    if (File.Exists(exeFile) && new FileInfo(exeFile).Length > 10 * 1024 * 1024)
+                    {
+                        exeDownloadSuccess = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning($"Doğrudan AIO Exe indirilemedi ({ex.Message}), alternatif kaynaklar deneniyor...", ex, nameof(StoreService));
                 }
 
-                progress?.Report(15, "Paket indiriliyor (82.4 MB)...");
+                if (exeDownloadSuccess)
+                {
+                    app.Status = StoreInstallStatus.Installing;
+                    progress?.Report(80, "Tüm Visual C++ (2005-2022 x86/x64) kütüphaneleri kuruluyor...");
+
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = exeFile,
+                        Arguments = "/ai /gm2", // /ai = unattended silent install, /gm2 = disable 7z extraction dialog
+                        CreateNoWindow = true,
+                        UseShellExecute = true,
+                        Verb = "runas"
+                    };
+
+                    using var p = Process.Start(psi);
+                    if (p != null)
+                    {
+                        await p.WaitForExitAsync(ct);
+                    }
+
+                    progress?.Report(98, "Geçici kurulum dosyaları temizleniyor...");
+                    try { if (File.Exists(exeFile)) File.Delete(exeFile); } catch { }
+
+                    app.Status = StoreInstallStatus.Installed;
+                    app.IsInstalled = true;
+                    app.ProgressPercentage = 100;
+                    app.StatusMessage = "Tüm Visual C++ Kütüphaneleri Kurulu";
+                    progress?.Report(100, "Tebrikler! 2005-2022 tüm C++ kütüphaneleri başarıyla kuruldu.");
+                    return true;
+                }
+
+                // 2. İkincil kaynak (Yedek zip): TechPowerUp veya GitHub Zip
+                progress?.Report(15, "Yedek paket kaynağı çözümleniyor...");
+                string downloadUrl = await ResolveTechPowerUpUrlAsync();
+                if (string.IsNullOrWhiteSpace(downloadUrl))
+                {
+                    downloadUrl = "https://github.com/abbodi1406/vcredist/releases/latest/download/VisualCppRedist_AIO_x86_x64.zip";
+                }
+
+                progress?.Report(20, "Yedek arşiv indiriliyor...");
                 await DownloadFileWithProgressAsync(downloadUrl, zipFile, (pct, status) =>
                 {
-                    // Map 0-100% to 15-70% overall progress
-                    int overall = 15 + (int)(pct * 0.55);
+                    int overall = 20 + (int)(pct * 0.55);
                     app.ProgressPercentage = overall;
-                    app.StatusMessage = $"İndiriliyor: %{pct}";
+                    app.StatusMessage = status;
                     progress?.Report(overall, status);
                 }, ct);
 
                 if (!File.Exists(zipFile))
                 {
-                    throw new FileNotFoundException("İndirilen zip dosyası bulunamadı.");
+                    throw new FileNotFoundException("İndirilen kurulum arşivi bulunamadı.");
                 }
 
                 app.Status = StoreInstallStatus.Installing;
                 progress?.Report(75, "Arşiv çıkartılıyor...");
-                if (Directory.Exists(tempDir))
-                {
-                    Directory.Delete(tempDir, true);
-                }
+                if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
                 Directory.CreateDirectory(tempDir);
-
                 ZipFile.ExtractToDirectory(zipFile, tempDir, true);
 
                 progress?.Report(80, "Tüm Visual C++ kütüphaneleri kuruluyor (Sessiz Mod)...");
-
                 string batFile = Path.Combine(tempDir, "install_all.bat");
                 if (!File.Exists(batFile))
                 {
@@ -842,24 +894,39 @@ namespace Bakım.Services
 
                 if (!File.Exists(batFile))
                 {
-                    throw new FileNotFoundException("Kurulum betiği (install_all.bat) bulunamadı.");
+                    var foundExe = Directory.GetFiles(tempDir, "*.exe").FirstOrDefault();
+                    if (foundExe != null)
+                    {
+                        var psiExe = new ProcessStartInfo
+                        {
+                            FileName = foundExe,
+                            Arguments = "/ai /gm2",
+                            WorkingDirectory = tempDir,
+                            CreateNoWindow = true,
+                            UseShellExecute = true,
+                            Verb = "runas"
+                        };
+                        using var pExe = Process.Start(psiExe);
+                        if (pExe != null) await pExe.WaitForExitAsync(ct);
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException("Kurulum betiği veya çalıştırılabilir dosya bulunamadı.");
+                    }
                 }
-
-                // Run install_all.bat silently in background as administrator
-                var psi = new ProcessStartInfo
+                else
                 {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c \"{batFile}\" /y",
-                    WorkingDirectory = tempDir,
-                    CreateNoWindow = true,
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-
-                using var p = Process.Start(psi);
-                if (p != null)
-                {
-                    await p.WaitForExitAsync(ct);
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/c \"{batFile}\" /y",
+                        WorkingDirectory = tempDir,
+                        CreateNoWindow = true,
+                        UseShellExecute = true,
+                        Verb = "runas"
+                    };
+                    using var p = Process.Start(psi);
+                    if (p != null) await p.WaitForExitAsync(ct);
                 }
 
                 progress?.Report(98, "Geçici dosyalar temizleniyor...");
@@ -875,6 +942,7 @@ namespace Bakım.Services
             }
             catch
             {
+                try { if (File.Exists(exeFile)) File.Delete(exeFile); } catch { }
                 try { if (File.Exists(zipFile)) File.Delete(zipFile); } catch { }
                 try { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); } catch { }
                 throw;
@@ -1069,28 +1137,51 @@ namespace Bakım.Services
 
             long totalBytes = response.Content.Headers.ContentLength ?? -1L;
             using var sourceStream = await response.Content.ReadAsStreamAsync(ct);
-            using var destinationStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
+            using var destinationStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 131072, true);
 
-            var buffer = new byte[81920];
+            var buffer = new byte[131072]; // 128 KB high-performance buffer
             long totalRead = 0;
             int bytesRead;
+
+            var sw = Stopwatch.StartNew();
+            long lastReportMillis = 0;
+            long lastReportBytes = 0;
+            double currentSpeedMbSec = 0;
 
             while ((bytesRead = await sourceStream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
             {
                 await destinationStream.WriteAsync(buffer, 0, bytesRead, ct);
                 totalRead += bytesRead;
 
-                if (totalBytes > 0)
+                long now = sw.ElapsedMilliseconds;
+                if (now - lastReportMillis >= 150)
                 {
-                    int pct = (int)((totalRead * 100) / totalBytes);
-                    string status = $"İndiriliyor: {FormatBytes(totalRead)} / {FormatBytes(totalBytes)} (%{pct})";
-                    progress?.Invoke(pct, status);
+                    double elapsedSec = (now - lastReportMillis) / 1000.0;
+                    if (elapsedSec > 0)
+                    {
+                        currentSpeedMbSec = ((totalRead - lastReportBytes) / (1024.0 * 1024.0)) / elapsedSec;
+                    }
+                    lastReportMillis = now;
+                    lastReportBytes = totalRead;
+
+                    string speedStr = currentSpeedMbSec > 0 ? $" ({currentSpeedMbSec:F1} MB/s)" : "";
+                    if (totalBytes > 0)
+                    {
+                        int pct = (int)((totalRead * 100) / totalBytes);
+                        string status = $"İndiriliyor: {FormatBytes(totalRead)} / {FormatBytes(totalBytes)} (%{pct}){speedStr}";
+                        progress?.Invoke(pct, status);
+                    }
+                    else
+                    {
+                        string status = $"İndiriliyor: {FormatBytes(totalRead)}{speedStr}...";
+                        progress?.Invoke(50, status);
+                    }
                 }
-                else
-                {
-                    string status = $"İndiriliyor: {FormatBytes(totalRead)}...";
-                    progress?.Invoke(50, status);
-                }
+            }
+
+            if (totalBytes > 0)
+            {
+                progress?.Invoke(100, $"İndirme tamamlandı ({FormatBytes(totalBytes)})");
             }
         }
 

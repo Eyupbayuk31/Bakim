@@ -101,6 +101,12 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _consoleLogs = "Mağaza ve Runtimes motoru hazır.\n";
 
+        [ObservableProperty]
+        private bool _isConsoleExpanded;
+
+        [ObservableProperty]
+        private bool _isAutoScrollEnabled = true;
+
         #endregion
 
         public StoreViewModel(IStoreService storeService, ILogService log)
@@ -442,9 +448,10 @@ namespace Bakım.ViewModels
                     bool success = await _storeService.InstallAppAsync(app, (pct, status) =>
                     {
                         CurrentStatusText = status;
-                        if (!string.IsNullOrWhiteSpace(status))
+                        // Sadece aşama ve durum mesajlarını konsola yaz; indirme bayt akışıyla konsolu ve UI'ı kitleme
+                        if (!string.IsNullOrWhiteSpace(status) && !status.StartsWith("İndiriliyor:", StringComparison.OrdinalIgnoreCase))
                         {
-                            AppendLog($"  - {status}");
+                            AppendLog($"  • {status}");
                         }
                     }, token);
 
@@ -502,14 +509,40 @@ namespace Bakım.ViewModels
             IsQueueDrawerOpen = !IsQueueDrawerOpen;
         }
 
+        [RelayCommand]
+        public void ClearConsoleLogs()
+        {
+            ConsoleLogs = $"[{DateTime.Now:HH:mm:ss}] Günlük konsolu temizlendi.\n";
+        }
+
+        [RelayCommand]
+        public void CopyConsoleLogs()
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(ConsoleLogs))
+                {
+                    Clipboard.SetText(ConsoleLogs);
+                }
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public void ToggleConsoleExpand()
+        {
+            IsConsoleExpanded = !IsConsoleExpanded;
+        }
+
         private void AppendLog(string message)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            if (Application.Current == null) return;
+            Application.Current.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
             {
                 var sb = new StringBuilder(ConsoleLogs);
                 sb.AppendLine($"[{DateTime.Now:HH:mm:ss}] {message}");
                 ConsoleLogs = sb.ToString();
-            });
+            }));
         }
 
         #endregion

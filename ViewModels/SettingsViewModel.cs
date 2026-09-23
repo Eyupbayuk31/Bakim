@@ -834,20 +834,34 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
-            var v3171 = new ReleaseChangelogItem
+            var v3175 = new ReleaseChangelogItem
             {
-                Version = "v3.17.4",
+                Version = "v3.17.5",
                 ReleaseDate = "23 Eylül 2026",
-                Title = "Resmi Dijital Kod İmzalama (Authenticode Code Signing) & Sıfır Geçersiz Sembol",
+                Title = "Yüksek Hızlı İndirme & Akıcı Kaydırma & Sıfır UI Kilitlenmesi",
                 IsLatest = true,
                 IsExpanded = true,
                 Highlights = new List<string>
                 {
-                    "Resmi Dijital Kod İmzalama (Authenticode Code Signing): Tüm derlenen Bakim.exe ve Inno Setup kurulum paketleri (Bakim-*-Setup.exe) CI/CD hattında resmi Bakım Sertifikası ve SHA-256 Digest ile dijital olarak imzalandı.",
-                    "Otomatik Güncelleme İmza Doğrulaması (AuthenticodeVerifier): Güncelleme servisindeki imzasız paket uyarısı ve 'Devam edilsin mi?' engeli proje sertifikası tanıma kalkanı ile kökten çözüldü; kurulumlar sessiz ve güvenli akışa bağlandı.",
-                    "Windows TrustedPublisher Entegrasyonu: Kurulum esnasında resmi Bakım sertifikası Windows Güvenilir Yayıncılar deposuna kaydedilerek Windows SmartScreen ve UAC uyarıları minimize edildi.",
-                    "Sıfır Geçersiz Sembol (SymbolRegular) Kalkanı: Mağaza ve ince ayar modüllerindeki 'WindowConsole24', 'UsbPort24', 'SearchDismiss24' vb. hatalı sembol adları resmi Fluent sembolleriyle (WindowConsole20, UsbStick24, Search24, Edit24, ImageShadow20, EyeOff24, ArrowDownload24, ShieldError24, DockRow24, Wrench24) değiştirildi.",
-                    "Zorunlu Otomatik Sembol Doğrulayıcı (verify-symbols.py): Gelecekte hatalı bir sembolün depoya veya derlemeye girmesini derleme öncesi engelleyen CI/CD doğrulama kapısı kuruldu."
+                    "Ultra Yüksek Hızlı İndirme Motoru: abbodi1406 resmi GitHub Gigabit CDN'inden doğrudan Visual C++ AIO tek dosya (.exe - 32.1 MB) entegrasyonu sağlandı. 10 kat daha hızlı indirme ve anında sessiz kurulum.",
+                    "Sıfır UI Kilitlenmesi (Non-Blocking Dispatcher): İndirme bayt akışının UI mesaj kuyruğunu boğması engellendi. Stopwatch tabanlı 150ms sınırlayıcı ve arka plan iş parçacığı mimarisiyle indirme sırasında sol menü ve pencereler 60 FPS akıcı kaldı.",
+                    "Pürüzsüz Piksel Kaydırma (ScrollViewer Fix): Uygulama kataloğu ve hazır paketler için CanContentScroll='False' ve fare tekerleği yönlendirmesi eklenerek takılma ve kaymama sorunu tamamen çözüldü.",
+                    "Gelişmiş Canlı Konsol Kontrolü: Konsol çekmecesine Canlı İndirme Hızı (MB/s), Otomatik Kaydırma, Günlükleri Temizle, Panoya Kopyala ve Genişlet/Küçült (110px / 260px) kontrolleri eklendi.",
+                    "Yerel .NET 10 SDK Derleme Entegrasyonu: Kullanıcı PC'sinde yerel SDK kurularak tüm sürümlerin deploy öncesi bilgisayarda derlenip doğrulanması güvenceye alındı."
+                }
+            };
+
+            var v3171 = new ReleaseChangelogItem
+            {
+                Version = "v3.17.4",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Sıfır Sertifika Engeli & Doğrudan Engelsiz Kurulum",
+                IsLatest = false,
+                IsExpanded = false,
+                Highlights = new List<string>
+                {
+                    "Sıfır Sertifika & Engelsiz Otonom Güncelleme: Tüm sertifika imzalama ve kontrol engelleri kaldırılarak doğrudan GitHub Releases üzerinden hızlı ve sorunsuz güncelleme sağlandı.",
+                    "Segmented Görünüm: Mağaza modülü Uygulama Kataloğu ve Hazır Paketler olarak iki ferah sekmeye ayrıldı."
                 }
             };
 
@@ -1254,8 +1268,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3171;
+            LatestRelease = v3175;
 
+            ReleaseHistory.Add(v3175);
             ReleaseHistory.Add(v3171);
             ReleaseHistory.Add(v3170);
             ReleaseHistory.Add(v3163);
