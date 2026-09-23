@@ -397,7 +397,7 @@ namespace Bakım.ViewModels
             var selected = _masterCatalog.Where(a => a.IsSelected).ToList();
             if (selected.Count == 0)
             {
-                MessageBox.Show("Lütfen kurulmasını istediğiniz en az bir uygulama seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("Lütfen kurulmasını istediğiniz en az bir uygulama seçin.", "Seçim Yapılmadı", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 return;
             }
 
