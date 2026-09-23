@@ -46,6 +46,19 @@ namespace Bakım.ViewModels
 
         #endregion
 
+        #region View Mode (Grid vs Compact List)
+
+        [ObservableProperty]
+        private bool _isGridView = true;
+
+        [RelayCommand]
+        public void SetGridView() => IsGridView = true;
+
+        [RelayCommand]
+        public void SetListView() => IsGridView = false;
+
+        #endregion
+
         #region KPI Metrics
 
         [ObservableProperty]

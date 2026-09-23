@@ -164,46 +164,71 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Kategori Butonları (Aktif Kategori Vurgulu) -->
-                    <WrapPanel Grid.Row="0" Margin="0,0,0,8">
+                    <!-- Kategori Butonları (Aktif Kategori Vurgulu, Sıfır Emoji, Fluent İkonlar) -->
+                    <WrapPanel Grid.Row="0" Margin="0,0,0,10">
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='All'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="All" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="🌟 Tümü" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Grid24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Tümü" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Runtimes'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Runtimes" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="⚡ Runtimes &amp; Sistem" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Runtimes &amp; Sistem" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Gaming'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Gaming" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="🎮 Oyun" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Games24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Oyun" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Music'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Music" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="🎵 Müzik &amp; Medya" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="MusicNote224" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Müzik &amp; Medya" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Software'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Software" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="🛠️ Yazılım &amp; Araçlar" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Wrench24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Yazılım &amp; Araçlar" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Browsers'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Browsers" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="🌐 Tarayıcılar" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Globe24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Tarayıcılar" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Social'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Social" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="💬 İletişim &amp; Sosyal" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Chat24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="İletişim &amp; Sosyal" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Developer'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Developer" Margin="0,0,6,6" Padding="12,6">
-                            <TextBlock Text="💻 Geliştirici" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="Code24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Geliştirici" FontSize="12" FontWeight="SemiBold"/>
+                            </StackPanel>
                         </ui:Button>
                     </WrapPanel>
 
-                    <!-- Arama & Hızlı Filtre Barı (Mükerrer Buton Kaldırıldı) -->
+                    <!-- Arama & Hızlı Filtre Barı + Görünüm Modu Switcher -->
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
@@ -214,6 +239,8 @@
                                     PlaceholderText="Uygulama adı, açıklama veya yayıncı ara..." 
                                     Icon="{ui:SymbolIcon Search24}"
                                     Margin="0,0,12,0"
+                                    VerticalContentAlignment="Center"
+                                    Padding="12,8"
                                     AutomationProperties.Name="Uygulama Arama"/>
 
                         <CheckBox Grid.Column="1" 
@@ -237,13 +264,39 @@
                                    Content="Seçimi Temizle" 
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Padding="12,6"
+                                   Margin="0,0,12,0"
                                    Visibility="{Binding SelectedAppsCount, Converter={StaticResource IntToVis}}"
                                    ToolTip="Tüm uygulama seçimlerini temizle"/>
+
+                        <!-- Görünüm Modu Switcher (Kart vs Liste) -->
+                        <Border Grid.Column="4" 
+                                Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1" 
+                                CornerRadius="8" 
+                                Padding="2">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:Button Command="{Binding SetGridViewCommand}" 
+                                           Appearance="{Binding IsGridView, Converter={StaticResource BoolToNavAppearance}}"
+                                           Padding="8,5" 
+                                           Margin="0,0,2,0"
+                                           ToolTip="Kart (Izgara) Görünümü">
+                                    <ui:SymbolIcon Symbol="Grid20" FontSize="14"/>
+                                </ui:Button>
+                                <ui:Button Command="{Binding SetListViewCommand}" 
+                                           Appearance="{Binding IsGridView, Converter={StaticResource InverseBoolToNavAppearance}}"
+                                           Padding="8,5" 
+                                           ToolTip="Kompakt Liste Görünümü">
+                                    <ui:SymbolIcon Symbol="List20" FontSize="14"/>
+                                </ui:Button>
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Grid>
 
-                <!-- UYGULAMA KARTLARI IZGARASI -->
+                <!-- 1. GÖRÜNÜM: UYGULAMA KARTLARI IZGARASI (GRID VIEW) -->
                 <ScrollViewer Grid.Row="1" 
+                              Visibility="{Binding IsGridView, Converter={StaticResource BoolToVis}}"
                               VerticalScrollBarVisibility="Auto" 
                               HorizontalScrollBarVisibility="Disabled"
                               Focusable="False"
@@ -257,31 +310,41 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StoreAppItem}">
-                                <ui:Card Width="355" Margin="0,0,14,14" Padding="15,13">
-                                    <ui:Card.Style>
-                                        <Style TargetType="{x:Type ui:Card}" BasedOn="{StaticResource InteractiveCard}">
+                                <Border Width="360" Margin="0,0,16,16" Padding="16,14"
+                                        CornerRadius="10"
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderThickness="1">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
                                             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                                            <Setter Property="BorderThickness" Value="1"/>
-                                            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
                                                     <Setter Property="BorderThickness" Value="1.5"/>
                                                     <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
                                                 </DataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                                        <Condition Binding="{Binding IsSelected}" Value="False"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                                </MultiDataTrigger>
                                             </Style.Triggers>
                                         </Style>
-                                    </ui:Card.Style>
+                                    </Border.Style>
+
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/> <!-- 0: Header (Icon + Name/Category + Checkbox) -->
                                             <RowDefinition Height="Auto"/> <!-- 1: Description -->
-                                            <RowDefinition Height="Auto"/> <!-- 2: In-Card Progress Bar (when busy) -->
-                                            <RowDefinition Height="Auto"/> <!-- 3: Split Footer Action Bar -->
+                                            <RowDefinition Height="Auto"/> <!-- 2: Ayırıcı Çizgi (Separator) -->
+                                            <RowDefinition Height="Auto"/> <!-- 3: In-Card Progress Bar (when busy) -->
+                                            <RowDefinition Height="Auto"/> <!-- 4: Footer Action Bar -->
                                         </Grid.RowDefinitions>
 
-                                        <!-- ROW 0: Header: Dynamic Category Icon, Name, Category Pill, Sleek Selection Checkbox -->
-                                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                                        <!-- ROW 0: Header: Category Tinted Icon, Name, Category Pill, CheckBox -->
+                                        <Grid Grid.Row="0">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="*"/>
@@ -293,18 +356,18 @@
                                                     Background="{Binding CategoryDisplayName, Converter={StaticResource CategoryToBackground}}" 
                                                     BorderBrush="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"
                                                     BorderThickness="1"
-                                                    Width="44" Height="44" 
-                                                    CornerRadius="10" 
-                                                    Margin="0,0,10,0"
+                                                    Width="42" Height="42" 
+                                                    CornerRadius="8" 
+                                                    Margin="0,0,12,0"
                                                     VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
-                                                               FontSize="22" 
+                                                               FontSize="20" 
                                                                Foreground="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}" 
                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
 
                                             <!-- Name + Publisher & Category Badge -->
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,6,0">
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                                                 <TextBlock Text="{Binding Name}" 
                                                            FontSize="13.5" 
                                                            FontWeight="SemiBold" 
@@ -315,7 +378,7 @@
                                                                FontSize="11" 
                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                                                TextTrimming="CharacterEllipsis"
-                                                               MaxWidth="160"/>
+                                                               MaxWidth="140"/>
                                                     <TextBlock Text=" • " 
                                                                FontSize="10" 
                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
@@ -326,7 +389,7 @@
                                                 </StackPanel>
                                             </StackPanel>
 
-                                            <!-- Top-Right Selection Touch Target & CheckBox -->
+                                            <!-- Top-Right Selection CheckBox -->
                                             <Border Grid.Column="2" 
                                                     VerticalAlignment="Top" 
                                                     Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
@@ -341,7 +404,7 @@
                                             </Border>
                                         </Grid>
 
-                                        <!-- ROW 1: Description (Consistent Height) -->
+                                        <!-- ROW 1: Description -->
                                         <TextBlock Grid.Row="1" 
                                                    Text="{Binding Description}" 
                                                    FontSize="11.5" 
@@ -350,10 +413,16 @@
                                                    Height="34" 
                                                    LineHeight="16"
                                                    TextTrimming="CharacterEllipsis" 
-                                                   Margin="0,0,0,10"/>
+                                                   Margin="0,8,0,0"/>
 
-                                        <!-- ROW 2: In-Card Progress Bar (Visible Only when Downloading/Installing) -->
-                                        <Grid Grid.Row="2" Margin="0,0,0,8" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                                        <!-- ROW 2: Ayırıcı Çizgi (Separator) -->
+                                        <Border Grid.Row="2" Height="1" 
+                                                Background="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                Opacity="0.6" 
+                                                Margin="0,10,0,10"/>
+
+                                        <!-- ROW 3: In-Card Progress Bar (Visible Only when Downloading/Installing) -->
+                                        <Grid Grid.Row="3" Margin="0,0,0,8" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
                                                 <RowDefinition Height="Auto"/>
@@ -366,8 +435,8 @@
                                             <ProgressBar Grid.Row="1" Value="{Binding ProgressPercentage}" Maximum="100" Height="4"/>
                                         </Grid>
 
-                                        <!-- ROW 3: Streamlined Footer Action Bar (Split Layout) -->
-                                        <Grid Grid.Row="3" VerticalAlignment="Bottom">
+                                        <!-- ROW 4: Split Footer Action Bar -->
+                                        <Grid Grid.Row="4" VerticalAlignment="Bottom">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/> <!-- Left: Size Pill -->
                                                 <ColumnDefinition Width="*"/>    <!-- Spacer -->
@@ -393,7 +462,6 @@
                                                 <!-- State 1: INSTALLED -> Soft Green Status Badge + Quick Reinstall / Repair Icon Button -->
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" 
                                                             Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
-                                                    <!-- Green Status Badge -->
                                                     <Border Background="{DynamicResource Brush.Success.Subtle}" 
                                                             BorderBrush="{DynamicResource Brush.Success}"
                                                             BorderThickness="1" 
@@ -406,7 +474,6 @@
                                                         </StackPanel>
                                                     </Border>
 
-                                                    <!-- Subtle Reinstall / Repair Button -->
                                                     <ui:Button Appearance="Transparent"
                                                                Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                                CommandParameter="{Binding}"
@@ -430,11 +497,178 @@
                                             </StackPanel>
                                         </Grid>
                                     </Grid>
-                                </ui:Card>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+
+                <!-- 2. GÖRÜNÜM: KOMPAKT LİSTE GÖRÜNÜMÜ (LIST VIEW) -->
+                <ListView Grid.Row="1"
+                          Visibility="{Binding IsGridView, Converter={StaticResource InverseBoolToVis}}"
+                          ItemsSource="{Binding DisplayApps}"
+                          BorderThickness="0"
+                          Background="Transparent"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling"
+                          PreviewMouseWheel="OnScrollViewerPreviewMouseWheel">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0,0,0,6"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:StoreAppItem}">
+                            <Border Padding="14,10" 
+                                    CornerRadius="8" 
+                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderThickness="1">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                                <Setter Property="BorderThickness" Value="1.5"/>
+                                                <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
+                                            </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                                                    <Condition Binding="{Binding IsSelected}" Value="False"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/> <!-- 0: CheckBox -->
+                                        <ColumnDefinition Width="Auto"/> <!-- 1: Icon Box -->
+                                        <ColumnDefinition Width="*"/>    <!-- 2: Name + Description -->
+                                        <ColumnDefinition Width="Auto"/> <!-- 3: Category Pill -->
+                                        <ColumnDefinition Width="Auto"/> <!-- 4: Size -->
+                                        <ColumnDefinition Width="Auto"/> <!-- 5: Status Badge -->
+                                        <ColumnDefinition Width="Auto"/> <!-- 6: Action Button -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Column 0: CheckBox -->
+                                    <CheckBox Grid.Column="0" 
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                              VerticalAlignment="Center" 
+                                              Margin="0,0,12,0"/>
+
+                                    <!-- Column 1: Icon Box -->
+                                    <Border Grid.Column="1" 
+                                            Background="{Binding CategoryDisplayName, Converter={StaticResource CategoryToBackground}}" 
+                                            BorderBrush="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"
+                                            BorderThickness="1"
+                                            Width="34" Height="34" 
+                                            CornerRadius="6" 
+                                            Margin="0,0,12,0"
+                                            VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
+                                                       FontSize="17" 
+                                                       Foreground="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}" 
+                                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Column 2: Name & Description -->
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Publisher, StringFormat='{} • {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Column 3: Category Pill -->
+                                    <Border Grid.Column="3" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1" 
+                                            CornerRadius="6" 
+                                            Padding="8,3" 
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,14,0">
+                                        <TextBlock Text="{Binding CategoryDisplayName}" FontSize="10.5" FontWeight="SemiBold" Foreground="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"/>
+                                    </Border>
+
+                                    <!-- Column 4: Size -->
+                                    <TextBlock Grid.Column="4" 
+                                               Text="{Binding SizeText}" 
+                                               FontSize="11" 
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
+                                               VerticalAlignment="Center" 
+                                               HorizontalAlignment="Right"
+                                               Width="70"
+                                               Margin="0,0,14,0"/>
+
+                                    <!-- Column 5: Status Badge -->
+                                    <StackPanel Grid.Column="5" VerticalAlignment="Center" Margin="0,0,14,0">
+                                        <Border Background="{DynamicResource Brush.Success.Subtle}" 
+                                                BorderBrush="{DynamicResource Brush.Success}"
+                                                BorderThickness="1" 
+                                                CornerRadius="6" 
+                                                Padding="8,3"
+                                                Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <ui:SymbolIcon Symbol="Checkmark20" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
+                                                <TextBlock Text="Kurulu" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1" 
+                                                CornerRadius="6" 
+                                                Padding="8,3"
+                                                Visibility="{Binding IsInstalled, Converter={StaticResource InverseBoolToVis}}">
+                                            <TextBlock Text="Yüklü Değil" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <!-- Column 6: Action Button -->
+                                    <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <ui:Button Appearance="Primary"
+                                                   Visibility="{Binding IsInstalled, Converter={StaticResource InverseBoolToVis}}"
+                                                   Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Content="Yükle"
+                                                   Icon="{ui:SymbolIcon ArrowDownload16}"
+                                                   Padding="12,3"
+                                                   Height="28"
+                                                   FontSize="11.5"
+                                                   FontWeight="SemiBold"/>
+
+                                        <ui:Button Appearance="Secondary"
+                                                   Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}"
+                                                   Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Content="Yeniden Kur"
+                                                   Icon="{ui:SymbolIcon ArrowClockwise16}"
+                                                   Padding="10,3"
+                                                   Height="28"
+                                                   FontSize="11"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
 
             <!-- ===================================================================== -->
@@ -525,12 +759,27 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StorePresetItem}">
-                                <ui:Card Width="550" Margin="0,0,16,16" Padding="18" Style="{StaticResource InteractiveCard}">
+                                <Border Width="550" Margin="0,0,16,16" Padding="18" 
+                                        CornerRadius="10"
+                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderThickness="1">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/> <!-- Header: Icon + Title + Badges -->
                                             <RowDefinition Height="Auto"/> <!-- Description -->
                                             <RowDefinition Height="Auto"/> <!-- Included Apps Label + Badges -->
+                                            <RowDefinition Height="Auto"/> <!-- Separator -->
                                             <RowDefinition Height="Auto"/> <!-- Action Buttons -->
                                         </Grid.RowDefinitions>
 
@@ -588,7 +837,7 @@
                                                    Margin="0,0,0,12"/>
 
                                         <!-- Included Apps Badges -->
-                                        <StackPanel Grid.Row="2" Margin="0,0,0,14">
+                                        <StackPanel Grid.Row="2" Margin="0,0,0,12">
                                             <TextBlock Text="Pakete Dahil Uygulamalar:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,6"/>
                                             <ItemsControl ItemsSource="{Binding IncludedApps}">
                                                 <ItemsControl.ItemsPanel>
@@ -600,7 +849,7 @@
                                                     <DataTemplate>
                                                         <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                                                BorderThickness="1"
+                                                                BorderThickness="1" 
                                                                 CornerRadius="6" 
                                                                 Padding="8,3" 
                                                                 Margin="0,0,6,6">
@@ -611,8 +860,14 @@
                                             </ItemsControl>
                                         </StackPanel>
 
+                                        <!-- Separator Line -->
+                                        <Border Grid.Row="3" Height="1" 
+                                                Background="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                                Opacity="0.6" 
+                                                Margin="0,0,0,12"/>
+
                                         <!-- Action Buttons -->
-                                        <Grid Grid.Row="3">
+                                        <Grid Grid.Row="4">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
@@ -651,7 +906,7 @@
                                                        ToolTip="Paketi seç ve doğrudan arka planda toplu kuruluma başla."/>
                                         </Grid>
                                     </Grid>
-                                </ui:Card>
+                                </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

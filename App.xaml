@@ -39,6 +39,7 @@
             <conv:StringToVisConverter x:Key="InverseStringToVis" Invert="True"/>
             <conv:StringToNavAppearanceConverter x:Key="StringToNavAppearance"/>
             <conv:BoolToNavAppearanceConverter x:Key="BoolToNavAppearance"/>
+            <conv:BoolToNavAppearanceConverter x:Key="InverseBoolToNavAppearance" Invert="True"/>
             <conv:SafeSymbolConverter x:Key="SafeSymbol"/>
             <conv:EventLevelToBrushConverter x:Key="EventLevelToBrush"/>
             <conv:CategoryToForegroundConverter x:Key="CategoryToForeground"/>

@@ -240,11 +240,14 @@ namespace Bakım.Converters
 
     public class BoolToNavAppearanceConverter : IValueConverter
     {
+        public bool Invert { get; set; }
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool b && b)
+            if (value is bool b)
             {
-                return Wpf.Ui.Controls.ControlAppearance.Primary;
+                if (Invert) b = !b;
+                return b ? Wpf.Ui.Controls.ControlAppearance.Primary : Wpf.Ui.Controls.ControlAppearance.Secondary;
             }
             return Wpf.Ui.Controls.ControlAppearance.Secondary;
         }

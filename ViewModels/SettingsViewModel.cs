@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3180 = new ReleaseChangelogItem
+            {
+                Version = "v3.18.0",
+                ReleaseDate = "23 Eylül 2026",
+                Title = "Yazılım Mağazası Kart Mimarisi Revizyonu, Ayrık Çizgiler, Çift Görünüm Modu & Fluent İkonlar",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Kusursuz Kenarlıklı Kart Mimarisi (Solid Border Card): Mağaza kartlarındaki stil çakışması (kenarlıksız ve havada asılı durma) kökten çözüldü; derin Slate Dark yüzey, belirgin #334155 sınır çizgileri ve akıcı hover parlama efektleri uygulandı.",
+                    "İç Ayırıcı Çizgi (Card Separator): Uygulama açıklaması ile alt eylem/durum butonları arasına yatay ayrık çizgi çekilerek görsel karmaşa ve 'hipnoz' etkisi tamamen ortadan kaldırıldı.",
+                    "Çift Görünüm Modu (Izgara / Kompakt Çizgili Liste): Kullanıcıların dilediğinde zengin ızgara kart görünümü veya yüksek yoğunluklu, zebra çizgili kompakt liste görünümü arasında tek tıkla geçiş yapabilmesi sağlandı.",
+                    "Resmi Fluent 2 İkon Standardı (Sıfır Emoji): Kategori seçim haplarındaki çocuksu emojiler tamamen kaldırılarak yerel Windows 11 Fluent 2 sembolleri (Grid24, Flash24, Games24, MusicNote224, Wrench24, Globe24, Chat24, Code24) entegre edildi.",
+                    "Hazır Paket Kartlarının Standartlaştırılması: Format kurtarıcı ve hazır paket kartları da aynı sağlam kenarlık, Slate Dark derinliği ve ayırıcı çizgi mimarisine kavuşturuldu."
+                }
+            };
+
             var v3179 = new ReleaseChangelogItem
             {
                 Version = "v3.17.9",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Sağ Tık Menüsü Entegrasyonu & Aşırı Gelişmiş Kaldırma ve Kalıntı Sihirbazı",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Windows Sağ Tık Menüsü 'Bakım ile Kaldır' Entegrasyonu: Masaüstü kısayollarına (.lnk), .exe dosyalarına ve program klasörlerine sağ tıklandığında tek tıkla derin kaldırma imkanı.",
@@ -1337,8 +1354,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3179;
+            LatestRelease = v3180;
 
+            ReleaseHistory.Add(v3180);
             ReleaseHistory.Add(v3179);
             ReleaseHistory.Add(v3178);
             ReleaseHistory.Add(v3177);
