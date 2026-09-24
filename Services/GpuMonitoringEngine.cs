@@ -42,26 +42,17 @@ namespace Bakım.Services
                     return _cachedSnapshot;
                 }
 
-                var (name, formattedVram, vramGb, driver) = GpuInfoProvider.GetCompleteGpuDetails();
-
-                string vendor = "Bilinmeyen";
-                if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
-                    vendor = "AMD";
-                else if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) || name.Contains("GeForce", StringComparison.OrdinalIgnoreCase) || name.Contains("RTX", StringComparison.OrdinalIgnoreCase))
-                    vendor = "NVIDIA";
-                else if (name.Contains("Intel", StringComparison.OrdinalIgnoreCase) || name.Contains("Arc", StringComparison.OrdinalIgnoreCase))
-                    vendor = "Intel";
-
-                bool isDiscrete = vramGb > 0 && !name.Contains("Basic", StringComparison.OrdinalIgnoreCase);
+                var config = GpuInfoProvider.GetGpuConfiguration(forceRefresh);
+                var primary = config.PrimaryGpu;
 
                 _cachedSnapshot = new GpuTelemetrySnapshot
                 {
-                    ModelName = !string.IsNullOrWhiteSpace(name) ? name : "Harici Ekran Kartı",
-                    DedicatedVramGB = vramGb,
-                    FormattedVram = formattedVram,
-                    DriverVersion = driver,
-                    VendorName = vendor,
-                    IsDiscrete = isDiscrete,
+                    ModelName = !string.IsNullOrWhiteSpace(primary.Name) ? primary.Name : "Harici Ekran Kartı",
+                    DedicatedVramGB = primary.VramGb,
+                    FormattedVram = primary.FormattedVram,
+                    DriverVersion = primary.DriverVersion,
+                    VendorName = primary.Vendor,
+                    IsDiscrete = primary.IsDiscrete,
                     Timestamp = DateTime.Now
                 };
 

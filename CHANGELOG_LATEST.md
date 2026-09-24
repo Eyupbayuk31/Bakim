@@ -1,29 +1,26 @@
-# Bakım v3.18.2 - Sürüm Notları
+# Bakım v3.18.3 - Sürüm Notları
 
-## Windows Sistem Konsolları & Klasik Araçlar Mağaza Entegrasyonu (Tab 3) & Tweaker Sadeleştirmesi 🛠️⚡
+## Çift GPU Laptop Mimari Çözümü, 0 GB VRAM Koruması & Genel Bakış Senkronizasyonu
 
-### 1. 24 Windows Sistem Konsolu & Klasik Araçlar Taşıması
-- **Tweaker Karmaşasına Son:** Kayıt defteri ve sistem ince ayarlarına odaklanan Windows Tweaker'dan sistem yönetim konsolları ayrılarak, doğrudan ait olduğu **Yazılım & Runtimes Mağazası** içerisine **3. Bağımsız Çalışma Alanı (Tab 3: Sistem Konsolları & Klasik Araçlar)** olarak entegre edildi.
-- **24 Güçlü Windows Yönetim Aracı:** Aygıt Yöneticisi, Bilgisayar Yönetimi, Windows Hizmetleri (Services), Kayıt Defteri Düzenleyicisi (Regedit), Yerel Grup İlkesi (GPEdit), Olay Görüntüleyici, Görev Zamanlayıcı, DirectX Teşhis (DxDiag), Disk Yönetimi, Ağ Bağlantıları (NCPA), God Mode, Windows Terminal, Kaynak İzleyicisi ve daha fazlası tek merkezde toplandı.
+### 1. Çift GPU Laptop Keşif & Önceliklendirme Motoru
+- **Hibrit Grafik Mimarisinde Otomatik Önceliklendirme:** Çift ekran kartı barındıran dizüstü bilgisayarlarda (AMD Radeon / NVIDIA harici grafik kartı + Intel HD Graphics / UHD / Iris entegre grafik yongası) sistemdeki tüm adaptörler DXGI 1.1, Kayıt Defteri ve WMI üzerinden eksiksiz taranır.
+- **İlk Adaptörde Erken Kesilme Kusurunun Giderilmesi:** Önceki sürümlerde DXGI döngüsünün ilk bulunan adaptörde (0000 nolu dahili Intel çipi) erken sonlanmasına neden olan mantıksal kusur giderilerek, harici kartların (AMD Radeon, NVIDIA GeForce, Intel Arc) dedicated VRAM kapasitelerine göre puanlanıp birincil (Primary) GPU olarak atanması sağlandı.
 
-### 2. Windows Fotoğraf Görüntüleyicisi 1-Tıkla Aktifleştirme Hero Banner'ı
-- **Akıllı Canlı Durum Algılama:** Kayıt Defteri üzerinden Windows Fotoğraf Görüntüleyicisi'nin sistemde aktif olup olmadığını arka planda otomatik denetleyen canlı durum rozeti ("Etkin / Hazır" veya "Devre Dışı").
-- **1-Tıkla Aktifleştirme & İlişkilendirme:** Windows 10/11'de gizlenen klasik hızlı Fotoğraf Görüntüleyicisi'ni tek tıkla aktifleştiren, sistem dosya uzantılarını (.jpg, .png vb.) otomatik kaydeden hero kartı ve anında durum güncellemesi.
+### 2. Sıfır GB VRAM Kusurunun Kökten Çözümü
+- **Standartlara Tam Uyumlu Bellek Biçimlendirmesi:** 128 MB DVMT belleğe sahip dahili yongaların veya küçük bellek bloklarının matematiksel olarak 0.1 GB'a ve ardından hatalı biçimde "0 GB VRAM" metnine yuvarlanması engellendi.
+- **Akıllı Bellek Metni:** 512 MB altı veya entegre bellekler için "Paylaşımlı VRAM", harici kartlar için tam megabayt veya gigabayt ("2 GB VRAM", "8 GB VRAM") gösterimi garanti altına alındı.
 
-### 3. Zengin Filtreleme, Kategori Çipleri & Anlık Arama
-- **5 Kategori Filtre Çipi:** "Tümü", "Sistem", "Donanım & Disk", "Ağ & Güvenlik" ve "Hızlı Erişim" çipleri ile 24 konsol arasında amaca yönelik anında süzme.
-- **Anlık Arama Kutusu:** Konsol adı, dosya uzantısı (.msc, .exe) veya açıklamasına göre milisaniyeler içinde canlı arama desteği.
+### 3. Genel Bakış & Donanım Modülü Yüzde Yüz Veri Senkronizasyonu
+- **Tek Doğruluk Kaynağı (Single Source of Truth):** `TelemetryService` ve `SystemInfoService` içindeki ayrışık ve mükerrer GPU arama mantığı kaldırılarak, her iki servis de `GpuInfoProvider.GetGpuConfiguration()` çekirdek motoruna bağlandı.
+- **Sıfır Tutarsızlık:** "Genel Bakış" (Dashboard) ve "Donanım & Disk" (SystemInfo) sayfalarının aynı ekran kartını, aynı VRAM miktarını ve aynı sürücü sürümünü milisaniyesinde senkronize göstermesi güvenceye alındı.
 
-### 4. Kusursuz Kart Mimarisi & Çalıştırılabilir Dosya Etiketleri
-- **Solid Border & Fluent 2 Tasarım:** `#1E293B` Slate Dark kart tabanı, `#334155` solid sınır çizgileri, hover parlama efekti ve 2 sütunlu düzenli ızgara.
-- **Teknik Dosya Etiketi:** Her konsol için çalıştırılan gerçek Win32 komut etiketi (örn: `devmgmt.msc`, `regedit.exe`, `ncpa.cpl`) ve resmi Fluent `WindowWrench24` ile `Play24` "Başlat" butonu.
+### 4. Şık Çift GPU Rozet ve Zengin Bilgi Kartı
+- **Fluent 2 Harici Rozeti:** Çift GPU tespit edilen sistemlerde Genel Bakış ekranındaki ekran kartı başlığının yanına "Harici" durum rozeti eklendi.
+- **Zengin Açıklama Alanı (Tooltip):** Ekran kartı alanının üzerine gelindiğinde harici ve dahili kartların model adı, VRAM kapasitesi ve sürücü sürümlerini ayrı ayrı listeleyen bilgilendirici panel sunuldu.
+- **Donanım Sayfası Genişletmesi:** Donanım ve Disk sekmesindeki GPU kartında dahili ekran kartının modeli ve paylaşımlı bellek durumu ek bir teknik satır olarak görüntülendi.
 
-### 5. Windows Tweaker Sol Menü Optimizasyonu
-- **Odaklanmış Temiz Navigasyon:** Tweaker sol navigasyon rayı yalnızca Windows ince ayarlarına (Windows 11, Görev Çubuğu, Dosya Gezgini, Performans vb.) odaklanacak şekilde sadeleştirildi.
-- **Dinamik Kategori Rozeti:** Tweaker başlığındaki kategori adedi statik değerden çıkarılarak `{Binding CategoryList.Count}` ile dinamik ve senkronize hale getirildi.
-
-### 6. Pre-flight, Test ve Kalite Doğrulaması
-- **147/147 Birim Testi:** Tüm testler %100 başarıyla geçti.
-- **UI Smoke Testleri:** Tüm modül görünümleri, 4 tema, 3 mağaza sekmesi ve diyaloglar hatasız doğrulandı.
-- **9.235 Sembol & Token %100 Geçerli:** `verify-symbols.py` ve `verify-tokens.py` ile sıfır geçersiz sembol kanıtlandı.
+### 5. Kalite, Test ve Doğrulama
+- **162/162 Birim Testi:** Eklenen 15 yeni GPU tespit ve VRAM biçimlendirme testi dahil olmak üzere tüm birim testleri yüzde yüz başarıyla geçti.
+- **UI Smoke Testleri:** Tüm modül görünümleri, 4 tema, diyaloglar ve mağaza sekmeleri hatasız doğrulandı.
+- **9.235 Sembol & Token Geçerli:** `verify-symbols.py` ve `verify-tokens.py` ile sıfır geçersiz sembol kanıtlandı.
 - **Sıfır Uyarı / Sıfır Hata:** .NET 10 Release derlemesi temiz tamamlandı.

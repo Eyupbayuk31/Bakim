@@ -80,6 +80,11 @@ namespace Bakım.Models
         public string GpuName { get; set; } = "Grafik Kartı Belirleniyor...";
         public string GpuVram { get; set; } = string.Empty;
         public string GpuDriverVersion { get; set; } = "Güncel";
+        public string GpuSecondaryName { get; set; } = string.Empty;
+        public string GpuSecondaryVram { get; set; } = string.Empty;
+        public bool HasDualGpu { get; set; }
+        public string GpuBadgeText { get; set; } = "GPU";
+        public string GpuTooltip { get; set; } = string.Empty;
         public string MotherboardModel { get; set; } = "Anakart Belirleniyor...";
         public string BiosVersion { get; set; } = string.Empty;
         public string RamSpeedMhz { get; set; } = string.Empty;

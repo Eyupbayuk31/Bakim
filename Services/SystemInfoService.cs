@@ -65,6 +65,11 @@ namespace Bakım.Services
         private static string _cachedGpuName = "Dahili / Harici Grafik Kartı";
         private static string _cachedGpuVram = string.Empty;
         private static string _cachedGpuDriver = "Güncel";
+        private static string _cachedGpuSecondaryName = string.Empty;
+        private static string _cachedGpuSecondaryVram = string.Empty;
+        private static bool _cachedHasDualGpu;
+        private static string _cachedGpuBadgeText = "GPU";
+        private static string _cachedGpuTooltip = string.Empty;
         private static string _cachedMotherboard = "Sistem Anakartı";
         private static string _cachedBios = "UEFI / BIOS";
         private static string _cachedRamSpeed = string.Empty;
@@ -93,6 +98,11 @@ namespace Bakım.Services
                     GpuName = _cachedGpuName,
                     GpuVram = _cachedGpuVram,
                     GpuDriverVersion = _cachedGpuDriver,
+                    GpuSecondaryName = _cachedGpuSecondaryName,
+                    GpuSecondaryVram = _cachedGpuSecondaryVram,
+                    HasDualGpu = _cachedHasDualGpu,
+                    GpuBadgeText = _cachedGpuBadgeText,
+                    GpuTooltip = _cachedGpuTooltip,
                     MotherboardModel = _cachedMotherboard,
                     BiosVersion = _cachedBios,
                     RamSpeedMhz = _cachedRamSpeed
@@ -410,226 +420,24 @@ namespace Bakım.Services
 
         private static void LoadGpuDetails()
         {
-            string bestName = string.Empty;
-            ulong bestVramBytes = 0;
-            string bestDriver = string.Empty;
-
-            // Strategy 0: Direct DirectX DXGI 64-bit API & Registry QWORD via GpuInfoProvider (32-bit WMI Overflow Guard)
             try
             {
-                var (name, formattedVram, vramGb, driver) = GpuInfoProvider.GetCompleteGpuDetails();
-                if (!string.IsNullOrWhiteSpace(name) && !name.Contains("Basic Display", StringComparison.OrdinalIgnoreCase))
+                var config = GpuInfoProvider.GetGpuConfiguration();
+                var primary = config.PrimaryGpu;
+
+                if (!string.IsNullOrWhiteSpace(primary.Name))
                 {
-                    bestName = name;
-                    if (!string.IsNullOrWhiteSpace(driver)) bestDriver = driver;
-                    if (vramGb > 0)
-                    {
-                        bestVramBytes = (ulong)(vramGb * 1024.0 * 1024.0 * 1024.0);
-                    }
+                    _cachedGpuName = primary.Name;
+                    _cachedGpuVram = primary.FormattedVram;
+                    _cachedGpuDriver = !string.IsNullOrWhiteSpace(primary.DriverVersion) ? primary.DriverVersion : "Güncel";
+                    _cachedGpuSecondaryName = config.SecondaryGpu?.Name ?? string.Empty;
+                    _cachedGpuSecondaryVram = config.SecondaryGpu?.FormattedVram ?? string.Empty;
+                    _cachedHasDualGpu = config.HasDualGpu;
+                    _cachedGpuBadgeText = config.GpuBadgeText;
+                    _cachedGpuTooltip = config.DetailedTooltip;
                 }
             }
             catch { }
-
-            // Strategy 1: Display Adapter Class Registry Keys ({4d36e968-e325-11ce-bfc1-08002be10318})
-            // HardwareInformation.qwMemorySize (64-bit QWORD to overcome 32-bit uint32 4GB limit)
-            try
-            {
-                using var classKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}");
-                if (classKey != null)
-                {
-                    for (int i = 0; i <= 8; i++)
-                    {
-                        string subKeyName = i.ToString("D4");
-                        using var subKey = classKey.OpenSubKey(subKeyName);
-                        if (subKey == null) continue;
-
-                        string? desc = subKey.GetValue("DriverDesc") as string 
-                                       ?? subKey.GetValue("Device Description") as string;
-                        if (string.IsNullOrWhiteSpace(desc)) continue;
-
-                        if (desc.Contains("Basic Display", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(bestName))
-                            continue;
-
-                        string driverVer = subKey.GetValue("DriverVersion") as string ?? string.Empty;
-                        ulong vram = ExtractVramFromRegistryKey(subKey);
-
-                        if (vram > bestVramBytes || string.IsNullOrEmpty(bestName))
-                        {
-                            bestName = desc;
-                            bestVramBytes = vram;
-                            if (!string.IsNullOrEmpty(driverVer)) bestDriver = driverVer;
-                        }
-                    }
-                }
-            }
-            catch { }
-
-            // Strategy 2: DEVICEMAP\VIDEO pointers (Control\Video\{GUID}\0000)
-            if (bestVramBytes == 0 || string.IsNullOrEmpty(bestName))
-            {
-                try
-                {
-                    using var devMapKey = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DEVICEMAP\VIDEO");
-                    if (devMapKey != null)
-                    {
-                        var valNames = devMapKey.GetValueNames();
-                        foreach (var valName in valNames)
-                        {
-                            var rawPath = devMapKey.GetValue(valName) as string;
-                            if (string.IsNullOrWhiteSpace(rawPath)) continue;
-
-                            const string prefix = @"\Registry\Machine\";
-                            if (rawPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                            {
-                                string relative = rawPath.Substring(prefix.Length);
-                                using var targetKey = Registry.LocalMachine.OpenSubKey(relative);
-                                if (targetKey != null)
-                                {
-                                    string? desc = targetKey.GetValue("DriverDesc") as string 
-                                                   ?? targetKey.GetValue("Device Description") as string;
-                                    string driverVer = targetKey.GetValue("DriverVersion") as string ?? string.Empty;
-                                    ulong vram = ExtractVramFromRegistryKey(targetKey);
-
-                                    if (vram > bestVramBytes)
-                                    {
-                                        if (!string.IsNullOrWhiteSpace(desc)) bestName = desc;
-                                        bestVramBytes = vram;
-                                        if (!string.IsNullOrWhiteSpace(driverVer)) bestDriver = driverVer;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                catch { }
-            }
-
-            // Strategy 3: WMI Win32_VideoController fallback
-            try
-            {
-                using var gpuSearcher = new ManagementObjectSearcher("SELECT Name, AdapterRAM, DriverVersion FROM Win32_VideoController");
-                foreach (var obj in gpuSearcher.Get())
-                {
-                    string? name = obj["Name"]?.ToString()?.Trim();
-                    if (string.IsNullOrWhiteSpace(name)) continue;
-
-                    string driver = obj["DriverVersion"]?.ToString()?.Trim() ?? string.Empty;
-                    if (string.IsNullOrEmpty(bestName)) bestName = name;
-                    if (string.IsNullOrEmpty(bestDriver) && !string.IsNullOrEmpty(driver)) bestDriver = driver;
-
-                    if (bestVramBytes == 0)
-                    {
-                        var vramObj = obj["AdapterRAM"];
-                        if (vramObj != null)
-                        {
-                            try
-                            {
-                                ulong wmiBytes = Convert.ToUInt64(vramObj);
-                                if (wmiBytes > bestVramBytes)
-                                {
-                                    bestVramBytes = wmiBytes;
-                                }
-                            }
-                            catch { }
-                        }
-                    }
-                    break;
-                }
-            }
-            catch { }
-
-            if (!string.IsNullOrWhiteSpace(bestName))
-            {
-                _cachedGpuName = bestName;
-            }
-
-            _cachedGpuVram = FormatVram(bestVramBytes);
-
-            if (!string.IsNullOrWhiteSpace(bestDriver))
-            {
-                _cachedGpuDriver = bestDriver;
-            }
-        }
-
-        private static ulong ExtractVramFromRegistryKey(RegistryKey key)
-        {
-            try
-            {
-                // 1. HardwareInformation.qwMemorySize (64-bit QWORD - true capacity for >4GB VRAM)
-                object? qwObj = key.GetValue("HardwareInformation.qwMemorySize");
-                if (qwObj != null)
-                {
-                    ulong parsed = ParseVramObject(qwObj);
-                    if (parsed > 0) return parsed;
-                }
-
-                // 2. HardwareInformation.MemorySize (Binary or DWORD fallback)
-                object? memObj = key.GetValue("HardwareInformation.MemorySize");
-                if (memObj != null)
-                {
-                    ulong parsed = ParseVramObject(memObj);
-                    if (parsed > 0) return parsed;
-                }
-            }
-            catch { }
-            return 0;
-        }
-
-        private static ulong ParseVramObject(object val)
-        {
-            try
-            {
-                if (val is byte[] bytes)
-                {
-                    if (bytes.Length >= 8) return BitConverter.ToUInt64(bytes, 0);
-                    if (bytes.Length >= 4) return BitConverter.ToUInt32(bytes, 0);
-                }
-                else if (val is long l)
-                {
-                    if (l > 0) return (ulong)l;
-                }
-                else if (val is int i)
-                {
-                    return unchecked((uint)i);
-                }
-                else if (val is ulong ul)
-                {
-                    return ul;
-                }
-                else if (val is uint ui)
-                {
-                    return ui;
-                }
-                else
-                {
-                    return Convert.ToUInt64(val);
-                }
-            }
-            catch { }
-            return 0;
-        }
-
-        private static string FormatVram(ulong bytes)
-        {
-            if (bytes == 0) return "Paylaşımlı / Standart VRAM";
-
-            double gb = (double)bytes / (1024.0 * 1024.0 * 1024.0);
-
-            // Standart ekran kartı bellek boyutları (4, 6, 8, 10, 11, 12, 16, 20, 24, 32, 48 GB)
-            int rounded = (int)Math.Round(gb);
-            if (rounded >= 1 && Math.Abs(gb - rounded) < 0.25)
-            {
-                return $"{rounded} GB VRAM";
-            }
-
-            if (gb >= 1.0)
-            {
-                return $"{gb:F1} GB VRAM";
-            }
-
-            // 1 GB altı bellekler
-            double mb = (double)bytes / (1024.0 * 1024.0);
-            return $"{Math.Round(mb)} MB VRAM";
         }
 
         #region Smart Storage & Disk Health (Module 8)

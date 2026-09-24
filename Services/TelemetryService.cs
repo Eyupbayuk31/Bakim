@@ -66,6 +66,11 @@ namespace Bakım.Services
         private static string _cachedCpuClock = string.Empty;
         private static string _cachedGpuName = "Dahili / Harici Ekran Kartı";
         private static string _cachedGpuVram = string.Empty;
+        private static string _cachedGpuSecondaryName = string.Empty;
+        private static string _cachedGpuSecondaryVram = string.Empty;
+        private static bool _cachedHasDualGpu;
+        private static string _cachedGpuBadgeText = "GPU";
+        private static string _cachedGpuTooltip = string.Empty;
 
         private static readonly HashSet<string> ProtectedProcesses = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -85,7 +90,12 @@ namespace Bakım.Services
                     CpuName = _cachedCpuName,
                     CpuClockSpeed = _cachedCpuClock,
                     GpuName = _cachedGpuName,
-                    GpuVram = _cachedGpuVram
+                    GpuVram = _cachedGpuVram,
+                    GpuSecondaryName = _cachedGpuSecondaryName,
+                    GpuSecondaryVram = _cachedGpuSecondaryVram,
+                    HasDualGpu = _cachedHasDualGpu,
+                    GpuBadgeText = _cachedGpuBadgeText,
+                    GpuTooltip = _cachedGpuTooltip
                 };
 
                 // 1. CPU Usage
@@ -455,14 +465,20 @@ namespace Bakım.Services
                     break;
                 }
 
-                // GPU Info (DirectX DXGI 64-bit API & Registry QWORD - 32-bit WMI Overflow Guard)
+                // GPU Info (Unified DirectX DXGI 64-bit API, Registry & WMI - Multi-Adapter & Dual-GPU Engine)
                 try
                 {
-                    var (gpuName, formattedVram, vramGb, _) = GpuInfoProvider.GetCompleteGpuDetails();
-                    if (!string.IsNullOrWhiteSpace(gpuName))
+                    var config = GpuInfoProvider.GetGpuConfiguration();
+                    var primary = config.PrimaryGpu;
+                    if (!string.IsNullOrWhiteSpace(primary.Name))
                     {
-                        _cachedGpuName = gpuName;
-                        _cachedGpuVram = formattedVram;
+                        _cachedGpuName = primary.Name;
+                        _cachedGpuVram = primary.FormattedVram;
+                        _cachedGpuSecondaryName = config.SecondaryGpu?.Name ?? string.Empty;
+                        _cachedGpuSecondaryVram = config.SecondaryGpu?.FormattedVram ?? string.Empty;
+                        _cachedHasDualGpu = config.HasDualGpu;
+                        _cachedGpuBadgeText = config.GpuBadgeText;
+                        _cachedGpuTooltip = config.DetailedTooltip;
                     }
                 }
                 catch { }

@@ -159,9 +159,10 @@
                     </ui:Card>
 
                     <!-- Card 2: Graphics (GPU) -->
-                    <ui:Card Grid.Row="0" Grid.Column="2" Padding="18">
+                    <ui:Card Grid.Row="0" Grid.Column="2" Padding="18" ToolTip="{Binding Hardware.GpuTooltip}">
                         <Grid>
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -170,6 +171,16 @@
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                                 <ui:SymbolIcon Symbol="Desktop20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="Ekran Kartı (GPU)" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="4" 
+                                        Padding="6,1" 
+                                        Margin="8,0,0,0" 
+                                        VerticalAlignment="Center"
+                                        Visibility="{Binding Hardware.HasDualGpu, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock Text="Harici + Dahili" FontSize="9" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Border>
                             </StackPanel>
 
                             <Grid Grid.Row="1" Margin="0,0,0,6">
@@ -196,6 +207,14 @@
                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                        TextTrimming="CharacterEllipsis"
                                        ToolTip="{Binding Hardware.GpuDriverVersion, StringFormat='Sürücü Sürümü: {0}'}"/>
+
+                            <TextBlock Grid.Row="3" 
+                                       Text="{Binding Hardware.GpuSecondaryName, StringFormat='Dahili: {0}'}" 
+                                       FontSize="10" 
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,3,0,0"
+                                       Visibility="{Binding Hardware.HasDualGpu, Converter={StaticResource BoolToVis}}"/>
                         </Grid>
                     </ui:Card>
 

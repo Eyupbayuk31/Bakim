@@ -834,13 +834,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3183 = new ReleaseChangelogItem
+            {
+                Version = "v3.18.3",
+                ReleaseDate = "24 Eylül 2026",
+                Title = "Çift GPU Laptop Mimari Çözümü & Genel Bakış Senkronizasyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Çift GPU Laptop Keşif & Önceliklendirme Motoru: Hibrit (Optimus / Enduro) çift ekran kartına sahip dizüstü bilgisayarlarda (AMD Radeon / NVIDIA + Intel HD Graphics) birincil harici GPU'nun otomatik tespit edilip önceliklendirilmesi sağlandı.",
+                    "Sıfır GB VRAM Kusurunun Kökten Çözümü: 128 MB DVMT belleğe sahip dahili ekran kartlarında meydana gelen hatalı '0 GB VRAM' yuvarlaması giderilerek, standartlara tam uyumlu 'Paylaşımlı VRAM' ve net megabayt/gigabayt gösterimi sağlandı.",
+                    "Genel Bakış & Donanım Modülü Yüzde Yüz Veri Senkronizasyonu: TelemetryService ve SystemInfoService tek bir birleşik donanım sağlayıcısına (GpuInfoProvider) bağlanarak Genel Bakış ve Donanım & Disk sayfaları arasındaki ekran kartı tutarsızlığı ortadan kaldırıldı.",
+                    "Şık Çift GPU Rozet ve Zengin Bilgi Kartı: Çift ekran kartı tespit edildiğinde Genel Bakış ve Donanım sayfalarında 'Harici' rozeti ve üzerine gelindiğinde her iki kartın model, VRAM ve sürücü detaylarını listeleyen zengin açıklama desteği eklendi.",
+                    "Gelişmiş Donanım Test Paketi: 15 yeni birim testi ile çift GPU algılama, VRAM format sınırları ve servis tutarlılığı yüzde yüz doğrulandı."
+                }
+            };
+
             var v3182 = new ReleaseChangelogItem
             {
                 Version = "v3.18.2",
                 ReleaseDate = "23 Eylül 2026",
                 Title = "Windows Sistem Konsolları & Klasik Araçlar Mağaza Entegrasyonu (Tab 3) & Tweaker Sadeleştirmesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "24 Windows Sistem Konsolu & Klasik Araçlar Taşıması: Tweaker içindeki karışıklığı önlemek için Aygıt Yöneticisi, Regedit, Olay Görüntüleyici, Hizmetler ve DirectX gibi 24 kritik araç Yazılım & Runtimes Mağazası'na (Tab 3: Sistem Konsolları & Klasik Araçlar) taşındı.",

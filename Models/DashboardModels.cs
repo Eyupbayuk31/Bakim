@@ -33,6 +33,11 @@ namespace Bakım.Models
         public string CpuClockSpeed { get; set; } = string.Empty;
         public string GpuName { get; set; } = "Ekran Kartı";
         public string GpuVram { get; set; } = string.Empty;
+        public string GpuSecondaryName { get; set; } = string.Empty;
+        public string GpuSecondaryVram { get; set; } = string.Empty;
+        public bool HasDualGpu { get; set; }
+        public string GpuBadgeText { get; set; } = "GPU";
+        public string GpuTooltip { get; set; } = string.Empty;
     }
 
     public partial class ResourceHogItem : ObservableObject

@@ -175,7 +175,7 @@ namespace Bakım.ViewModels
             if (IsGameModeActive)
             {
                 string freedText = CleanCategory.FormatBytes(freed);
-                OptimizationResultMessage = $"🎮 Ultra Oyun Modu Aktif! Arka plan servisleri donduruldu. {freedText} bellek oyuna ayrıldı!";
+                OptimizationResultMessage = $"Ultra Oyun Modu Aktif! Arka plan servisleri donduruldu. {freedText} bellek oyuna ayrıldı!";
                 OptimizationFreedBadge = $"+{freedText} Serbest";
                 HasOptimizationResult = true;
             }
