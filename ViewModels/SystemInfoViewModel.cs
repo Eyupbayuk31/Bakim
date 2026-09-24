@@ -1263,8 +1263,18 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
-        public void ToggleSelectAllEmptyFolders(bool select)
+        public void ToggleSelectAllEmptyFolders(object? parameter)
         {
+            bool select = true;
+            if (parameter is bool b)
+            {
+                select = b;
+            }
+            else if (parameter is string s && bool.TryParse(s, out bool parsed))
+            {
+                select = parsed;
+            }
+
             foreach (var folder in FilteredEmptyFolders)
             {
                 folder.IsSelected = select;

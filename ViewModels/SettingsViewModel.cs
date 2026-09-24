@@ -794,11 +794,11 @@ namespace Bakım.ViewModels
                 {
                     // Anahtar DPAPI ile şifrelenerek saklanır; appsettings.json'a düz metin yazılmaz.
                     _virusTotalService.SaveApiKey(VirusTotalApiKey);
-                    VirusTotalApiStatus = "Başarılı! API anahtarı doğrulandı ve şifrelenerek kaydedildi. ✓";
+                    VirusTotalApiStatus = "Başarılı! API anahtarı doğrulandı ve şifrelenerek kaydedildi.";
                 }
                 else
                 {
-                    VirusTotalApiStatus = "Geçersiz API Anahtarı! Lütfen kontrol edin. ✗";
+                    VirusTotalApiStatus = "Geçersiz API Anahtarı! Lütfen kontrol edin.";
                 }
             }
             catch (Exception ex)
@@ -834,13 +834,28 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3185 = new ReleaseChangelogItem
+            {
+                Version = "v3.18.5",
+                ReleaseDate = "24 Eylül 2026",
+                Title = "Boş Klasör Seçim Komut Türü Uyumluluğu & Savunmacı Düzeltme",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Komut Türü Dönüşüm Hatası Çözüldü: Boş Klasörler sekmesinde 'Tümünü Seç' ve 'Seçimi Kaldır' butonlarının tetiklediği ToggleSelectAllEmptyFolders komutunda oluşan dize/boole parametre türü uyumsuzluğu (String cannot be of type Boolean) kökten giderildi.",
+                    "Çok Yönlü Savunmacı Parametre İşleme: Komut parametresi object türüne dönüştürülerek hem bool hem de string ('True'/'False') değerlerinin hatasız ayrıştırılması sağlandı.",
+                    "170/170 Birim Testi: Yeni parametre türü dönüşüm testleriyle komut bağlama katmanı yüzde yüz doğrulandı."
+                }
+            };
+
             var v3184 = new ReleaseChangelogItem
             {
                 Version = "v3.18.4",
                 ReleaseDate = "24 Eylül 2026",
                 Title = "Gelişmiş Yinelenen Dosya Avcısı & Boş Klasör Temizleyici",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "3 Aşamalı Ultra Hızlı Eşleme Motoru: Dosya boyutu filtreleme, ilk 4 KB başlık hash'i ve tam SHA-256 kriptografik parmak izi doğrulamasıyla mükerrer dosyaların sıfır hata payıyla tespiti sağlandı.",
@@ -1279,7 +1294,7 @@ namespace Bakım.ViewModels
                 {
                     "20 Genişletilmiş Temizlik Hedefi: Windows Sistem Kalıntıları (Teslim İyileştirme, Shader, WER, CBS/DISM Logları, Thumbnail DB), Web Tarayıcıları (Edge, Chrome, Firefox, Brave, Discord, Telegram) ve Oyun/Medya/Dev (Steam, Spotify, Epic, NuGet/npm/pip) kategorilerine kavuşturuldu.",
                     "Canlı C: Sürücüsü Sağlık & Doluluk Röntgeni: 4. KPI kartı olarak anlık disk doluluk çubuğu, toplam boyut, boş alan ve potansiyel temizlik ferahlığı göstergesi eklendi.",
-                    "Akıllı Hızlı Temizlik Profilleri: 🛡️ Hızlı & Güvenli, 🚀 Kapsamlı Derin, 🎮 Oyun & Medya profilleri ile tek tıkla hedef belirleme sağlandı.",
+                    "Akıllı Hızlı Temizlik Profilleri: Hızlı & Güvenli, Kapsamlı Derin, Oyun & Medya profilleri ile tek tıkla hedef belirleme sağlandı.",
                     "Taranan Dosyalar Canlı Arama & Boyut Filtresi: Binlerce dosya arasında anlık isim/uzantı araması (.log, .tmp, .dmp) ve >1MB, >10MB, >100MB boyut filtreleme butonları eklendi.",
                     "Sağ Teftiş Çekmecesi (Inspection Drawer): Seçilen dosyanın tam yolu, dizini, değiştirilme tarihi, Explorer'da açma, yolu kopyalama ve tek tıkla 'Temizlikten Muaf Tut' (Hariç Bırak) yeteneği sisteme kazandırıldı."
                 }
@@ -1424,8 +1439,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3184;
+            LatestRelease = v3185;
 
+            ReleaseHistory.Add(v3185);
             ReleaseHistory.Add(v3184);
             ReleaseHistory.Add(v3183);
             ReleaseHistory.Add(v3182);

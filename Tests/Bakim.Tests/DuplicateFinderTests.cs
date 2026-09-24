@@ -207,5 +207,32 @@ namespace Bakim.Tests
             Assert.False(fileCopy2.IsOriginal);
             Assert.True(fileCopy2.IsSelected);   // Kopyalar seçilmeli
         }
+
+        [Theory]
+        [InlineData("True", true)]
+        [InlineData("False", false)]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public void ViewModel_ToggleSelectAllEmptyFolders_HandlesBothStringAndBooleanParameters(object parameter, bool expected)
+        {
+            // Arrange
+            var vm = new SystemInfoViewModel(
+                new SystemInfoRevampTests.MockSystemInfoService(),
+                new SystemInfoRevampTests.MockSettingsService(),
+                _service);
+
+            var folder1 = new EmptyFolderItem { FolderName = "Dir1", FolderPath = "C:\\test\\Dir1", IsSelected = !expected };
+            var folder2 = new EmptyFolderItem { FolderName = "Dir2", FolderPath = "C:\\test\\Dir2", IsSelected = !expected };
+
+            vm.FilteredEmptyFolders.Add(folder1);
+            vm.FilteredEmptyFolders.Add(folder2);
+
+            // Act - Execute as IRelayCommand / Command to verify binding layer behavior
+            vm.ToggleSelectAllEmptyFoldersCommand.Execute(parameter);
+
+            // Assert
+            Assert.Equal(expected, folder1.IsSelected);
+            Assert.Equal(expected, folder2.IsSelected);
+        }
     }
 }
