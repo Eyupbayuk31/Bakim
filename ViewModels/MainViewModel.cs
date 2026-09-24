@@ -211,7 +211,7 @@ namespace Bakım.ViewModels
             IsGameModeActive = _gameModeService.IsGameModeActive;
             if (IsGameModeActive)
             {
-                ShowToast("🎮 Ultra Oyun Modu Aktif!",
+                ShowToast("Ultra Oyun Modu Aktif!",
                     $"Arka plan servisleri ve bildirimler donduruldu. {CleanCategory.FormatBytes(freed)} bellek oyuna ayrıldı!",
                     InfoBarSeverity.Success, "TopSpeed24");
             }
@@ -221,6 +221,43 @@ namespace Bakım.ViewModels
                     "Arka plan koruma servisleri normale döndü.",
                     InfoBarSeverity.Informational, "CheckmarkCircle24");
             }
+        }
+
+        [RelayCommand]
+        public async Task FastRamBoostAsync()
+        {
+            try
+            {
+                var cleanService = _services.GetService<ISystemCleanService>();
+                if (cleanService != null)
+                {
+                    long freed = await cleanService.AutoTrimWorkingSetsAsync();
+                    ShowToast("RAM Temizlendi", $"{CleanCategory.FormatBytes(freed)} bellek başarıyla serbest bırakıldı.", InfoBarSeverity.Success, "TopSpeed24");
+                    await UpdateMiniTelemetryAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Hızlı RAM temizliği başarısız.", ex, nameof(MainViewModel));
+            }
+        }
+
+        [RelayCommand]
+        public async Task RefreshActiveModuleAsync()
+        {
+            if (_activeModule != null)
+            {
+                try
+                {
+                    await _activeModule.OnActivatedAsync();
+                    ShowToast("Yenilendi", "Aktif modül verileri güncellendi.", InfoBarSeverity.Informational, "ArrowClockwise24");
+                }
+                catch (Exception ex)
+                {
+                    _log.Error("Modül yenilenirken hata oluştu.", ex, nameof(MainViewModel));
+                }
+            }
+            await UpdateMiniTelemetryAsync();
         }
 
         #endregion

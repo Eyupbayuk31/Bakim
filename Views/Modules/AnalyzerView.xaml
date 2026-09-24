@@ -57,8 +57,7 @@
 
             <!--
                 Beş buton dar pencerede taşıyordu. Artık iki birincil eylem
-                görünür, kalanlar taşma menüsünde. Ayrıca emoji içerikler
-                (🔑 🛡️ 🔍) Fluent simge sistemiyle değiştirildi.
+                görünür, kalanlar taşma menüsünde. Fluent simge sistemi kullanıldı.
             -->
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -272,20 +271,24 @@
                                 Padding="12,10">
                             <Border.ContextMenu>
                                 <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                                    <MenuItem Header="🛡️ Sezgisel AI Tehdit Analizi Yap"
+                                    <MenuItem Header="Sezgisel Tehdit Analizi Yap"
+                                              Icon="{ui:SymbolIcon Shield24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               FontWeight="SemiBold"
                                               Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="🔍 VirusTotal API ile Doğrula"
+                                    <MenuItem Header="VirusTotal API ile Doğrula"
+                                              Icon="{ui:SymbolIcon Search24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="📁 Dosya Konumunu Aç"
+                                    <MenuItem Header="Dosya Konumunu Aç"
+                                              Icon="{ui:SymbolIcon FolderOpen24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="📋 SHA-256 Kopyala"
+                                    <MenuItem Header="SHA-256 Kopyala"
+                                              Icon="{ui:SymbolIcon Copy24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>

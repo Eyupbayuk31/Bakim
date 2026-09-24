@@ -30,6 +30,7 @@ namespace Bakım.Services
         private readonly ISystemCleanService _cleanService;
         private readonly IGameModeService _gameModeService;
         private readonly INavigationService _navigationService;
+        private readonly ITelemetryService _telemetryService;
         private readonly ILogService _log;
 
         private Forms.NotifyIcon? _notifyIcon;
@@ -43,12 +44,14 @@ namespace Bakım.Services
             ISystemCleanService cleanService,
             IGameModeService gameModeService,
             INavigationService navigationService,
+            ITelemetryService telemetryService,
             ILogService log)
         {
             _settings = settings;
             _cleanService = cleanService;
             _gameModeService = gameModeService;
             _navigationService = navigationService;
+            _telemetryService = telemetryService;
             _log = log ?? NullLogService.Instance;
 
             _gameModeService.GameModeChanged += OnGameModeChanged;
@@ -97,7 +100,7 @@ namespace Bakım.Services
         {
             if (_flyoutWindow == null)
             {
-                _flyoutWindow = new Views.Windows.TrayFlyoutWindow(this, _gameModeService, _cleanService, _navigationService);
+                _flyoutWindow = new Views.Windows.TrayFlyoutWindow(this, _gameModeService, _cleanService, _navigationService, _telemetryService);
             }
 
             _flyoutWindow.UpdateState();

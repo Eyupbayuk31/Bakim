@@ -845,10 +845,10 @@ namespace Bakım.Services
             sb.AppendLine("</head>");
             sb.AppendLine("<body>");
             sb.AppendLine("<div class=\"container\">");
-            sb.AppendLine($"<h1><span>⚡ Bakım - Sistem Donanım Raporu</span><span style=\"font-size: 14px; color: #94A3B8;\">{DateTime.Now:yyyy-MM-dd HH:mm:ss}</span></h1>");
+            sb.AppendLine($"<h1><span>Bakım - Sistem Donanım Raporu</span><span style=\"font-size: 14px; color: #94A3B8;\">{DateTime.Now:yyyy-MM-dd HH:mm:ss}</span></h1>");
 
             // Sistem Genel Bilgileri
-            sb.AppendLine("<h2>💻 Sistem &amp; Platform</h2>");
+            sb.AppendLine("<h2>Sistem &amp; Platform</h2>");
             sb.AppendLine("<table>");
             sb.AppendLine($"<tr><th>Cihaz Adı</th><td>{hw.MachineName}</td><th>Kullanıcı</th><td>{hw.UserName}</td></tr>");
             sb.AppendLine($"<tr><th>İşletim Sistemi</th><td>{hw.OsVersion}</td><th>Çalışma Süresi (Uptime)</th><td>{hw.SystemUptimeText}</td></tr>");
@@ -857,7 +857,7 @@ namespace Bakım.Services
             sb.AppendLine("</table>");
 
             // Donanım Özellikleri
-            sb.AppendLine("<h2>🔧 Temel Donanım Özellikleri</h2>");
+            sb.AppendLine("<h2>Temel Donanım Özellikleri</h2>");
             sb.AppendLine("<table>");
             sb.AppendLine($"<tr><th>İşlemci (CPU)</th><td>{hw.CpuName} ({hw.CpuCoresThreads}, {hw.CpuClockSpeed}, {hw.CpuL3Cache})</td></tr>");
             sb.AppendLine($"<tr><th>Grafik Kartı (GPU)</th><td>{hw.GpuName} ({hw.GpuVram}, Sürücü: {hw.GpuDriverVersion}, {hw.DisplayResolution} @ {hw.DisplayRefreshRate})</td></tr>");
@@ -867,7 +867,7 @@ namespace Bakım.Services
             sb.AppendLine("</table>");
 
             // Sürücüler & Bölümler
-            sb.AppendLine("<h2>💾 Sabit Sürücüler &amp; Bölümler</h2>");
+            sb.AppendLine("<h2>Sabit Sürücüler &amp; Bölümler</h2>");
             sb.AppendLine("<table>");
             sb.AppendLine("<tr><th>Sürücü</th><th>Birim Etiketi</th><th>Format</th><th>Toplam Kapasite</th><th>Boş Alan</th><th>Doluluk</th></tr>");
             foreach (var d in hw.Drives)
@@ -879,7 +879,7 @@ namespace Bakım.Services
             // S.M.A.R.T. Sağlık
             if (disks.Count > 0)
             {
-                sb.AppendLine("<h2>🛡️ Fiziksel Disk S.M.A.R.T. Sağlığı</h2>");
+                sb.AppendLine("<h2>Fiziksel Disk S.M.A.R.T. Sağlığı</h2>");
                 sb.AppendLine("<table>");
                 sb.AppendLine("<tr><th>Disk Modeli</th><th>Veri Yolu</th><th>Medya Tipi</th><th>Kapasite</th><th>Sıcaklık</th><th>Sağlık Durumu</th></tr>");
                 foreach (var s in disks)

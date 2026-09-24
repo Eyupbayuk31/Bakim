@@ -115,7 +115,7 @@ namespace Bakım.ViewModels
             _threatAnalyzerService = threatAnalyzerService;
 
             ApiKeyInput = _virusTotalService.ApiKey;
-            ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır ✓" : "API Anahtarı Tanımlanmadı";
+            ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır" : "API Anahtarı Tanımlanmadı";
 
             _filteredView = CollectionViewSource.GetDefaultView(Items);
             _filteredView.Filter = FilterItem;
@@ -402,7 +402,7 @@ namespace Bakım.ViewModels
         public void OpenApiKeyDialog()
         {
             ApiKeyInput = _virusTotalService.ApiKey;
-            ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır ✓" : "Henüz bir anahtar kaydedilmedi.";
+            ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır" : "Henüz bir anahtar kaydedilmedi.";
             IsApiKeyDialogOpen = true;
         }
 
@@ -427,13 +427,13 @@ namespace Bakım.ViewModels
             {
                 _virusTotalService.SaveApiKey(ApiKeyInput);
                 OnPropertyChanged(nameof(HasVirusTotalApiKey));
-                ApiKeyStatusText = "Doğrulandı ve Kaydedildi! ✓";
+                ApiKeyStatusText = "Doğrulandı ve Kaydedildi!";
                 await Task.Delay(800);
                 IsApiKeyDialogOpen = false;
             }
             else
             {
-                ApiKeyStatusText = "Geçersiz API Anahtarı! Lütfen kontrol edin. ✗";
+                ApiKeyStatusText = "Geçersiz API Anahtarı! Lütfen kontrol edin.";
             }
         }
 

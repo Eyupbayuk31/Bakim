@@ -57,14 +57,14 @@ namespace Bakım.Views.Dialogs
             {
                 TargetFrame.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EF4444"));
                 TargetFrame.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#15EF4444"));
-                HudTitle.Text = "🛡️ Bakım (Korumalı Uygulama)";
+                HudTitle.Text = "Bakım (Korumalı Uygulama)";
                 HudSubtitle.Text = "Bakım kendi kendini kaldıramaz";
             }
             else if (info.IsSystemShell)
             {
                 TargetFrame.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F59E0B"));
                 TargetFrame.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#15F59E0B"));
-                HudTitle.Text = "🛡️ Windows Kabuğu / Gezgini";
+                HudTitle.Text = "Windows Kabuğu / Gezgini";
                 HudSubtitle.Text = "Sistem kararlılığı için korumalıdır";
             }
             else
@@ -72,7 +72,7 @@ namespace Bakım.Views.Dialogs
                 TargetFrame.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#38BDF8"));
                 TargetFrame.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1538BDF8"));
                 string appName = info.MatchedApp?.DisplayName ?? (!string.IsNullOrWhiteSpace(info.WindowTitle) ? info.WindowTitle : info.ProcessName);
-                HudTitle.Text = $"🎯 {appName}";
+                HudTitle.Text = appName;
                 HudSubtitle.Text = $"Süreç: {info.ProcessName}.exe (PID: {info.ProcessId})";
             }
 

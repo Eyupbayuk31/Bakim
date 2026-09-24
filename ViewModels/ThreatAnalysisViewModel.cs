@@ -421,7 +421,7 @@ namespace Bakım.ViewModels
             sb.AppendLine($"## Tespit Edilen Güvenlik Faktörleri");
             foreach (var f in Result.Factors)
             {
-                string symbol = f.Severity == ThreatSeverity.Critical ? "❌" : (f.Severity == ThreatSeverity.Warning ? "⚠️" : "✅");
+                string symbol = f.Severity == ThreatSeverity.Critical ? "[Kritik]" : (f.Severity == ThreatSeverity.Warning ? "[Uyarı]" : "[Güvenli]");
                 sb.AppendLine($"- {symbol} **{f.Title}**: {f.Description}");
             }
             sb.AppendLine();

@@ -330,7 +330,7 @@ namespace Bakım.ViewModels
             if (preset == null) return;
             SelectSpecificIds(preset.TargetIds);
             UpdatePresetMetrics();
-            AppendLog($"📦 [Paket Seçildi] {preset.Title} — {preset.TargetIds.Count} uygulama kuyruğa işaretlendi.");
+            AppendLog($"[Paket Seçildi] {preset.Title} — {preset.TargetIds.Count} uygulama kuyruğa işaretlendi.");
         }
 
         [RelayCommand]

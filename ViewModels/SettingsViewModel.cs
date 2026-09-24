@@ -27,6 +27,7 @@ namespace Bakım.ViewModels
         private readonly ILogService _log;
         private readonly IGitHubUpdateService _updateService;
         private readonly IVirusTotalCheckService _virusTotalService;
+        private readonly IShellContextMenuService _shellContextMenuService;
         private bool _isInitializing = true;
 
         public SettingsViewModel(
@@ -34,15 +35,19 @@ namespace Bakım.ViewModels
             IAppSettingsService settingsService,
             IThemeService themeService,
             ILogService log,
-            IVirusTotalCheckService virusTotalService)
+            IVirusTotalCheckService virusTotalService,
+            IShellContextMenuService shellContextMenuService)
         {
             _updateService = updateService;
             _settingsService = settingsService;
             _themeService = themeService;
             _log = log;
             _virusTotalService = virusTotalService;
+            _shellContextMenuService = shellContextMenuService;
 
             IsAdmin = UacHelper.IsAdministrator();
+            _isShellContextMenuEnabled = _shellContextMenuService.IsContextMenuRegistered();
+            _shellContextMenuStatus = _isShellContextMenuEnabled ? "Kayıtlı ve Aktif" : "Devre Dışı";
             LoadSettings();
             InitializeReleaseHistory();
             _isInitializing = false;
@@ -204,9 +209,49 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _verboseLogging;
 
+        [ObservableProperty]
+        private bool _isShellContextMenuEnabled;
+
+        [ObservableProperty]
+        private string _shellContextMenuStatus = "Devre Dışı";
+
         #endregion
 
         #region Change Handlers & Persistence
+
+        partial void OnIsShellContextMenuEnabledChanged(bool value)
+        {
+            if (_isInitializing) return;
+
+            try
+            {
+                if (value)
+                {
+                    _shellContextMenuService.RegisterContextMenu();
+                }
+                else
+                {
+                    _shellContextMenuService.UnregisterContextMenu();
+                }
+
+                IsShellContextMenuEnabled = _shellContextMenuService.IsContextMenuRegistered();
+                ShellContextMenuStatus = IsShellContextMenuEnabled ? "Kayıtlı ve Aktif" : "Devre Dışı";
+                _log.Info($"Windows Gezgini sağ tık menü entegrasyonu {(IsShellContextMenuEnabled ? "etkinleştirildi" : "kaldırıldı")}.", nameof(SettingsViewModel));
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Windows Gezgini bağlam menüsü değiştirilirken hata oluştu.", ex, nameof(SettingsViewModel));
+                IsShellContextMenuEnabled = _shellContextMenuService.IsContextMenuRegistered();
+                ShellContextMenuStatus = IsShellContextMenuEnabled ? "Kayıtlı ve Aktif" : "Devre Dışı";
+            }
+        }
+
+        [RelayCommand]
+        private void RefreshShellContextMenuStatus()
+        {
+            IsShellContextMenuEnabled = _shellContextMenuService.IsContextMenuRegistered();
+            ShellContextMenuStatus = IsShellContextMenuEnabled ? "Kayıtlı ve Aktif" : "Devre Dışı";
+        }
 
         partial void OnIsMicaEnabledChanged(bool value)
         {
@@ -834,13 +879,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3186 = new ReleaseChangelogItem
+            {
+                Version = "v3.18.6",
+                ReleaseDate = "24 Eylül 2026",
+                Title = "Windows Gezgini Bağlam Menüsü Taşınması, Canlı Tray Mini HUD & Global Kısayollar",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Windows Gezgini Sağ Tık Menüsü Ayarlara Taşındı: Program Kaldırma sayfasında işlevsiz duran sağ tık menü butonu kaldırılarak doğrudan Ayarlar modülüne (Sistem & Başlangıç ve Modül Tercihleri) gerçek ToggleSwitch ve canlı aktif/pasif durum rozetiyle taşındı.",
+                    "Sistem Tepsisi (Tray Flyout) Canlı Mini HUD: Görev çubuğu mini penceresi canlı CPU ve RAM telemetri göstergeleri (yüzde, progress bar, boş bellek detayı), tek tıkla Hızlı RAM Temizleme ve Ultra Oyun Modu anahtarıyla modernleştirildi.",
+                    "Power-User Global Klavye Kısayolları: F5 (Aktif Modülü Yenile), Ctrl+1..9 (Hızlı Modül Navigasyonu), Ctrl+Shift+G (Ultra Oyun Modu) ve Ctrl+Shift+R (Hızlı RAM Boşaltma) kısayolları sisteme kazandırıldı.",
+                    "Sıfır Emoji Standartlaşması: Kod tabanında kalan tüm yapay zeka emojileri temizlendi; tüm arayüzde Fluent 2 SymbolRegular sembol sistemi ve profesyonel tipografi standartlaştırıldı."
+                }
+            };
+
             var v3185 = new ReleaseChangelogItem
             {
                 Version = "v3.18.5",
                 ReleaseDate = "24 Eylül 2026",
                 Title = "Boş Klasör Seçim Komut Türü Uyumluluğu & Savunmacı Düzeltme",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Komut Türü Dönüşüm Hatası Çözüldü: Boş Klasörler sekmesinde 'Tümünü Seç' ve 'Seçimi Kaldır' butonlarının tetiklediği ToggleSelectAllEmptyFolders komutunda oluşan dize/boole parametre türü uyumsuzluğu (String cannot be of type Boolean) kökten giderildi.",
@@ -1439,8 +1500,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3185;
+            LatestRelease = v3186;
 
+            ReleaseHistory.Add(v3186);
             ReleaseHistory.Add(v3185);
             ReleaseHistory.Add(v3184);
             ReleaseHistory.Add(v3183);

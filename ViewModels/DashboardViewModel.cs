@@ -341,7 +341,7 @@ namespace Bakım.ViewModels
                 long totalFreed = freedRamBytes + freedTempBytes;
                 string freedText = CleanCategory.FormatBytes(totalFreed > 0 ? totalFreed : 450 * 1024 * 1024);
 
-                BoostStageText = $"Tamamlandı! {freedText} serbest bırakıldı ✓";
+                BoostStageText = $"Tamamlandı! {freedText} serbest bırakıldı";
                 await Task.Delay(800);
 
                 OptimizationFreedBadge = $"+{freedText} Serbest";

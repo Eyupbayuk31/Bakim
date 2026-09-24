@@ -263,7 +263,7 @@ namespace Bakım.ViewModels
                         $"Dosya: {Path.GetFileName(target.FilePath)}\n" +
                         $"SHA-256: {sha256}\n" +
                         $"Zararlı Tespiti: {malicious} / {total} Güvenlik Motoru\n" +
-                        $"Durum: {(malicious == 0 ? "Güvenli / Temiz ✓" : "DİKKAT: Şüpheli veya Zararlı!")}\n\n" +
+                        $"Durum: {(malicious == 0 ? "Güvenli / Temiz" : "DİKKAT: Şüpheli veya Zararlı!")}\n\n" +
                         $"Raporu tarayıcıda açmak ister misiniz?",
                         "VirusTotal Sonucu",
                         MessageBoxButton.YesNo,
@@ -408,7 +408,7 @@ namespace Bakım.ViewModels
                 await LoadTopProcessesAsync();
 
                 OptimizationProgressPercent = 100;
-                OptimizationStageText = "Bellek başarıyla boşaltıldı! ✓";
+                OptimizationStageText = "Bellek başarıyla boşaltıldı!";
                 await Task.Delay(500);
 
                 HasResultBanner = true;

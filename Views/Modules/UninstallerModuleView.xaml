@@ -48,14 +48,6 @@
                 ToolTip="Yeni bir kurulum paketini izleyip sıfır kalıntı logu oluşturun"
                 Icon="{ui:SymbolIcon Record24}"/>
 
-                <!-- Sağ Tık Menüsü Entegrasyonu -->
-                <ui:Button Appearance="Secondary"
-                           Command="{Binding ToggleContextMenuCommand}"
-                           Padding="12,8"
-                           Margin="0,0,8,0"
-                           Content="Sağ Tık Menüsü"
-                           ToolTip="Masaüstü ve dosya sağ tık menüsüne 'Bakım ile Kaldır' seçeneğini ekleyin veya kaldırın"
-                           Icon="{ui:SymbolIcon CursorClick24}"/>
 
                 <!-- Yenile -->
                 <ui:Button Appearance="Secondary"
