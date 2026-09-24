@@ -15,18 +15,26 @@ namespace Bakım.ViewModels
     {
         private readonly IAppSettingsService _settingsService;
         private readonly ISystemInfoService _infoService;
+        private readonly IDuplicateFinderService _duplicateService;
         private readonly DispatcherTimer _liveTelemetryTimer;
         private CancellationTokenSource? _scanCts;
+        private CancellationTokenSource? _duplicateScanCts;
 
         public SystemInfoViewModel(ISystemInfoService infoService,
-            IAppSettingsService settingsService)
+            IAppSettingsService settingsService,
+            IDuplicateFinderService? duplicateService = null)
         {
             _settingsService = settingsService;
             _infoService = infoService;
+            _duplicateService = duplicateService ?? new DuplicateFinderService();
             Drives = new ObservableCollection<DriveInfoItem>();
             SmartDisks = new ObservableCollection<SmartDiskHealthItem>();
             LargeFiles = new ObservableCollection<LargeDiskFileItem>();
             FilteredLargeFiles = new ObservableCollection<LargeDiskFileItem>();
+            DuplicateGroups = new ObservableCollection<DuplicateFileGroup>();
+            FilteredDuplicateGroups = new ObservableCollection<DuplicateFileGroup>();
+            EmptyFolders = new ObservableCollection<EmptyFolderItem>();
+            FilteredEmptyFolders = new ObservableCollection<EmptyFolderItem>();
             AvailableDrives = new ObservableCollection<string> { "Tüm Sürücüler" };
 
             // Sabit sürücü harflerini ekle
@@ -74,17 +82,22 @@ namespace Bakım.ViewModels
         public ObservableCollection<SmartDiskHealthItem> SmartDisks { get; }
         public ObservableCollection<LargeDiskFileItem> LargeFiles { get; }
         public ObservableCollection<LargeDiskFileItem> FilteredLargeFiles { get; }
+        public ObservableCollection<DuplicateFileGroup> DuplicateGroups { get; }
+        public ObservableCollection<DuplicateFileGroup> FilteredDuplicateGroups { get; }
+        public ObservableCollection<EmptyFolderItem> EmptyFolders { get; }
+        public ObservableCollection<EmptyFolderItem> FilteredEmptyFolders { get; }
         public ObservableCollection<string> AvailableDrives { get; }
 
         [ObservableProperty]
         private SystemHardwareStats _hardware = new();
 
         [ObservableProperty]
-        private string _activeSubTab = "Hardware"; // Hardware, Smart, LargeFiles
+        private string _activeSubTab = "Hardware"; // Hardware, Smart, LargeFiles, Duplicates
 
         public bool IsHardwareTab => ActiveSubTab == "Hardware";
         public bool IsSmartTab => ActiveSubTab == "Smart";
         public bool IsLargeFilesTab => ActiveSubTab == "LargeFiles";
+        public bool IsDuplicatesTab => ActiveSubTab == "Duplicates";
 
         [ObservableProperty]
         private bool _isBusy;
@@ -226,6 +239,7 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(IsHardwareTab));
             OnPropertyChanged(nameof(IsSmartTab));
             OnPropertyChanged(nameof(IsLargeFilesTab));
+            OnPropertyChanged(nameof(IsDuplicatesTab));
         }
 
         [RelayCommand]
@@ -852,7 +866,661 @@ namespace Bakım.ViewModels
         {
             UacHelper.RestartAsAdministrator();
         }
-    
+
+        #region Yinelenen Dosya & Boş Klasör Yöneticisi
+
+        [ObservableProperty]
+        private bool _isDuplicatesScanning;
+
+        [ObservableProperty]
+        private string _duplicateProgressText = "Tarama başlatılmadı.";
+
+        [ObservableProperty]
+        private int _duplicateProgressPercent;
+
+        [ObservableProperty]
+        private string _duplicateCurrentFilePath = string.Empty;
+
+        [ObservableProperty]
+        private string _duplicateViewMode = "Duplicates"; // Duplicates, EmptyFolders
+
+        public bool IsShowingDuplicates => DuplicateViewMode == "Duplicates";
+        public bool IsShowingEmptyFolders => DuplicateViewMode == "EmptyFolders";
+
+        [ObservableProperty]
+        private string _duplicateTypeFilter = "All"; // All, Images, Videos, Documents, Archives, Audio
+
+        public bool IsDuplicateFilterAll => DuplicateTypeFilter == "All";
+        public bool IsDuplicateFilterImages => DuplicateTypeFilter == "Images";
+        public bool IsDuplicateFilterVideos => DuplicateTypeFilter == "Videos";
+        public bool IsDuplicateFilterDocs => DuplicateTypeFilter == "Documents";
+        public bool IsDuplicateFilterArchives => DuplicateTypeFilter == "Archives";
+        public bool IsDuplicateFilterAudio => DuplicateTypeFilter == "Audio";
+
+        [ObservableProperty]
+        private string _duplicateSearchText = string.Empty;
+
+        [ObservableProperty]
+        private string _emptyFolderSearchText = string.Empty;
+
+        [ObservableProperty]
+        private string _duplicateSelectedDrive = "Tüm Sürücüler";
+
+        [ObservableProperty]
+        private string _customScanFolderPath = string.Empty;
+
+        [ObservableProperty]
+        private bool _isCustomFolderActive;
+
+        [ObservableProperty]
+        private long _totalWastedBytes;
+
+        [ObservableProperty]
+        private string _totalWastedFormatted = "0 B";
+
+        [ObservableProperty]
+        private int _totalDuplicateCount;
+
+        [ObservableProperty]
+        private int _totalEmptyFolderCount;
+
+        [ObservableProperty]
+        private int _selectedDuplicateCount;
+
+        [ObservableProperty]
+        private string _selectedDuplicateBytesFormatted = "0 B";
+
+        [ObservableProperty]
+        private int _selectedEmptyFolderCount;
+
+        [ObservableProperty]
+        private string _duplicateOperationResult = string.Empty;
+
+        [ObservableProperty]
+        private bool _hasDuplicateOperationResult;
+
+        [ObservableProperty]
+        private bool _hasDuplicateScanned;
+
+        [ObservableProperty]
+        private bool _hasEmptyFolderScanned;
+
+        [ObservableProperty]
+        private bool _deletePermanently;
+
+        partial void OnDuplicateViewModeChanged(string value)
+        {
+            OnPropertyChanged(nameof(IsShowingDuplicates));
+            OnPropertyChanged(nameof(IsShowingEmptyFolders));
+        }
+
+        partial void OnDuplicateTypeFilterChanged(string value)
+        {
+            OnPropertyChanged(nameof(IsDuplicateFilterAll));
+            OnPropertyChanged(nameof(IsDuplicateFilterImages));
+            OnPropertyChanged(nameof(IsDuplicateFilterVideos));
+            OnPropertyChanged(nameof(IsDuplicateFilterDocs));
+            OnPropertyChanged(nameof(IsDuplicateFilterArchives));
+            OnPropertyChanged(nameof(IsDuplicateFilterAudio));
+            UpdateDuplicateFilters();
+        }
+
+        partial void OnDuplicateSearchTextChanged(string value)
+        {
+            UpdateDuplicateFilters();
+        }
+
+        partial void OnEmptyFolderSearchTextChanged(string value)
+        {
+            UpdateEmptyFolderFilters();
+        }
+
+        [RelayCommand]
+        public void SwitchDuplicateView(string view)
+        {
+            DuplicateViewMode = view;
+        }
+
+        [RelayCommand]
+        public void SetDuplicateTypeFilter(string filter)
+        {
+            DuplicateTypeFilter = filter;
+        }
+
+        [RelayCommand]
+        public async Task StartDuplicateScanAsync()
+        {
+            if (IsDuplicatesScanning) return;
+
+            IsDuplicatesScanning = true;
+            HasDuplicateOperationResult = false;
+            DuplicateProgressPercent = 0;
+            DuplicateProgressText = "Tarama başlatılıyor...";
+            _duplicateScanCts = new CancellationTokenSource();
+
+            DuplicateGroups.Clear();
+            FilteredDuplicateGroups.Clear();
+            TotalWastedBytes = 0;
+            TotalWastedFormatted = "0 B";
+            TotalDuplicateCount = 0;
+            SelectedDuplicateCount = 0;
+            SelectedDuplicateBytesFormatted = "0 B";
+
+            try
+            {
+                var targetPaths = new List<string>();
+                if (IsCustomFolderActive && !string.IsNullOrWhiteSpace(CustomScanFolderPath) && Directory.Exists(CustomScanFolderPath))
+                {
+                    targetPaths.Add(CustomScanFolderPath);
+                }
+                else if (DuplicateSelectedDrive != "Tüm Sürücüler" && Directory.Exists(DuplicateSelectedDrive))
+                {
+                    targetPaths.Add(DuplicateSelectedDrive);
+                }
+                else
+                {
+                    foreach (var d in AvailableDrives.Where(x => x != "Tüm Sürücüler"))
+                    {
+                        if (Directory.Exists(d))
+                            targetPaths.Add(d);
+                    }
+                }
+
+                if (targetPaths.Count == 0)
+                {
+                    DuplicateProgressText = "Taranacak geçerli bir sürücü veya klasör bulunamadı.";
+                    IsDuplicatesScanning = false;
+                    return;
+                }
+
+                var progress = new Progress<DuplicateScanProgress>(p =>
+                {
+                    DuplicateProgressText = $"{p.CurrentStage} ({p.ScannedFiles:N0} dosya incelendi)";
+                    DuplicateProgressPercent = p.ProgressPercentage;
+                    DuplicateCurrentFilePath = p.CurrentFilePath;
+                });
+
+                var allGroups = new List<DuplicateFileGroup>();
+                foreach (var path in targetPaths)
+                {
+                    _duplicateScanCts.Token.ThrowIfCancellationRequested();
+                    var options = new DuplicateScanOptions
+                    {
+                        TargetPath = path,
+                        FileTypeFilter = DuplicateTypeFilter,
+                        MinSizeBytes = 1024,
+                        ExcludeSystemDirs = true
+                    };
+
+                    var groups = await _duplicateService.ScanDuplicatesAsync(options, progress, _duplicateScanCts.Token);
+                    allGroups.AddRange(groups);
+                }
+
+                // Eşleşen hash gruplarını birleştir
+                var mergedGroups = allGroups
+                    .GroupBy(g => g.Hash)
+                    .Select((g, idx) =>
+                    {
+                        var first = g.First();
+                        var group = new DuplicateFileGroup
+                        {
+                            GroupId = idx + 1,
+                            Hash = first.Hash,
+                            FileSizeFormatted = first.FileSizeFormatted,
+                            SingleFileSizeBytes = first.SingleFileSizeBytes,
+                            IsExpanded = true
+                        };
+
+                        var allFiles = g.SelectMany(x => x.Files)
+                                        .OrderBy(f => f.CreationTime)
+                                        .ToList();
+
+                        for (int i = 0; i < allFiles.Count; i++)
+                        {
+                            var file = allFiles[i];
+                            file.IsOriginal = (i == 0);
+                            file.IsSelected = (i > 0);
+                            file.PropertyChanged += (s, e) =>
+                            {
+                                if (e.PropertyName == nameof(DuplicateFileItem.IsSelected))
+                                {
+                                    UpdateDuplicateSelectionSummary();
+                                }
+                            };
+                            group.Files.Add(file);
+                        }
+
+                        return group;
+                    })
+                    .Where(g => g.Files.Count > 1)
+                    .ToList();
+
+                DuplicateGroups.Clear();
+                foreach (var g in mergedGroups)
+                {
+                    DuplicateGroups.Add(g);
+                }
+
+                HasDuplicateScanned = true;
+                UpdateDuplicateFilters();
+                RecalculateDuplicateTotals();
+                UpdateDuplicateSelectionSummary();
+
+                DuplicateProgressText = $"Tarama tamamlandı: {DuplicateGroups.Count} yinelenen grup ({TotalDuplicateCount} dosya, {TotalWastedFormatted} gereksiz alan).";
+                DuplicateProgressPercent = 100;
+            }
+            catch (OperationCanceledException)
+            {
+                DuplicateProgressText = "Tarama kullanıcı tarafından durduruldu.";
+            }
+            catch (Exception ex)
+            {
+                DuplicateProgressText = $"Tarama sırasında hata oluştu: {ex.Message}";
+                Services.AppLog.Error("Yinelenen dosya tarama hatası.", ex, nameof(SystemInfoViewModel));
+            }
+            finally
+            {
+                IsDuplicatesScanning = false;
+                _duplicateScanCts?.Dispose();
+                _duplicateScanCts = null;
+            }
+        }
+
+        [RelayCommand]
+        public async Task StartEmptyFolderScanAsync()
+        {
+            if (IsDuplicatesScanning) return;
+
+            IsDuplicatesScanning = true;
+            HasDuplicateOperationResult = false;
+            DuplicateProgressPercent = 0;
+            DuplicateProgressText = "Boş klasörler taranıyor...";
+            _duplicateScanCts = new CancellationTokenSource();
+
+            EmptyFolders.Clear();
+            FilteredEmptyFolders.Clear();
+            TotalEmptyFolderCount = 0;
+            SelectedEmptyFolderCount = 0;
+
+            try
+            {
+                string targetPath = IsCustomFolderActive && !string.IsNullOrWhiteSpace(CustomScanFolderPath)
+                    ? CustomScanFolderPath
+                    : (DuplicateSelectedDrive != "Tüm Sürücüler" ? DuplicateSelectedDrive : "C:\\");
+
+                var progress = new Progress<string>(dir =>
+                {
+                    DuplicateProgressText = $"İnceleniyor: {dir}";
+                    DuplicateCurrentFilePath = dir;
+                });
+
+                var results = await _duplicateService.ScanEmptyFoldersAsync(targetPath, progress, _duplicateScanCts.Token);
+
+                EmptyFolders.Clear();
+                foreach (var item in results)
+                {
+                    item.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(EmptyFolderItem.IsSelected))
+                        {
+                            UpdateEmptyFolderSelectionSummary();
+                        }
+                    };
+                    EmptyFolders.Add(item);
+                }
+
+                HasEmptyFolderScanned = true;
+                UpdateEmptyFolderFilters();
+                UpdateEmptyFolderSelectionSummary();
+                TotalEmptyFolderCount = EmptyFolders.Count;
+
+                DuplicateProgressText = $"Tarama tamamlandı: {TotalEmptyFolderCount} adet sahipsiz boş klasör bulundu.";
+                DuplicateProgressPercent = 100;
+            }
+            catch (OperationCanceledException)
+            {
+                DuplicateProgressText = "Boş klasör taraması iptal edildi.";
+            }
+            catch (Exception ex)
+            {
+                DuplicateProgressText = $"Hata: {ex.Message}";
+                Services.AppLog.Error("Boş klasör tarama hatası.", ex, nameof(SystemInfoViewModel));
+            }
+            finally
+            {
+                IsDuplicatesScanning = false;
+                _duplicateScanCts?.Dispose();
+                _duplicateScanCts = null;
+            }
+        }
+
+        [RelayCommand]
+        public void CancelDuplicateScan()
+        {
+            if (_duplicateScanCts != null && !_duplicateScanCts.IsCancellationRequested)
+            {
+                _duplicateScanCts.Cancel();
+                DuplicateProgressText = "İptal ediliyor...";
+            }
+        }
+
+        [RelayCommand]
+        public void SelectAllDuplicatesExceptOne()
+        {
+            foreach (var group in DuplicateGroups)
+            {
+                var sorted = group.Files.OrderBy(f => f.CreationTime).ToList();
+                for (int i = 0; i < sorted.Count; i++)
+                {
+                    sorted[i].IsOriginal = (i == 0);
+                    sorted[i].IsSelected = (i > 0);
+                }
+            }
+            UpdateDuplicateSelectionSummary();
+        }
+
+        [RelayCommand]
+        public void SelectNewestDuplicates()
+        {
+            foreach (var group in DuplicateGroups)
+            {
+                var sorted = group.Files.OrderBy(f => f.CreationTime).ToList();
+                for (int i = 0; i < sorted.Count; i++)
+                {
+                    sorted[i].IsOriginal = (i == 0);
+                    sorted[i].IsSelected = (i > 0);
+                }
+            }
+            UpdateDuplicateSelectionSummary();
+        }
+
+        [RelayCommand]
+        public void SelectOldestDuplicates()
+        {
+            foreach (var group in DuplicateGroups)
+            {
+                var sorted = group.Files.OrderByDescending(f => f.CreationTime).ToList();
+                for (int i = 0; i < sorted.Count; i++)
+                {
+                    sorted[i].IsOriginal = (i == 0);
+                    sorted[i].IsSelected = (i > 0);
+                }
+            }
+            UpdateDuplicateSelectionSummary();
+        }
+
+        [RelayCommand]
+        public void ClearDuplicateSelection()
+        {
+            foreach (var group in DuplicateGroups)
+            {
+                foreach (var file in group.Files)
+                {
+                    file.IsSelected = false;
+                }
+            }
+            UpdateDuplicateSelectionSummary();
+        }
+
+        [RelayCommand]
+        public void ToggleSelectAllEmptyFolders(bool select)
+        {
+            foreach (var folder in FilteredEmptyFolders)
+            {
+                folder.IsSelected = select;
+            }
+            UpdateEmptyFolderSelectionSummary();
+        }
+
+        [RelayCommand]
+        public async Task DeleteSelectedDuplicatesAsync()
+        {
+            var selectedFiles = DuplicateGroups
+                .SelectMany(g => g.Files)
+                .Where(f => f.IsSelected)
+                .ToList();
+
+            if (selectedFiles.Count == 0) return;
+
+            IsDuplicatesScanning = true;
+            DuplicateProgressText = $"{selectedFiles.Count} dosya temizleniyor...";
+
+            try
+            {
+                bool moveToRecycleBin = !DeletePermanently;
+                var (successCount, freedBytes) = await _duplicateService.DeleteDuplicatesAsync(selectedFiles, moveToRecycleBin);
+
+                var groupsToRemove = new List<DuplicateFileGroup>();
+                foreach (var group in DuplicateGroups)
+                {
+                    var filesToRemove = group.Files.Where(f => f.IsSelected && !File.Exists(f.FilePath)).ToList();
+                    foreach (var f in filesToRemove)
+                    {
+                        group.Files.Remove(f);
+                    }
+
+                    if (group.Files.Count <= 1)
+                    {
+                        groupsToRemove.Add(group);
+                    }
+                    else
+                    {
+                        var first = group.Files.FirstOrDefault();
+                        if (first != null) first.IsOriginal = true;
+                    }
+                }
+
+                foreach (var g in groupsToRemove)
+                {
+                    DuplicateGroups.Remove(g);
+                }
+
+                RecalculateDuplicateTotals();
+                UpdateDuplicateFilters();
+                UpdateDuplicateSelectionSummary();
+
+                string actionType = moveToRecycleBin ? "Geri Dönüşüm Kutusu'na taşındı" : "kalıcı olarak silindi";
+                DuplicateOperationResult = $"{successCount} adet kopya dosya başarıyla {actionType} ({CleanCategory.FormatBytes(freedBytes)} disk alanı kazanıldı).";
+                HasDuplicateOperationResult = true;
+            }
+            catch (Exception ex)
+            {
+                DuplicateOperationResult = $"Silme işlemi sırasında hata: {ex.Message}";
+                HasDuplicateOperationResult = true;
+                Services.AppLog.Error("Yinelenen dosya silme hatası.", ex, nameof(SystemInfoViewModel));
+            }
+            finally
+            {
+                IsDuplicatesScanning = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task DeleteSelectedEmptyFoldersAsync()
+        {
+            var selected = EmptyFolders.Where(f => f.IsSelected).ToList();
+            if (selected.Count == 0) return;
+
+            IsDuplicatesScanning = true;
+            DuplicateProgressText = $"{selected.Count} boş klasör siliniyor...";
+
+            try
+            {
+                int deleted = await _duplicateService.DeleteEmptyFoldersAsync(selected);
+
+                var removed = selected.Where(f => !Directory.Exists(f.FolderPath)).ToList();
+                foreach (var f in removed)
+                {
+                    EmptyFolders.Remove(f);
+                }
+
+                TotalEmptyFolderCount = EmptyFolders.Count;
+                UpdateEmptyFolderFilters();
+                UpdateEmptyFolderSelectionSummary();
+
+                DuplicateOperationResult = $"{deleted} adet sahipsiz boş klasör başarıyla temizlendi.";
+                HasDuplicateOperationResult = true;
+            }
+            catch (Exception ex)
+            {
+                DuplicateOperationResult = $"Boş klasör temizleme hatası: {ex.Message}";
+                HasDuplicateOperationResult = true;
+                Services.AppLog.Error("Boş klasör temizleme hatası.", ex, nameof(SystemInfoViewModel));
+            }
+            finally
+            {
+                IsDuplicatesScanning = false;
+            }
+        }
+
+        private void RecalculateDuplicateTotals()
+        {
+            TotalDuplicateCount = DuplicateGroups.Sum(g => g.Files.Count);
+            TotalWastedBytes = DuplicateGroups.Sum(g => g.TotalWastedBytes);
+            TotalWastedFormatted = CleanCategory.FormatBytes(TotalWastedBytes);
+        }
+
+        private void UpdateDuplicateSelectionSummary()
+        {
+            int count = 0;
+            long bytes = 0;
+            foreach (var group in DuplicateGroups)
+            {
+                foreach (var file in group.Files)
+                {
+                    if (file.IsSelected)
+                    {
+                        count++;
+                        bytes += file.SizeBytes;
+                    }
+                }
+            }
+            SelectedDuplicateCount = count;
+            SelectedDuplicateBytesFormatted = CleanCategory.FormatBytes(bytes);
+        }
+
+        private void UpdateEmptyFolderSelectionSummary()
+        {
+            SelectedEmptyFolderCount = EmptyFolders.Count(f => f.IsSelected);
+        }
+
+        private void UpdateDuplicateFilters()
+        {
+            var query = DuplicateGroups.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(DuplicateSearchText))
+            {
+                string search = DuplicateSearchText.Trim();
+                query = query.Where(g => g.Files.Any(f =>
+                    f.FileName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    f.DirectoryPath.Contains(search, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            if (DuplicateTypeFilter != "All")
+            {
+                string catName = GetCategoryNameForFilter(DuplicateTypeFilter);
+                query = query.Where(g => g.Files.Any(f =>
+                    string.Equals(f.Category, catName, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            FilteredDuplicateGroups.Clear();
+            foreach (var g in query)
+            {
+                FilteredDuplicateGroups.Add(g);
+            }
+        }
+
+        private static string GetCategoryNameForFilter(string filter) => filter switch
+        {
+            "Images" => "Resim",
+            "Videos" => "Video",
+            "Documents" => "Belge",
+            "Archives" => "Arşiv",
+            "Audio" => "Ses",
+            _ => "Tümü"
+        };
+
+        private void UpdateEmptyFolderFilters()
+        {
+            var query = EmptyFolders.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(EmptyFolderSearchText))
+            {
+                string search = EmptyFolderSearchText.Trim();
+                query = query.Where(f =>
+                    f.FolderName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    f.FolderPath.Contains(search, StringComparison.OrdinalIgnoreCase));
+            }
+
+            FilteredEmptyFolders.Clear();
+            foreach (var f in query)
+            {
+                FilteredEmptyFolders.Add(f);
+            }
+        }
+
+        [RelayCommand]
+        public void OpenDuplicateFileLocation(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{path}\"",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public void OpenFolderLocation(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !Directory.Exists(path)) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = path,
+                    UseShellExecute = true
+                });
+            }
+            catch { }
+        }
+
+        [RelayCommand]
+        public void BrowseCustomFolder()
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFolderDialog
+                {
+                    Title = "Taranacak Klasörü Seçin",
+                    Multiselect = false
+                };
+                if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.FolderName))
+                {
+                    CustomScanFolderPath = dialog.FolderName;
+                    IsCustomFolderActive = true;
+                }
+            }
+            catch
+            {
+                // Savunmacı UI
+            }
+        }
+
+        [RelayCommand]
+        public void ClearCustomFolder()
+        {
+            CustomScanFolderPath = string.Empty;
+            IsCustomFolderActive = false;
+        }
+
+        #endregion
+
         #region Modül Yaşam Döngüsü
 
         private bool _isActive;

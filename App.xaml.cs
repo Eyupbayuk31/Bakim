@@ -317,6 +317,7 @@ namespace Bakım
             services.AddSingleton<ICommandPaletteService, CommandPaletteService>();
             services.AddSingleton<IFileThreatAnalyzerService, FileThreatAnalyzerService>();
             services.AddSingleton<IStoreService, StoreService>();
+            services.AddSingleton<IDuplicateFinderService, DuplicateFinderService>();
             services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
 
             // Otomasyon & Yaşam Döngüsü Servisleri

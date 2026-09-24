@@ -834,13 +834,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3184 = new ReleaseChangelogItem
+            {
+                Version = "v3.18.4",
+                ReleaseDate = "24 Eylül 2026",
+                Title = "Gelişmiş Yinelenen Dosya Avcısı & Boş Klasör Temizleyici",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "3 Aşamalı Ultra Hızlı Eşleme Motoru: Dosya boyutu filtreleme, ilk 4 KB başlık hash'i ve tam SHA-256 kriptografik parmak izi doğrulamasıyla mükerrer dosyaların sıfır hata payıyla tespiti sağlandı.",
+                    "Sahipsiz Boş Klasör Temizleyici (Empty Folder Purger): Kaldırılmış programlardan ve eski dizinlerden arta kalan 0 baytlık boş klasörlerin derinlemesine taranması ve sistemden arındırılması sağlandı.",
+                    "Windows Shell Geri Dönüşüm Kutusu Koruması: SHFileOperation FOF_ALLOWUNDO entegrasyonu sayesinde silinen kopyalar varsayılan olarak Geri Dönüşüm Kutusu'na güvenle gönderilir, isteğe bağlı kalıcı silme seçeneği sunulur.",
+                    "Akıllı Seçim Algoritması: Her grupta en eski orijinal dosya otomatik olarak korunurken gereksiz kopyalar tek tıkla silinmek üzere seçilebilir.",
+                    "Sistem Güvenlik Kalkanı: Windows, ProgramData, System Volume Information ve kritik işletim sistemi klasörleri tarama ve silme kapsamından otomatik olarak korunur.",
+                    "Fluent 2 Slate Dark Yönetim Arayüzü: 4 canlı KPI metrik kartı, tür filtre çipleri (Resim, Video, Belge, Arşiv, Ses), anlık arama ve klasörde gösterim yetenekleriyle eksiksiz kontrol sunuldu."
+                }
+            };
+
             var v3183 = new ReleaseChangelogItem
             {
                 Version = "v3.18.3",
                 ReleaseDate = "24 Eylül 2026",
                 Title = "Çift GPU Laptop Mimari Çözümü & Genel Bakış Senkronizasyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Çift GPU Laptop Keşif & Önceliklendirme Motoru: Hibrit (Optimus / Enduro) çift ekran kartına sahip dizüstü bilgisayarlarda (AMD Radeon / NVIDIA + Intel HD Graphics) birincil harici GPU'nun otomatik tespit edilip önceliklendirilmesi sağlandı.",
@@ -1406,8 +1424,10 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3182;
+            LatestRelease = v3184;
 
+            ReleaseHistory.Add(v3184);
+            ReleaseHistory.Add(v3183);
             ReleaseHistory.Add(v3182);
             ReleaseHistory.Add(v3181);
             ReleaseHistory.Add(v3180);

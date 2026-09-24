@@ -8,7 +8,7 @@ namespace Bakim.Tests;
 
 public class SystemInfoRevampTests
 {
-    private sealed class MockSettingsService : IAppSettingsService
+    internal sealed class MockSettingsService : IAppSettingsService
     {
         public AppSettingsData Current { get; } = new();
         public string SettingsFilePath => "(test)";
@@ -18,7 +18,7 @@ public class SystemInfoRevampTests
         public void Update(Action<AppSettingsData> mutate) => mutate(Current);
     }
 
-    private class MockSystemInfoService : ISystemInfoService
+    internal class MockSystemInfoService : ISystemInfoService
     {
         public Task<SystemHardwareStats> GetSystemHardwareAsync()
         {
