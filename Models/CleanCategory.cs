@@ -15,6 +15,12 @@ namespace Bakım.Models
         public bool RequiresAdmin { get; set; }
         public bool IsDeepClean { get; set; }
 
+        /// <summary>
+        /// Bu süreden yeni dosyalar taranmaz ve silinmez (ör. temp: açık bir kurulumun
+        /// dosyalarını korumak için 24 saat).
+        /// </summary>
+        public TimeSpan MinFileAge { get; set; } = TimeSpan.Zero;
+
         [ObservableProperty]
         private bool _isSelected = true;
 

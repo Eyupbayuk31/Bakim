@@ -1,6 +1,8 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Bakım.Helpers;
+using Bakım.Core.Cleaning;
+using Bakım.Core.Safety;
 using Bakım.Models;
 
 namespace Bakım.Services
@@ -113,8 +115,9 @@ namespace Bakım.Services
                 {
                     Id = "user_temp",
                     Name = "Kullanıcı Geçici Dosyaları (%TEMP%)",
-                    Description = "Uygulamaların geride bıraktığı geçici çalışma ve oturum kalıntıları.",
+                    Description = "Uygulamaların geride bıraktığı geçici dosyalar (son 24 saatte değişenler korunur).",
                     TargetPath = Path.GetTempPath(),
+                    MinFileAge = TimeSpan.FromHours(24),
                     GroupName = "Windows & Sistem",
                     IconSymbol = "Folder24",
                     RequiresAdmin = false,
@@ -124,8 +127,9 @@ namespace Bakım.Services
                 {
                     Id = "windows_temp",
                     Name = "Windows Sistem Temp",
-                    Description = "Windows sistem hizmetlerinin oluşturduğu genel geçici dosyalar.",
+                    Description = "Windows sistem hizmetlerinin geçici dosyaları (son 24 saatte değişenler korunur).",
                     TargetPath = Path.Combine(winDir, "Temp"),
+                    MinFileAge = TimeSpan.FromHours(24),
                     GroupName = "Windows & Sistem",
                     IconSymbol = "FolderZip24",
                     RequiresAdmin = true,
@@ -135,8 +139,9 @@ namespace Bakım.Services
                 {
                     Id = "software_distribution",
                     Name = "Windows Update İndirme Deposu",
-                    Description = "Daha önce yüklenmiş Windows güncellemelerinden kalan kurulum paketleri.",
+                    Description = "Yüklenmiş güncellemelerden kalan paketler. Devam eden bir güncellemeyi bozmamak için son 24 saatte değişenler korunur.",
                     TargetPath = Path.Combine(winDir, "SoftwareDistribution", "Download"),
+                    MinFileAge = TimeSpan.FromHours(24),
                     GroupName = "Windows & Sistem",
                     IconSymbol = "ArrowDownload24",
                     RequiresAdmin = true,
@@ -148,6 +153,7 @@ namespace Bakım.Services
                     Name = "Windows Teslim İyileştirme Önbelleği",
                     Description = "Ağ üzerinden paylaşılan güncelleme parçacıkları ve önbellekleri.",
                     TargetPath = Path.Combine(winDir, "SoftwareDistribution", "DeliveryOptimization", "Cache"),
+                    MinFileAge = TimeSpan.FromHours(24),
                     AdditionalPaths = new List<string> { Path.Combine(localApp, "Microsoft", "Windows", "DeliveryOptimization") },
                     GroupName = "Windows & Sistem",
                     IconSymbol = "ArrowDownload24",
@@ -267,8 +273,10 @@ namespace Bakım.Services
                 {
                     Id = "firefox_cache",
                     Name = "Mozilla Firefox Önbelleği",
-                    Description = "Firefox profil dizinindeki HTTP ve medya önbellek kalıntıları.",
-                    TargetPath = Path.Combine(localApp, "Mozilla", "Firefox", "Profiles"),
+                    Description = "Firefox profillerindeki HTTP (cache2), başlangıç ve küçük resim önbellekleri.",
+                    // H-2: Profiles klasörünün tamamı değil, her profilin önbellek alt klasörleri.
+                    TargetPath = string.Empty,
+                    AdditionalPaths = FirefoxCacheDirectories(localApp),
                     GroupName = "Web Tarayıcıları",
                     IconSymbol = "Globe24",
                     RequiresAdmin = false,
@@ -332,12 +340,12 @@ namespace Bakım.Services
                 {
                     Id = "spotify_cache",
                     Name = "Spotify Akış & Şarkı Deposu",
-                    Description = "Spotify masaüstü uygulamasının diske indirdiği çevrimdışı ve akış önbellekleri.",
+                    Description = "Spotify'ın akış önbelleği. DİKKAT: çevrimdışı indirdiğiniz şarkılar da burada tutulur ve yeniden indirilmesi gerekir.",
                     TargetPath = Path.Combine(localApp, "Spotify", "Storage"),
                     GroupName = "Oyunlar & Medya",
                     IconSymbol = "MusicNote224",
                     RequiresAdmin = false,
-                    IsSelected = true
+                    IsSelected = false // H-3
                 },
                 new CleanCategory
                 {
@@ -370,6 +378,66 @@ namespace Bakım.Services
             };
         }
 
+        private static List<string> FirefoxCacheDirectories(string localApp)
+        {
+            var list = new List<string>();
+            try
+            {
+                string profiles = Path.Combine(localApp, "Mozilla", "Firefox", "Profiles");
+                if (!Directory.Exists(profiles)) return list;
+                foreach (var profile in Directory.EnumerateDirectories(profiles))
+                {
+                    foreach (var sub in new[] { "cache2", "startupCache", "thumbnails", "jumpListCache" })
+                        list.Add(Path.Combine(profile, sub));
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            return list;
+        }
+
+        private static IEnumerable<string> RootsOf(CleanCategory category)
+        {
+            if (!string.IsNullOrWhiteSpace(category.TargetPath)) yield return category.TargetPath;
+            foreach (var p in category.AdditionalPaths ?? new List<string>())
+                if (!string.IsNullOrWhiteSpace(p)) yield return p;
+        }
+
+        private static IEnumerable<string> ForbiddenTrees()
+        {
+            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            yield return Path.Combine(winDir, "System32");
+            yield return Path.Combine(winDir, "SysWOW64");
+            yield return Path.Combine(winDir, "WinSxS");
+            yield return Path.Combine(winDir, "Boot");
+            yield return Path.Combine(winDir, "servicing");
+        }
+
+        private static CleanupScope ScopeFor(IEnumerable<CleanCategory> categories) =>
+            new(categories.SelectMany(RootsOf), ForbiddenTrees());
+
+        /// <summary>
+        /// Dosya ile kategori kökü arasında bağlantı noktası (junction/symlink) var mı?
+        /// Tarama ile silme arasında bir klasör bağlantıyla değiştirilirse silme kökün dışına taşabilir.
+        /// </summary>
+        private static bool HasReparsePointBetween(string filePath, string root)
+        {
+            string? file = WindowsPath.Normalize(filePath);
+            if (file == null) return true;
+            try
+            {
+                if (File.GetAttributes(file).HasFlag(FileAttributes.ReparsePoint)) return true;
+                foreach (var dir in CleanupScope.IntermediateDirectories(file, root))
+                {
+                    if (File.GetAttributes(dir).HasFlag(FileAttributes.ReparsePoint)) return true;
+                }
+                return false;
+            }
+            catch (FileNotFoundException) { return false; }
+            catch (DirectoryNotFoundException) { return false; }
+            catch (Exception) { return true; }
+        }
+
         public async Task<(List<CleanFileItem> items, long totalBytes)> ScanCategoryAsync(
             CleanCategory category,
             IProgress<string> progress,
@@ -393,12 +461,17 @@ namespace Bakım.Services
                     }
                 }
 
+                // Bağlantı noktalarına (junction/symlink) inilmez: %TEMP% içindeki bir bağlantı
+                // Belgeler'i gösteriyorsa oradaki dosyalar "temp dosyası" sanılırdı.
                 var enumOptions = new EnumerationOptions
                 {
                     IgnoreInaccessible = true,
                     RecurseSubdirectories = true,
-                    ReturnSpecialDirectories = false
+                    ReturnSpecialDirectories = false,
+                    AttributesToSkip = FileAttributes.Hidden | FileAttributes.System | FileAttributes.ReparsePoint
                 };
+                var scope = ScopeFor(new[] { category });
+                DateTime nowUtc = DateTime.UtcNow;
 
                 string pattern = string.IsNullOrWhiteSpace(category.FilePattern) ? "*" : category.FilePattern;
 
@@ -416,11 +489,9 @@ namespace Bakım.Services
                         {
                             ct.ThrowIfCancellationRequested();
 
-                            // Güvenlik: Asla kritik sistem dosyalarını tarama listesine alma
-                            if (!IsSafeTarget(file.FullName))
-                            {
-                                continue;
-                            }
+                            // Güvenlik: yalnızca bu kategorinin kök klasörlerinin altı (S-13).
+                            if (!scope.Contains(file.FullName)) continue;
+                            if (!CleanupScope.IsOldEnough(file.LastWriteTimeUtc, nowUtc, category.MinFileAge)) continue;
 
                             try
                             {
@@ -463,6 +534,7 @@ namespace Bakım.Services
                 var itemList = items.ToList();
                 int total = itemList.Count;
                 int processed = 0;
+                var scope = ScopeFor(GetDefaultCategories());
 
                 foreach (var item in itemList)
                 {
@@ -470,11 +542,6 @@ namespace Bakım.Services
                     processed++;
                     int percent = total > 0 ? (processed * 100) / total : 100;
                     progress.Report((item.FilePath, percent));
-
-                    if (processed % 10 == 0)
-                    {
-                        Thread.Sleep(3);
-                    }
 
                     // 0. Kullanıcı Tarafından Hariç Tutulan Dosyalar
                     if (item.IsExcluded)
@@ -484,10 +551,11 @@ namespace Bakım.Services
                         continue;
                     }
 
-                    // 1. Kritik Sistem Koruması Kontrolü
-                    if (!IsSafeTarget(item.FilePath))
+                    // 1. Kapsam kontrolü: yalnızca kategori köklerinin altı, arada bağlantı noktası yok.
+                    string? root = scope.RootFor(item.FilePath);
+                    if (root == null || HasReparsePointBetween(item.FilePath, root))
                     {
-                        item.Status = "Kritik Alan (Korumalı)";
+                        item.Status = "Kapsam Dışı (Korumalı)";
                         result.TotalFilesSkipped++;
                         continue;
                     }
@@ -826,46 +894,6 @@ namespace Bakım.Services
 
                 return freedBytes;
             });
-        }
-
-        /// <summary>
-        /// Kritik Windows sistem klasörlerini koruyan katı güvenlik kalkanı.
-        /// </summary>
-        private static bool IsSafeTarget(string filePath)
-        {
-            if (string.IsNullOrWhiteSpace(filePath)) return false;
-
-            string normalized = Path.GetFullPath(filePath).ToLowerInvariant();
-            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows).ToLowerInvariant();
-            string system32 = Path.Combine(winDir, "system32").ToLowerInvariant();
-            string sysWow64 = Path.Combine(winDir, "syswow64").ToLowerInvariant();
-            string winsxs = Path.Combine(winDir, "winsxs").ToLowerInvariant();
-            string drivers = Path.Combine(winDir, "system32", "drivers").ToLowerInvariant();
-            string boot = Path.Combine(winDir, "boot").ToLowerInvariant();
-
-            // Kesinlikle dokunulmayacak kritik Windows çekirdek alanları
-            if (normalized.StartsWith(system32) ||
-                normalized.StartsWith(sysWow64) ||
-                normalized.StartsWith(winsxs) ||
-                normalized.StartsWith(drivers) ||
-                normalized.StartsWith(boot))
-            {
-                return false;
-            }
-
-            // Sadece bilinen güvenli önbellek/temp/dump/log dizinleri altındaki dosyalar silinebilir
-            bool isUnderTemp = normalized.Contains(@"\temp\") || normalized.Contains(@"\tmp\");
-            bool isUnderSoftwareDist = normalized.Contains(@"\softwaredistribution\download\") || normalized.Contains(@"\deliveryoptimization\");
-            bool isUnderPrefetch = normalized.Contains(@"\windows\prefetch\");
-            bool isUnderCache = normalized.Contains(@"\cache\") || normalized.Contains(@"\code cache\") || normalized.Contains(@"\appcache\") || normalized.Contains(@"\webcache\") || normalized.Contains(@"\htmlcache\");
-            bool isUnderCrashDumps = normalized.Contains(@"\crashdumps\") || normalized.Contains(@"\minidump\");
-            bool isUnderWer = normalized.Contains(@"\microsoft\windows\wer\");
-            bool isUnderExplorer = normalized.Contains(@"\microsoft\windows\explorer\") && normalized.Contains("thumbcache_");
-            bool isUnderLogs = normalized.Contains(@"\windows\logs\") || normalized.Contains(@"\windows\panther\");
-            bool isUnderShader = normalized.Contains(@"\d3dscache\") || normalized.Contains(@"\dxcache\");
-            bool isUnderAppStorage = normalized.Contains(@"\spotify\storage\") || normalized.Contains(@"\telegram desktop\") || normalized.Contains(@"\npm-cache\") || normalized.Contains(@"\pip\cache\") || normalized.Contains(@"\.nuget\packages\.cache\");
-
-            return isUnderTemp || isUnderSoftwareDist || isUnderPrefetch || isUnderCache || isUnderCrashDumps || isUnderWer || isUnderExplorer || isUnderLogs || isUnderShader || isUnderAppStorage;
         }
     }
 }

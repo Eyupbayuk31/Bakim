@@ -21,6 +21,9 @@ namespace Bakım.Services
         Task<List<LargeDiskFileItem>> ScanLargeFilesAsync(string driveLetter, long minSizeBytes, IProgress<string>? progress, CancellationToken cancellationToken);
         Task<bool> DeleteLargeFileAsync(string filePath);
         Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath);
+
+        /// <summary>Son büyük dosya silme işleminin başarısızlık nedeni; başarılıysa boş.</summary>
+        string LastDeleteError { get; }
         Task<string> GenerateHardwareReportHtmlAsync();
         Task<TrimResult> OptimizeDriveTrimAsync(string driveLetter);
     }
@@ -719,81 +722,34 @@ namespace Bakım.Services
             }, cancellationToken);
         }
 
-        public async Task<bool> DeleteLargeFileAsync(string filePath)
+        /// <summary>
+        /// Büyük dosyayı kalıcı siler. Eskiden hiçbir yol denetimi yoktu; tarama sonucunda
+        /// görünen bir Windows dosyası (ör. MEMORY.DMP dışındaki sistem dosyaları) silinebiliyordu.
+        /// Artık PathSafetyGuard'dan geçer.
+        /// </summary>
+        public async Task<bool> DeleteLargeFileAsync(string filePath) =>
+            await DeleteThroughGuardAsync(filePath, permanent: true);
+
+        /// <summary>Büyük dosyayı Geri Dönüşüm Kutusu'na taşır (PathSafetyGuard denetimiyle).</summary>
+        public async Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath) =>
+            await DeleteThroughGuardAsync(filePath, permanent: false);
+
+        /// <summary>Son büyük dosya silme işleminin başarısızlık nedeni.</summary>
+        public string LastDeleteError { get; private set; } = string.Empty;
+
+        private async Task<bool> DeleteThroughGuardAsync(string filePath, bool permanent)
         {
-            return await Task.Run(() =>
+            if (string.IsNullOrWhiteSpace(filePath))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                        return false;
+                LastDeleteError = "Dosya yolu boş.";
+                return false;
+            }
 
-                    // Salt-okunur özniteliğini kaldır ve sil
-                    var attr = File.GetAttributes(filePath);
-                    if ((attr & FileAttributes.ReadOnly) != 0)
-                    {
-                        File.SetAttributes(filePath, attr & ~FileAttributes.ReadOnly);
-                    }
-
-                    File.Delete(filePath);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        private struct SHFILEOPSTRUCT
-        {
-            public IntPtr hwnd;
-            [MarshalAs(UnmanagedType.U4)]
-            public int wFunc;
-            public string pFrom;
-            public string pTo;
-            public short fFlags;
-            [MarshalAs(UnmanagedType.Bool)]
-            public bool fAnyOperationsAborted;
-            public IntPtr hNameMappings;
-            public string lpszProgressTitle;
-        }
-
-        private const int FO_DELETE = 0x0003;
-        private const short FOF_ALLOWUNDO = 0x0040;
-        private const short FOF_NOCONFIRMATION = 0x0010;
-        private const short FOF_NOERRORUI = 0x0400;
-        private const short FOF_SILENT = 0x0004;
-
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        private static extern int SHFileOperation(ref SHFILEOPSTRUCT FileOp);
-
-        public async Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                        return false;
-
-                    var fileOp = new SHFILEOPSTRUCT
-                    {
-                        wFunc = FO_DELETE,
-                        pFrom = filePath + '\0' + '\0',
-                        pTo = null!,
-                        fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT
-                    };
-
-                    int result = SHFileOperation(ref fileOp);
-                    return result == 0 && !fileOp.fAnyOperationsAborted && !File.Exists(filePath);
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            var safeDelete = App.TryGetService<Safety.ISafeDeleteService>() ?? new Safety.SafeDeleteService(AppLog.Current);
+            var result = await safeDelete.DeletePathAsync(filePath, isDirectory: false,
+                new Safety.DeletePolicy(Permanent: permanent, AllowOutsideKnownRoots: true));
+            LastDeleteError = result.Succeeded ? string.Empty : result.Message;
+            return result.Succeeded;
         }
 
         /// <summary>
