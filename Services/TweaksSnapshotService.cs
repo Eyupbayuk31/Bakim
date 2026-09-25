@@ -14,6 +14,12 @@ namespace Bakım.Services
         public bool OriginalState { get; set; }
         public int OriginalNumericValue { get; set; }
         public DateTime CapturedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Değer düzeyinde yedek (H-13): Bakım bu ayarın dokunduğu kayıt defteri değerlerini ilk kez
+        /// değiştirmeden önceki halleri. Doluysa geri yükleme bunları birebir yazar.
+        /// </summary>
+        public List<Bakım.Helpers.RegistryValueSnapshot> RegistryOriginals { get; set; } = new();
     }
 
     public class TweaksSnapshotData
@@ -30,6 +36,9 @@ namespace Bakım.Services
         Task<bool> HasSnapshotAsync();
         Task<TweaksSnapshotData?> GetSnapshotAsync();
         Task RecordTweakBeforeChangeAsync(SystemTweakItem tweak);
+
+        /// <summary>Uygulama sırasında yakalanan özgün kayıt defteri değerlerini ekler (ilk görülen korunur).</summary>
+        Task RecordRegistryOriginalsAsync(SystemTweakItem tweak, IReadOnlyList<Bakım.Helpers.RegistryValueSnapshot> captured);
         Task<bool> RestoreFromSnapshotAsync(
             IEnumerable<SystemTweakItem> currentTweaks,
             Func<SystemTweakItem, bool, Task<bool>> applyToggleAction,
@@ -185,6 +194,58 @@ namespace Bakım.Services
             }
         }
 
+        public async Task RecordRegistryOriginalsAsync(SystemTweakItem tweak, IReadOnlyList<Bakım.Helpers.RegistryValueSnapshot> captured)
+        {
+            if (string.IsNullOrWhiteSpace(tweak.Id) || captured.Count == 0) return;
+
+            await _fileLock.WaitAsync();
+            try
+            {
+                var data = File.Exists(BackupFilePath)
+                    ? JsonSerializer.Deserialize<TweaksSnapshotData>(await File.ReadAllTextAsync(BackupFilePath)) ?? new TweaksSnapshotData()
+                    : new TweaksSnapshotData();
+                Directory.CreateDirectory(StorageDirectory);
+
+                if (!data.Items.TryGetValue(tweak.Id, out var item))
+                {
+                    item = new TweakSnapshotItem
+                    {
+                        TweakId = tweak.Id,
+                        Title = tweak.Title,
+                        Category = tweak.Category,
+                        OriginalState = !tweak.IsEnabled,
+                        OriginalNumericValue = tweak.NumericValue
+                    };
+                    data.Items[tweak.Id] = item;
+                }
+
+                var known = new HashSet<string>(item.RegistryOriginals.Select(r => r.Identity), StringComparer.Ordinal);
+                bool changed = false;
+                foreach (var snapshot in captured)
+                {
+                    if (known.Add(snapshot.Identity))
+                    {
+                        item.RegistryOriginals.Add(snapshot);
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    string outJson = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(BackupFilePath, outJson);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning($"İnce ayar değer yedeği yazılamadı: {tweak.Id}", ex, nameof(TweaksSnapshotService));
+            }
+            finally
+            {
+                _fileLock.Release();
+            }
+        }
+
         public async Task<bool> RestoreFromSnapshotAsync(
             IEnumerable<SystemTweakItem> currentTweaks,
             Func<SystemTweakItem, bool, Task<bool>> applyToggleAction,
@@ -200,6 +261,15 @@ namespace Bakım.Services
 
                 if (snapshot.Items.TryGetValue(tweak.Id, out var itemBackup))
                 {
+                    // Değer düzeyinde yedek varsa özgün değerler birebir yazılır (açık/kapalı tahmini yerine).
+                    if (itemBackup.RegistryOriginals.Count > 0)
+                    {
+                        bool restored = await Task.Run(() =>
+                            itemBackup.RegistryOriginals.Aggregate(true, (ok, r) => Bakım.Helpers.RegistryCapture.Restore(r) && ok));
+                        if (!restored) allSuccess = false;
+                        continue;
+                    }
+
                     if (tweak.Type == TweakType.Toggle && tweak.IsEnabled != itemBackup.OriginalState)
                     {
                         try

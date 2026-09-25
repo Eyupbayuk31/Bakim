@@ -140,7 +140,32 @@ namespace Bakım
             ThemeService.Shared.Attach(settingsService, _logService);
             ThemeService.Shared.RestorePersistedTheme();
 
-            // 6. Arka plan bakım motoru (otomatik RAM temizliği, yüksek RAM uyarısı)
+            // 6. Hedef Kaldırma Parametresi Denetimi (--uninstall-target "<path>")
+            //    Sağ tık → "Bakım ile Kaldır" yalnızca sihirbazı açan ikinci bir süreçtir. Arka plan
+            //    bakımı, Kurulum Nöbetçisi ve sağ tık kaydı bu moda GİRMEDEN önce dönülür (H-16):
+            //    eskiden ana uygulama zaten açıkken ikinci bir nöbetçi ve RAM temizleyici başlıyordu.
+            string? uninstallTarget = null;
+            if (e.Args != null)
+            {
+                for (int i = 0; i < e.Args.Length; i++)
+                {
+                    if (e.Args[i].Equals("--uninstall-target", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length)
+                    {
+                        uninstallTarget = e.Args[i + 1];
+                        break;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(uninstallTarget))
+            {
+                _logService.Info($"Hedef kaldırma parametresi saptandı: {uninstallTarget}", "Startup");
+                _isUninstallTargetMode = true;
+                LaunchUninstallTargetMode(uninstallTarget);
+                return;
+            }
+
+            // 7. Arka plan bakım motoru (otomatik RAM temizliği, yüksek RAM uyarısı)
             GetService<IBackgroundMaintenanceService>().Start();
 
             // Önceki oturum Oyun Modu açıkken çöktüyse güç planını geri yükle.
@@ -167,27 +192,6 @@ namespace Bakım
                 {
                     _logService.Error("Sağ tık menüsü başlangıçta otomatik kaydedilemedi.", ex, "Startup");
                 }
-            }
-
-            // 7. Hedef Kaldırma Parametresi Denetimi (--uninstall-target "<path>")
-            string? uninstallTarget = null;
-            if (e.Args != null)
-            {
-                for (int i = 0; i < e.Args.Length; i++)
-                {
-                    if (e.Args[i].Equals("--uninstall-target", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length)
-                    {
-                        uninstallTarget = e.Args[i + 1];
-                        break;
-                    }
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(uninstallTarget))
-            {
-                _logService.Info($"Hedef kaldırma parametresi saptandı: {uninstallTarget}", "Startup");
-                LaunchUninstallTargetMode(uninstallTarget);
-                return;
             }
 
             // 8. İlk pencere konteynerden çözülür.
@@ -261,8 +265,21 @@ namespace Bakım
             }
         }
 
+        /// <summary>Sağ tık kaldırma sihirbazı süreci: arka plan servisleri hiç başlatılmaz.</summary>
+        private static bool _isUninstallTargetMode;
+
         protected override void OnExit(ExitEventArgs e)
         {
+            if (_isUninstallTargetMode)
+            {
+                // Bu süreçte nöbetçi/bakım/çıkış temizliği yok; TryGetService onları kapanırken
+                // oluşturup (nöbetçi yapıcıda başlar) çalıştırırdı.
+                AppLog.Info($"Kaldırma sihirbazı kapanıyor (çıkış kodu {e.ApplicationExitCode}).", "Shutdown");
+                _logService?.Dispose();
+                base.OnExit(e);
+                return;
+            }
+
             try
             {
                 Bakım.MainWindow.IsExplicitExit = true;

@@ -373,7 +373,13 @@ namespace Bakım.ViewModels
 
             try
             {
-                bool success = await ApplyTweakDirectAsync(tweak, targetState);
+                bool success;
+                using (var capture = Bakım.Helpers.RegistryCapture.Begin())
+                {
+                    success = await ApplyTweakDirectAsync(tweak, targetState);
+                    // Değer düzeyinde geri alma için dokunulan değerlerin özgün halleri (H-13).
+                    await _snapshotService.RecordRegistryOriginalsAsync(tweak, capture.Items);
+                }
 
                 if (success)
                 {
@@ -473,6 +479,9 @@ namespace Bakım.ViewModels
                 IsBusy = false;
                 StatusText = "Geri yükleme tamamlandı.";
             }
+
+            // Değerler birebir geri yazıldığı için anahtarların gerçek durumu yeniden okunur.
+            await RefreshAllAsync();
         }
 
         [RelayCommand]

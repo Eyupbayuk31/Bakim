@@ -31,6 +31,7 @@ namespace Bakım.Helpers
         {
             try
             {
+                RegistryCapture.BeforeValueChange(root, subKey, valueName);
                 using var key = root.OpenSubKey(subKey, true);
                 if (key == null) return true;
                 key.DeleteValue(valueName, false);
@@ -47,6 +48,7 @@ namespace Bakım.Helpers
         {
             try
             {
+                RegistryCapture.BeforeKeyDelete(root, subKey);
                 root.DeleteSubKeyTree(subKey, false);
                 using var check = root.OpenSubKey(subKey, false);
                 if (check == null) return true;
@@ -64,6 +66,7 @@ namespace Bakım.Helpers
         {
             try
             {
+                RegistryCapture.BeforeValueChange(root, subKey, valueName);
                 using var key = root.CreateSubKey(subKey, true);
                 if (key == null) return Fail(root, subKey, valueName, "anahtar açılamadı");
 
