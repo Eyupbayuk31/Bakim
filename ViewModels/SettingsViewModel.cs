@@ -239,6 +239,7 @@ namespace Bakım.ViewModels
 
                 IsShellContextMenuEnabled = _shellContextMenuService.IsContextMenuRegistered();
                 ShellContextMenuStatus = IsShellContextMenuEnabled ? "Kayıtlı ve Aktif" : "Devre Dışı";
+                AutoSaveSettings();
                 _log.Info($"Windows Gezgini sağ tık menü entegrasyonu {(IsShellContextMenuEnabled ? "etkinleştirildi" : "kaldırıldı")}.", nameof(SettingsViewModel));
             }
             catch (Exception ex)
@@ -412,6 +413,7 @@ namespace Bakım.ViewModels
             data.PromptRestorePointBeforeUninstall = PromptRestorePointBeforeUninstall;
             data.CreateRestorePointOnUninstall = CreateRestorePointOnUninstall;
             data.IsSentinelSetupGuardEnabled = IsSentinelSetupGuardEnabled;
+            data.EnableShellContextMenu = IsShellContextMenuEnabled;
             data.VerboseLogging = VerboseLogging;
 
             return data;
@@ -895,13 +897,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3191 = new ReleaseChangelogItem
+            {
+                Version = "v3.19.1",
+                ReleaseDate = "25 Eylül 2026",
+                Title = "Sağ Tık Menüsü & Kurulum Nöbetçisi Koşulsuz Varsayılan Entegrasyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Kurulumda Sıfır Sürtünme (Zero-Friction Setup): Inno Setup kurulumunda kullanıcının hiçbir onay kutusunu seçmesine gerek bırakmadan Windows Gezgini sağ tık 'Bakım ile Kaldır' menüsü, otomatik başlangıç ve yönetici katmanı varsayılan olarak koşulsuz entegre edildi.",
+                    "Sistem Düzeyinde Çoklu Kayıt (HKCR & HKCU): Sağ tık menüsü hem doğrudan HKCR ve HKCU sınıflarına yazıldı, hem de sessiz kurulumda dahi Bakim.exe --register-contextmenu ile garanti altına alındı.",
+                    "Başlangıçta Otomatik Denetim: Uygulama her açıldığında bağlam menüsü kaydını denetler ve eksikse otomatik onarır; kullanıcı dilerse Ayarlar modülünden tek tıkla kapatabilir.",
+                    "Kurulum Nöbetçisi Varsayılan Aktif: Sentinel Setup Guard ilk kurulumdan itibaren varsayılan olarak açık gelir ve yeni yazılımları anında izlemeye başlar."
+                }
+            };
+
             var v3190 = new ReleaseChangelogItem
             {
                 Version = "v3.19.0",
                 ReleaseDate = "25 Eylül 2026",
                 Title = "Kurulum Nöbetçisi (Sentinel Setup Guard) & Sezgisel EDR Analizör Entegrasyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Otonom Kurulum Yakalama (Setup Sentinel Watchdog): Yeni bir yazılım (.exe / .msi) kurulurken arka planda kurulum süreçlerini ve alt süreçlerini (PID tree) otomatik tespit eder, dosya sistemi ve kayıt defteri değişikliklerini anlık kaydeder.",
@@ -1533,8 +1551,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3190;
+            LatestRelease = v3191;
 
+            ReleaseHistory.Add(v3191);
             ReleaseHistory.Add(v3190);
             ReleaseHistory.Add(v3186);
             ReleaseHistory.Add(v3185);

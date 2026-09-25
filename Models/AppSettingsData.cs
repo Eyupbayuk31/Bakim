@@ -27,9 +27,11 @@ namespace Bakım.Models
         public bool AlwaysRunAsAdmin { get; set; } = false;
         public bool TaskSchedulerAutoStart { get; set; } = false;
 
-        // --- Kaldırıcı ---
+        // --- Kaldırıcı & Bağlam Menüsü ---
         public bool PromptRestorePointBeforeUninstall { get; set; } = true;
         public bool CreateRestorePointOnUninstall { get; set; } = true;
+        /// <summary>Windows Gezgini sağ tık "Bakım ile Kaldır" menüsü etkin mi (Varsayılan: true).</summary>
+        public bool EnableShellContextMenu { get; set; } = true;
 
         // --- VirusTotal ---
         /// <summary>

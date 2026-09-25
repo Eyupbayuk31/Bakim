@@ -148,6 +148,24 @@ namespace Bakım
             sentinelService.SetupDetected += OnSetupDetected;
             sentinelService.SetupFinished += OnSetupFinished;
 
+            // Windows Gezgini Sağ Tık Menüsü ("Bakım ile Kaldır") Varsayılan Entegrasyonu
+            if (settingsService.Current.EnableShellContextMenu)
+            {
+                try
+                {
+                    var shellContextMenu = GetService<IShellContextMenuService>();
+                    if (!shellContextMenu.IsContextMenuRegistered())
+                    {
+                        shellContextMenu.RegisterContextMenu();
+                        _logService.Info("Windows Gezgini sağ tık menüsü varsayılan olarak etkinleştirildi.", "Startup");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logService.Error("Sağ tık menüsü başlangıçta otomatik kaydedilemedi.", ex, "Startup");
+                }
+            }
+
             // 7. Hedef Kaldırma Parametresi Denetimi (--uninstall-target "<path>")
             string? uninstallTarget = null;
             if (e.Args != null)
@@ -273,28 +291,20 @@ namespace Bakım
 
         private void OnSetupDetected(WatchedSetupSession session)
         {
-            Dispatcher.BeginInvoke(() =>
-            {
-                try
-                {
-                    if (_sentinelFlyoutWindow == null || !_sentinelFlyoutWindow.IsLoaded)
-                    {
-                        _sentinelFlyoutWindow = new SetupDetectedFlyoutWindow();
-                        _sentinelFlyoutWindow.Closed += (s, e) => _sentinelFlyoutWindow = null;
-                    }
-
-                    _sentinelFlyoutWindow.SetMonitoringSession(session);
-                    _sentinelFlyoutWindow.Show();
-                }
-                catch (Exception ex)
-                {
-                    AppLog.Error("Kurulum nöbetçi bildirim penceresi açılamadı.", ex, "App");
-                }
-            });
+            // Sessiz arka plan izleme: Kurulum başlarken kullanıcıyı rahatsız edecek açılır pencere gösterilmez.
+            // Sistem arka planda dosya ve kayıt defteri olaylarını sessizce takip eder.
+            AppLog.Info($"Sentinel: Kurulum başlatıldı ve arka planda sessizce izleniyor: {session.AppName} (PID: {session.RootProcessId})", "SetupSentinel");
         }
 
         private void OnSetupFinished(SetupDeltaReport report)
         {
+            // İptal edilmiş kurulumlar veya yeni dosya/yürütülebilir üretmeyen süreçler için pencere açıp kullanıcıyı rahatsız etme.
+            if (report.AddedFiles.Count == 0 && report.AddedExecutables.Count == 0)
+            {
+                AppLog.Info($"Sentinel: {report.AppName} kurulumunda yeni dosya değişikliği saptanmadığından bildirim gösterilmedi.", "SetupSentinel");
+                return;
+            }
+
             Dispatcher.BeginInvoke(() =>
             {
                 try

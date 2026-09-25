@@ -4,7 +4,7 @@
 ; =====================================================================
 
 #define MyAppName "Bakım"
-#define MyAppVersion "3.19.0"
+#define MyAppVersion "3.19.1"
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"
 #define MyAppExeName "Bakim.exe"
@@ -44,14 +44,9 @@ Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-; Masaüstü ve Menü Kısayolları
+; Masaüstü ve Menü Kısayolları (Varsayılan olarak seçili)
 Name: "desktopicon"; Description: "Masaüstü simgesi oluştur"; GroupDescription: "Kısayollar:"
 Name: "startmenu"; Description: "Başlat Menüsü simgesi oluştur"; GroupDescription: "Kısayollar:"
-
-; Yönetici Hakları & Başlangıç Otomasyonu (İstenen Özellikler)
-Name: "alwaysadmin"; Description: "Her zaman Yönetici Olarak Çalıştır (RUNASADMIN Uyumluluk Katmanı)"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
-Name: "autostart"; Description: "Bilgisayar açıldığında otomatik başlat (En Yüksek Yönetici Yetkisiyle - UAC Uyarısız)"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
-Name: "uninstallcontextmenu"; Description: "Masaüstü ve Dosya Sağ Tık Menüsüne 'Bakım ile Kaldır' Ekle"; GroupDescription: "Yönetici ve Sistem Entegrasyonu:"; Flags: checkedonce
 
 [Files]
 Source: "Releases\Bakim.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -63,26 +58,43 @@ Name: "{group}\{#MyAppName} (Kaldır)"; Filename: "{uninstallexe}"; Tasks: start
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
-; Her zaman yönetici olarak çalıştırma kaydı (HKLM & HKCU AppCompatFlags)
-Root: HKLM; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#MyAppExeName}"; ValueData: "~ RUNASADMIN"; Flags: uninsdeletevalue; Tasks: alwaysadmin
-Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#MyAppExeName}"; ValueData: "~ RUNASADMIN"; Flags: uninsdeletevalue; Tasks: alwaysadmin
+; Her zaman yönetici olarak çalıştırma kaydı (HKLM & HKCU AppCompatFlags - Otomatik & Koşulsuz)
+Root: HKLM; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#MyAppExeName}"; ValueData: "~ RUNASADMIN"; Flags: uninsdeletevalue
+Root: HKCU; Subkey: "Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers"; ValueType: string; ValueName: "{app}\{#MyAppExeName}"; ValueData: "~ RUNASADMIN"; Flags: uninsdeletevalue
 
-; Sağ Tık Menüsü Entegrasyonu ("Bakım ile Kaldır")
-Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
-Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
-Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+; Sağ Tık Menüsü Entegrasyonu ("Bakım ile Kaldır" - Otomatik & Koşulsuz)
+; 1. HKCR (Tüm Sistem Dosya ve Klasörleri)
+Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "lnkfile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey
 
-Root: HKCR; Subkey: "exefile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
-Root: HKCR; Subkey: "exefile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
-Root: HKCR; Subkey: "exefile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "exefile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "exefile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "exefile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey
 
-Root: HKCR; Subkey: "Directory\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
-Root: HKCR; Subkey: "Directory\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
-Root: HKCR; Subkey: "Directory\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey; Tasks: uninstallcontextmenu
+Root: HKCR; Subkey: "Directory\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Directory\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "Directory\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey
+
+; 2. HKCU Classes (Mevcut Kullanıcı Kabuğu Garantisi)
+Root: HKCU; Subkey: "Software\Classes\lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\lnkfile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\lnkfile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey
+
+Root: HKCU; Subkey: "Software\Classes\exefile\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\exefile\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\exefile\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey
+
+Root: HKCU; Subkey: "Software\Classes\Directory\shell\BakimUninstall"; ValueType: string; ValueName: ""; ValueData: "Bakım ile Kaldır"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\Directory\shell\BakimUninstall"; ValueType: string; ValueName: "Icon"; ValueData: "{app}\{#MyAppExeName},0"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Classes\Directory\shell\BakimUninstall\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" --uninstall-target ""%1"""; Flags: uninsdeletekey
 
 [Run]
-; Bilgisayar açılışında UAC istemi olmadan en yüksek yönetici yetkisiyle başlatma (Task Scheduler)
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-autostart"; Flags: runhidden; Tasks: autostart
+; Sağ tık "Bakım ile Kaldır" menüsünün sisteme otomatik ve koşulsuz kaydedilmesi
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-contextmenu"; Flags: runhidden
+
+; Bilgisayar açılışında UAC istemi olmadan en yüksek yönetici yetkisiyle başlatma (Task Scheduler - Otomatik Kayıt)
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--register-autostart"; Flags: runhidden
 
 ; Kurulum tamamlandıktan sonra uygulamayı başlatma seçeneği (shellexec ile Hata 740 önlenir, sessiz güncellemede otomatik açılır)
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall shellexec

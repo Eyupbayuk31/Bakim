@@ -57,7 +57,15 @@ namespace Bakım.Services
 
         private static readonly string[] InstallerKeywords = new[]
         {
-            "setup", "install", "installer", "kurulum", "kurucu", "msiexec", "unins", "update"
+            "setup", "install", "installer", "kurulum", "kurucu", "msiexec", "unins", "vcredist", "dxsetup"
+        };
+
+        private static readonly HashSet<string> ExcludedProcessNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "idle", "system", "explorer", "svchost", "taskmgr", "devenv", "code",
+            "jusched", "jucheck", "javaupdate", "googleupdate", "microsoftedgeupdate",
+            "onedrive", "onedrivestandaloneupdater", "discord", "spotify", "steam",
+            "epicgameslauncher", "riotclientservices", "bakim"
         };
 
         public SetupSentinelService(
@@ -197,20 +205,17 @@ namespace Bakım.Services
             {
                 string procName = proc.ProcessName.ToLowerInvariant();
 
-                // 1. Skip system & common safe processes
-                if (procName is "idle" or "system" or "explorer" or "svchost" or "taskmgr" or "devenv" or "code")
+                // 1. Skip system & known background / updater daemon processes
+                if (ExcludedProcessNames.Contains(procName) || procName.StartsWith("service", StringComparison.OrdinalIgnoreCase))
                     return false;
 
-                // 2. Check process name keywords
-                bool keywordMatch = InstallerKeywords.Any(k => procName.Contains(k));
-
-                // 3. Try inspect main module or executable path
+                // 2. Try inspect main module or executable path
                 string? exePath = null;
                 try { exePath = proc.MainModule?.FileName; } catch { }
 
                 if (string.IsNullOrWhiteSpace(exePath))
                 {
-                    if (keywordMatch && procName is "msiexec" or "setup" or "installer")
+                    if (procName is "msiexec" or "setup" or "installer" or "kurulum")
                     {
                         appName = proc.MainWindowTitle.Length > 2 ? proc.MainWindowTitle : proc.ProcessName;
                         path = proc.ProcessName;
@@ -220,11 +225,30 @@ namespace Bakım.Services
                 }
 
                 path = exePath;
+
+                // 3. Reject binaries located in Program Files, Program Files (x86), or Windows directories
+                // Software running from these directories is ALREADY installed software (unless it is msiexec.exe)
+                string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                string windowsDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+                bool isAlreadyInstalledDir =
+                    (!string.IsNullOrEmpty(programFiles) && exePath.StartsWith(programFiles, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(programFilesX86) && exePath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(windowsDir) && exePath.StartsWith(windowsDir, StringComparison.OrdinalIgnoreCase));
+
+                if (isAlreadyInstalledDir && !string.Equals(procName, "msiexec", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // 4. Check file name, proc name, title, and directory
                 string fileName = Path.GetFileName(exePath).ToLowerInvariant();
                 string dir = Path.GetDirectoryName(exePath)?.ToLowerInvariant() ?? string.Empty;
 
                 bool nameMatch = InstallerKeywords.Any(k => fileName.Contains(k));
-                bool tempOrDownloads = dir.Contains("temp") || dir.Contains("downloads") || dir.Contains("indirilenler");
+                bool procMatch = InstallerKeywords.Any(k => procName.Contains(k));
+                bool tempOrDownloads = dir.Contains("temp") || dir.Contains("downloads") || dir.Contains("indirilenler") || dir.Contains("desktop") || dir.Contains("masaüstü");
 
                 string? title = null;
                 try { title = proc.MainWindowTitle; } catch { }
@@ -251,7 +275,7 @@ namespace Bakım.Services
                 }
                 catch { }
 
-                if (nameMatch || titleMatch || fviMatch || (keywordMatch && tempOrDownloads))
+                if (nameMatch || procMatch || titleMatch || fviMatch || (procMatch && tempOrDownloads))
                 {
                     appName = !string.IsNullOrWhiteSpace(prodName) && prodName.Length > 2
                         ? prodName
@@ -393,8 +417,9 @@ namespace Bakım.Services
                         if (!_activeSession.TrackedProcessIds.Contains(p.Id))
                         {
                             string pName = p.ProcessName.ToLowerInvariant();
-                            if (InstallerKeywords.Any(k => pName.Contains(k)) ||
-                                pName.Contains(_activeSession.ProcessName.ToLowerInvariant()))
+                            if (!ExcludedProcessNames.Contains(pName) &&
+                                (InstallerKeywords.Any(k => pName.Contains(k)) ||
+                                 pName.Contains(_activeSession.ProcessName.ToLowerInvariant())))
                             {
                                 _activeSession.TrackedProcessIds.Add(p.Id);
                             }
