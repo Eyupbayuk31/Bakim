@@ -128,6 +128,26 @@
                                TextWrapping="Wrap"
                                LineHeight="18"/>
 
+                    <!-- Risk / Triage Summary Row (Faz 0 Hızlı Kazanım) -->
+                    <Border x:Name="RiskSummaryCard"
+                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="8,5"
+                            Margin="0,8,0,2"
+                            Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Shield24" FontSize="15" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="QuickRiskSummaryText"
+                                       Text="Risk analizi hazırlandı"
+                                       FontSize="11.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
                     <!-- Metric Badges Row -->
                     <WrapPanel Margin="0,10,0,0">
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"

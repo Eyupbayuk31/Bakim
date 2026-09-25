@@ -1,0 +1,36 @@
+name: CI (Test & Verification)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Run Unit Tests & Verify Design
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Verify XAML Design Tokens and Symbols
+        shell: pwsh
+        run: |
+          python Tools/verify-tokens.py
+          if ($LASTEXITCODE -ne 0) { throw "Design token doğrulaması başarısız!" }
+          python Tools/verify-symbols.py
+          if ($LASTEXITCODE -ne 0) { throw "SymbolRegular sembol doğrulaması başarısız!" }
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run Unit Tests
+        shell: pwsh
+        run: dotnet test --configuration Release --verbosity normal

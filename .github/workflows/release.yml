@@ -49,6 +49,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      - name: Run Unit Tests
+        shell: pwsh
+        run: |
+          dotnet test --configuration Release --verbosity normal
+          if ($LASTEXITCODE -ne 0) { throw "Birim testler başarısız oldu!" }
+
       - name: Publish Single-File Executable
         shell: pwsh
         run: |

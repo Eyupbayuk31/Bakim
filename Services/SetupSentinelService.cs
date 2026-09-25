@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Win32;
 using Bakım.Models;
+using Bakım.Services.Sentinel.Actions;
+using Bakım.Services.Sentinel.Detection;
+using Bakım.Services.Sentinel.Sensors;
+using Bakım.Services.Sentinel.Storage;
 
 namespace Bakım.Services
 {
@@ -35,58 +37,38 @@ namespace Bakım.Services
         private readonly IInstallerMonitorService _installerMonitorService;
         private readonly IAppSettingsService _settingsService;
         private readonly ILogService _log;
+        private readonly ISessionStore _sessionStore;
 
         private readonly List<FileSystemWatcher> _watchers = new();
         private readonly List<SetupDeltaReport> _recentReports = new();
-        private readonly HashSet<int> _alreadyHandledProcessIds = new();
+        private readonly ConcurrentDictionary<(int Pid, long CreationTicks), bool> _handledProcesses = new();
+        private readonly SemaphoreSlim _finalizeLock = new(1, 1);
         private readonly object _lock = new();
 
-        private Timer? _pollingTimer;
+        private CancellationTokenSource? _workerCts;
+        private Task? _workerTask;
         private WatchedSetupSession? _activeSession;
+        private Dictionary<string, string>? _preInstallHotspot;
         private bool _isDisposed;
         private bool _isEnabled;
-
-        private static readonly string StorageDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Bakım", "InstallationLogs");
 
         private static readonly string[] ExecutableExtensions = new[]
         {
             ".exe", ".dll", ".sys", ".bat", ".cmd", ".ps1", ".vbs", ".msi"
         };
 
-        private static readonly string[] InstallerKeywords = new[]
-        {
-            "setup", "install", "installer", "kurulum", "kurucu", "msiexec", "unins", "vcredist", "dxsetup"
-        };
-
-        private static readonly HashSet<string> ExcludedProcessNames = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "idle", "system", "explorer", "svchost", "taskmgr", "devenv", "code",
-            "jusched", "jucheck", "javaupdate", "googleupdate", "microsoftedgeupdate",
-            "onedrive", "onedrivestandaloneupdater", "discord", "spotify", "steam",
-            "epicgameslauncher", "riotclientservices", "bakim"
-        };
-
         public SetupSentinelService(
             IInstallerMonitorService installerMonitorService,
             IAppSettingsService settingsService,
-            ILogService log)
+            ILogService log,
+            ISessionStore? sessionStore = null)
         {
             _installerMonitorService = installerMonitorService;
             _settingsService = settingsService;
             _log = log;
+            _sessionStore = sessionStore ?? new SessionStore();
 
             _isEnabled = _settingsService.Current.IsSentinelSetupGuardEnabled;
-
-            try
-            {
-                if (!Directory.Exists(StorageDirectory))
-                {
-                    Directory.CreateDirectory(StorageDirectory);
-                }
-            }
-            catch { }
 
             if (_isEnabled)
             {
@@ -138,8 +120,10 @@ namespace Bakım.Services
 
             lock (_lock)
             {
-                _pollingTimer?.Dispose();
-                _pollingTimer = new Timer(OnPollingTick, null, 1000, 1500);
+                if (_workerTask != null && !_workerTask.IsCompleted) return;
+
+                _workerCts = new CancellationTokenSource();
+                _workerTask = Task.Run(() => PollingLoopAsync(_workerCts.Token));
             }
         }
 
@@ -147,171 +131,148 @@ namespace Bakım.Services
         {
             lock (_lock)
             {
-                _pollingTimer?.Dispose();
-                _pollingTimer = null;
+                _workerCts?.Cancel();
+                _workerCts?.Dispose();
+                _workerCts = null;
+                _workerTask = null;
                 StopFileSystemWatchers();
             }
         }
 
-        private async void OnPollingTick(object? state)
+        private async Task PollingLoopAsync(CancellationToken ct)
         {
-            if (!_isEnabled || _isDisposed) return;
+            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1500));
 
-            try
+            while (!ct.IsCancellationRequested)
             {
-                if (IsMonitoringActiveSession)
+                try
                 {
-                    CheckActiveSessionProcesses();
-                    return;
-                }
-
-                // Scan running processes for newly launched installers
-                var processes = Process.GetProcesses();
-                int currentPid = Environment.ProcessId;
-
-                foreach (var proc in processes)
-                {
-                    try
+                    if (await timer.WaitForNextTickAsync(ct))
                     {
-                        if (proc.Id == currentPid || proc.Id <= 4) continue;
-                        if (_alreadyHandledProcessIds.Contains(proc.Id)) continue;
+                        if (!_isEnabled || _isDisposed) continue;
 
-                        if (IsInstallerProcess(proc, out string detectedAppName, out string executablePath))
+                        if (IsMonitoringActiveSession)
                         {
-                            _alreadyHandledProcessIds.Add(proc.Id);
-                            await StartSessionAsync(proc.Id, proc.ProcessName, detectedAppName, executablePath);
-                            break;
+                            await CheckActiveSessionProcessesAsync();
+                        }
+                        else
+                        {
+                            await ScanNewProcessesAsync();
                         }
                     }
-                    catch { }
-                    finally
-                    {
-                        proc.Dispose();
-                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _log.Error("Kurulum nöbetçi taramasında hata.", ex, nameof(SetupSentinelService));
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _log.Error("Kurulum nöbetçi döngüsünde hata.", ex, nameof(SetupSentinelService));
+                }
             }
         }
 
-        private bool IsInstallerProcess(Process proc, out string appName, out string path)
+        private async Task ScanNewProcessesAsync()
         {
-            appName = string.Empty;
-            path = string.Empty;
+            int currentPid = Environment.ProcessId;
+            var processes = Process.GetProcesses();
 
-            try
+            foreach (var proc in processes)
             {
-                string procName = proc.ProcessName.ToLowerInvariant();
-
-                // 1. Skip system & known background / updater daemon processes
-                if (ExcludedProcessNames.Contains(procName) || procName.StartsWith("service", StringComparison.OrdinalIgnoreCase))
-                    return false;
-
-                // 2. Try inspect main module or executable path
-                string? exePath = null;
-                try { exePath = proc.MainModule?.FileName; } catch { }
-
-                if (string.IsNullOrWhiteSpace(exePath))
-                {
-                    if (procName is "msiexec" or "setup" or "installer" or "kurulum")
-                    {
-                        appName = proc.MainWindowTitle.Length > 2 ? proc.MainWindowTitle : proc.ProcessName;
-                        path = proc.ProcessName;
-                        return true;
-                    }
-                    return false;
-                }
-
-                path = exePath;
-
-                // 3. Reject binaries located in Program Files, Program Files (x86), or Windows directories
-                // Software running from these directories is ALREADY installed software (unless it is msiexec.exe)
-                string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
-                string windowsDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-
-                bool isAlreadyInstalledDir =
-                    (!string.IsNullOrEmpty(programFiles) && exePath.StartsWith(programFiles, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(programFilesX86) && exePath.StartsWith(programFilesX86, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(windowsDir) && exePath.StartsWith(windowsDir, StringComparison.OrdinalIgnoreCase));
-
-                if (isAlreadyInstalledDir && !string.Equals(procName, "msiexec", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                // 4. Check file name, proc name, title, and directory
-                string fileName = Path.GetFileName(exePath).ToLowerInvariant();
-                string dir = Path.GetDirectoryName(exePath)?.ToLowerInvariant() ?? string.Empty;
-
-                bool nameMatch = InstallerKeywords.Any(k => fileName.Contains(k));
-                bool procMatch = InstallerKeywords.Any(k => procName.Contains(k));
-                bool tempOrDownloads = dir.Contains("temp") || dir.Contains("downloads") || dir.Contains("indirilenler") || dir.Contains("desktop") || dir.Contains("masaüstü");
-
-                string? title = null;
-                try { title = proc.MainWindowTitle; } catch { }
-
-                bool titleMatch = !string.IsNullOrWhiteSpace(title) &&
-                                  InstallerKeywords.Any(k => title.ToLowerInvariant().Contains(k));
-
-                // Inspect FileVersionInfo
-                bool fviMatch = false;
-                string? prodName = null;
                 try
                 {
-                    var fvi = proc.MainModule?.FileVersionInfo;
-                    if (fvi != null)
+                    if (proc.Id == currentPid || proc.Id <= 4) continue;
+
+                    ProcessInfoReader.TryGetProcessDetails(
+                        proc.Id,
+                        out string? exePath,
+                        out int? parentPid,
+                        out DateTime? creationTime);
+
+                    long creationTicks = creationTime?.Ticks ?? 0;
+                    var key = (proc.Id, creationTicks);
+
+                    if (_handledProcesses.ContainsKey(key)) continue;
+
+                    string? title = null;
+                    try { title = proc.MainWindowTitle; } catch { }
+
+                    string? desc = null;
+                    string? prod = null;
+                    if (!string.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
                     {
-                        prodName = fvi.ProductName;
-                        string desc = (fvi.FileDescription ?? string.Empty).ToLowerInvariant();
-                        string prod = (fvi.ProductName ?? string.Empty).ToLowerInvariant();
-                        if (InstallerKeywords.Any(k => desc.Contains(k) || prod.Contains(k)))
+                        try
                         {
-                            fviMatch = true;
+                            var fvi = FileVersionInfo.GetVersionInfo(exePath);
+                            desc = fvi.FileDescription;
+                            prod = fvi.ProductName;
+                        }
+                        catch { }
+                    }
+
+                    bool isTarget = InstallerClassifier.ClassifyProcess(
+                        proc.ProcessName,
+                        exePath,
+                        title,
+                        desc,
+                        prod,
+                        null,
+                        out SessionKind kind,
+                        out string detectedAppName,
+                        out int confidenceScore);
+
+                    if (isTarget)
+                    {
+                        _handledProcesses[key] = true;
+
+                        if (kind == SessionKind.Uninstall)
+                        {
+                            _log.Info($"Kaldırma süreci saptandı (oturum açılmadı): {detectedAppName} (PID: {proc.Id})", nameof(SetupSentinelService));
+                            continue;
+                        }
+
+                        if (kind == SessionKind.Install && confidenceScore >= 50)
+                        {
+                            await StartSessionAsync(proc.Id, creationTicks, proc.ProcessName, detectedAppName, exePath ?? proc.ProcessName);
+                            break;
                         }
                     }
                 }
                 catch { }
-
-                if (nameMatch || procMatch || titleMatch || fviMatch || (procMatch && tempOrDownloads))
+                finally
                 {
-                    appName = !string.IsNullOrWhiteSpace(prodName) && prodName.Length > 2
-                        ? prodName
-                        : (!string.IsNullOrWhiteSpace(title) && title.Length > 2 ? title : Path.GetFileNameWithoutExtension(exePath));
-
-                    return true;
+                    proc.Dispose();
                 }
             }
-            catch { }
-
-            return false;
         }
 
-        private async Task StartSessionAsync(int rootPid, string procName, string appName, string exePath)
+        private async Task StartSessionAsync(int rootPid, long creationTicks, string procName, string appName, string exePath)
         {
             var session = new WatchedSetupSession
             {
                 RootProcessId = rootPid,
+                RootProcessCreationTicks = creationTicks,
                 ProcessName = procName,
                 AppName = appName,
                 InstallerPath = exePath,
+                Kind = SessionKind.Install,
                 StartTime = DateTime.UtcNow,
                 IsActive = true
             };
 
+            session.TrackedProcesses[(rootPid, creationTicks)] = true;
             session.TrackedProcessIds.Add(rootPid);
             _activeSession = session;
 
-            _log.Info($"Kurulum tespit edildi: {appName} (PID: {rootPid}). Değişiklikler izleniyor...", nameof(SetupSentinelService));
+            _log.Info($"Kurulum tespit edildi: {appName} (PID: {rootPid}). Değişiklikler arka planda izleniyor...", nameof(SetupSentinelService));
 
-            // Start File System Watchers
+            // 1. Sensörleri Başlat (FSW 64 KB arabellek)
             StartFileSystemWatchers(session);
 
-            // Pre-install snapshot
+            // 2. Pre-Snapshot: Registry Hotspot ve Run/Services Değerleri (P0-3, P0-4)
             try
             {
+                _preInstallHotspot = RegistryHotspotSensor.CaptureHotspotSnapshot();
                 session.PreSnapshot = await _installerMonitorService.TakePreInstallSnapshotAsync(appName);
             }
             catch (Exception ex)
@@ -347,12 +308,19 @@ namespace Bakım.Services
                     {
                         IncludeSubdirectories = true,
                         NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite | NotifyFilters.Size,
+                        InternalBufferSize = 65536, // P0-10: 64 KB arabellek
                         EnableRaisingEvents = true
                     };
 
                     fsw.Created += (s, e) => RecordFileEvent(session, e.FullPath, "Created");
                     fsw.Changed += (s, e) => RecordFileEvent(session, e.FullPath, "Changed");
-                    fsw.Renamed += (s, e) => RecordFileEvent(session, e.FullPath, "Renamed");
+                    fsw.Deleted += (s, e) => RecordFileEvent(session, e.FullPath, "Deleted");
+                    fsw.Renamed += (s, e) => RecordFileEvent(session, e.FullPath, "Renamed", e.OldFullPath);
+                    fsw.Error += (s, e) =>
+                    {
+                        session.IsPossiblyIncomplete = true;
+                        _log.Warning($"Dosya izleyici arabelleği taştı ({dir}). Rapor eksik olabilir.", null, nameof(SetupSentinelService));
+                    };
 
                     _watchers.Add(fsw);
                 }
@@ -374,9 +342,12 @@ namespace Bakım.Services
             _watchers.Clear();
         }
 
-        private void RecordFileEvent(WatchedSetupSession session, string fullPath, string changeType)
+        private void RecordFileEvent(WatchedSetupSession session, string fullPath, string changeType, string? oldPath = null)
         {
             if (!session.IsActive) return;
+
+            // Gürültü Filtresi (P0-10): Tarayıcı önbellekleri, Bakım logları ve çöp kutusu
+            if (IsNoisePath(fullPath)) return;
 
             try
             {
@@ -384,7 +355,7 @@ namespace Bakım.Services
                 bool isExe = ExecutableExtensions.Contains(ext);
 
                 long size = 0;
-                if (File.Exists(fullPath))
+                if (changeType != "Deleted" && File.Exists(fullPath))
                 {
                     try { size = new FileInfo(fullPath).Length; } catch { }
                 }
@@ -393,6 +364,7 @@ namespace Bakım.Services
                 {
                     FilePath = fullPath,
                     ChangeType = changeType,
+                    OldFilePath = oldPath,
                     SizeBytes = size,
                     Timestamp = DateTime.UtcNow,
                     IsExecutable = isExe,
@@ -402,11 +374,26 @@ namespace Bakım.Services
             catch { }
         }
 
-        private void CheckActiveSessionProcesses()
+        private static bool IsNoisePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return true;
+            string lower = path.ToLowerInvariant();
+
+            return lower.Contains(@"\appdata\local\google\chrome\user data\") ||
+                   lower.Contains(@"\appdata\local\microsoft\edge\user data\") ||
+                   lower.Contains(@"\appdata\local\mozilla\firefox\") ||
+                   lower.Contains(@"\appdata\roaming\bakım\") ||
+                   lower.Contains(@"\appdata\local\bakım\") ||
+                   lower.Contains(@"\thumbcache_") ||
+                   lower.Contains(@"\windows\prefetch\") ||
+                   lower.Contains(@"\$recycle.bin\");
+        }
+
+        private async Task CheckActiveSessionProcessesAsync()
         {
             if (_activeSession == null || !_activeSession.IsActive) return;
 
-            // Discover any child processes spawned
+            // 1. Yeni alt süreçleri (Child Processes) ebeveyn ağacı ile tespit et (P0-8)
             try
             {
                 var processes = Process.GetProcesses();
@@ -414,14 +401,35 @@ namespace Bakım.Services
                 {
                     try
                     {
-                        if (!_activeSession.TrackedProcessIds.Contains(p.Id))
+                        ProcessInfoReader.TryGetProcessDetails(p.Id, out string? path, out int? parentPid, out DateTime? creationTime);
+                        long creationTicks = creationTime?.Ticks ?? 0;
+                        var pKey = (p.Id, creationTicks);
+
+                        if (!_activeSession.TrackedProcesses.ContainsKey(pKey))
                         {
                             string pName = p.ProcessName.ToLowerInvariant();
-                            if (!ExcludedProcessNames.Contains(pName) &&
-                                (InstallerKeywords.Any(k => pName.Contains(k)) ||
-                                 pName.Contains(_activeSession.ProcessName.ToLowerInvariant())))
+
+                            // Ebeveyn PID bizim ağacımızda mı?
+                            bool isChildOfTracked = parentPid.HasValue &&
+                                (_activeSession.TrackedProcessIds.Contains(parentPid.Value) ||
+                                 _activeSession.TrackedProcesses.Keys.Any(k => k.Pid == parentPid.Value));
+
+                            // msiexec özel durumu (P0-8): yalnızca ebeveyn ağaçtaysa ekle (msiexec /V arka plan servisini hariç tut)
+                            if (pName == "msiexec")
                             {
-                                _activeSession.TrackedProcessIds.Add(p.Id);
+                                if (isChildOfTracked)
+                                {
+                                    _activeSession.TrackedProcesses[pKey] = true;
+                                    _activeSession.TrackedProcessIds.Add(p.Id);
+                                }
+                            }
+                            else if (isChildOfTracked || pName.Contains(_activeSession.ProcessName.ToLowerInvariant()))
+                            {
+                                if (!InstallerClassifier.ExcludedProcessNames.Contains(pName))
+                                {
+                                    _activeSession.TrackedProcesses[pKey] = true;
+                                    _activeSession.TrackedProcessIds.Add(p.Id);
+                                }
                             }
                         }
                     }
@@ -431,150 +439,146 @@ namespace Bakım.Services
             }
             catch { }
 
-            // Check if any tracked process is still alive
+            // 2. Takip edilen süreçlerden hayatta olan var mı?
             bool anyAlive = false;
-            foreach (var pid in _activeSession.TrackedProcessIds)
+            foreach (var key in _activeSession.TrackedProcesses.Keys.ToList())
             {
                 try
                 {
-                    using var p = Process.GetProcessById(pid);
+                    using var p = Process.GetProcessById(key.Pid);
                     if (!p.HasExited)
                     {
-                        anyAlive = true;
-                        break;
+                        var created = ProcessInfoReader.GetProcessCreationTimeUtc(key.Pid);
+                        if (created.HasValue && Math.Abs((created.Value.Ticks - key.CreationTimeTicks)) < TimeSpan.FromSeconds(5).Ticks)
+                        {
+                            anyAlive = true;
+                            break;
+                        }
                     }
                 }
                 catch
                 {
-                    // Process already exited
+                    // Süreç kapandı
                 }
             }
 
+            // 3. Eğer süreçler kapandıysa ve aktif bir MSI işlemi yoksa oturumu sonlandır
             if (!anyAlive)
             {
-                _ = FinalizeActiveSessionAsync();
+                var (hasMsi, isCompleted, _) = MsiEventLogWatcher.QueryLatestMsiStatus(_activeSession.StartTime);
+                if (hasMsi && !isCompleted)
+                {
+                    // MSI işlemi henüz olay günlüğünde bitiş bildirmedi, kısa süre daha bekle
+                    return;
+                }
+
+                await FinalizeActiveSessionAsync();
             }
         }
 
         public async Task<SetupDeltaReport?> FinalizeActiveSessionAsync()
         {
-            WatchedSetupSession? session = _activeSession;
-            if (session == null || !session.IsActive) return null;
-
-            session.IsActive = false;
-            session.EndTime = DateTime.UtcNow;
-
-            _log.Info($"Kurulum süreçleri sonlandı. {session.AppName} için delta hesaplanıyor...", nameof(SetupSentinelService));
-
-            // Wait 2 seconds for file system writes to settle
-            await Task.Delay(2000);
-            StopFileSystemWatchers();
-
-            var report = new SetupDeltaReport
-            {
-                SessionId = session.SessionId,
-                AppName = session.AppName,
-                InstallerPath = session.InstallerPath,
-                InstallTime = session.StartTime,
-                Duration = (session.EndTime ?? DateTime.UtcNow) - session.StartTime
-            };
+            if (!await _finalizeLock.WaitAsync(100)) return null;
 
             try
             {
-                // Process captured file system events
-                var uniqueFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                WatchedSetupSession? session = _activeSession;
+                if (session == null || !session.IsActive) return null;
+
+                session.IsActive = false;
+                session.EndTime = DateTime.UtcNow;
+
+                _log.Info($"Kurulum süreçleri sonlandı. {session.AppName} için delta hesaplanıyor...", nameof(SetupSentinelService));
+
+                // Dosya sistemi yazmalarının diske oturması için 1.5 saniye bekle
+                await Task.Delay(1500);
+                StopFileSystemWatchers();
+
+                var report = new SetupDeltaReport
+                {
+                    SessionId = session.SessionId,
+                    AppName = session.AppName,
+                    InstallerPath = session.InstallerPath,
+                    InstallTime = session.StartTime,
+                    Duration = (session.EndTime ?? DateTime.UtcNow) - session.StartTime,
+                    IsPossiblyIncomplete = session.IsPossiblyIncomplete
+                };
+
+                // P0-1: Dosyaları Created, Modified, Deleted olarak net ayrıştır
+                var uniqueCreated = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var uniqueModified = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var uniqueDeleted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var uniqueFolders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 long totalBytes = 0;
 
                 foreach (var ev in session.CapturedFileEvents)
                 {
-                    if (File.Exists(ev.FilePath))
+                    if (ev.ChangeType == "Deleted")
                     {
-                        if (uniqueFiles.Add(ev.FilePath))
+                        uniqueDeleted.Add(ev.FilePath);
+                        uniqueCreated.Remove(ev.FilePath);
+                    }
+                    else if (ev.ChangeType == "Created")
+                    {
+                        if (File.Exists(ev.FilePath))
                         {
-                            report.AddedFiles.Add(ev.FilePath);
-                            if (ev.IsExecutable)
-                            {
-                                report.AddedExecutables.Add(ev.FilePath);
-                            }
+                            uniqueCreated.Add(ev.FilePath);
                             totalBytes += ev.SizeBytes;
                         }
-                    }
-                    else if (Directory.Exists(ev.FilePath))
-                    {
-                        if (uniqueFolders.Add(ev.FilePath))
+                        else if (Directory.Exists(ev.FilePath))
                         {
-                            report.AddedFolders.Add(ev.FilePath);
+                            uniqueFolders.Add(ev.FilePath);
+                        }
+                    }
+                    else if (ev.ChangeType == "Changed")
+                    {
+                        if (!uniqueCreated.Contains(ev.FilePath) && File.Exists(ev.FilePath))
+                        {
+                            uniqueModified.Add(ev.FilePath);
                         }
                     }
                 }
 
-                // If pre-snapshot was captured, compute registry delta
-                if (session.PreSnapshot != null)
+                report.CreatedFiles = uniqueCreated.ToList();
+                report.ModifiedFiles = uniqueModified.ToList();
+                report.DeletedFiles = uniqueDeleted.ToList();
+                report.AddedFiles = report.CreatedFiles; // Geriye döküm uyumluluk
+                report.AddedFolders = uniqueFolders.ToList();
+
+                foreach (var f in report.CreatedFiles)
                 {
-                    try
+                    string ext = Path.GetExtension(f).ToLowerInvariant();
+                    if (ExecutableExtensions.Contains(ext))
                     {
-                        var delta = await _installerMonitorService.TakePostInstallSnapshotAndSaveDeltaAsync(session.AppName, session.PreSnapshot);
-
-                        foreach (var f in delta.AddedFiles)
-                        {
-                            if (uniqueFiles.Add(f))
-                            {
-                                report.AddedFiles.Add(f);
-                                string ext = Path.GetExtension(f).ToLowerInvariant();
-                                if (ExecutableExtensions.Contains(ext))
-                                {
-                                    report.AddedExecutables.Add(f);
-                                }
-                            }
-                        }
-
-                        foreach (var fol in delta.AddedFolders)
-                        {
-                            if (uniqueFolders.Add(fol))
-                            {
-                                report.AddedFolders.Add(fol);
-                            }
-                        }
-
-                        foreach (var reg in delta.AddedRegistryKeys)
-                        {
-                            bool isAuto = reg.Contains(@"\Run", StringComparison.OrdinalIgnoreCase) ||
-                                          reg.Contains(@"\Services", StringComparison.OrdinalIgnoreCase);
-
-                            report.AddedRegistryRecords.Add(new SetupRegistryRecord
-                            {
-                                Hive = reg.StartsWith("HKEY_LOCAL_MACHINE") || reg.StartsWith("HKLM") ? "HKLM" : "HKCU",
-                                KeyPath = reg,
-                                IsAutorunOrService = isAuto
-                            });
-
-                            if (reg.Contains(@"\Services\", StringComparison.OrdinalIgnoreCase))
-                            {
-                                report.AddedServices.Add(reg);
-                            }
-                            else if (reg.Contains(@"\Run", StringComparison.OrdinalIgnoreCase))
-                            {
-                                report.AddedStartupEntries.Add(reg);
-                            }
-                        }
-
-                        if (delta.TotalSizeBytes > totalBytes)
-                        {
-                            totalBytes = delta.TotalSizeBytes;
-                        }
+                        report.AddedExecutables.Add(f);
                     }
-                    catch (Exception ex)
+                }
+
+                // Registry Delta: Hotspot Sensörü ile Run ve Services Değerleri (P0-4, P0-5)
+                try
+                {
+                    var postHotspot = RegistryHotspotSensor.CaptureHotspotSnapshot();
+                    if (_preInstallHotspot != null)
                     {
-                        _log.Error("Registry delta hesaplamasında hata.", ex, nameof(SetupSentinelService));
+                        var (records, services, startups) = RegistryHotspotSensor.ComputeDelta(_preInstallHotspot, postHotspot);
+                        report.AddedRegistryRecords = records;
+                        report.AddedServices = services;
+                        report.AddedStartupEntries = startups;
                     }
+                }
+                catch (Exception ex)
+                {
+                    _log.Error("Registry delta hesaplamasında hata.", ex, nameof(SetupSentinelService));
                 }
 
                 report.TotalSizeBytes = totalBytes;
                 report.FormattedSize = FormatBytes(totalBytes);
 
-                // Save report profile
-                await SaveReportProfileAsync(report);
+                // Hızlı Risk Özeti (Faz 0 Hızlı Kazanım)
+                GenerateQuickRiskSummary(report);
+
+                // Raporu Tekil SessionStore'a Kaydet (P0-6)
+                await _sessionStore.SaveReportAsync(report);
 
                 lock (_lock)
                 {
@@ -585,124 +589,70 @@ namespace Bakım.Services
                     }
                 }
 
-                _log.Info($"Kurulum tamamlandı: {report.AppName} - +{report.AddedFiles.Count} dosya ({report.FormattedSize}), +{report.AddedRegistryRecords.Count} registry anahtarı.", nameof(SetupSentinelService));
+                _log.Info($"Kurulum tamamlandı: {report.AppName} - +{report.CreatedFiles.Count} dosya, +{report.AddedExecutables.Count} yürütülebilir, +{report.AddedStartupEntries.Count} başlangıç girdisi.", nameof(SetupSentinelService));
 
                 SetupFinished?.Invoke(report);
-            }
-            catch (Exception ex)
-            {
-                _log.Error("Kurulum raporu oluşturulamadı.", ex, nameof(SetupSentinelService));
+                return report;
             }
             finally
             {
                 _activeSession = null;
+                _preInstallHotspot = null;
+                _finalizeLock.Release();
             }
+        }
 
-            return report;
+        private static void GenerateQuickRiskSummary(SetupDeltaReport report)
+        {
+            int exeCount = report.AddedExecutables.Count;
+            int startupCount = report.AddedStartupEntries.Count;
+            int svcCount = report.AddedServices.Count;
+
+            if (startupCount > 0 || svcCount > 0)
+            {
+                var parts = new List<string>();
+                if (exeCount > 0) parts.Add($"{exeCount} yürütülebilir");
+                if (startupCount > 0) parts.Add($"{startupCount} başlangıç kaydı");
+                if (svcCount > 0) parts.Add($"{svcCount} yeni servis");
+
+                report.QuickRiskSummary = string.Join(" • ", parts);
+                report.RiskBadgeBrush = "SystemFillColorCautionBrush";
+            }
+            else if (exeCount > 0)
+            {
+                report.QuickRiskSummary = $"{exeCount} yürütülebilir dosya • Başlangıç kaydı saptanmadı";
+                report.RiskBadgeBrush = "AccentTextFillColorPrimaryBrush";
+            }
+            else
+            {
+                report.QuickRiskSummary = "Temiz kurulum • Yürütülebilir tehdit saptanmadı";
+                report.RiskBadgeBrush = "AccentTextFillColorPrimaryBrush";
+            }
         }
 
         public async Task<bool> SaveReportProfileAsync(SetupDeltaReport report)
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    string safeName = SanitizeFileName(report.AppName);
-                    string filePath = Path.Combine(StorageDirectory, $"{safeName}_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json");
-
-                    var options = new JsonSerializerOptions { WriteIndented = true };
-                    string json = JsonSerializer.Serialize(report, options);
-                    File.WriteAllText(filePath, json);
-                    report.IsProfileSaved = true;
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    _log.Error("Kurulum profili diske kaydedilemedi.", ex, nameof(SetupSentinelService));
-                    return false;
-                }
-            });
+            return await _sessionStore.SaveReportAsync(report);
         }
 
         public List<SetupDeltaReport> LoadSavedReports()
         {
-            var reports = new List<SetupDeltaReport>();
-            try
-            {
-                if (!Directory.Exists(StorageDirectory)) return reports;
-
-                foreach (var file in Directory.GetFiles(StorageDirectory, "*.json").OrderByDescending(File.GetCreationTimeUtc))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(file);
-                        var report = JsonSerializer.Deserialize<SetupDeltaReport>(json);
-                        if (report != null)
-                        {
-                            reports.Add(report);
-                        }
-                    }
-                    catch { }
-                }
-            }
-            catch { }
-
-            return reports;
+            return _sessionStore.LoadAllReportsAsync().GetAwaiter().GetResult();
         }
 
         public async Task<int> RevertReportAsync(SetupDeltaReport report)
         {
-            return await Task.Run(() =>
-            {
-                int deletedCount = 0;
-
-                // 1. Delete added files
-                foreach (var file in report.AddedFiles)
-                {
-                    try
-                    {
-                        if (File.Exists(file))
-                        {
-                            File.Delete(file);
-                            deletedCount++;
-                        }
-                    }
-                    catch { }
-                }
-
-                // 2. Delete added empty folders
-                foreach (var folder in report.AddedFolders.OrderByDescending(f => f.Length))
-                {
-                    try
-                    {
-                        if (Directory.Exists(folder) && !Directory.EnumerateFileSystemEntries(folder).Any())
-                        {
-                            Directory.Delete(folder);
-                            deletedCount++;
-                        }
-                    }
-                    catch { }
-                }
-
-                return deletedCount;
-            });
-        }
-
-        private static string SanitizeFileName(string name)
-        {
-            foreach (char c in Path.GetInvalidFileNameChars())
-            {
-                name = name.Replace(c, '_');
-            }
-            return name.Trim();
+            var result = await _sessionStore.RollbackReportAsync(report);
+            return result.DeletedFilesCount + result.DeletedFoldersCount;
         }
 
         private static string FormatBytes(long bytes)
         {
-            if (bytes < 1024) return $"{bytes} B";
-            if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
-            if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
-            return $"{bytes / (1024.0 * 1024 * 1024):F2} GB";
+            if (bytes <= 0) return "0 MB";
+            double mb = bytes / (1024.0 * 1024.0);
+            if (mb < 1.0) return $"{bytes / 1024.0:F1} KB";
+            if (mb >= 1024.0) return $"{mb / 1024.0:F2} GB";
+            return $"{mb:F1} MB";
         }
 
         public void Dispose()
@@ -711,6 +661,7 @@ namespace Bakım.Services
             _isDisposed = true;
 
             Stop();
+            _finalizeLock.Dispose();
         }
     }
 }

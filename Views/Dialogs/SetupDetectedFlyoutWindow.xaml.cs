@@ -69,6 +69,16 @@ namespace Bakım.Views.Dialogs
             RegistryBadgeText.Text = $"+{report.AddedRegistryRecords.Count} Kayıt";
             SizeBadgeText.Text = report.FormattedSize;
 
+            if (!string.IsNullOrWhiteSpace(report.QuickRiskSummary))
+            {
+                QuickRiskSummaryText.Text = report.QuickRiskSummary;
+                RiskSummaryCard.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                RiskSummaryCard.Visibility = Visibility.Collapsed;
+            }
+
             PositionAtBottomRight();
         }
 

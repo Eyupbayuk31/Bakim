@@ -897,13 +897,32 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3200 = new ReleaseChangelogItem
+            {
+                Version = "v3.20.0",
+                ReleaseDate = "25 Eylül 2026",
+                Title = "Kurulum Nöbetçisi v2 (Faz 0): Stabilizasyon, Derin Sensörler & Güvenli Geri Alma",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Güvenli Geri Alma ve Veri Kaybı Önleme (P0-1): Değiştirilen dosyalar (ModifiedFiles) asla silinmez; yalnızca kurulum anında üretilen yeni dosyalar Geri Dönüşüm Kutusu (Recycle Bin) güvencesiyle temizlenir.",
+                    "Yetki Engelleri Aşıldı (ProcessInfoReader, P0-2): UAC ile yönetici olarak başlayan kurulum süreçleri PROCESS_QUERY_LIMITED_INFORMATION ve ToolHelp32 ile standart kullanıcı haklarında dahi hatasız ve gecikmesiz yakalanır.",
+                    "Derin Registry Hotspot Sensörü (P0-4, P0-5): Run/RunOnce başlangıç değerleri, HKLM/HKCU 64-32 bit görünümleri ve SYSTEM Services servis anahtarları tam değer düzeyinde fark analiziyle tespit edilir.",
+                    "Merkezi Rapor Deposu (SessionStore, P0-6): Eski parçalı dosyalar tekil ve şema versiyonlu (SchemaVersion: 2) JSON deposunda birleştirildi; geriye uyumluluk garantiye alındı.",
+                    "Eşzamanlılık & msiexec Servis Koruması (P0-7, P0-8): PeriodicTimer döngüsü, ebeveyn-çocuk süreç ağacı ve Windows Olay Günlüğü MsiInstaller entegrasyonu ile msiexec /V arka plan kirliliği sonlandırıldı.",
+                    "Kaldırıcı Ayrımı & 64 KB FSW Arabelleği (P0-9, P0-10): unins* kaldırıcı süreçleri kurulum sayılmaz; 64 KB arabellek ve gürültü filtresi ile tarayıcı önbellekleri elenir.",
+                    "Flyout v2 Hızlı Risk Özeti: Kurulum bittiğinde eklenen yürütülebilir, başlangıç kaydı ve servis sayısına göre anlık durum rozeti ve rehberlik sağlanır."
+                }
+            };
+
             var v3191 = new ReleaseChangelogItem
             {
                 Version = "v3.19.1",
                 ReleaseDate = "25 Eylül 2026",
                 Title = "Sağ Tık Menüsü & Kurulum Nöbetçisi Koşulsuz Varsayılan Entegrasyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Kurulumda Sıfır Sürtünme (Zero-Friction Setup): Inno Setup kurulumunda kullanıcının hiçbir onay kutusunu seçmesine gerek bırakmadan Windows Gezgini sağ tık 'Bakım ile Kaldır' menüsü, otomatik başlangıç ve yönetici katmanı varsayılan olarak koşulsuz entegre edildi.",
@@ -1551,8 +1570,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3191;
+            LatestRelease = v3200;
 
+            ReleaseHistory.Add(v3200);
             ReleaseHistory.Add(v3191);
             ReleaseHistory.Add(v3190);
             ReleaseHistory.Add(v3186);

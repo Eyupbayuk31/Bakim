@@ -374,6 +374,7 @@ namespace Bakım
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IVirusTotalCheckService, VirusTotalCheckService>();
             services.AddSingleton<IAutorunsScannerEngine, AutorunsScannerEngine>();
+            services.AddSingleton<Bakım.Services.Sentinel.Storage.ISessionStore, Bakım.Services.Sentinel.Storage.SessionStore>();
             services.AddSingleton<ISetupSentinelService, SetupSentinelService>();
 
             // v3.1'de eklenen kayıtlar: bu servisler daha önce hiç kayıtlı değildi,
