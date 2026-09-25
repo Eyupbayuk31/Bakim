@@ -81,17 +81,19 @@ namespace Bakım.Services
                     };
                 }
             }
-            catch { }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+            {
+                AppLog.Warning("Sistem sürücüsü bilgisi okunamadı.", ex, nameof(SystemCleanService));
+            }
 
+            // Okunamadıysa bunu açıkça söyle. (Eskiden sabit "256 GB / %60 dolu"
+            // değerleri gerçekmiş gibi gösteriliyordu.)
             return new DriveInfoItem
             {
-                Name = "C:",
-                VolumeLabel = "Yerel Disk",
-                DriveFormat = "NTFS",
-                TotalGb = 256.0,
-                FreeGb = 100.0,
-                UsedGb = 156.0,
-                UsagePercentage = 60
+                Name = Path.GetPathRoot(Environment.SystemDirectory)?.TrimEnd('\\') ?? "C:",
+                VolumeLabel = "Disk bilgisi okunamadı",
+                DriveFormat = "—",
+                IsAvailable = false
             };
         }
 
@@ -575,70 +577,55 @@ namespace Bakım.Services
                 var afterMem = new MEMORYSTATUSEX();
                 GlobalMemoryStatusEx(afterMem);
 
-                long freed = (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys;
-                return freed > 0 ? freed : 52428800; // En az ~50MB çalışma alanı serbest bırakıldı
+                // Ölçülen gerçek fark döner (0 olabilir). Eskiden fark yoksa sabit
+                // "50 MB" döndürülüyor ve kullanıcıya boşaltılmış gibi gösteriliyordu.
+                return Math.Max(0, (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys);
             });
         }
 
-        public async Task<long> ClearStandbyListAsync()
+        public Task<long> ClearStandbyListAsync() => RunMemoryListCommandAsync(MemoryPurgeStandbyList, "Bekleme listesi");
+
+        public Task<long> FlushModifiedPagesAsync() => RunMemoryListCommandAsync(MemoryFlushModifiedList, "Değiştirilmiş sayfa listesi");
+
+        /// <summary>
+        /// NtSetSystemInformation(SystemMemoryListInformation) komutunu çalıştırır.
+        /// SeProfileSingleProcessPrivilege etkinleştirilir (yalnızca yöneticilerde
+        /// mümkündür) ve NTSTATUS kontrol edilir; başarısızsa 0 döner.
+        /// </summary>
+        private async Task<long> RunMemoryListCommandAsync(int command, string label)
         {
             return await Task.Run(() =>
             {
+                if (!Bakım.Helpers.TokenPrivilege.TryEnable(Bakım.Helpers.TokenPrivilege.ProfileSingleProcess))
+                {
+                    AppLog.Info($"{label} boşaltılamadı: yönetici yetkisi gerekiyor.", nameof(SystemCleanService));
+                    return 0L;
+                }
+
                 var beforeMem = new MEMORYSTATUSEX();
                 GlobalMemoryStatusEx(beforeMem);
 
+                uint status;
+                IntPtr pCommand = Marshal.AllocHGlobal(sizeof(int));
                 try
                 {
-                    int command = MemoryPurgeStandbyList;
-                    IntPtr pCommand = Marshal.AllocHGlobal(sizeof(int));
-                    try
-                    {
-                        Marshal.WriteInt32(pCommand, command);
-                        NtSetSystemInformation(SystemMemoryListInformation, pCommand, sizeof(int));
-                    }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(pCommand);
-                    }
+                    Marshal.WriteInt32(pCommand, command);
+                    status = NtSetSystemInformation(SystemMemoryListInformation, pCommand, sizeof(int));
                 }
-                catch { }
+                finally
+                {
+                    Marshal.FreeHGlobal(pCommand);
+                }
+
+                if (status != 0)
+                {
+                    AppLog.Warning($"{label} boşaltılamadı (NTSTATUS 0x{status:X8}).", null, nameof(SystemCleanService));
+                    return 0L;
+                }
 
                 var afterMem = new MEMORYSTATUSEX();
                 GlobalMemoryStatusEx(afterMem);
-
-                long freed = (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys;
-                return freed > 0 ? freed : 104857600; // Standby purge min 100MB
-            });
-        }
-
-        public async Task<long> FlushModifiedPagesAsync()
-        {
-            return await Task.Run(() =>
-            {
-                var beforeMem = new MEMORYSTATUSEX();
-                GlobalMemoryStatusEx(beforeMem);
-
-                try
-                {
-                    int command = MemoryFlushModifiedList;
-                    IntPtr pCommand = Marshal.AllocHGlobal(sizeof(int));
-                    try
-                    {
-                        Marshal.WriteInt32(pCommand, command);
-                        NtSetSystemInformation(SystemMemoryListInformation, pCommand, sizeof(int));
-                    }
-                    finally
-                    {
-                        Marshal.FreeHGlobal(pCommand);
-                    }
-                }
-                catch { }
-
-                var afterMem = new MEMORYSTATUSEX();
-                GlobalMemoryStatusEx(afterMem);
-
-                long freed = (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys;
-                return freed > 0 ? freed : 52428800;
+                return Math.Max(0, (long)afterMem.ullAvailPhys - (long)beforeMem.ullAvailPhys);
             });
         }
 
@@ -647,7 +634,7 @@ namespace Bakım.Services
             long t1 = await AutoTrimWorkingSetsAsync();
             long t2 = await FlushModifiedPagesAsync();
             long t3 = await ClearStandbyListAsync();
-            return Math.Max(t1 + t2 + t3, 157286400); // En az ~150MB
+            return t1 + t2 + t3; // Gerçek ölçüm; eskiden en az "150 MB" gösteriliyordu.
         }
 
         public async Task<bool> SuspendProcessAsync(int processId)

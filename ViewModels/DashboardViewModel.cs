@@ -174,14 +174,13 @@ namespace Bakım.ViewModels
 
             if (IsGameModeActive)
             {
-                string freedText = CleanCategory.FormatBytes(freed);
-                OptimizationResultMessage = $"Ultra Oyun Modu Aktif! Arka plan servisleri donduruldu. {freedText} bellek oyuna ayrıldı!";
-                OptimizationFreedBadge = $"+{freedText} Serbest";
+                OptimizationResultMessage = _gameModeService.LastActionSummary;
+                OptimizationFreedBadge = Bakım.Core.Text.MemoryResultText.Badge(freed);
                 HasOptimizationResult = true;
             }
             else
             {
-                OptimizationResultMessage = "Oyun Modu Kapatıldı. Arka plan servisleri normale döndü.";
+                OptimizationResultMessage = _gameModeService.LastActionSummary;
                 HasOptimizationResult = true;
             }
         }
@@ -310,47 +309,34 @@ namespace Bakım.ViewModels
 
             try
             {
-                // Stage 1: Visual analysis pacing
-                await Task.Delay(380);
+                // v3.21: yapay "görsel kadans" beklemeleri ve sonuç 0 olduğunda gösterilen
+                // uydurma "450 MB" kaldırıldı. Her aşama gerçek bir işi temsil eder ve
+                // gösterilen sonuç ölçümdür.
+                BoostStageText = "Uygulamaların çalışma kümeleri kırpılıyor...";
                 BoostProgressPercent = 20;
+                long freed = await _cleanService.AutoTrimWorkingSetsAsync();
 
-                // Stage 2: RAM optimization
-                BoostStageText = "Çalışma kümeleri sıkıştırılıyor...";
-                await Task.Delay(250);
-                long freedRamBytes = await _cleanService.OptimizeRamAsync();
-                BoostProgressPercent = 55;
+                if (Bakım.Helpers.UacHelper.IsAdministrator())
+                {
+                    BoostStageText = "Bekleme listesi boşaltılıyor...";
+                    BoostProgressPercent = 60;
+                    freed += await _cleanService.ClearStandbyListAsync();
+                }
 
-                // Stage 3: WorkingSet trim + GC
-                BoostStageText = "Atıl süreçler temizleniyor...";
-                long freedTempBytes = await _cleanService.AutoTrimWorkingSetsAsync();
-                await Task.Delay(200);
-                BoostProgressPercent = 80;
-
-                BoostStageText = "Çöp toplayıcı çalıştırılıyor...";
-                GC.Collect(2, GCCollectionMode.Forced, true, true);
-                GC.WaitForPendingFinalizers();
-                await Task.Delay(150);
-                BoostProgressPercent = 95;
-
-                // Refresh metrics
-                BoostStageText = "Telemetri güncelleniyor...";
+                BoostStageText = "Ölçümler güncelleniyor...";
+                BoostProgressPercent = 90;
                 await OnTelemetryTickAsync();
                 await RefreshTopHogsAsync();
                 BoostProgressPercent = 100;
 
-                long totalFreed = freedRamBytes + freedTempBytes;
-                string freedText = CleanCategory.FormatBytes(totalFreed > 0 ? totalFreed : 450 * 1024 * 1024);
-
-                BoostStageText = $"Tamamlandı! {freedText} serbest bırakıldı";
-                await Task.Delay(800);
-
-                OptimizationFreedBadge = $"+{freedText} Serbest";
-                OptimizationResultMessage = $"Sistem başarıyla optimize edildi! {freedText} bellek temizlendi ve işlemci rahatlatıldı.";
+                OptimizationFreedBadge = Bakım.Core.Text.MemoryResultText.Badge(freed);
+                OptimizationResultMessage = Bakım.Core.Text.MemoryResultText.Describe(freed);
                 HasOptimizationResult = true;
             }
             catch (Exception ex)
             {
-                OptimizationResultMessage = $"Optimizasyon tamamlandı: {ex.Message}";
+                AppLog.Error("Hızlı bellek işlemi başarısız.", ex, nameof(DashboardViewModel));
+                OptimizationResultMessage = $"İşlem tamamlanamadı: {ex.Message}";
                 HasOptimizationResult = true;
             }
             finally

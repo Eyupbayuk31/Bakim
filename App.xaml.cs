@@ -143,6 +143,9 @@ namespace Bakım
             // 6. Arka plan bakım motoru (otomatik RAM temizliği, yüksek RAM uyarısı)
             GetService<IBackgroundMaintenanceService>().Start();
 
+            // Önceki oturum Oyun Modu açıkken çöktüyse güç planını geri yükle.
+            GetService<IGameModeService>().RecoverInterruptedSession();
+
             // Sentinel Kurulum Nöbetçisi (otomatik kurulum yakalama & analizör taraması)
             var sentinelService = GetService<ISetupSentinelService>();
             sentinelService.SetupDetected += OnSetupDetected;

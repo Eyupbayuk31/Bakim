@@ -396,7 +396,6 @@ namespace Bakım.ViewModels
 
             try
             {
-                await Task.Delay(300);
                 OptimizationProgressPercent = 50;
 
                 long freedBytes = await routine();
@@ -408,12 +407,13 @@ namespace Bakım.ViewModels
                 await LoadTopProcessesAsync();
 
                 OptimizationProgressPercent = 100;
-                OptimizationStageText = "Bellek başarıyla boşaltıldı!";
-                await Task.Delay(500);
 
+                // Sonuç ölçüme dayanır; fark yoksa bunu açıkça söyleriz.
                 HasResultBanner = true;
-                OperationResultBanner = $"Bellek optimize edildi: {CleanCategory.FormatBytes(freedBytes)} geri kazanıldı.";
-                StatusText = "Optimizasyon başarıyla tamamlandı.";
+                OperationResultBanner = Bakım.Core.Text.MemoryResultText.Describe(freedBytes);
+                StatusText = Bakım.Helpers.UacHelper.IsAdministrator() || freedBytes > 0
+                    ? "İşlem tamamlandı."
+                    : "İşlem tamamlandı. Bekleme listesi işlemleri yönetici yetkisi gerektirir.";
             }
             catch (Exception ex)
             {
@@ -548,7 +548,7 @@ namespace Bakım.ViewModels
                 if (IsAutoTrimEnabled && Hardware.RamPercentage >= 85)
                 {
                     long freed = await _cleanService.AutoTrimWorkingSetsAsync();
-                    if (freed > 0)
+                    if (Bakım.Core.Text.MemoryResultText.IsSignificant(freed))
                     {
                         StatusText = $"Oto-RAM Kırpma: {CleanCategory.FormatBytes(freed)} bellek serbest bırakıldı.";
                     }

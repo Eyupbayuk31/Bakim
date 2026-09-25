@@ -400,9 +400,6 @@ namespace Bakım.ViewModels
                     cat.IsScanning = true;
                     StatusText = $"Taranıyor: {cat.Name}...";
 
-                    // Teşhis görsel kadansı
-                    await Task.Delay(50, _cts.Token);
-
                     var (items, bytes) = await _cleanService.ScanCategoryAsync(cat, scanProgress, _cts.Token);
                     cat.TotalBytes = bytes;
                     cat.FileCount = items.Count;

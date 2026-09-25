@@ -258,6 +258,9 @@ namespace Bakım.ViewModels
             }
         }
 
+        /// <summary>Son geri yükleme noktası denemesinin sonucu (komut paleti bildirimi için).</summary>
+        public string LastRestorePointResult { get; private set; } = string.Empty;
+
         [RelayCommand]
         public async Task CreateRestorePointAsync()
         {
@@ -265,20 +268,15 @@ namespace Bakım.ViewModels
             StatusMessage = "Windows Sistem Geri Yükleme Noktası oluşturuluyor...";
             try
             {
-                bool ok = await _privacyService.CreateRestorePointAsync("Bakim_Gizlilik_Yedegi");
-                if (ok)
-                {
-                    MessageBox.Show("Windows Sistem Geri Yükleme Noktası başarıyla oluşturuldu! Herhangi bir sorunda sisteminizi bu noktaya geri döndürebilirsiniz.", "Geri Yükleme Noktası", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show("Geri yükleme noktası oluşturulamadı. Sistem Koruması devre dışı olabilir veya Yönetici yetkisi gerekiyor olabilir.", "Geri Yükleme Hatası", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                bool ok = await _privacyService.CreateRestorePointAsync("Gizlilik ayarlari oncesi");
+                LastRestorePointResult = _privacyService.LastRestorePointMessage;
+                MessageBox.Show(_privacyService.LastRestorePointMessage, "Geri Yükleme Noktası",
+                    MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Warning);
             }
             finally
             {
                 IsBusy = false;
-                StatusMessage = "Geri yükleme noktası işlemi tamamlandı.";
+                StatusMessage = string.IsNullOrEmpty(LastRestorePointResult) ? "Geri yükleme noktası işlemi tamamlandı." : LastRestorePointResult;
             }
         }
 

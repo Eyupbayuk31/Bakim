@@ -113,7 +113,7 @@ namespace Bakım.Services
                 // 5. System Drive Info
                 SampleSystemDrive(metrics);
 
-                // 6. Thermal Profile Heuristics (ACPI / Load-based estimation)
+                // 6. Sıcaklık: yalnızca GERÇEK sensör (ACPI termal bölge). Okunamazsa "—".
                 SampleThermalProfile(metrics);
 
                 return metrics;
@@ -421,27 +421,78 @@ namespace Bakım.Services
             catch { }
         }
 
+        private static readonly object ThermalGate = new();
+        private static Bakım.Core.Telemetry.SensorReading _cachedThermal =
+            Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Henüz okunmadı");
+        private static DateTime _thermalReadAtUtc = DateTime.MinValue;
+
+        /// <summary>
+        /// Sıcaklık yalnızca ölçülür, asla uydurulmaz.
+        ///
+        /// v3.20'ye kadar burada "38 + CPU% × 0,38" formülüyle üretilen bir sayı
+        /// ölçüm gibi gösteriliyordu. Artık ACPI termal bölge sensörü (WMI
+        /// MSAcpi_ThermalZoneTemperature) okunur; çoğu masaüstünde bu sensör yoktur
+        /// ya da yönetici ister — o durumda "—" ve nedeni gösterilir. GPU sıcaklığı
+        /// üretici API'si (NVAPI/ADLX) eklenene kadar gösterilmez.
+        /// </summary>
         private static void SampleThermalProfile(TelemetryMetrics metrics)
         {
-            // Heuristic thermal status based on CPU percentage and system load
-            // Baseline 38-42°C idle, scaling up to 75-80°C under maximum load
-            int estimatedCpuTemp = (int)(38 + (metrics.CpuUsagePercentage * 0.38));
-            metrics.CpuTemperatureC = estimatedCpuTemp;
-
-            int estimatedGpuTemp = (int)(44 + (metrics.CpuUsagePercentage * 0.25));
-            metrics.GpuTemperatureC = estimatedGpuTemp;
-
-            if (metrics.CpuTemperatureC > 78)
+            lock (ThermalGate)
             {
-                metrics.ThermalStatus = "Yüksek Yük";
+                // Sensör okuması pahalıdır: başarılıysa 15 sn, başarısızsa 5 dk önbellek.
+                var ttl = _cachedThermal.HasValue ? TimeSpan.FromSeconds(15) : TimeSpan.FromMinutes(5);
+                if (DateTime.UtcNow - _thermalReadAtUtc > ttl)
+                {
+                    _cachedThermal = ReadAcpiThermalZone();
+                    _thermalReadAtUtc = DateTime.UtcNow;
+                }
+                metrics.CpuTemperature = _cachedThermal;
             }
-            else if (metrics.CpuTemperatureC > 60)
+
+            metrics.GpuTemperature = Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "GPU sıcaklık sensörü desteği henüz yok");
+            metrics.ThermalStatus = !metrics.CpuTemperature.HasValue
+                ? "Sensör verisi yok"
+                : metrics.CpuTemperature.Value >= 85 ? "Yüksek"
+                : metrics.CpuTemperature.Value >= 70 ? "Ilık"
+                : "Normal";
+        }
+
+        private static Bakım.Core.Telemetry.SensorReading ReadAcpiThermalZone()
+        {
+            try
             {
-                metrics.ThermalStatus = "Ilıman";
+                using var searcher = new ManagementObjectSearcher(@"root\WMI", "SELECT CurrentTemperature FROM MSAcpi_ThermalZoneTemperature");
+                double? max = null;
+                foreach (ManagementObject mo in searcher.Get())
+                {
+                    using (mo)
+                    {
+                        if (mo["CurrentTemperature"] is null) continue;
+                        // Birim: 0,1 Kelvin
+                        double celsius = Convert.ToDouble(mo["CurrentTemperature"]) / 10.0 - 273.15;
+                        if (celsius is > 5 and < 125 && (max == null || celsius > max)) max = celsius;
+                    }
+                }
+
+                return max.HasValue
+                    ? Bakım.Core.Telemetry.SensorReading.Measured(max.Value, "°C", "ACPI termal bölge (anakart)")
+                    : Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Bu cihaz ACPI sıcaklık sensörü bildirmiyor");
             }
-            else
+            catch (ManagementException ex) when (ex.ErrorCode == ManagementStatus.AccessDenied)
             {
-                metrics.ThermalStatus = "Normal";
+                return Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Sıcaklık okumak için yönetici yetkisi gerekiyor");
+            }
+            catch (ManagementException)
+            {
+                return Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Bu cihaz ACPI sıcaklık sensörü bildirmiyor");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Sıcaklık okumak için yönetici yetkisi gerekiyor");
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                return Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Sıcaklık sensörü okunamadı");
             }
         }
 

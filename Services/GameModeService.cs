@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Bakım.Services
@@ -26,30 +28,50 @@ namespace Bakım.Services
 
         public event Action<bool>? GameModeChanged;
 
+        public string LastActionSummary { get; private set; } = string.Empty;
+
+        private const string HighPerformanceScheme = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c";
+        private const string BalancedScheme = "381b4222-f694-41f0-9685-ff5bb260df2e";
+
+        private static readonly string StateFile = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bakim", "gamemode-state.json");
+
+        private sealed record GameModeState(string? PreviousScheme, DateTime ActivatedAtUtc);
+
         public async Task<long> EnableGameModeAsync()
         {
             if (_isGameModeActive) return 0;
 
+            // Önceki güç planı kaydedilir: kapatınca birebir geri yüklenir. Diske de
+            // yazılır; Bakım çökerse açılışta RecoverInterruptedSession onarır.
+            // (Eskiden kapatınca her zaman "Dengeli"ye dönülüyordu.)
+            string? previous = GetActiveSchemeGuid();
+            SaveState(new GameModeState(previous, DateTime.UtcNow));
+
             _isGameModeActive = true;
             _backgroundMaintenance.IsGameModeActive = true;
 
-            _log.Info("Ultra Oyun Modu devreye alındı. Arka plan servisleri donduruldu.", nameof(GameModeService));
+            bool planApplied = !string.Equals(previous, HighPerformanceScheme, StringComparison.OrdinalIgnoreCase)
+                ? TrySetPowerScheme(HighPerformanceScheme)
+                : true;
 
-            // 1. Windows Yüksek / Nihai Performans Güç Planını tetikle
-            TrySetPowerScheme("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"); // Yüksek Performans GUID
-
-            // 2. Oyun öncesi derin bellek boşaltması yap
             long freedBytes = 0;
             try
             {
                 freedBytes = await _cleanService.AutoTrimWorkingSetsAsync();
-                _log.Info($"Oyun Modu öncesi {freedBytes / (1024 * 1024)} MB RAM serbest bırakıldı.", nameof(GameModeService));
             }
             catch (Exception ex)
             {
-                _log.Warning("Oyun Modu bellek optimizasyonunda hata.", ex, nameof(GameModeService));
+                _log.Warning("Oyun Modu bellek işleminde hata.", ex, nameof(GameModeService));
             }
 
+            LastActionSummary = (planApplied
+                    ? "Yüksek Performans güç planı etkin. "
+                    : "Yüksek Performans güç planı bu cihazda yok ya da uygulanamadı. ") +
+                "Bakım'ın arka plan işleri duraklatıldı. " +
+                Bakım.Core.Text.MemoryResultText.Describe(freedBytes);
+
+            _log.Info("Oyun Modu açıldı: " + LastActionSummary, nameof(GameModeService));
             GameModeChanged?.Invoke(true);
             return freedBytes;
         }
@@ -61,11 +83,28 @@ namespace Bakım.Services
             _isGameModeActive = false;
             _backgroundMaintenance.IsGameModeActive = false;
 
-            // Dengeli Güç Planına geri dön
-            TrySetPowerScheme("381b4222-f694-41f0-9685-ff5bb260df2e"); // Dengeli GUID
+            var state = LoadState();
+            string target = state?.PreviousScheme ?? BalancedScheme;
+            bool restored = TrySetPowerScheme(target);
+            DeleteState();
 
-            _log.Info("Oyun Modu kapatıldı. Arka plan servisleri normale döndü.", nameof(GameModeService));
+            LastActionSummary = restored
+                ? "Önceki güç planı geri yüklendi; Bakım'ın arka plan işleri devam ediyor."
+                : "Önceki güç planı geri yüklenemedi; Windows güç ayarlarından kontrol edin.";
+
+            _log.Info("Oyun Modu kapatıldı: " + LastActionSummary, nameof(GameModeService));
             GameModeChanged?.Invoke(false);
+        }
+
+        public void RecoverInterruptedSession()
+        {
+            if (_isGameModeActive) return;
+            var state = LoadState();
+            if (state == null) return;
+
+            _log.Warning("Önceki oturumda Oyun Modu kapatılmadan uygulama sonlanmış; güç planı geri yükleniyor.", null, nameof(GameModeService));
+            TrySetPowerScheme(state.PreviousScheme ?? BalancedScheme);
+            DeleteState();
         }
 
         public async Task<long> ToggleGameModeAsync()
@@ -75,13 +114,36 @@ namespace Bakım.Services
                 DisableGameMode();
                 return 0;
             }
-            else
+            return await EnableGameModeAsync();
+        }
+
+        private string? GetActiveSchemeGuid()
+        {
+            try
             {
-                return await EnableGameModeAsync();
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "powercfg",
+                    Arguments = "/getactivescheme",
+                    CreateNoWindow = true,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                };
+                using var p = Process.Start(psi);
+                if (p == null) return null;
+                string output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit(3000);
+                var m = System.Text.RegularExpressions.Regex.Match(output, @"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+                return m.Success ? m.Value.ToLowerInvariant() : null;
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+            {
+                _log.Debug($"Etkin güç planı okunamadı: {ex.Message}", nameof(GameModeService));
+                return null;
             }
         }
 
-        private void TrySetPowerScheme(string schemeGuid)
+        private bool TrySetPowerScheme(string schemeGuid)
         {
             try
             {
@@ -93,11 +155,49 @@ namespace Bakım.Services
                     UseShellExecute = false
                 };
                 using var p = Process.Start(psi);
-                p?.WaitForExit(1000);
+                if (p == null) return false;
+                if (!p.WaitForExit(5000)) return false;
+                return p.ExitCode == 0;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
             {
                 _log.Debug($"Güç planı değiştirilemedi: {ex.Message}", nameof(GameModeService));
+                return false;
+            }
+        }
+
+        private void SaveState(GameModeState state)
+        {
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(StateFile)!);
+                File.WriteAllText(StateFile, JsonSerializer.Serialize(state));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _log.Warning("Oyun Modu durumu kaydedilemedi.", ex, nameof(GameModeService));
+            }
+        }
+
+        private GameModeState? LoadState()
+        {
+            try
+            {
+                return File.Exists(StateFile) ? JsonSerializer.Deserialize<GameModeState>(File.ReadAllText(StateFile)) : null;
+            }
+            catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+            {
+                _log.Warning("Oyun Modu durumu okunamadı.", ex, nameof(GameModeService));
+                return null;
+            }
+        }
+
+        private void DeleteState()
+        {
+            try { if (File.Exists(StateFile)) File.Delete(StateFile); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _log.Debug($"Oyun Modu durum dosyası silinemedi: {ex.Message}", nameof(GameModeService));
             }
         }
     }

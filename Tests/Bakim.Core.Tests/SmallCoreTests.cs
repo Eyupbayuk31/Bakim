@@ -216,3 +216,26 @@ public class RegistryValuePathTests
         Assert.Equal(RegistryView.Registry32, p.View);
     }
 }
+
+public class MemoryResultTextTests
+{
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1024)]
+    [InlineData(15L * 1024 * 1024)]
+    public void SmallOrNegative_IsNotReportedAsGain(long bytes)
+    {
+        Assert.False(MemoryResultText.IsSignificant(bytes));
+        Assert.Equal("—", MemoryResultText.Badge(bytes));
+        Assert.DoesNotContain("MB", MemoryResultText.Describe(bytes));
+    }
+
+    [Fact]
+    public void RealGain_IsReportedAsApproximate()
+    {
+        long bytes = 420L * 1024 * 1024;
+        Assert.True(MemoryResultText.IsSignificant(bytes));
+        Assert.StartsWith("≈420 MB", MemoryResultText.Describe(bytes));
+        Assert.Equal("+420 MB", MemoryResultText.Badge(bytes));
+    }
+}

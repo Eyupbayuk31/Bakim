@@ -16,6 +16,7 @@ namespace Bakım.Services
         Task<bool> RemoveBloatwareAsync(BloatwareAppItem app);
 
         Task<bool> CreateRestorePointAsync(string description);
+        string LastRestorePointMessage { get; }
     }
 
     public class PrivacyDebloatService : IPrivacyDebloatService
@@ -368,31 +369,22 @@ namespace Bakım.Services
 
         #region System Restore Point
 
+        /// <summary>
+        /// Tek geri yükleme noktası servisine yönlendirir (WMI; 24 saat sınırı ve yönetici
+        /// durumu dürüstçe raporlanır). Eskiden görünür bir PowerShell penceresi runas ile
+        /// açılıyordu.
+        /// </summary>
         public async Task<bool> CreateRestorePointAsync(string description)
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    string safeDesc = string.IsNullOrWhiteSpace(description) ? "Bakim_Privacy_Backup" : description.Replace("'", "");
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "powershell.exe",
-                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"Checkpoint-Computer -Description '{safeDesc}' -RestorePointType 'MODIFY_SETTINGS'\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-                    using var proc = Process.Start(psi);
-                    proc?.WaitForExit(15000);
-                    return proc?.ExitCode == 0;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            var service = App.TryGetService<Bakım.Services.Safety.IRestorePointService>()
+                          ?? new Bakım.Services.Safety.RestorePointService(AppLog.Current);
+            var result = await service.CreateAsync(description);
+            LastRestorePointMessage = result.Message;
+            return result.Created;
         }
+
+        /// <summary>Son geri yükleme noktası denemesinin kullanıcıya gösterilecek sonucu.</summary>
+        public string LastRestorePointMessage { get; private set; } = string.Empty;
 
         #endregion
 
