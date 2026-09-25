@@ -977,63 +977,65 @@ Tüm belgelerdeki bulgular burada tek listede toplanır. **Durum** sütunu uygul
 
 | Kod | Özet | Yer | Kaynak | Durum |
 |---|---|---|---|---|
-| S-01 | Kaldırıcı: tek token alt dize eşleşmesi %85; "%100 Güvenli" etiketi | `ResidualScannerEngine.cs:431`, `:552` | KAL U-P0-1 | Açık |
-| S-02 | Kaldırıcı: yayıncı + token = %100, toplu modda onaysız silme | `CalculateMatchConfidence`, `ExecuteAutoCleanResidualsAsync` | KAL U-P0-2 | Açık |
-| S-03 | Sağ tık: hedefin üst klasörü (İndirilenler, Masaüstü) %100 silinecek | `ShellUninstallResolverService.SynthesizeHeuristicApp`, `ScanHeuristicResidualsAsync` | KAL U-P0-3 | Açık |
-| S-04 | Süreç sonlandırma kapsamı doğrulanmıyor (`C:\Windows`), önek hatası | Sihirbaz ve DeepUninstaller `KillProcessesForApp` | KAL U-P0-4 | Açık |
-| S-05 | Korumalı klasör kontrolü yalnızca ada bakıyor | `IsProtectedDirectory` ×2 | KAL U-P0-5 | Açık |
-| S-06 | Kaldırıcı bitişi yanlış bekleniyor; iptalde kurulu programın klasörü öneriliyor | `LaunchUninstallAsync`, `StartUninstallAsync` | KAL U-P0-6 | Açık |
-| S-07 | Sahte registry yedeği (`[-Anahtar]`) | `ExportRegistryBackupSafe` | KAL U-P0-7 | Açık |
-| S-08 | Hive ayrıştırma (`HKCU` → HKLM), 32/64 görünüm, değerin anahtar gibi silinmesi | `DeleteRegistryKeySafe` ×4 | KAL U-P0-8 | Açık |
-| S-09 | Nöbetçi geri alması `Changed` dosyaları siliyor | `SetupSentinelService.cs:354`, `:495`, `:666` | NÖB P0-1 | Açık |
-| S-10 | Mağaza: doğrulanmamış üçüncü taraf ikililer yönetici olarak, sabit temp adı | `StoreService.cs:960-1215` | DEN G-2 | Açık |
-| S-11 | Yönetici kısayolu: kullanıcının yazabildiği exe'ye HIGHEST görev (UAC atlatma), VBS | `ContextMenuShortcutsService.cs:195-235` | DEN G-3 | Açık |
-| S-12 | Güvenilir yayıncı alt dize eşleşmesi | `FileThreatAnalyzerService.cs:32`, `:182` | DEN G-4 | Açık |
-| S-13 | Temizleyici `IsSafeTarget` alt dize allowlist'i (herhangi bir `\temp\`, `\cache\`) | `SystemCleanService.cs:852-887` | DEN H-5 | Açık |
-| S-14 | Güncelleyici: ölü `DownloadAndApplyUpdateAsync` (alan adı kontrolü yok, PowerShell'e yol gömme), "herhangi bir .exe" asset'i | `GitHubUpdateService.cs:180-240`, `AutoUpdateService.cs:176-185` | DEN G-1 | Açık |
-| S-15 | Olay günlüklerini temizleme özelliği (adli iz yok etme) | `CrashAnalyzerViewModel.ClearEventLogsAsync` | yeni | Açık |
-| S-16 | Güvenliği azaltan ayarlarda rozet/onay yok | `BehaviorTweaksService.cs:123-212` | DEN G-5 | Açık |
-| S-17 | TrustedInstaller sessizce yöneticiye düşüyor | `SystemToolsService.cs:163-200` | DEN G-6 | Açık |
+| S-01 | Kaldırıcı: tek token alt dize eşleşmesi %85; "%100 Güvenli" etiketi | `ResidualScannerEngine.cs:431`, `:552` | KAL U-P0-1 | Tamam |
+| S-02 | Kaldırıcı: yayıncı + token = %100, toplu modda onaysız silme | `CalculateMatchConfidence`, `ExecuteAutoCleanResidualsAsync` | KAL U-P0-2 | Tamam |
+| S-03 | Sağ tık: hedefin üst klasörü (İndirilenler, Masaüstü) %100 silinecek | `ShellUninstallResolverService.SynthesizeHeuristicApp`, `ScanHeuristicResidualsAsync` | KAL U-P0-3 | Tamam |
+| S-04 | Süreç sonlandırma kapsamı doğrulanmıyor (`C:\Windows`), önek hatası | Sihirbaz ve DeepUninstaller `KillProcessesForApp` | KAL U-P0-4 | Tamam |
+| S-05 | Korumalı klasör kontrolü yalnızca ada bakıyor | `IsProtectedDirectory` ×2 | KAL U-P0-5 | Tamam |
+| S-06 | Kaldırıcı bitişi yanlış bekleniyor; iptalde kurulu programın klasörü öneriliyor | `LaunchUninstallAsync`, `StartUninstallAsync` | KAL U-P0-6 | Tamam |
+| S-07 | Sahte registry yedeği (`[-Anahtar]`) | `ExportRegistryBackupSafe` | KAL U-P0-7 | Tamam |
+| S-08 | Hive ayrıştırma (`HKCU` → HKLM), 32/64 görünüm, değerin anahtar gibi silinmesi | `DeleteRegistryKeySafe` ×4 | KAL U-P0-8 | Tamam |
+| S-09 | Nöbetçi geri alması `Changed` dosyaları siliyor | `SetupSentinelService.cs:354`, `:495`, `:666` | NÖB P0-1 | Tamam (Gemini f670790; doğrulandı) |
+| S-10 | Mağaza: doğrulanmamış üçüncü taraf ikililer yönetici olarak, sabit temp adı | `StoreService.cs:960-1215` | DEN G-2 | Tamam |
+| S-11 | Yönetici kısayolu: kullanıcının yazabildiği exe'ye HIGHEST görev (UAC atlatma), VBS | `ContextMenuShortcutsService.cs:195-235` | DEN G-3 | Tamam |
+| S-12 | Güvenilir yayıncı alt dize eşleşmesi | `FileThreatAnalyzerService.cs:32`, `:182` | DEN G-4 | Tamam |
+| S-13 | Temizleyici `IsSafeTarget` alt dize allowlist'i (herhangi bir `\temp\`, `\cache\`) | `SystemCleanService.cs:852-887` | DEN H-5 | Tamam |
+| S-14 | Güncelleyici: ölü `DownloadAndApplyUpdateAsync` (alan adı kontrolü yok, PowerShell'e yol gömme), "herhangi bir .exe" asset'i | `GitHubUpdateService.cs:180-240`, `AutoUpdateService.cs:176-185` | DEN G-1 | Tamam (imza kontrolü yok: G-1) |
+| S-15 | Olay günlüklerini temizleme özelliği (adli iz yok etme) | `CrashAnalyzerViewModel.ClearEventLogsAsync` | yeni | Tamam |
+| S-16 | Güvenliği azaltan ayarlarda rozet/onay yok | `BehaviorTweaksService.cs:123-212` | DEN G-5 | Tamam (WU "5 hafta duraklat" seçeneği Faz 8'e) |
+| S-17 | TrustedInstaller sessizce yöneticiye düşüyor | `SystemToolsService.cs:163-200` | DEN G-6 | Açık (bu turda ele alınmadı) |
 
 ### 8.2 Dürüstlük (Faz 1)
 
 | Kod | Özet | Yer | Kaynak | Durum |
 |---|---|---|---|---|
-| D-1 | CPU/GPU sıcaklığı formülle uyduruluyor | `TelemetryService.cs:424-446` | DEN D-1 | Açık |
-| D-2 | Disk okunamazsa sahte "C: %60" | `SystemCleanService.cs:86-95` | DEN D-2 | Açık |
-| D-3 | 7 tweak servisi yazma hatasını yutup `true` dönüyor | `*TweaksService.cs` | DEN D-3 | Açık |
-| D-4 | Bloatware kaldırma sonucu doğrulanmıyor | `PrivacyDebloatService.cs:338-362` | DEN D-4 | Açık |
-| D-5 | Mağaza "Kuruldu" çıkış koduna bakmıyor | `StoreService.cs` | DEN D-5 | Açık |
-| D-6 | RAM "serbest bırakıldı" metriği yanıltıcı | `SystemCleanService.cs:805-845` | DEN D-6 | Açık |
-| D-7 | Oyun Modu logu "servisler donduruldu" diyor | `GameModeService.cs:36` | DEN D-7 | Açık |
-| D-8 | Kaldırıcı "%100 Güvenli" ve sahte yedek | KAL | DEN D-8 | Açık |
-| D-9 | TRIM: 10 sn sonra `ExitCode`, HDD kontrolü yok | `SystemInfoService.cs:800-815` | DEN D-9 | Açık |
-| **D-10** | **Tek tık hızlandır: boşaltılan 0 ise "450 MB" gösteriliyor** | `DashboardViewModel.cs:342` | **yeni** | Açık |
-| **D-11** | **RAM fonksiyonları başarısızlıkta 50/100 MB döndürüyor** | `SystemCleanService.cs:579`, `:610`, `:641` | **yeni** | Açık |
-| **D-12** | **"Görsel kadans" için yapay `Task.Delay` (11 yer); "Çöp toplayıcı çalıştırılıyor" aşaması Bakım'ın kendi GC'si** | `DashboardViewModel.cs:313-345`, `CleanerViewModel.cs:403` vd. | **yeni** | Açık |
+| D-1 | CPU/GPU sıcaklığı formülle uyduruluyor | `TelemetryService.cs:424-446` | DEN D-1 | Tamam |
+| D-2 | Disk okunamazsa sahte "C: %60" | `SystemCleanService.cs:86-95` | DEN D-2 | Tamam |
+| D-3 | 7 tweak servisi yazma hatasını yutup `true` dönüyor | `*TweaksService.cs` | DEN D-3 | Tamam |
+| D-4 | Bloatware kaldırma sonucu doğrulanmıyor | `PrivacyDebloatService.cs:338-362` | DEN D-4 | Tamam |
+| D-5 | Mağaza "Kuruldu" çıkış koduna bakmıyor | `StoreService.cs` | DEN D-5 | Tamam |
+| D-6 | RAM "serbest bırakıldı" metriği yanıltıcı | `SystemCleanService.cs:805-845` | DEN D-6 | Tamam |
+| D-7 | Oyun Modu logu "servisler donduruldu" diyor | `GameModeService.cs:36` | DEN D-7 | Tamam |
+| D-8 | Kaldırıcı "%100 Güvenli" ve sahte yedek | KAL | DEN D-8 | Tamam |
+| D-9 | TRIM: 10 sn sonra `ExitCode`, HDD kontrolü yok | `SystemInfoService.cs:800-815` | DEN D-9 | Tamam |
+| **D-10** | **Tek tık hızlandır: boşaltılan 0 ise "450 MB" gösteriliyor** | `DashboardViewModel.cs:342` | **yeni** | Tamam |
+| **D-11** | **RAM fonksiyonları başarısızlıkta 50/100 MB döndürüyor** | `SystemCleanService.cs:579`, `:610`, `:641` | **yeni** | Tamam |
+| **D-12** | **"Görsel kadans" için yapay `Task.Delay` (11 yer); "Çöp toplayıcı çalıştırılıyor" aşaması Bakım'ın kendi GC'si** | `DashboardViewModel.cs:313-345`, `CleanerViewModel.cs:403` vd. | **yeni** | Tamam |
+| **D-13** | **Hızlı eylemler işlem bitmeden "başarılı" bildirimi gösteriyor** | `MainViewModel.ExecuteQuickAction`, tepsi | **yeni** | Tamam |
+| **S-18** | **"Kalıntıları İncele" hâlâ kurulu programın klasörünü öneriyor ve programı kaldırılmış sayıyordu** | `UninstallerViewModel.ShowResidualCleanupDialogAsync` | **yeni** | Tamam |
 
 ### 8.3 Kesin hatalar (Faz 2)
 
 | Kod | Özet | Yer | Durum |
 |---|---|---|---|
 | H-1 | Başlangıç: 32 bit HKLM için `StartupApproved\Run32` yerine yanlış yol | `StartupService.cs:95-99` | Açık |
-| H-2 | Firefox kategorisi `cache2`'yi bulmuyor | `SystemCleanService.cs:266-275` | Açık |
-| H-3 | Spotify çevrimdışı şarkılar varsayılan seçili | `SystemCleanService.cs:331-340` | Açık |
-| H-4 | WU indirmeleri servis durdurulmadan; temp'te yaş filtresi yok | `SystemCleanService.cs` | Açık |
+| H-2 | Firefox kategorisi `cache2`'yi bulmuyor | `SystemCleanService.cs:266-275` | Tamam |
+| H-3 | Spotify çevrimdışı şarkılar varsayılan seçili | `SystemCleanService.cs:331-340` | Tamam |
+| H-4 | WU indirmeleri servis durdurulmadan; temp'te yaş filtresi yok | `SystemCleanService.cs` | Tamam (WU için servis durdurma yerine 24 sa yaş filtresi) |
 | H-6 | Optimizer handle sızıntısı, `CpuTracker` büyümesi | `OptimizerViewModel.cs:585-700` | Açık |
-| H-7 | Korunan süreç listeleri eksik ve 4 farklı kopya | çeşitli | Açık |
-| H-8 | Oyun Modu önceki güç planını geri yüklemiyor | `GameModeService.cs:39`, `:65` | Açık |
+| H-7 | Korunan süreç listeleri eksik ve 4 farklı kopya | çeşitli | Tamam |
+| H-8 | Oyun Modu önceki güç planını geri yüklemiyor | `GameModeService.cs:39`, `:65` | Tamam |
 | H-9 | Boş klasörler varsayılan seçili, AppData dahil, kök silinebilir | `DuplicateFinderService.cs:380-505` | Açık |
 | H-10 | Yinelenenler OneDrive yer tutucularını indiriyor | `DuplicateFinderService.cs:238-300` | Açık |
 | H-11 | 3 ayrı geri yükleme noktası uygulaması, görünür PowerShell | `PrivacyDebloatService`, `DeepUninstallerService` | Açık |
 | H-13 | Tweak anlık görüntüsü değer düzeyinde değil | `TweaksSnapshotService.cs` | Açık |
 | H-14 | Kullanılmayan giriş ekranı; parolasız hesap sıfırlama | `LoginViewModel.cs:225` | Karar |
-| H-15 | Sürüm 7 yerde sabit | çeşitli | Açık |
+| H-15 | Sürüm 7 yerde sabit | çeşitli | Tamam |
 | H-16 | `--uninstall-target` modunda arka plan servisleri başlıyor | `App.xaml.cs:143-187` | Açık |
 | H-17 | Nöbetçi P0-2…P0-10 (tespit, snapshot yarışı, Run/servis yakalanmıyor, hive, depolama çakışması, eşzamanlılık, msiexec, kaldırıcı ayrımı, FSW taşması) | `SetupSentinelService.cs`, `InstallerMonitorService.cs` | Açık |
 | H-18 | Kaldırıcı P1'leri (tırnaksız komut, toplu başarı, geri yükleme noktası, sessiz arg, liste performansı) | KAL U-P1-* | Açık |
 | H-19 | Sağ tık S-1…S-9 (UAC, çoklu seçim, eşleşme puanı, MSI kısayolu, stale komut yolu) | KAL 1.3 | Açık |
-| H-20 | `DefaultCurrentVersion`, `UpdateInfo.CurrentVersion` gibi alanlarda sabit sürüm; `GitHubUpdateService.UpdateCheckResult.CurrentVersion = "2.5.0"` | güncelleyici | Açık |
+| H-20 | `DefaultCurrentVersion`, `UpdateInfo.CurrentVersion` gibi alanlarda sabit sürüm; `GitHubUpdateService.UpdateCheckResult.CurrentVersion = "2.5.0"` | güncelleyici | Tamam |
 
 ### 8.4 Performans ve mimari (Faz 2–3)
 
@@ -1061,17 +1063,19 @@ Her faz ayrı bir PR'dır. PR ancak §10'daki PC test listesi temiz geçince mer
 
 | Faz | Sürüm | İçerik | Bağımlılık |
 |---|---|---|---|
-| **1: Güvenlik ve Dürüstlük** | v3.20.0 | §4 çekirdeğinin güvenlik kısmı (PathSafetyGuard, RegistryPath, CriticalProcessPolicy, ByteFormatter, NameMatcher, UninstallCommandParser, Safe servisleri, RestorePointService, RegistryWriter); S-01…S-17; D-1…D-12; `Bakim.Core.Tests`; CI; H-15 | — |
-| **2: Kesin hatalar ve altyapı** | v3.21.0 | H-1…H-20; ProcessRunner, ElevationBroker, DialogService, TelemetryHub; P-1…P-8; `catch { }` azaltma (1. tur) | Faz 1 |
-| **3: Geçmiş altyapısı** | v3.22.0 | **Analizör Geçmişi** (§6), **Etkinlik Merkezi** (§7), UndoJournal işleyicileri; Temizleyici, Kaldırıcı, Tweaker, Başlangıç ve Hizmetler kaydı | Faz 1 |
-| **4: Tasarım sistemi v2 ve IA** | v3.23.0 | §3 token'ları, bileşenler, şablonlar, doğrulayıcılar; yeni navigasyon (§2); Depolama ve Windows Araçları taşımaları; FontSize ve renk göçü | Faz 2 |
-| **5: Modül yenilemeleri I** | v3.24.0 | Kontrol Paneli, Temizleyici (JSON kurallar), Depolama (Disk Haritası), Süreçler, Oyun Modu | Faz 4 |
-| **6: Kaldırıcı v2** | v3.25.0 | KAL B, C, D fazları | Faz 1, 3 |
-| **7: Nöbetçi v2** | v3.26.0 | NÖB Faz 1–7 | Faz 1, 3 |
-| **8: Modül yenilemeleri II** | v3.27.0 | Tweaker (veri tabanlı TweakEngine), Başlangıç, Hizmetler, Ağ, Olaylar, Mağaza (winget), Sistem Bilgisi, Ayarlar, Tepsi, Komut Paleti | Faz 4 |
+| **1: Güvenlik ve Dürüstlük** | v3.21.0 | §4 çekirdeğinin güvenlik kısmı (PathSafetyGuard, RegistryPath, CriticalProcessPolicy, ByteFormatter, NameMatcher, UninstallCommandParser, Safe servisleri, RestorePointService, RegistryWriter); S-01…S-17; D-1…D-12; `Bakim.Core.Tests`; CI; H-15 | — |
+| **2: Kesin hatalar ve altyapı** | v3.22.0 | H-1…H-20; ProcessRunner, ElevationBroker, DialogService, TelemetryHub; P-1…P-8; `catch { }` azaltma (1. tur) | Faz 1 |
+| **3: Geçmiş altyapısı** | v3.23.0 | **Analizör Geçmişi** (§6), **Etkinlik Merkezi** (§7), UndoJournal işleyicileri; Temizleyici, Kaldırıcı, Tweaker, Başlangıç ve Hizmetler kaydı | Faz 1 |
+| **4: Tasarım sistemi v2 ve IA** | v3.24.0 | §3 token'ları, bileşenler, şablonlar, doğrulayıcılar; yeni navigasyon (§2); Depolama ve Windows Araçları taşımaları; FontSize ve renk göçü | Faz 2 |
+| **5: Modül yenilemeleri I** | v3.25.0 | Kontrol Paneli, Temizleyici (JSON kurallar), Depolama (Disk Haritası), Süreçler, Oyun Modu | Faz 4 |
+| **6: Kaldırıcı v2** | v3.26.0 | KAL B, C, D fazları | Faz 1, 3 |
+| **7: Nöbetçi v2** | v3.27.0 | NÖB Faz 1–7 | Faz 1, 3 |
+| **8: Modül yenilemeleri II** | v3.28.0 | Tweaker (veri tabanlı TweakEngine), Başlangıç, Hizmetler, Ağ, Olaylar, Mağaza (winget), Sistem Bilgisi, Ayarlar, Tepsi, Komut Paleti | Faz 4 |
 | **9: Tam Koruma Modu** | v4.0.0 | NÖB Faz 8 (servis, USN, ETW), BakimShell ve yönetici modeli kararı, Sandbox önizleme (NÖB Faz 10) | Faz 7 |
 
 Paralel çalışılabilecek fazlar: 3 ile 4, 6 ile 7.
+
+> **Sürüm kayması:** Gemini'nin Nöbetçi Faz 0 commit'i (f670790) main'e v3.20.0 olarak girdiği için Faz 1 v3.21.0 oldu; sonraki fazlar birer kaydı. O commit bazı dosyalarda Türkçe karakterleri bozmuştu (ör. "Klasr"); RollbackPlanner, SessionStore, RegistryHotspotSensor ve ProcessInfoReader düzeltildi.
 
 ---
 
@@ -1098,6 +1102,17 @@ Paralel çalışılabilecek fazlar: 3 ile 4, 6 ile 7.
 - [ ] Tweaker: Yönetici değilken HKLM gerektiren bir ayar "Yönetici gerekli" gösteriyor. Uygulanamazsa "uygulandı" demiyor.
 - [ ] Mağaza: VC++ paketi winget üzerinden kuruluyor. Hata olursa "Kuruldu" demiyor.
 - [ ] Analizör: "Hamdi Yazılım" gibi imzacılar artık "Güvenilir Yayıncı" sayılmıyor (varsa test dosyasıyla).
+- [ ] Kenar çubuğunda "BAKIM v3.21.0" yazıyor; Ayarlar > Sürüm Geçmişi en üstte v3.21.0.
+- [ ] Temizleyici: Firefox önbelleği bulunuyor, Spotify seçili gelmiyor; `%TEMP%`'e bugün kopyalanan bir dosya taramada çıkmıyor.
+- [ ] Gizlilik: yönetici olmadan "Telemetri verileri" → hata ve nedeni gösteriliyor, anahtar açık kalmıyor.
+- [ ] Gizlilik: bir bloatware kaldır → gerçekten kalkmışsa "kaldırıldı", kalkmamışsa nedeni.
+- [ ] Hizmetler: bir hizmeti yeniden başlat → tek UAC (yönetici değilken), sonuç doğru.
+- [ ] Sistem Bilgisi: HDD'de TRIM → "HDD; TRIM yalnızca SSD'de"; SSD'de başarılı mesajı.
+- [ ] İnce Ayarlar: "SmartScreen'i kapat" kırmızı "Güvenliği azaltır" rozeti taşıyor ve açarken ayrı onay soruyor.
+- [ ] Yönetici kısayolu: `%LocalAppData%` altındaki bir exe için reddediliyor; `C:\Program Files\...` altındaki bir exe için masaüstünde `.lnk` oluşuyor ve UAC sormadan açılıyor.
+- [ ] Analizör: bir test dosyasını "Dosyayı Kaldır" → Geri Dönüşüm Kutusu'nda. `svchost.exe` analizinde "Süreci Sonlandır" reddediliyor.
+- [ ] Oyun Modu: güç planını not al → aç → kapat → aynı plan geri geliyor.
+- [ ] Çökme Analizi: "Olay Görüntüleyici" düğmesi eventvwr'ı açıyor; günlük silme düğmesi yok.
 
 **Faz 2:**
 - [ ] Başlangıç: 32 bit bir programı (örn. Steam) kapat → yeniden başlat → açılmıyor; Görev Yöneticisi de "Devre dışı" gösteriyor.
@@ -1140,7 +1155,7 @@ Bu tablo her PR ile güncellenir.
 |---|---|---|---|
 | Planlama | Tamam | Eyupbayuk31/Bakim#1 (planlar) | DEN, KAL, NÖB |
 | Master plan | Tamam | bu belge | |
-| Faz 1 | Başladı | `claude/charming-feynman-g2crt8` | |
+| Faz 1 | Tamam (PC testi bekliyor) | `claude/charming-feynman-g2crt8` | v3.21.0. S-17 açık. Core testleri: 218 (Linux) |
 | Faz 2 | Bekliyor | | |
 | Faz 3 | Bekliyor | | Analizör Geçmişi + Etkinlik Merkezi |
 | Faz 4 | Bekliyor | | Tasarım sistemi v2 |
