@@ -213,3 +213,51 @@ public class SentinelNoiseFilterTests
         Assert.Contains(SetupRiskEngine.Evaluate(input).Findings, f => f.Title.Contains("2 program"));
     }
 }
+
+public class FindingTargetTests
+{
+    [Fact]
+    public void RegistryValue_WithView()
+    {
+        Assert.True(FindingTarget.TryParseValue(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe\Debugger [32]", out var p));
+        Assert.Equal(Microsoft.Win32.RegistryHive.LocalMachine, p.Hive);
+        Assert.Equal(Microsoft.Win32.RegistryView.Registry32, p.View);
+        Assert.Equal("Debugger", p.ValueName);
+        Assert.EndsWith(@"notepad.exe", p.SubKey);
+
+        Assert.True(FindingTarget.TryParseValue(@"HKCU\Software\Microsoft\Windows\CurrentVersion\Run\Updater", out var run));
+        Assert.Equal(Microsoft.Win32.RegistryHive.CurrentUser, run.Hive);
+        Assert.Equal("Updater", run.ValueName);
+
+        Assert.False(FindingTarget.TryParseValue(@"HKU\x\y", out _));
+        Assert.False(FindingTarget.TryParseValue("HKLM", out _));
+    }
+
+    [Fact]
+    public void Certificate_AndDefender()
+    {
+        Assert.True(FindingTarget.TryParseCertificate(@"HKLM\SOFTWARE\Microsoft\SystemCertificates\Root\Certificates\0123456789ABCDEF0123456789ABCDEF01234567", out var thumb, out bool machine));
+        Assert.True(machine);
+        Assert.Equal(40, thumb.Length);
+        Assert.False(FindingTarget.TryParseCertificate(@"HKCU\x\Root\Certificates\nothex", out _, out _));
+
+        Assert.True(FindingTarget.TryParseDefenderExclusion(@"Paths: C:\ProgramData\x", out var parameter, out var value));
+        Assert.Equal("ExclusionPath", parameter);
+        Assert.Equal(@"C:\ProgramData\x", value);
+    }
+
+    [Fact]
+    public void Findings_CarryActions()
+    {
+        var input = new SetupRiskInput();
+        input.Startup.Add(new StartupAddition("upd", "x.exe", null, false, @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run\upd"));
+        input.Services.Add(new ServiceAddition("svc", @"C:\x\svc.exe", false, true, false));
+        input.SystemChanges.Add(new SystemChange(SystemArea.RootCertificate, ChangeKind.Added,
+            @"HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\Root\Certificates\0123456789ABCDEF0123456789ABCDEF01234567", null, "CN=x"));
+        var findings = SetupRiskEngine.Evaluate(input).Findings;
+        Assert.Contains(findings, f => f.Action == FindingAction.RemoveStartupValue && f.Target!.EndsWith(@"\upd"));
+        Assert.Contains(findings, f => f.Action == FindingAction.DisableService && f.Target == "svc");
+        // Grup İlkesi sertifikası elle kaldırılamaz: eylem sunulmaz.
+        Assert.Contains(findings, f => f.Title.Contains("sertifika") && f.Action == FindingAction.None);
+    }
+}

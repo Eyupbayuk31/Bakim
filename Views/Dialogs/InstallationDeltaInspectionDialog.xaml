@@ -151,6 +151,16 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="8,8">
+                                            <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,4" VerticalAlignment="Center" Margin="8,0,0,0"
+                                                       Content="{Binding ActionLabel}" Tag="{Binding}" Click="OnFindingActionClicked"
+                                                       IsEnabled="{Binding CanAct}"
+                                                       Visibility="{Binding HasAction, Converter={StaticResource BoolToVis}}"
+                                                       AutomationProperties.Name="{Binding ActionLabel}"/>
                                             <StackPanel>
                                                 <TextBlock FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                                                     <Run Text="{Binding Severity, Mode=OneWay}" FontWeight="Bold"/>
@@ -160,7 +170,11 @@
                                                 </TextBlock>
                                                 <TextBlock Text="{Binding Detail}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                <TextBlock Text="{Binding ResultText}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                           Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}"/>
                                             </StackPanel>
+                                            </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

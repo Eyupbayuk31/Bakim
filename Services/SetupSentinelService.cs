@@ -804,7 +804,7 @@ namespace Bakım.Services
             {
                 string name = record.KeyPath[(record.KeyPath.LastIndexOf('\\') + 1)..];
                 string? target = Core.Uninstall.UninstallCommandParser.Parse(record.ValueData, File.Exists)?.FileName;
-                input.Startup.Add(new StartupAddition(name, record.ValueData, target, InstallerInspector.IsSigned(target)));
+                input.Startup.Add(new StartupAddition(name, record.ValueData, target, InstallerInspector.IsSigned(target), record.KeyPath));
             }
 
             foreach (string serviceKey in report.AddedServices)

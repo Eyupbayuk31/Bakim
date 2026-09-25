@@ -24,7 +24,39 @@ namespace Bakım.Views.Dialogs
         public record FileItemDisplay(string FileName, string FullPath, string Extension);
         public record RegistryItemDisplay(string Hive, string KeyPath, string Details);
         public record ServiceItemDisplay(string Name, string PathOrKey);
-        public record FindingDisplay(string Severity, string Title, string Detail, string Technique);
+        /// <summary>Bulgu satırı; tek tık müdahalenin sonucu satırda gösterilir.</summary>
+        public sealed class FindingRow : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
+        {
+            public FindingRow(Core.Sentinel.RiskFinding finding)
+            {
+                Finding = finding;
+                Severity = Core.Sentinel.SetupRiskEngine.SeverityLabel(finding.Severity);
+                Technique = string.IsNullOrEmpty(finding.Technique) ? string.Empty : $"  ({finding.Technique})";
+                ActionLabel = Services.Sentinel.Actions.FindingActions.Label(finding.Action) ?? string.Empty;
+            }
+
+            public Core.Sentinel.RiskFinding Finding { get; }
+            public string Severity { get; }
+            public string Title => Finding.Title;
+            public string Detail => Finding.Detail;
+            public string Technique { get; }
+            public string ActionLabel { get; }
+            public bool HasAction => ActionLabel.Length > 0;
+
+            private bool _canAct = true;
+            public bool CanAct { get => _canAct; set => SetProperty(ref _canAct, value); }
+
+            private string _resultText = string.Empty;
+            public string ResultText
+            {
+                get => _resultText;
+                set
+                {
+                    if (SetProperty(ref _resultText, value)) OnPropertyChanged(nameof(HasResult));
+                }
+            }
+            public bool HasResult => ResultText.Length > 0;
+        }
         public record SystemChangeDisplay(string Area, string Kind, string Key, string Value);
 
         private readonly List<SystemChangeDisplay> _allSystem = new();
@@ -86,10 +118,7 @@ namespace Bakım.Views.Dialogs
             VerdictText.Text = SetupRiskPresentation.VerdictText(_report);
             VerdictDetailText.Text = SetupRiskPresentation.VerdictDetail(_report);
 
-            FindingsList.ItemsSource = _report.RiskFindings
-                .Select(f => new FindingDisplay(Core.Sentinel.SetupRiskEngine.SeverityLabel(f.Severity), f.Title, f.Detail,
-                    string.IsNullOrEmpty(f.Technique) ? string.Empty : $"  ({f.Technique})"))
-                .ToList();
+            FindingsList.ItemsSource = _report.RiskFindings.Select(f => new FindingRow(f)).ToList();
 
             var lines = new List<string>();
             var installer = _report.Installer;
@@ -121,6 +150,32 @@ namespace Bakım.Views.Dialogs
                 };
                 string value = c.Kind == Core.Sentinel.ChangeKind.Modified ? $"{c.Before} → {c.After}" : (c.After ?? c.Before ?? string.Empty);
                 _allSystem.Add(new SystemChangeDisplay(Core.Sentinel.SystemStateSnapshot.AreaLabel(c.Area), kind, c.Key, value));
+            }
+        }
+
+        /// <summary>Bulgudaki tek tık müdahale (NÖB 5.2): onay → uygula → sonucu satıra yaz.</summary>
+        private async void OnFindingActionClicked(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { Tag: FindingRow row } || !row.CanAct) return;
+
+            var confirm = MessageBox.Show(
+                $"{row.ActionLabel}: {row.Title}\n\n{row.Detail}\n\n{Services.Sentinel.Actions.FindingActions.ConfirmText(row.Finding)}",
+                "Kurulum Nöbetçisi", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            row.CanAct = false;
+            row.ResultText = "Uygulanıyor…";
+            try
+            {
+                var result = await Services.Sentinel.Actions.FindingActions.ExecuteAsync(row.Finding, _report.AppName);
+                row.ResultText = result.Message;
+                row.CanAct = !result.Success;
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Nöbetçi müdahalesi uygulanamadı.", ex, nameof(InstallationDeltaInspectionDialog));
+                row.ResultText = $"Hata: {ex.Message}";
+                row.CanAct = true;
             }
         }
 

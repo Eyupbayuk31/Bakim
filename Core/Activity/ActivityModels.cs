@@ -73,5 +73,6 @@ namespace Bakım.Core.Activity
         public const string FirewallRule = "firewall-rule";
         public const string QuarantineRestore = "quarantine-restore";
         public const string RecycleBin = "recycle-bin";
+        public const string RootCertificate = "root-certificate";
     }
 }
