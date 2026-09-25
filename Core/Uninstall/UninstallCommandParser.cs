@@ -189,7 +189,7 @@ namespace Bakım.Core.Uninstall
             string result = args;
             foreach (string s in switches)
             {
-                if (!Regex.IsMatch(result, $@"(^|\s){Regex.Escape(s)}(\s|$)", RegexOptions.IgnoreCase))
+                if (!Regex.IsMatch(result, $@"(^|\s){Regex.Escape(s)}(\s|$)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
                     result = string.IsNullOrEmpty(result) ? s : result + " " + s;
             }
             return result.Trim();
