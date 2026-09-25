@@ -127,3 +127,76 @@ namespace Bakım.Helpers
         }
     }
 }
+
+namespace Bakım.Helpers
+{
+    /// <summary>
+    /// Yönetici gerektiren bir PowerShell komutunu çalıştırır: uygulama zaten yönetici ise
+    /// doğrudan (çıktı ve çıkış koduyla), değilse tek bir UAC onayıyla. UAC reddi ayrı bildirilir.
+    /// </summary>
+    public static class ElevatedPowerShell
+    {
+        public sealed record Result(bool Succeeded, bool Cancelled, string Message);
+
+        public static async Task<Result> RunAsync(string script, TimeSpan timeout, CancellationToken ct = default)
+        {
+            string fullScript = "$ErrorActionPreference = 'Stop'; " + script;
+
+            if (UacHelper.IsAdministrator())
+            {
+                var run = await ProcessRunner.RunAsync("powershell.exe",
+                    new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", fullScript },
+                    timeout, ct).ConfigureAwait(false);
+                return new Result(run.Succeeded, false, run.Describe());
+            }
+
+            // -EncodedCommand: tırnak/kaçış sorunları olmadan ShellExecute argümanı.
+            string encoded = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(fullScript));
+            var psi = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand {encoded}",
+                UseShellExecute = true,
+                Verb = "runas",
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            Process? process;
+            try
+            {
+                process = Process.Start(psi);
+            }
+            catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+            {
+                return new Result(false, true, "Yönetici izni verilmedi.");
+            }
+            catch (Exception ex)
+            {
+                return new Result(false, false, ex.Message);
+            }
+
+            if (process == null) return new Result(false, false, "başlatılamadı");
+            using (process)
+            {
+                using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                timeoutCts.CancelAfter(timeout);
+                try
+                {
+                    await process.WaitForExitAsync(timeoutCts.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    try { process.Kill(entireProcessTree: true); } catch { }
+                    ct.ThrowIfCancellationRequested();
+                    return new Result(false, false, "zaman aşımına uğradı");
+                }
+                return process.ExitCode == 0
+                    ? new Result(true, false, "başarılı")
+                    : new Result(false, false, $"çıkış kodu {process.ExitCode}");
+            }
+        }
+
+        /// <summary>PowerShell tek tırnaklı dize değişmezi: ' → ''.</summary>
+        public static string Quote(string value) => "'" + value.Replace("'", "''") + "'";
+    }
+}

@@ -428,12 +428,9 @@ namespace Bakım.ViewModels
                             double catProgress = (double)(i + take) / items.Count;
                             ProgressPercent = Math.Min(98, (int)(((currentCatIndex + catProgress) / totalCats) * 100));
 
-                            await Task.Delay(15, _cts.Token);
+                            // Arayüzün çizim yapabilmesi için yalnızca sıra ver; yapay bekleme yok (D-12).
+                            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
                         }
-                    }
-                    else
-                    {
-                        await Task.Delay(40, _cts.Token);
                     }
 
                     cat.IsScanning = false;

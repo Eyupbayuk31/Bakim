@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Management;
 using System.Text.RegularExpressions;
+using Bakım.Helpers;
 using Bakım.Models;
 
 namespace Bakım.Services
@@ -13,6 +14,9 @@ namespace Bakım.Services
         Task<bool> StopServiceAsync(string serviceName);
         Task<bool> RestartServiceAsync(string serviceName);
         Task<bool> SetStartupTypeAsync(string serviceName, string startupType);
+
+        /// <summary>Son hizmet işleminin başarısızlık nedeni; başarılıysa boş.</summary>
+        string LastError { get; }
 
         Task<List<DriverItem>> GetDriversAsync();
         void OpenFileLocation(string rawPath);
@@ -107,60 +111,38 @@ namespace Bakım.Services
             });
         }
 
-        public async Task<bool> StartServiceAsync(string serviceName)
-        {
-            return await RunScCommandAsync($"start \"{serviceName}\"");
-        }
+        // Start-Service / Stop-Service / Restart-Service hizmet gerçekten istenen duruma
+        // geçene kadar bekler. Eskiden sc.exe ile 4 sn sonra ExitCode okunuyor (sc beklemez),
+        // yeniden başlatmada durdurma ile başlatma arasına sabit 800 ms konuyordu.
 
-        public async Task<bool> StopServiceAsync(string serviceName)
-        {
-            return await RunScCommandAsync($"stop \"{serviceName}\"");
-        }
+        public async Task<bool> StartServiceAsync(string serviceName) =>
+            await RunServiceScriptAsync($"Start-Service -Name {ElevatedPowerShell.Quote(serviceName)}");
 
-        public async Task<bool> RestartServiceAsync(string serviceName)
-        {
-            await RunScCommandAsync($"stop \"{serviceName}\"");
-            await Task.Delay(800);
-            return await RunScCommandAsync($"start \"{serviceName}\"");
-        }
+        public async Task<bool> StopServiceAsync(string serviceName) =>
+            await RunServiceScriptAsync($"Stop-Service -Name {ElevatedPowerShell.Quote(serviceName)} -Force");
+
+        public async Task<bool> RestartServiceAsync(string serviceName) =>
+            await RunServiceScriptAsync($"Restart-Service -Name {ElevatedPowerShell.Quote(serviceName)} -Force");
 
         public async Task<bool> SetStartupTypeAsync(string serviceName, string startupType)
         {
-            string scType = startupType.ToLowerInvariant() switch
+            string type = startupType.ToLowerInvariant() switch
             {
-                "auto" => "auto",
-                "automatic" => "auto",
-                "disabled" => "disabled",
-                _ => "demand"
+                "auto" or "automatic" => "Automatic",
+                "disabled" => "Disabled",
+                _ => "Manual"
             };
-
-            // Note: sc.exe requires a space after start= (e.g. start= auto)
-            return await RunScCommandAsync($"config \"{serviceName}\" start= {scType}");
+            return await RunServiceScriptAsync($"Set-Service -Name {ElevatedPowerShell.Quote(serviceName)} -StartupType {type}");
         }
 
-        private static async Task<bool> RunScCommandAsync(string arguments)
+        /// <summary>Son hizmet işleminin başarısızlık nedeni (kullanıcıya gösterilir).</summary>
+        public string LastError { get; private set; } = string.Empty;
+
+        private async Task<bool> RunServiceScriptAsync(string script)
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "sc.exe",
-                        Arguments = arguments,
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-                    using var proc = Process.Start(psi);
-                    proc?.WaitForExit(4000);
-                    return proc?.ExitCode == 0;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            var result = await ElevatedPowerShell.RunAsync(script, TimeSpan.FromSeconds(60));
+            LastError = result.Succeeded ? string.Empty : result.Message;
+            return result.Succeeded;
         }
 
         public async Task<List<DriverItem>> GetDriversAsync()
