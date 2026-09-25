@@ -75,3 +75,100 @@ public sealed class UninstallerV2Tests
     public void TypeMapping_RoundTrips(LeftoverType type) =>
         Assert.Equal(type, ResidualScannerEngine.MapType(ResidualScannerEngine.MapType(type)));
 }
+
+/// <summary>Tek örnek istek kutusu (KAL C2): taze istek işlenir ve silinir, eskisi yok sayılır.</summary>
+public sealed class SingleInstanceInboxTests : IDisposable
+{
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "bakim-ipc-" + Guid.NewGuid().ToString("N"));
+
+    public void Dispose()
+    {
+        try { Directory.Delete(_dir, true); } catch (IOException) { }
+    }
+
+    private string Drop(IpcRequest request)
+    {
+        Directory.CreateDirectory(_dir);
+        string file = Path.Combine(_dir, Guid.NewGuid().ToString("N") + ".json");
+        File.WriteAllText(file, System.Text.Json.JsonSerializer.Serialize(request));
+        return file;
+    }
+
+    [Fact]
+    public void FreshRequest_IsHandledAndDeleted()
+    {
+        IpcRequest? handled = null;
+        using var service = new SingleInstanceService(_dir);
+        service.Listen(r => handled = r);
+
+        string file = Drop(new IpcRequest(IpcRequestKind.UninstallTarget, @"C:\x\y.exe", DateTime.UtcNow));
+        var result = service.Consume(file);
+
+        Assert.NotNull(result);
+        Assert.False(File.Exists(file));
+        Assert.Equal(IpcRequestKind.UninstallTarget, handled?.Kind);
+        Assert.Equal(@"C:\x\y.exe", handled?.Target);
+    }
+
+    [Fact]
+    public void StaleRequest_IsIgnoredButRemoved()
+    {
+        bool called = false;
+        using var service = new SingleInstanceService(_dir);
+        string file = Drop(new IpcRequest(IpcRequestKind.Activate, null, DateTime.UtcNow - TimeSpan.FromMinutes(5)));
+        service.Listen(_ => called = true);   // açılışta birikmiş istekler taranır
+
+        Assert.False(called);
+        Assert.False(File.Exists(file));
+    }
+
+    [Fact]
+    public void Send_WithoutListener_WithdrawsRequest()
+    {
+        using var service = new SingleInstanceService(_dir);
+        bool sent = service.Send(new IpcRequest(IpcRequestKind.Activate, null, DateTime.UtcNow), TimeSpan.FromMilliseconds(300));
+        Assert.False(sent);
+        Assert.Empty(Directory.GetFiles(_dir, "*.json"));
+    }
+}
+
+/// <summary>"Activity?kind=Uninstall": Kaldırıcı'daki Geçmiş düğmesi Etkinlik Merkezi'ni filtreli açar.</summary>
+public sealed class ActivityDeepLinkTests : IDisposable
+{
+    private readonly string _dir = Path.Combine(Path.GetTempPath(), "bakim-act-" + Guid.NewGuid().ToString("N"));
+
+    public void Dispose()
+    {
+        try { Directory.Delete(_dir, true); } catch (IOException) { }
+    }
+
+    [Theory]
+    [InlineData("kind=Uninstall", Bakım.Core.Activity.ActivityKind.Uninstall)]
+    [InlineData("KIND=uninstall", Bakım.Core.Activity.ActivityKind.Uninstall)]
+    public void KindParameter_SetsFilterAndClearsOthers(string parameter, Bakım.Core.Activity.ActivityKind expected)
+    {
+        var vm = new Bakım.ViewModels.ActivityCenterViewModel(
+            new ActivityService(new Bakım.Core.Activity.ActivityStore(_dir), Array.Empty<IUndoHandler>()),
+            new NavigationService());
+        vm.SearchText = "eski arama";
+        vm.UndoableOnly = true;
+
+        vm.ApplyNavigationParameter(parameter);
+
+        Assert.Equal(expected, vm.SelectedKind);
+        Assert.Equal(string.Empty, vm.SearchText);
+        Assert.False(vm.UndoableOnly);
+    }
+
+    [Fact]
+    public void UnknownParameter_LeavesFiltersAlone()
+    {
+        var vm = new Bakım.ViewModels.ActivityCenterViewModel(
+            new ActivityService(new Bakım.Core.Activity.ActivityStore(_dir), Array.Empty<IUndoHandler>()),
+            new NavigationService());
+        vm.SearchText = "x";
+        vm.ApplyNavigationParameter("kind=Nope");
+        Assert.Null(vm.SelectedKind);
+        Assert.Equal("x", vm.SearchText);
+    }
+}

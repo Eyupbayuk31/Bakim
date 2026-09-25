@@ -20,4 +20,13 @@ namespace Bakım.ViewModels
         /// <summary>Modülden çıkıldı: zamanlayıcıları durdur, kaynakları bırak.</summary>
         Task OnDeactivatedAsync();
     }
+
+    /// <summary>
+    /// Gezinme anahtarındaki parametreyi alan modül: "Activity?kind=Uninstall" → Etkinlik Merkezi
+    /// kaldırma kayıtlarıyla açılır.
+    /// </summary>
+    public interface INavigationParameterTarget
+    {
+        void ApplyNavigationParameter(string parameter);
+    }
 }

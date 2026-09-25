@@ -234,6 +234,11 @@ namespace Bakım.Services
             });
         }
 
+        /// <summary>Kullanıcı verisi kökleri: buradaki adaylar en fazla "İnceleyin" güveni alır ve seçilmez.</summary>
+        private const string DocumentsLabel = "Belgeler";
+        private const string SavedGamesLabel = "Kayıtlı Oyunlar";
+        private const string ProfileLabel = "Kullanıcı klasörü";
+
         private static IEnumerable<(string Root, string Label)> CandidateRoots()
         {
             static string F(Environment.SpecialFolder f) => Environment.GetFolderPath(f);
@@ -247,7 +252,10 @@ namespace Bakım.Services
             yield return (F(Environment.SpecialFolder.CommonApplicationData), "ProgramData");
             yield return (F(Environment.SpecialFolder.ProgramFiles), "Program Files");
             yield return (F(Environment.SpecialFolder.ProgramFilesX86), "Program Files (x86)");
-            yield return (F(Environment.SpecialFolder.MyDocuments), "Belgeler");
+            yield return (F(Environment.SpecialFolder.MyDocuments), DocumentsLabel);
+            yield return (Path.Combine(profile, "Saved Games"), SavedGamesLabel);
+            // Yalnızca "." ile başlayan klasörler (.vscode, .gradle …); bkz. ScanFolders.
+            yield return (profile, ProfileLabel);
         }
 
         private void ScanFolders(NameMatcher matcher, IReadOnlyList<string> otherLocations, List<LeftoverItem> results)
@@ -256,9 +264,11 @@ namespace Bakım.Services
             {
                 if (string.IsNullOrEmpty(root) || !Directory.Exists(root)) continue;
 
+                bool dotOnly = label == ProfileLabel;
                 foreach (var dir in SafeGetDirectories(root))
                 {
-                    var match = matcher.Match(dir.Name);
+                    if (dotOnly && !dir.Name.StartsWith('.')) continue;
+                    var match = matcher.Match(dotOnly ? dir.Name.TrimStart('.') : dir.Name);
 
                     if (match.Kind == MatchKind.PublisherRoot)
                     {
@@ -298,13 +308,14 @@ namespace Bakım.Services
             int confidence = (int)match.Confidence;
             string evidence = match.Reason;
 
-            bool inDocuments = label.StartsWith("Belgeler", StringComparison.OrdinalIgnoreCase);
+            string? userRoot = new[] { DocumentsLabel, SavedGamesLabel, ProfileLabel }
+                .FirstOrDefault(l => label.StartsWith(l, StringComparison.OrdinalIgnoreCase));
             string? marker = UserDataMarkers.FirstOrDefault(m => Directory.Exists(Path.Combine(path, m)));
-            if (inDocuments || marker != null)
+            if (userRoot != null || marker != null)
             {
                 confidence = Math.Min(confidence, (int)MatchConfidence.Medium);
-                evidence += inDocuments
-                    ? " Belgeler klasöründe: kişisel dosyalar içerebilir, lütfen inceleyin."
+                evidence += userRoot != null
+                    ? $" {userRoot} altında: kişisel dosya, ayar ya da oyun kaydı içerebilir, lütfen inceleyin."
                     : $" Kullanıcı verisi içeriyor ('{marker}'): profil ya da kayıtlar silinebilir, lütfen inceleyin.";
             }
 

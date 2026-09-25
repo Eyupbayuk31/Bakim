@@ -319,6 +319,11 @@ namespace Bakım.ViewModels
 
         #region Standard & Auto-Clean Uninstallation
 
+        /// <summary>Kaldırma ve kalıntı temizliği kayıtları Etkinlik Merkezi'nde (geri alma oradan).</summary>
+        [RelayCommand]
+        public void OpenUninstallHistory() =>
+            App.TryGetService<INavigationService>()?.Navigate("Activity?kind=Uninstall");
+
         [RelayCommand]
         public async Task UninstallAsync(InstalledAppItem? app)
         {

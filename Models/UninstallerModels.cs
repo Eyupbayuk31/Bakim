@@ -69,6 +69,10 @@ namespace Bakım.Models
 
         /// <summary>Uninstall kaydında NoRemove=1: yayıncı bu girdinin tek başına kaldırılmasını kapatmış.</summary>
         public bool NoRemove { get; set; }
+
+        public string UninstallHint => NoRemove
+            ? "Yayıncı bu girdinin tek başına kaldırılmasını kapatmış (NoRemove); yine de denenebilir"
+            : "Resmi kaldırıcıyla kaldır, ardından kalıntıları göster";
         public ImageSource? IconSource { get; set; }
 
         public InstallerType InstallerKind { get; set; } = InstallerType.GenericExe;

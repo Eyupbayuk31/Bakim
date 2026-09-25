@@ -98,7 +98,7 @@ namespace Bakım.ViewModels
     /// Etkinlik Merkezi (MASTER_PLAN §7): Bakım'ın sistemde yaptığı her değişikliğin zaman
     /// çizelgesi, filtreleri ve tek tıkla geri alma.
     /// </summary>
-    public partial class ActivityCenterViewModel : ObservableObject, IModuleViewModel
+    public partial class ActivityCenterViewModel : ObservableObject, IModuleViewModel, INavigationParameterTarget
     {
         private readonly IActivityService _activity;
         private readonly INavigationService _navigation;
@@ -164,6 +164,27 @@ namespace Bakım.ViewModels
         partial void OnSelectedOutcomeChanged(ActivityOutcome? value) => Refresh();
         partial void OnUndoableOnlyChanged(bool value) => Refresh();
         partial void OnRangeChanged(string value) => Refresh();
+
+        /// <summary>"kind=Uninstall" gibi parametre: filtreler sıfırlanır, yalnızca o tür gösterilir.</summary>
+        public void ApplyNavigationParameter(string parameter)
+        {
+            ActivityKind? kind = null;
+            foreach (string part in parameter.Split('&', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string[] kv = part.Split('=', 2);
+                if (kv.Length == 2 && kv[0].Equals("kind", StringComparison.OrdinalIgnoreCase) &&
+                    Enum.TryParse(kv[1], ignoreCase: true, out ActivityKind parsed))
+                    kind = parsed;
+            }
+            if (kind == null) return;
+
+            SearchText = string.Empty;
+            SelectedOutcome = null;
+            UndoableOnly = false;
+            Range = "All";
+            SelectedKind = kind;
+            _isDirty = true;
+        }
 
         public Task OnActivatedAsync()
         {

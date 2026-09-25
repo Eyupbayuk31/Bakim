@@ -25,8 +25,8 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Derin Kalıntı Temizleyici &amp; Program Kaldırıcı"
-                         Description="Revo stili iki aşamalı derin disk ve kayıt defteri kalıntı taraması ile yazılımları eksiksiz silin.">
+                         Title="Kaldırıcı"
+                         Description="Programı resmi kaldırıcısıyla kaldırır; kaldırma doğrulanınca geride kalan dosya, kayıt, hizmet ve görevleri kanıtıyla listeler.">
             <c:SectionHeader.Actions>
                 <!-- Header Action Buttons: Hunter Mode, Installation Monitor, Refresh -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -48,6 +48,15 @@
                 ToolTip="Yeni bir kurulum paketini izleyip sıfır kalıntı logu oluşturun"
                 Icon="{ui:SymbolIcon Record24}"/>
 
+
+                <!-- Kaldırma geçmişi: Etkinlik Merkezi (filtreli) -->
+                <ui:Button Appearance="Secondary"
+                Command="{Binding OpenUninstallHistoryCommand}"
+                Padding="12,8"
+                Margin="0,0,8,0"
+                Content="Geçmiş"
+                ToolTip="Kaldırma ve kalıntı temizliği kayıtları; kayıt defteri yedekleri buradan geri yüklenir"
+                Icon="{ui:SymbolIcon History24}"/>
 
                 <!-- Yenile -->
                 <ui:Button Appearance="Secondary"
@@ -579,6 +588,7 @@
                                         <!-- Standard Uninstall Button -->
                                         <ui:Button Appearance="Primary" 
                                                    Content="Kaldır" 
+                                                   ToolTip="{Binding UninstallHint}"
                                                    Icon="{ui:SymbolIcon Delete20}"
                                                    Command="{Binding DataContext.UninstallCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"

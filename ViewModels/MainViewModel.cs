@@ -656,7 +656,17 @@ namespace Bakım.ViewModels
                 target = "Tweaker";
             }
 
-            if (!AppModuleRegistry.TryResolve(target, out var module))
+            // "Anahtar?parametre": parametre modüle iletilir (ör. Etkinlik Merkezi filtresi).
+            string key = target;
+            string? parameter = null;
+            int query = target.IndexOf('?');
+            if (query > 0)
+            {
+                key = target[..query];
+                parameter = target[(query + 1)..];
+            }
+
+            if (!AppModuleRegistry.TryResolve(key, out var module))
             {
                 // Sessizce Panoya düşmek yerine sorunu görünür kıl.
                 _log.Warning(
@@ -675,7 +685,7 @@ namespace Bakım.ViewModels
 
             CurrentNavKey = target;
             UpdateNavSelection(module);
-            RememberModule(target, module);
+            RememberModule(key, module);
 
             if (module is AppModule.WindowsTweaker or AppModule.PrivacyDebloat && IsSidebarExpanded)
             {
@@ -705,6 +715,9 @@ namespace Bakım.ViewModels
                 AppModule.Sentinel => Sentinel,
                 _ => Dashboard
             };
+
+            if (parameter != null && view is INavigationParameterTarget parameterTarget)
+                parameterTarget.ApplyNavigationParameter(parameter);
 
             if (ReferenceEquals(view, CurrentView)) return;
 

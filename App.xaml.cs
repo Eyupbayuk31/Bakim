@@ -162,8 +162,39 @@ namespace Bakım
             {
                 _logService.Info($"Hedef kaldırma parametresi saptandı: {uninstallTarget}", "Startup");
                 _isUninstallTargetMode = true;
+
+                // Bakım zaten açıksa sihirbaz orada açılır (KAL C2); bu süreç hemen kapanır.
+                if (SingleInstanceService.IsPrimaryRunning() &&
+                    new SingleInstanceService().Send(new IpcRequest(IpcRequestKind.UninstallTarget, uninstallTarget, DateTime.UtcNow), TimeSpan.FromSeconds(3)))
+                {
+                    _logService.Info("Kaldırma isteği açık Bakım örneğine iletildi.", "Startup");
+                    Shutdown(0);
+                    return;
+                }
+
                 LaunchUninstallTargetMode(uninstallTarget);
                 return;
+            }
+
+            bool isSilentStart = e.Args != null && Array.Exists(e.Args, arg =>
+                arg.Equals("--autostart", StringComparison.OrdinalIgnoreCase) ||
+                arg.Equals("--minimized", StringComparison.OrdinalIgnoreCase) ||
+                arg.Equals("--tray", StringComparison.OrdinalIgnoreCase));
+
+            // Tek örnek: Bakım zaten açıksa pencereyi öne getir ve çık (ikinci nöbetçi/tepsi açılmaz).
+            _singleInstance = new SingleInstanceService();
+            if (!_singleInstance.TryBecomePrimary())
+            {
+                bool forwarded = isSilentStart ||
+                                 _singleInstance.Send(new IpcRequest(IpcRequestKind.Activate, null, DateTime.UtcNow), TimeSpan.FromSeconds(3));
+                if (forwarded)
+                {
+                    _logService.Info("Bakım zaten çalışıyor; açık örnek öne getirildi, bu süreç kapanıyor.", "Startup");
+                    _isSecondaryInstance = true;
+                    Shutdown(0);
+                    return;
+                }
+                _logService.Warning("Açık Bakım örneği yanıt vermedi; yeni örnek başlatılıyor.", null, "Startup");
             }
 
             // 7. Arka plan bakım motoru (otomatik RAM temizliği, yüksek RAM uyarısı)
@@ -204,21 +235,6 @@ namespace Bakım
             var mainWindow = GetService<MainWindow>();
             MainWindow = mainWindow;
 
-            bool isSilentStart = false;
-            if (e.Args != null)
-            {
-                foreach (var arg in e.Args)
-                {
-                    if (arg.Equals("--autostart", StringComparison.OrdinalIgnoreCase) ||
-                        arg.Equals("--minimized", StringComparison.OrdinalIgnoreCase) ||
-                        arg.Equals("--tray", StringComparison.OrdinalIgnoreCase))
-                    {
-                        isSilentStart = true;
-                        break;
-                    }
-                }
-            }
-
             if (isSilentStart)
             {
                 mainWindow.WindowState = WindowState.Minimized;
@@ -230,7 +246,43 @@ namespace Bakım
                 mainWindow.Show();
             }
 
+            _singleInstance.Listen(request => Dispatcher.BeginInvoke(() => HandleInstanceRequest(request)));
+
             _logService.Info("Başlangıç tamamlandı.", "Startup");
+        }
+
+        private SingleInstanceService? _singleInstance;
+        private static bool _isSecondaryInstance;
+
+        /// <summary>İkinci açılıştan gelen istek (UI iş parçacığında).</summary>
+        private async void HandleInstanceRequest(IpcRequest request)
+        {
+            try
+            {
+                TryGetService<ITrayIconService>()?.RestoreWindow();
+                if (request.Kind != IpcRequestKind.UninstallTarget || string.IsNullOrWhiteSpace(request.Target)) return;
+
+                AppLog.Info($"Sağ tık kaldırma isteği alındı: {request.Target}", "SingleInstance");
+                var targetApp = await GetService<IShellUninstallResolverService>().ResolveTargetAppAsync(request.Target);
+                if (targetApp == null)
+                {
+                    MessageBox.Show(
+                        $"Bu hedef için kaldırılabilecek bir program bulunamadı ya da hedef korumalı bir Windows bileşeni:\n\n{request.Target}",
+                        "Kaldırıcı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var wizardVm = new ViewModels.DeepUninstallWizardViewModel(targetApp,
+                    GetService<IDeepUninstallerService>(), GetService<IResidualScannerEngine>());
+                var wizardWindow = new Views.Windows.DeepUninstallWizardWindow(wizardVm);
+                if (MainWindow?.IsVisible == true) wizardWindow.Owner = MainWindow;
+                wizardWindow.Show();
+                wizardWindow.Activate();
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Tek örnek isteği işlenemedi.", ex, "SingleInstance");
+            }
         }
 
         private async void LaunchUninstallTargetMode(string path)
@@ -274,11 +326,11 @@ namespace Bakım
 
         protected override void OnExit(ExitEventArgs e)
         {
-            if (_isUninstallTargetMode)
+            if (_isUninstallTargetMode || _isSecondaryInstance)
             {
                 // Bu süreçte nöbetçi/bakım/çıkış temizliği yok; TryGetService onları kapanırken
                 // oluşturup (nöbetçi yapıcıda başlar) çalıştırırdı.
-                AppLog.Info($"Kaldırma sihirbazı kapanıyor (çıkış kodu {e.ApplicationExitCode}).", "Shutdown");
+                AppLog.Info($"{(_isSecondaryInstance ? "İkinci örnek" : "Kaldırma sihirbazı")} kapanıyor (çıkış kodu {e.ApplicationExitCode}).", "Shutdown");
                 _logService?.Dispose();
                 base.OnExit(e);
                 return;
@@ -295,6 +347,7 @@ namespace Bakım
                 // Askıya alınmış süreç bırakılmaz (§5.4).
                 SystemCleanService.ResumeAllSuspended();
                 TryGetService<ITrayIconService>()?.Detach();
+                _singleInstance?.Dispose();
 
                 // Çıkışta otomatik temizlik tercihi
                 var settings = TryGetService<IAppSettingsService>();
