@@ -1123,6 +1123,10 @@ Paralel çalışılabilecek fazlar: 3 ile 4, 6 ile 7.
 
 **Faz 3:**
 - [ ] Analizör'de bir dosya analiz et → uygulamayı kapat/aç → Geçmiş sekmesinde görünüyor.
+- [ ] Kurulum Nöbetçisi → "Analizörle tara" → dosyalar ekrandaki Analizör listesine geliyor; Geçmiş'te kaynak "Nöbetçi", ayrıntıda "Kurulum: <ad>".
+- [ ] Geçmiş'te bir kayda "Güven" → aynı dosyayı yeniden analiz et → yeni kayıt da "Güvenildi"; analiz penceresi "daha önce N kez analiz edildi" diyor.
+- [ ] Geçmiş > Dışa aktar → CSV Excel'de Türkçe karakterlerle açılıyor; HTML tarayıcıda açılıyor.
+- [ ] VirusTotal anahtarı varken aynı dosyayı 2. kez sorgula → sonuç anında geliyor ("… gün önce"/"bugün" ibaresiyle).
 - [ ] İki kalıcılık taraması arasında test amaçlı bir Run girdisi ekle → Değişiklikler sekmesinde "Eklendi".
 - [ ] Temizlik, kaldırma ve ince ayar işlemleri Etkinlik Merkezi'nde görünüyor. İnce ayar "Geri al" ile eski haline dönüyor.
 
@@ -1157,6 +1161,6 @@ Bu tablo her PR ile güncellenir.
 | Master plan | Tamam | bu belge | |
 | Faz 1 | Tamam (PC testi bekliyor) | `claude/charming-feynman-g2crt8` | v3.21.0. S-17 açık. Core testleri: 218 (Linux) |
 | Faz 2 | Bekliyor | | |
-| Faz 3 | Bekliyor | | Analizör Geçmişi + Etkinlik Merkezi |
+| Faz 3 | Başladı | `claude/charming-feynman-g2crt8` | **Analizör Geçmişi tamam** (Core + servis + dekoratör + Geçmiş/Değişiklikler sekmeleri + VT önbelleği). Kalan: Etkinlik Merkezi (§7); Kontrol Paneli "Son analizler" kartı, nav rozeti, zamanlanmış tarama + tepsi bildirimi, komut paleti araması |
 | Faz 4 | Bekliyor | | Tasarım sistemi v2 |
 | Faz 5–9 | Bekliyor | | |
