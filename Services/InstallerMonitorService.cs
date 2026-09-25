@@ -9,12 +9,15 @@ using Bakım.Models;
 
 namespace Bakım.Services
 {
+    /// <summary>
+    /// Kurulum öncesi/sonrası anlık görüntü motoru. (v3.21: hiçbir yerden çağrılmayan
+    /// ve güvenlik kontrolü içermeyen RevertInstallationDeltaAsync kaldırıldı; geri alma
+    /// SetupSentinel → SessionStore → RollbackPlanner → SafeDeleteService yolundan yapılır.)
+    /// </summary>
     public interface IInstallerMonitorService
     {
         Task<InstallationSnapshot> TakePreInstallSnapshotAsync(string appName);
         Task<SnapshotDelta> TakePostInstallSnapshotAndSaveDeltaAsync(string appName, InstallationSnapshot preSnapshot);
-        List<SnapshotDelta> GetRecordedInstallations();
-        Task<int> RevertInstallationDeltaAsync(string appName);
     }
 
     public class InstallerMonitorService : IInstallerMonitorService
@@ -119,94 +122,6 @@ namespace Bakım.Services
 
         #region Persistence & Revert
 
-        public List<SnapshotDelta> GetRecordedInstallations()
-        {
-            var list = new List<SnapshotDelta>();
-            try
-            {
-                if (!Directory.Exists(StorageDirectory)) return list;
-
-                foreach (var file in Directory.GetFiles(StorageDirectory, "*.json"))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(file);
-                        var delta = JsonSerializer.Deserialize<SnapshotDelta>(json);
-                        if (delta != null) list.Add(delta);
-                    }
-                    catch { }
-                }
-            }
-            catch { }
-
-            return list;
-        }
-
-        public async Task<int> RevertInstallationDeltaAsync(string appName)
-        {
-            return await Task.Run(() =>
-            {
-                string filePath = Path.Combine(StorageDirectory, $"{SanitizeFileName(appName)}.json");
-                if (!File.Exists(filePath)) return 0;
-
-                int cleanedCount = 0;
-                try
-                {
-                    string json = File.ReadAllText(filePath);
-                    var delta = JsonSerializer.Deserialize<SnapshotDelta>(json);
-                    if (delta == null) return 0;
-
-                    // Delete added files
-                    foreach (var f in delta.AddedFiles)
-                    {
-                        try
-                        {
-                            if (File.Exists(f))
-                            {
-                                File.SetAttributes(f, FileAttributes.Normal);
-                                File.Delete(f);
-                                cleanedCount++;
-                            }
-                        }
-                        catch { }
-                    }
-
-                    // Delete added folders
-                    foreach (var d in delta.AddedFolders)
-                    {
-                        try
-                        {
-                            if (Directory.Exists(d))
-                            {
-                                Directory.Delete(d, true);
-                                cleanedCount++;
-                            }
-                        }
-                        catch { }
-                    }
-
-                    // Delete added registry keys
-                    foreach (var r in delta.AddedRegistryKeys)
-                    {
-                        try
-                        {
-                            if (DeleteRegistryKey(r))
-                            {
-                                cleanedCount++;
-                            }
-                        }
-                        catch { }
-                    }
-
-                    // Remove delta file
-                    File.Delete(filePath);
-                }
-                catch { }
-
-                return cleanedCount;
-            });
-        }
-
         private void SaveDeltaToDisk(SnapshotDelta delta)
         {
             try
@@ -266,29 +181,6 @@ namespace Bakım.Services
             catch { }
         }
 
-        private bool DeleteRegistryKey(string fullPath)
-        {
-            try
-            {
-                int slashIndex = fullPath.IndexOf('\\');
-                if (slashIndex <= 0) return false;
-
-                string hiveStr = fullPath.Substring(0, slashIndex);
-                string subPath = fullPath.Substring(slashIndex + 1);
-
-                RegistryHive hive = hiveStr.Contains("Current", StringComparison.OrdinalIgnoreCase)
-                    ? RegistryHive.CurrentUser
-                    : RegistryHive.LocalMachine;
-
-                using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
-                baseKey.DeleteSubKeyTree(subPath, throwOnMissingSubKey: false);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         private static long CalculateFolderSizeSafe(string folderPath)
         {

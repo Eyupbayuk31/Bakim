@@ -260,7 +260,7 @@ namespace Bakım.ViewModels
                 IncludedApps = new List<string> { "VC++ 2005-2022 AIO", "DirectX Web Setup", "Google Chrome", "WinRAR", "7-Zip", "Spotify", "VLC Player", "Discord" },
                 TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    "tpu_vcredist_aio", "directx_web_setup", "chrome", "winrar", "seven_zip", "spotify", "vlc_player", "discord_gaming"
+                    "vcredist_all", "directx_web_setup", "chrome", "winrar", "seven_zip", "spotify", "vlc_player", "discord_gaming"
                 }
             });
 
@@ -275,7 +275,7 @@ namespace Bakım.ViewModels
                 IncludedApps = new List<string> { "Steam", "Epic Games", "Discord", "Spotify", "VC++ AIO", "DirectX Web", "WinRAR" },
                 TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
-                    "tpu_vcredist_aio", "directx_web_setup", "steam", "epic_games", "discord_gaming", "spotify", "winrar"
+                    "vcredist_all", "directx_web_setup", "steam", "epic_games", "discord_gaming", "spotify", "winrar"
                 }
             });
 
@@ -496,7 +496,9 @@ namespace Bakım.ViewModels
                 }
 
                 OverallProgress = 100;
-                CurrentStatusText = token.IsCancellationRequested ? "Kurulum iptal edildi." : "Tüm işlemler tamamlandı!";
+                CurrentStatusText = token.IsCancellationRequested
+                    ? "Kurulum iptal edildi."
+                    : completed == total ? "Tüm kurulumlar tamamlandı." : $"{total - completed} uygulama kurulamadı; ayrıntılar kayıtta.";
                 AppendLog($"\n=======================================================");
                 AppendLog($"[BİTTİ] {completed}/{total} uygulama başarıyla kuruldu.");
                 AppendLog($"=======================================================");

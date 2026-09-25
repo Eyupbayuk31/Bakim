@@ -55,8 +55,12 @@ namespace Bakım.Models
         public double FreeGb { get; set; }
         public double UsedGb { get; set; }
         public int UsagePercentage { get; set; }
-        public string FormattedTotal => $"{TotalGb:F1} GB";
-        public string FormattedFree => $"{FreeGb:F1} GB Boş";
+
+        /// <summary>Bilgi gerçekten okunabildi mi? false ise sayılar gösterilmez.</summary>
+        public bool IsAvailable { get; set; } = true;
+
+        public string FormattedTotal => IsAvailable ? $"{TotalGb:F1} GB" : "—";
+        public string FormattedFree => IsAvailable ? $"{FreeGb:F1} GB Boş" : "Okunamadı";
     }
 
     public class SystemHardwareStats

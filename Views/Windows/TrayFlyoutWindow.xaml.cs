@@ -90,7 +90,7 @@ namespace Bakım.Views.Windows
                 BtnQuickBoost.Content = "Temizleniyor...";
                 long freed = await _cleanService.AutoTrimWorkingSetsAsync();
                 await RefreshTelemetryAsync();
-                _trayIconService.ShowBalloon("RAM Temizlendi", $"{CleanCategory.FormatBytes(freed)} bellek geri kazanıldı.");
+                _trayIconService.ShowBalloon("Bellek İşlemi", Bakım.Core.Text.MemoryResultText.Describe(freed));
             }
             catch { }
             finally
@@ -107,10 +107,7 @@ namespace Bakım.Views.Windows
                 long freed = await _gameModeService.ToggleGameModeAsync();
                 UpdateState();
                 bool isActive = _gameModeService.IsGameModeActive;
-                if (isActive)
-                    _trayIconService.ShowBalloon("Ultra Oyun Modu Aktif!", $"Arka plan servisleri donduruldu. {CleanCategory.FormatBytes(freed)} serbest bırakıldı.");
-                else
-                    _trayIconService.ShowBalloon("Oyun Modu Kapatıldı", "Arka plan servisleri normale döndü.");
+                _trayIconService.ShowBalloon(isActive ? "Oyun Modu Açık" : "Oyun Modu Kapatıldı", _gameModeService.LastActionSummary);
             }
             catch { }
         }

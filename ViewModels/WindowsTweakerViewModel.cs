@@ -288,6 +288,7 @@ namespace Bakım.ViewModels
                 foreach (var fe in fileExplorer) AllTweaks.Add(fe);
                 foreach (var sc in settingsCpl) AllTweaks.Add(sc);
                 foreach (var ed in edge) AllTweaks.Add(ed);
+                foreach (var tweak in AllTweaks) tweak.ApplySecurityNote();
 
                 // OEM Bilgisi & WindowMetrics
                 OemInfo = await _toolsService.GetOemInfoAsync();
@@ -347,8 +348,25 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            tweak.IsBusy = true;
             bool targetState = !tweak.IsEnabled;
+
+            // S-16: güvenlik katmanını kapatan ayar ayrı ve açık bir onay ister.
+            if (targetState && tweak.ReducesSecurity)
+            {
+                var confirm = System.Windows.MessageBox.Show(
+                    $"'{tweak.Title}' güvenliği azaltır.\n\n{tweak.SecurityWarning}\n\nYine de uygulansın mı?",
+                    "Güvenliği Azaltan Ayar",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Warning,
+                    System.Windows.MessageBoxResult.No);
+                if (confirm != System.Windows.MessageBoxResult.Yes)
+                {
+                    tweak.NotifyStateChanged();
+                    return;
+                }
+            }
+
+            tweak.IsBusy = true;
 
             // Reversible Engine Guard (V22.0): Değişiklikten önce orijinal durumu snapshot dosyasına kaydet
             await _snapshotService.RecordTweakBeforeChangeAsync(tweak);
@@ -379,7 +397,9 @@ namespace Bakım.ViewModels
                 else
                 {
                     tweak.NotifyStateChanged();
-                    OperationResultBanner = $"'{tweak.Title}' ayarı uygulanamadı. Yönetici izinlerini kontrol edin.";
+                    OperationResultBanner = string.IsNullOrEmpty(tweak.LastError)
+                        ? $"'{tweak.Title}' ayarı uygulanamadı. Yönetici izinlerini kontrol edin."
+                        : $"'{tweak.Title}' ayarı uygulanamadı: {tweak.LastError}";
                     ResultBannerSeverity = InfoBarSeverity.Error;
                     HasResultBanner = true;
                 }
@@ -799,20 +819,14 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            bool ok = await _contextMenuService.CreateElevatedShortcutAsync(ElevatedShortcutTargetPath, ElevatedShortcutName);
-            if (ok)
+            var result = await _contextMenuService.CreateElevatedShortcutAsync(ElevatedShortcutTargetPath, ElevatedShortcutName);
+            OperationResultBanner = result.Message;
+            ResultBannerSeverity = result.Created ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+            HasResultBanner = true;
+            if (result.Created)
             {
-                OperationResultBanner = "UAC'siz (Kullanıcı Hesabı Denetimi uyarısı çıkarmayan) Yönetici Kısayolu Masaüstüne oluşturuldu!";
-                ResultBannerSeverity = InfoBarSeverity.Success;
-                HasResultBanner = true;
                 ElevatedShortcutTargetPath = string.Empty;
                 ElevatedShortcutName = string.Empty;
-            }
-            else
-            {
-                OperationResultBanner = "Kısayol oluşturulamadı. Hedef dosyanın varlığını ve görev zamanlayıcı izinlerini kontrol edin.";
-                ResultBannerSeverity = InfoBarSeverity.Error;
-                HasResultBanner = true;
             }
         }
 

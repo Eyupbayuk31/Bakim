@@ -158,7 +158,11 @@ namespace Bakım.Views.Dialogs
 
                     if (threatService != null && File.Exists(path))
                     {
-                        var result = await threatService.AnalyzeFileAsync(path);
+                        ThreatAnalysisResult result;
+                        using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.SetupSentinel, $"Kurulum: {_report.AppName}"))
+                        {
+                            result = await threatService.AnalyzeFileAsync(path);
+                        }
                         var dialog = new ThreatAnalysisDialog(result, threatService, autorunsEngine, virusTotalService);
                         dialog.Owner = this;
                         dialog.ShowDialog();
@@ -196,7 +200,10 @@ namespace Bakım.Views.Dialogs
                 var analyzerVm = App.TryGetService<AnalyzerViewModel>();
                 if (analyzerVm != null && _report.AddedExecutables.Count > 0)
                 {
-                    await analyzerVm.AnalyzeSpecificFilesAsync(_report.AddedExecutables);
+                    using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.SetupSentinel, $"Kurulum: {_report.AppName}"))
+                    {
+                        await analyzerVm.AnalyzeSpecificFilesAsync(_report.AddedExecutables);
+                    }
                 }
 
                 Close();

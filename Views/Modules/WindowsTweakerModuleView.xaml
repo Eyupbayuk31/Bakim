@@ -465,6 +465,26 @@
                                         <TextBlock Text="Yönetici Yetkisi" FontSize="10" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
                                     </Border>
 
+                                    <!-- Güvenlik etkisi rozetleri (S-16) -->
+                                    <Border CornerRadius="4" Padding="8,2"
+                                            Background="{DynamicResource SystemFillColorCriticalBackgroundBrush}"
+                                            BorderBrush="{DynamicResource SystemFillColorCriticalBrush}"
+                                            BorderThickness="1"
+                                            Margin="0,0,8,0"
+                                            ToolTip="{Binding SecurityWarning}"
+                                            Visibility="{Binding ReducesSecurity, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Güvenliği azaltır" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                    </Border>
+                                    <Border CornerRadius="4" Padding="8,2"
+                                            Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
+                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            Margin="0,0,8,0"
+                                            ToolTip="{Binding SecurityWarning}"
+                                            Visibility="{Binding AffectsSecurity, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Güvenliği etkiler" FontSize="10" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                                    </Border>
+
                                     <!-- Hover Info Icon -->
                                     <ui:SymbolIcon Symbol="Info20" FontSize="13" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" ToolTip="Detaylı bilgi için fareyi kartın üzerinde tutun"/>
                                 </StackPanel>
@@ -609,7 +629,7 @@
                                 <ui:SymbolIcon Symbol="Link24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="UAC'siz Yönetici Kısayolu Oluştur (Elevated Shortcut)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
-                            <TextBlock Text="Görev Zamanlayıcı (schtasks) altyapısını kullanarak, tıkladığınızda Kullanıcı Hesabı Denetimi (UAC 'Evet/Hayır') penceresi çıkarmadan doğrudan Yönetici olarak çalışan masaüstü kısayolu üretir." 
+                            <TextBlock Text="Görev Zamanlayıcı ile, tıklandığında UAC onayı sormadan yönetici olarak açılan bir masaüstü kısayolu üretir. Güvenlik için yalnızca Program Files ya da Windows altındaki ve standart kullanıcıların değiştiremediği programlar kabul edilir." 
                                        FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <Grid Grid.Row="1">

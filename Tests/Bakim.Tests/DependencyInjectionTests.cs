@@ -111,11 +111,18 @@ public class DependencyInjectionTests
     [InlineData(typeof(ITelemetryService))]
     [InlineData(typeof(ICommandPaletteService))]
     [InlineData(typeof(IFileThreatAnalyzerService))]
+    [InlineData(typeof(Bakım.Services.History.IAnalysisHistoryService))]
     [InlineData(typeof(INavigationService))]
     [InlineData(typeof(ITrayIconService))]
     [InlineData(typeof(IBackgroundMaintenanceService))]
     [InlineData(typeof(IExitCleanupService))]
     [InlineData(typeof(ISetupSentinelService))]
+    [InlineData(typeof(Bakım.Services.Safety.ISafeDeleteService))]
+    [InlineData(typeof(Bakım.Services.Safety.ISafeRegistryService))]
+    [InlineData(typeof(Bakım.Services.Safety.ISafeProcessService))]
+    [InlineData(typeof(Bakım.Services.Safety.IRestorePointService))]
+    [InlineData(typeof(IResidualScannerEngine))]
+    [InlineData(typeof(IDeepUninstallerService))]
     public void CoreService_ResolvesAsSingleton(Type serviceType)
     {
         using var provider = BuildContainer();

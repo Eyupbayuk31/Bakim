@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
 using Bakım.Services;
+using Bakım.Services.Safety;
 
 namespace Bakım.ViewModels
 {
@@ -104,6 +105,39 @@ namespace Bakım.ViewModels
             _virusTotalService = virusTotalService ?? new VirusTotalCheckService();
 
             StatusText = $"Analiz tamamlandı. Risk Skoru: %{result.RiskScore} ({result.RiskLevelText})";
+            PreviousAnalysesText = BuildPreviousAnalysesText(result);
+        }
+
+        /// <summary>
+        /// "Bu dosya daha önce 2 kez analiz edildi (son: 12 Eyl, Risk 58, Nöbetçi)" — Analizör Geçmişi'nden.
+        /// Güvenilen dosyalar için bu da belirtilir.
+        /// </summary>
+        public string PreviousAnalysesText { get; }
+        public bool HasPreviousAnalyses => PreviousAnalysesText.Length > 0;
+
+        private static string BuildPreviousAnalysesText(ThreatAnalysisResult result)
+        {
+            try
+            {
+                var history = App.TryGetService<Services.History.IAnalysisHistoryService>();
+                if (history == null || string.IsNullOrEmpty(result.Sha256)) return string.Empty;
+
+                // Az önce kaydedilen bu analiz (son dakika içindeki en yeni kayıt) sayılmaz.
+                var records = history.GetByHash(result.Sha256).ToList();
+                if (records.Count > 0 && DateTime.UtcNow - records[0].AnalyzedAtUtc < TimeSpan.FromMinutes(1)) records.RemoveAt(0);
+
+                bool trusted = history.IsTrustedHash(result.Sha256);
+                if (records.Count == 0) return trusted ? "Bu dosyaya daha önce güvendiniz." : string.Empty;
+
+                var last = records[0];
+                string text = $"Bu dosya daha önce {records.Count} kez analiz edildi (son: {last.AnalyzedAtUtc.ToLocalTime():d MMM HH:mm}, " +
+                              $"Risk {last.RiskScore}, {Core.History.AnalysisVerdicts.Display(last.Source)}).";
+                return trusted ? text + " Güvendiğiniz bir dosya." : text;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         [RelayCommand]
@@ -120,19 +154,22 @@ namespace Bakım.ViewModels
             if (confirm != MessageBoxResult.Yes) return;
 
             StatusText = "Süreç sonlandırılıyor...";
-            bool success = await _analyzerService.KillProcessAsync(ActiveProcessId);
+            var result = await _analyzerService.KillProcessAsync(ActiveProcessId);
 
-            if (success)
+            if (result.Succeeded || result.Outcome == DeleteOutcome.NotFound)
             {
                 IsProcessKilled = true;
                 OnPropertyChanged(nameof(HasActiveProcess));
-                StatusText = $"Süreç (PID: {ActiveProcessId}) başarıyla sonlandırıldı.";
-                MessageBox.Show($"'{FileName}' süreci başarıyla sonlandırıldı.", "Süreç Durduruldu", MessageBoxButton.OK, MessageBoxImage.Information);
+                StatusText = $"Süreç (PID: {ActiveProcessId}) sonlandırıldı.";
+                MessageBox.Show($"'{FileName}' süreci sonlandırıldı.", "Süreç Durduruldu", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                StatusText = "Süreç sonlandırılamadı. Yönetici izinleri gerekebilir.";
-                MessageBox.Show("Süreç sonlandırılamadı. Lütfen yönetici olarak çalıştırmayı deneyin.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                string reason = result.Outcome == DeleteOutcome.Blocked
+                    ? "Bu bir Windows sistem sürecidir; sistem kararlılığı için sonlandırılamaz."
+                    : result.Message;
+                StatusText = $"Süreç sonlandırılamadı: {reason}";
+                MessageBox.Show($"Süreç sonlandırılamadı.\n\n{reason}", "Süreci Sonlandır", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -171,26 +208,41 @@ namespace Bakım.ViewModels
             if (IsFileDeleted || !File.Exists(FilePath)) return;
 
             var confirm = MessageBox.Show(
-                $"DİKKAT: '{FilePath}' dosyası kalıcı olarak silinecektir.\n\nEğer dosya kilitliyse sahipliği alınıp zorla parçalanacaktır.\n\nKalıcı olarak silinsin mi?",
-                "Dosyayı Zorla Sil",
+                $"'{FilePath}' dosyası Geri Dönüşüm Kutusu'na taşınacak.\n\nYanlışlıkla silerseniz oradan geri yükleyebilirsiniz. Dosya kullanımdaysa bir sonraki yeniden başlatmada silinir.\n\nDevam edilsin mi?",
+                "Dosyayı Kaldır",
                 MessageBoxButton.YesNo,
-                MessageBoxImage.Stop);
+                MessageBoxImage.Warning);
 
             if (confirm != MessageBoxResult.Yes) return;
 
-            StatusText = "Dosya kalıcı olarak siliniyor...";
-            bool success = await _analyzerService.ForceDeleteFileAsync(FilePath);
+            StatusText = "Dosya kaldırılıyor...";
+            var result = await _analyzerService.RemoveFileAsync(FilePath);
 
-            if (success)
+            switch (result.Outcome)
             {
-                IsFileDeleted = true;
-                StatusText = "Dosya başarıyla silindi.";
-                MessageBox.Show($"'{FileName}' dosyası diskten başarıyla silindi.", "Dosya Silindi", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                StatusText = "Dosya hemen silinemedi, bir sonraki yeniden başlatmada silinmek üzere işaretlendi.";
-                MessageBox.Show("Dosya kullanımda olduğu için doğrudan silinemedi; sistem yeniden başlatıldığında otomatik silinmek üzere Windows açılışına kaydedildi.", "Yeniden Başlatmada Silinecek", MessageBoxButton.OK, MessageBoxImage.Warning);
+                case DeleteOutcome.Recycled:
+                case DeleteOutcome.Deleted:
+                case DeleteOutcome.NotFound:
+                    IsFileDeleted = true;
+                    StatusText = "Dosya Geri Dönüşüm Kutusu'na taşındı.";
+                    MessageBox.Show($"'{FileName}' Geri Dönüşüm Kutusu'na taşındı.", "Dosya Kaldırıldı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    break;
+
+                case DeleteOutcome.ScheduledForReboot:
+                    IsFileDeleted = true;
+                    StatusText = "Dosya kullanımda; yeniden başlatmada silinecek.";
+                    MessageBox.Show("Dosya kullanımda olduğu için hemen silinemedi; bilgisayar yeniden başlatıldığında silinecek.", "Yeniden Başlatmada Silinecek", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    break;
+
+                case DeleteOutcome.Blocked:
+                    StatusText = "Korumalı konum; dosya silinmedi.";
+                    MessageBox.Show($"Bu dosya korumalı bir konumda olduğu için silinmedi.\n\n{result.Message}", "Korumalı Konum", MessageBoxButton.OK, MessageBoxImage.Stop);
+                    break;
+
+                default:
+                    StatusText = $"Dosya kaldırılamadı: {result.Message}";
+                    MessageBox.Show($"Dosya kaldırılamadı.\n\n{result.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                    break;
             }
         }
 

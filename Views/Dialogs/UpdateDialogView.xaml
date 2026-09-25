@@ -74,7 +74,7 @@
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Mevcut: " FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="CurrentVersionText" Text="v2.5.0" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock x:Name="CurrentVersionText" Text="" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </Border>
 

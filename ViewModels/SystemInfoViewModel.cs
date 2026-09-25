@@ -374,6 +374,11 @@ namespace Bakım.ViewModels
         {
             if (file == null || file.IsDeleting) return;
 
+            var confirm = System.Windows.MessageBox.Show(
+                $"'{file.FilePath}' kalıcı olarak silinecek (Geri Dönüşüm Kutusu atlanır). Bu işlem geri alınamaz.\n\nDevam edilsin mi?",
+                "Kalıcı Sil", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
             file.IsDeleting = true;
             try
             {
@@ -386,7 +391,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    ScanProgressText = $"'{file.FileName}' silinemedi (kullanımda veya erişim engellendi).";
+                    ScanProgressText = $"'{file.FileName}' silinemedi: {_infoService.LastDeleteError}";
                 }
             }
             finally
@@ -412,7 +417,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    ScanProgressText = $"'{file.FileName}' Geri Dönüşüm Kutusuna taşınamadı (kullanımda olabilir).";
+                    ScanProgressText = $"'{file.FileName}' Geri Dönüşüm Kutusuna taşınamadı: {_infoService.LastDeleteError}";
                 }
             }
             finally
@@ -495,7 +500,10 @@ namespace Bakım.ViewModels
             }
 
             UpdateLargeFilesFilter();
-            ScanProgressText = $"{movedCount} dosya Geri Dönüşüm Kutusuna taşındı.";
+            int notMoved = selected.Count - movedCount;
+            ScanProgressText = notMoved == 0
+                ? $"{movedCount} dosya Geri Dönüşüm Kutusuna taşındı."
+                : $"{movedCount} dosya taşındı, {notMoved} dosya taşınamadı (korumalı ya da kullanımda).";
         }
 
         [RelayCommand]
@@ -503,6 +511,11 @@ namespace Bakım.ViewModels
         {
             var selected = FilteredLargeFiles.Where(f => f.IsSelected).ToList();
             if (selected.Count == 0) return;
+
+            var confirm = System.Windows.MessageBox.Show(
+                $"{selected.Count} dosya kalıcı olarak silinecek (Geri Dönüşüm Kutusu atlanır). Bu işlem geri alınamaz.\n\nDevam edilsin mi?",
+                "Seçilenleri Kalıcı Sil", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
 
             int deletedCount = 0;
             foreach (var file in selected)
@@ -524,7 +537,10 @@ namespace Bakım.ViewModels
             }
 
             UpdateLargeFilesFilter();
-            ScanProgressText = $"{deletedCount} dosya kalıcı olarak silindi.";
+            int notDeleted = selected.Count - deletedCount;
+            ScanProgressText = notDeleted == 0
+                ? $"{deletedCount} dosya kalıcı olarak silindi."
+                : $"{deletedCount} dosya silindi, {notDeleted} dosya silinemedi (korumalı ya da kullanımda).";
         }
 
         [RelayCommand]
@@ -787,15 +803,8 @@ namespace Bakım.ViewModels
         {
             string drive = string.IsNullOrWhiteSpace(driveName) ? "C" : driveName.Substring(0, 1);
             StatusText = $"{drive}: sürücüsüne TRIM komutu gönderiliyor...";
-            bool ok = await _infoService.OptimizeDriveTrimAsync(drive);
-            if (ok)
-            {
-                StatusText = $"{drive}: sürücüsü başarıyla optimize edildi (TRIM tamamlandı).";
-            }
-            else
-            {
-                StatusText = $"{drive}: TRIM komutu uygulanamadı (Yönetici yetkisi gerekebilir).";
-            }
+            var result = await _infoService.OptimizeDriveTrimAsync(drive);
+            StatusText = result.Message;
         }
 
         [RelayCommand]

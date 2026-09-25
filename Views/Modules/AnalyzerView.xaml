@@ -7,6 +7,7 @@
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              xmlns:c="clr-namespace:Bakım.Controls"
+             xmlns:local="clr-namespace:Bakım.Views.Modules"
              mc:Ignorable="d" 
              d:DesignHeight="850" d:DesignWidth="1100">
 
@@ -14,10 +15,11 @@
         <Grid Margin="24">
             <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Header & Global Actions -->
-            <RowDefinition Height="Auto"/> <!-- 1: KPI Statistics Cards -->
-            <RowDefinition Height="Auto"/> <!-- 2: Category Filter Bar & Options -->
-            <RowDefinition Height="*"/>    <!-- 3: Virtualized Items List -->
-            <RowDefinition Height="Auto"/> <!-- 4: Status Footer -->
+            <RowDefinition Height="Auto"/> <!-- 1: Sekmeler (Tarama / Geçmiş / Değişiklikler) -->
+            <RowDefinition Height="Auto"/> <!-- 2: KPI Statistics Cards -->
+            <RowDefinition Height="Auto"/> <!-- 3: Category Filter Bar & Options -->
+            <RowDefinition Height="*"/>    <!-- 4: Virtualized Items List -->
+            <RowDefinition Height="Auto"/> <!-- 5: Status Footer -->
         </Grid.RowDefinitions>
 
         <!-- 0. Başlık — tasarım sistemi bileşeni -->
@@ -111,8 +113,52 @@
             </c:SectionHeader.Actions>
         </c:SectionHeader>
 
+        <!-- 1. Sekmeler: Tarama | Geçmiş | Değişiklikler (Analizör Geçmişi, §6) -->
+        <Border Grid.Row="1"
+                HorizontalAlignment="Left"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius.MD}"
+                Padding="4"
+                Margin="{StaticResource Gap.Bottom.MD}">
+            <StackPanel Orientation="Horizontal">
+                <ui:Button Content="Tarama"
+                           Icon="{ui:SymbolIcon ShieldTask20}"
+                           Appearance="{Binding IsScanTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="Scan"
+                           Padding="14,6" Margin="{StaticResource Gap.Right.XS}"/>
+                <ui:Button Icon="{ui:SymbolIcon History20}"
+                           Appearance="{Binding IsHistoryTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="History"
+                           Padding="14,6" Margin="{StaticResource Gap.Right.XS}"
+                           AutomationProperties.Name="Analizör geçmişi">
+                    <TextBlock>
+                        <Run Text="Geçmiş ("/><Run Text="{Binding History.TotalCount, Mode=OneWay}"/><Run Text=")"/>
+                    </TextBlock>
+                </ui:Button>
+                <ui:Button Icon="{ui:SymbolIcon BranchCompare20}"
+                           Appearance="{Binding IsChangesTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="Changes"
+                           Padding="14,6"
+                           AutomationProperties.Name="Taramalar arası değişiklikler">
+                    <TextBlock>
+                        <Run Text="Değişiklikler ("/><Run Text="{Binding History.PendingChangesCount, Mode=OneWay}"/><Run Text=")"/>
+                    </TextBlock>
+                </ui:Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Geçmiş ve Değişiklikler sekmeleri: tarama içeriğinin yerini alır -->
+        <local:AnalyzerHistoryPanel Grid.Row="2" Grid.RowSpan="4"
+                                    DataContext="{Binding History}"
+                                    Visibility="{Binding DataContext.IsHistoryTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
+        <local:AnalyzerChangesPanel Grid.Row="2" Grid.RowSpan="4"
+                                    DataContext="{Binding History}"
+                                    Visibility="{Binding DataContext.IsChangesTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
+
         <!-- 1. KPI kartları — tasarım sistemi bileşeni (önceki 76 satırlık elle yazım yerine) -->
-        <UniformGrid Grid.Row="1" Columns="5" Margin="{StaticResource Gap.Bottom.LG}">
+        <UniformGrid Grid.Row="2" Columns="5" Margin="{StaticResource Gap.Bottom.LG}" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
             <c:StatCard Icon="Apps24"
                         Intent="Accent"
                         Label="Aktif Kalıcılık"
@@ -150,7 +196,7 @@
         </UniformGrid>
 
         <!-- 2. Category Toolbar & Options -->
-        <Border Grid.Row="2" 
+        <Border Grid.Row="3" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}" 
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
@@ -223,7 +269,7 @@
         </Border>
 
         <!-- 3. Virtualized Persistence Items List -->
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="4" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
 
             <!-- Boş durum: filtre hiçbir şey döndürmediğinde kullanıcıyı yalnız bırakma -->
             <c:EmptyState Icon="Search24"
@@ -517,7 +563,7 @@
         </Grid>
 
         <!-- 4. Status Footer -->
-        <Grid Grid.Row="4" Margin="0,10,0,0">
+        <Grid Grid.Row="5" Margin="0,10,0,0" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>

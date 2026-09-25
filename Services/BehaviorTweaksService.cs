@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Win32;
 using Bakım.Models;
+using Bakım.Helpers;
 
 namespace Bakım.Services
 {
@@ -446,6 +447,7 @@ namespace Bakım.Services
         {
             return await Task.Run(() =>
             {
+                using var writes = WriteScope.Begin();
                 try
                 {
                     switch (tweak.Id)
@@ -704,11 +706,19 @@ namespace Bakım.Services
                             return false;
                     }
 
+                    if (!writes.Succeeded)
+                    {
+                        tweak.LastError = writes.Describe();
+                        return false;
+                    }
+
+                    tweak.LastError = null;
                     tweak.IsEnabled = enable;
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    tweak.LastError = ex.Message;
                     return false;
                 }
             });
@@ -859,25 +869,28 @@ namespace Bakım.Services
 
         private static void SetXMouse(bool enable)
         {
+            const string desktop = @"Control Panel\Desktop";
+            SetRegistryDword(Registry.CurrentUser, desktop, "ActiveWindowTracking", enable ? 1 : 0);
+
+            byte[]? mask;
             try
             {
-                using var key = Registry.CurrentUser.CreateSubKey(@"Control Panel\Desktop", true);
-                if (key == null) return;
-
-                key.SetValue("ActiveWindowTracking", enable ? 1 : 0, RegistryValueKind.DWord);
-
-                var mask = key.GetValue("UserPreferencesMask") as byte[];
-                if (mask != null && mask.Length > 0)
-                {
-                    if (enable)
-                        mask[0] |= 0x01;
-                    else
-                        mask[0] = (byte)(mask[0] & ~0x01);
-
-                    key.SetValue("UserPreferencesMask", mask, RegistryValueKind.Binary);
-                }
+                using var key = Registry.CurrentUser.OpenSubKey(desktop, false);
+                mask = key?.GetValue("UserPreferencesMask") as byte[];
             }
-            catch { }
+            catch (Exception ex)
+            {
+                WriteScope.Report($@"HKEY_CURRENT_USER\{desktop} → UserPreferencesMask: {ex.Message}");
+                return;
+            }
+
+            if (mask == null || mask.Length == 0) return;
+            if (enable)
+                mask[0] |= 0x01;
+            else
+                mask[0] = (byte)(mask[0] & ~0x01);
+
+            SetRegistryBinary(Registry.CurrentUser, desktop, "UserPreferencesMask", mask);
         }
 
         private static void SetWindowsUpdateState(bool disableUpdates)
@@ -890,8 +903,8 @@ namespace Bakım.Services
                     SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\bits", "Start", 4);
                     SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU", "NoAutoUpdate", 1);
 
-                    RunCommandHidden("net.exe", "stop wuauserv /y");
-                    RunCommandHidden("net.exe", "stop bits /y");
+                    RunCommandHidden("net.exe", "stop", "wuauserv", "/y");
+                    RunCommandHidden("net.exe", "stop", "bits", "/y");
                 }
                 else
                 {
@@ -899,79 +912,36 @@ namespace Bakım.Services
                     SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\bits", "Start", 3);
                     DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU", "NoAutoUpdate");
 
-                    RunCommandHidden("net.exe", "start bits");
-                    RunCommandHidden("net.exe", "start wuauserv");
+                    RunCommandHidden("net.exe", "start", "bits");
+                    RunCommandHidden("net.exe", "start", "wuauserv");
                 }
             }
             catch { }
         }
 
-        private static void RunCommandHidden(string fileName, string args)
+        /// <summary>
+        /// En iyi çaba ile hizmet durdurma/başlatma. Hizmetin kalıcı durumu "Start" değeriyle
+        /// ayarlandığı için buradaki hata (ör. zaten durmuş hizmet) ince ayarı başarısız saymaz.
+        /// </summary>
+        private static void RunCommandHidden(string fileName, params string[] args)
         {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = args,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    WindowStyle = ProcessWindowStyle.Hidden
-                };
-                using var proc = Process.Start(psi);
-                proc?.WaitForExit(3000);
-            }
-            catch { }
+            ProcessRunner.Run(fileName, args, TimeSpan.FromSeconds(15));
         }
 
-        private static void SetRegistryDword(RegistryKey root, string subKey, string valueName, int value)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKey, true);
-                key?.SetValue(valueName, value, RegistryValueKind.DWord);
-            }
-            catch { }
-        }
+        private static bool SetRegistryDword(RegistryKey root, string subKey, string valueName, int value) =>
+            VerifiedRegistry.SetDword(root, subKey, valueName, value);
 
-        private static void SetRegistryString(RegistryKey root, string subKey, string valueName, string value)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKey, true);
-                key?.SetValue(valueName, value, RegistryValueKind.String);
-            }
-            catch { }
-        }
+        private static bool SetRegistryString(RegistryKey root, string subKey, string valueName, string value) =>
+            VerifiedRegistry.SetString(root, subKey, valueName, value);
 
-        private static void SetRegistryBinary(RegistryKey root, string subKey, string valueName, byte[] value)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKey, true);
-                key?.SetValue(valueName, value, RegistryValueKind.Binary);
-            }
-            catch { }
-        }
+        private static bool SetRegistryBinary(RegistryKey root, string subKey, string valueName, byte[] value) =>
+            VerifiedRegistry.SetBinary(root, subKey, valueName, value);
 
-        private static void DeleteRegistryValue(RegistryKey root, string subKey, string valueName)
-        {
-            try
-            {
-                using var key = root.OpenSubKey(subKey, true);
-                key?.DeleteValue(valueName, false);
-            }
-            catch { }
-        }
+        private static bool DeleteRegistryValue(RegistryKey root, string subKey, string valueName) =>
+            VerifiedRegistry.DeleteValue(root, subKey, valueName);
 
-        private static void DeleteRegistryKey(RegistryKey root, string subKey)
-        {
-            try
-            {
-                root.DeleteSubKeyTree(subKey, false);
-            }
-            catch { }
-        }
+        private static bool DeleteRegistryKey(RegistryKey root, string subKey) =>
+            VerifiedRegistry.DeleteKeyTree(root, subKey);
 
         #endregion
     }

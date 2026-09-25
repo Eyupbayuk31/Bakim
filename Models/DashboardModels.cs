@@ -25,9 +25,21 @@ namespace Bakım.Models
         public double SystemDriveFreeGb { get; set; }
         public double SystemDriveTotalGb { get; set; }
 
-        public int CpuTemperatureC { get; set; } = 42;
-        public int GpuTemperatureC { get; set; } = 50;
-        public string ThermalStatus { get; set; } = "Normal";
+        /// <summary>
+        /// Ölçülen sıcaklık (kalitesiyle birlikte). Tahmin ölçüm gibi gösterilmez;
+        /// okunamazsa <see cref="CpuTemperatureText"/> "—" olur.
+        /// </summary>
+        public Bakım.Core.Telemetry.SensorReading CpuTemperature { get; set; } =
+            Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Henüz okunmadı");
+        public Bakım.Core.Telemetry.SensorReading GpuTemperature { get; set; } =
+            Bakım.Core.Telemetry.SensorReading.Unavailable("°C", "Henüz okunmadı");
+
+        public string CpuTemperatureText => CpuTemperature.Display;
+        public string CpuTemperatureTooltip => CpuTemperature.HasValue
+            ? $"Kaynak: {CpuTemperature.Source}"
+            : $"Sıcaklık okunamıyor: {CpuTemperature.Source}";
+
+        public string ThermalStatus { get; set; } = "Sensör verisi yok";
 
         public string CpuName { get; set; } = "İşlemci";
         public string CpuClockSpeed { get; set; } = string.Empty;

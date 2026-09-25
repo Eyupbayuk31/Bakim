@@ -110,7 +110,8 @@ public class SystemInfoRevampTests
 
         public Task<bool> DeleteLargeFileAsync(string filePath) => Task.FromResult(true);
         public Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath) => Task.FromResult(true);
-        public Task<bool> OptimizeDriveTrimAsync(string driveLetter) => Task.FromResult(true);
+        public Task<TrimResult> OptimizeDriveTrimAsync(string driveLetter) => Task.FromResult(new TrimResult(true, "ok"));
+        public string LastDeleteError => string.Empty;
 
         public Task<string> GenerateHardwareReportHtmlAsync()
         {

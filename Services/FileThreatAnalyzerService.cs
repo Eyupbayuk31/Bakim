@@ -8,14 +8,21 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bakım.Models;
+using Bakım.Services.Safety;
 
 namespace Bakım.Services
 {
     public interface IFileThreatAnalyzerService
     {
         Task<ThreatAnalysisResult> AnalyzeFileAsync(string filePath, string? commandArgs = null, PersistenceItem? autorunItem = null);
-        Task<bool> KillProcessAsync(int processId);
-        Task<bool> ForceDeleteFileAsync(string filePath);
+        /// <summary>Süreci güvenlik kuralıyla sonlandırır (kritik sistem süreçleri reddedilir).</summary>
+        Task<OperationResult> KillProcessAsync(int processId);
+
+        /// <summary>
+        /// Dosyayı Geri Dönüşüm Kutusu'na taşır; kullanımdaysa yeniden başlatmada silinmek üzere
+        /// işaretler. Windows ve korumalı klasörlerdeki dosyalar reddedilir.
+        /// </summary>
+        Task<OperationResult> RemoveFileAsync(string filePath);
     }
 
     public class FileThreatAnalyzerService : IFileThreatAnalyzerService
@@ -29,85 +36,6 @@ namespace Bakım.Services
             "dwm.exe", "spoolsv.exe", "conhost.exe", "sihost.exe"
         };
 
-        private static readonly string[] KnownTrustedPublishers = new[]
-        {
-            "Microsoft", "Google", "NVIDIA", "Intel", "AMD", "Valve", "Apple",
-            "Adobe", "Mozilla", "Discord", "Spotify", "Oracle", "GitHub", "Epic Games"
-        };
-
-        #region WinTrust P/Invoke for Authenticode
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private class WINTRUST_FILE_INFO : IDisposable
-        {
-            public uint cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_FILE_INFO));
-            public IntPtr pcwszFilePath;
-            public IntPtr hFile = IntPtr.Zero;
-            public IntPtr pgKnownSubject = IntPtr.Zero;
-
-            public WINTRUST_FILE_INFO(string filePath)
-            {
-                pcwszFilePath = Marshal.StringToCoTaskMemUni(filePath);
-            }
-
-            public void Dispose()
-            {
-                if (pcwszFilePath != IntPtr.Zero)
-                {
-                    Marshal.FreeCoTaskMem(pcwszFilePath);
-                    pcwszFilePath = IntPtr.Zero;
-                }
-            }
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private class WINTRUST_DATA : IDisposable
-        {
-            public uint cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_DATA));
-            public IntPtr pPolicyCallbackData = IntPtr.Zero;
-            public IntPtr pSIPClientData = IntPtr.Zero;
-            public uint dwUIChoice = 2; // WTD_UI_NONE
-            public uint fdwRevocationChecks = 0;
-            public uint dwUnionChoice = 1; // WTD_CHOICE_FILE
-            public IntPtr pFile;
-            public uint dwStateAction = 0;
-            public IntPtr hWVTStateData = IntPtr.Zero;
-            public IntPtr pwszURLReference = IntPtr.Zero;
-            public uint dwProvFlags = 0x00000040 | 0x00000010;
-            public uint dwUIContext = 0;
-            public IntPtr pSignatureSettings = IntPtr.Zero;
-
-            public WINTRUST_DATA(WINTRUST_FILE_INFO fileInfo)
-            {
-                pFile = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(WINTRUST_FILE_INFO)));
-                Marshal.StructureToPtr(fileInfo, pFile, false);
-            }
-
-            public void Dispose()
-            {
-                if (pFile != IntPtr.Zero)
-                {
-                    Marshal.DestroyStructure(pFile, typeof(WINTRUST_FILE_INFO));
-                    Marshal.FreeCoTaskMem(pFile);
-                    pFile = IntPtr.Zero;
-                }
-            }
-        }
-
-        private static readonly Guid WINTRUST_ACTION_GENERIC_VERIFY_V2 = new("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}");
-
-        [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]
-        private static extern uint WinVerifyTrust(
-            IntPtr hwnd,
-            [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID,
-            WINTRUST_DATA pWVTData);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern bool MoveFileEx(string lpExistingFileName, string? lpNewFileName, int dwFlags);
-
-        private const int MOVEFILE_DELAY_UNTIL_REBOOT = 0x00000004;
-
-        #endregion
 
         public FileThreatAnalyzerService(IVirusTotalCheckService virusTotalService)
         {
@@ -179,7 +107,8 @@ namespace Bakım.Services
                     result.IsSigned = true;
                     result.DigitalSignatureText = signature.Describe();
 
-                    bool isTrustedVendor = KnownTrustedPublishers.Any(p => signerName.Contains(p, StringComparison.OrdinalIgnoreCase));
+                    // Tam eşleşme (S-12): "AMD" artık "Hamdi Yazılım"ı, "Intel" "Intellisoft"u güvenilir yapmaz.
+                    bool isTrustedVendor = Bakım.Core.Security.TrustedPublishers.IsTrusted(signerName);
                     if (isTrustedVendor)
                     {
                         result.Factors.Add(new ThreatFactor
@@ -607,71 +536,29 @@ namespace Bakım.Services
             catch { }
         }
 
-        public async Task<bool> KillProcessAsync(int processId)
+        public Task<OperationResult> KillProcessAsync(int processId)
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    using var proc = Process.GetProcessById(processId);
-                    proc.Kill(entireProcessTree: true);
-                    proc.WaitForExit(3000);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            var safeProcess = App.TryGetService<ISafeProcessService>() ?? new SafeProcessService(AppLog.Current);
+            return safeProcess.TerminateProcessAsync(processId);
         }
 
-        public async Task<bool> ForceDeleteFileAsync(string filePath)
+        /// <summary>
+        /// Eskiden: öznitelikler sıfırlanıyor, ana modülü eşleşen HER süreç (svchost dahil)
+        /// öldürülüyor, dosya kalıcı siliniyor, olmazsa korumasız MoveFileEx ile işaretleniyordu.
+        /// Artık PathSafetyGuard'dan geçer, süreç öldürmez, Geri Dönüşüm Kutusu'nu kullanır.
+        /// </summary>
+        public async Task<OperationResult> RemoveFileAsync(string filePath)
         {
-            return await Task.Run(() =>
+            var safeDelete = App.TryGetService<ISafeDeleteService>() ?? new SafeDeleteService(AppLog.Current);
+            var result = await safeDelete.DeletePathAsync(filePath, isDirectory: false,
+                new DeletePolicy(Permanent: false, AllowOutsideKnownRoots: true));
+
+            if (result.Outcome is DeleteOutcome.InUse or DeleteOutcome.AccessDenied)
             {
-                if (!File.Exists(filePath)) return true;
-
-                try
-                {
-                    // 1. Remove ReadOnly / System attributes
-                    File.SetAttributes(filePath, FileAttributes.Normal);
-
-                    // 2. Kill any process locking the file
-                    try
-                    {
-                        var procs = Process.GetProcesses();
-                        foreach (var p in procs)
-                        {
-                            try
-                            {
-                                if (p.MainModule?.FileName.Equals(filePath, StringComparison.OrdinalIgnoreCase) == true)
-                                {
-                                    p.Kill(true);
-                                    p.WaitForExit(2000);
-                                }
-                            }
-                            catch { }
-                        }
-                    }
-                    catch { }
-
-                    // 3. Delete directly
-                    File.Delete(filePath);
-                    return !File.Exists(filePath);
-                }
-                catch
-                {
-                    // 4. Fallback: Schedule delete on reboot
-                    try
-                    {
-                        return MoveFileEx(filePath, null, MOVEFILE_DELAY_UNTIL_REBOOT);
-                    }
-                    catch
-                    {
-                        return false;
-                    }
-                }
-            });
+                var scheduled = safeDelete.ScheduleDeleteOnReboot(filePath, isDirectory: false);
+                if (scheduled.Succeeded) return scheduled;
+            }
+            return result;
         }
 
         private static string ComputeFileMd5(string filePath)

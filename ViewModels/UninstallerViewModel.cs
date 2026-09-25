@@ -397,27 +397,34 @@ namespace Bakım.ViewModels
 
             try
             {
+                string restoreNote = string.Empty;
                 if (createRestorePoint)
                 {
                     StatusMessage = $"{app.DisplayName} için Geri Yükleme Noktası oluşturuluyor...";
-                    await _deepUninstaller.CreateRestorePointAsync(app.DisplayName);
+                    var rp = await _deepUninstaller.CreateRestorePointDetailedAsync(app.DisplayName);
+                    restoreNote = "\n\nGeri yükleme noktası: " + rp.Message;
                 }
                 StatusMessage = $"{app.DisplayName} zorla sökülüyor...";
                 int cleanedCount = await _deepUninstaller.ExecuteForceUninstallAsync(app);
 
-                Application.Current.Dispatcher.Invoke(() =>
+                bool gone = !_deepUninstaller.IsStillInstalled(app);
+                if (gone)
                 {
-                    Apps.Remove(app);
-                });
+                    Application.Current.Dispatcher.Invoke(() => Apps.Remove(app));
+                }
 
                 UpdateStats();
                 UpdateSelectedAppsCount();
 
                 MessageBox.Show(
-                    $"{app.DisplayName} başarıyla zorla kaldırıldı ve {cleanedCount} kalıntı silindi!",
-                    "Zorla Kaldırma Tamamlandı",
+                    (gone
+                        ? $"{app.DisplayName} zorla kaldırıldı: {cleanedCount} öğe temizlendi."
+                        : $"{app.DisplayName} için {cleanedCount} öğe temizlendi, ancak program kaydı hâlâ duruyor.") +
+                    "\n\nYalnızca yüksek güvenli öğeler silindi; dosyalar Geri Dönüşüm Kutusu'na taşındı, kayıt defteri öğeleri yedeklendi." +
+                    restoreNote,
+                    "Zorla Kaldırma",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    gone ? MessageBoxImage.Information : MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
@@ -469,10 +476,11 @@ namespace Bakım.ViewModels
             {
                 var result = await _deepUninstaller.ExecuteBatchSilentUninstallAsync(selectedApps, IsAutoCleanEnabled, progress);
 
-                // Remove successfully uninstalled apps from UI
+                // Yalnızca kaldırıldığı DOĞRULANAN programlar listeden çıkar
+                // (eskiden başarısız olanlar da siliniyordu).
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    foreach (var app in selectedApps)
+                    foreach (var app in result.Removed)
                     {
                         Apps.Remove(app);
                     }
@@ -481,14 +489,20 @@ namespace Bakım.ViewModels
                 UpdateStats();
                 UpdateSelectedAppsCount();
 
+                var report = new System.Text.StringBuilder();
+                report.AppendLine($"Kaldırılan: {result.SuccessCount}");
+                report.AppendLine($"Kaldırılamayan: {result.FailedCount}");
+                report.AppendLine($"Atlanan (sessiz kaldırma desteklenmiyor): {result.SkippedCount}");
+                if (IsAutoCleanEnabled) report.AppendLine($"Otomatik temizlenen: {result.FormattedCleanedSize}");
+                if (!string.IsNullOrEmpty(result.RestorePointMessage)) report.AppendLine($"Geri yükleme noktası: {result.RestorePointMessage}");
+                foreach (var (app, reason) in result.Failed.Take(8)) report.AppendLine($"\n• {app.DisplayName}: {reason}");
+                foreach (var (app, reason) in result.Skipped.Take(8)) report.AppendLine($"\n• {app.DisplayName}: {reason}");
+
                 MessageBox.Show(
-                    $"Toplu kaldırma tamamlandı!\n\n" +
-                    $"Başarılı: {result.SuccessCount}\n" +
-                    $"Başarısız / Atlanan: {result.FailedCount}\n" +
-                    $"Kurtarılan Alan: {result.FormattedCleanedSize}",
+                    report.ToString(),
                     "Toplu Kaldırma Raporu",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    result.FailedCount > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -648,12 +662,25 @@ namespace Bakım.ViewModels
         {
             if (app == null) return;
 
+            // Program hâlâ kuruluysa "kalıntı" yoktur: kurulum klasörü ve ayarları
+            // programın kendisidir. Eskiden bu düğme kurulu programın klasörünü %100
+            // seçili sunuyor ve programı kaldırmadan listeden "kaldırıldı" diye çıkarıyordu.
+            if (_deepUninstaller.IsStillInstalled(app))
+            {
+                MessageBox.Show(
+                    $"{app.DisplayName} hâlâ kurulu.\n\nKalıntılar program kaldırıldıktan sonra taranır. Programı kaldırmak için satırdaki 'Kaldır' düğmesini kullanın; sihirbaz kaldırmayı doğruladıktan sonra kalıntıları otomatik gösterir.",
+                    "Program Hâlâ Kurulu",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
             StatusMessage = $"{app.DisplayName} için kalıntılar taranıyor...";
             IsBusy = true;
 
             try
             {
-                var residualItems = await _residualScanner.ScanResidualItemsAsync(app);
+                var residualItems = await _residualScanner.ScanResidualItemsAsync(app, ResidualScanOptions.Confirmed);
 
                 if (residualItems.Count > 0)
                 {
@@ -699,8 +726,8 @@ namespace Bakım.ViewModels
                     UpdateSelectedAppsCount();
 
                     MessageBox.Show(
-                        $"{app.DisplayName} başarıyla kaldırıldı!\nSistemde herhangi bir artık kalıntı tespit edilmedi.",
-                        "Kaldırma Tamamlandı",
+                        $"{app.DisplayName} için geride kalan öğe bulunamadı.",
+                        "Kalıntı Bulunamadı",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
@@ -755,7 +782,11 @@ namespace Bakım.ViewModels
             try
             {
                 var analyzer = App.GetService<IFileThreatAnalyzerService>();
-                var analysisResult = await analyzer.AnalyzeFileAsync(targetFile);
+                ThreatAnalysisResult analysisResult;
+                using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.Uninstaller, app.DisplayName))
+                {
+                    analysisResult = await analyzer.AnalyzeFileAsync(targetFile);
+                }
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {

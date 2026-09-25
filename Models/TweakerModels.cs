@@ -21,6 +21,28 @@ namespace Bakım.Models
         public bool IsRecommended { get; set; } = false;
         public string IconSymbol { get; set; } = "Wrench24";
 
+        /// <summary>Güvenlik etkisi (S-16); <see cref="ApplySecurityNote"/> ile katalogdan doldurulur.</summary>
+        public Bakım.Core.Security.SecurityImpact SecurityImpact { get; private set; }
+        public string SecurityWarning { get; private set; } = string.Empty;
+        public bool ReducesSecurity => SecurityImpact == Bakım.Core.Security.SecurityImpact.High;
+        public bool AffectsSecurity => SecurityImpact == Bakım.Core.Security.SecurityImpact.Low;
+
+        /// <summary>
+        /// Katalogdaki güvenlik notunu uygular. Güvenliği azaltan ayar hiçbir zaman
+        /// "önerilen" sayılmaz; böylece "Önerilenleri uygula" onu asla açmaz.
+        /// </summary>
+        public void ApplySecurityNote()
+        {
+            var note = Bakım.Core.Security.TweakSecurityCatalog.For(Id);
+            SecurityImpact = note.Impact;
+            SecurityWarning = note.Warning;
+            if (note.Impact == Bakım.Core.Security.SecurityImpact.High) IsRecommended = false;
+            OnPropertyChanged(nameof(SecurityImpact));
+            OnPropertyChanged(nameof(SecurityWarning));
+            OnPropertyChanged(nameof(ReducesSecurity));
+            OnPropertyChanged(nameof(AffectsSecurity));
+        }
+
         public bool IsToggle => Type == TweakType.Toggle;
         public bool IsNumeric => Type == TweakType.Numeric;
         public bool IsAction => Type == TweakType.Action;
@@ -47,6 +69,9 @@ namespace Bakım.Models
 
         [ObservableProperty]
         private bool _isBusy;
+
+        /// <summary>Son uygulama denemesinde başarısız olan yazımların özeti (yoksa null).</summary>
+        public string? LastError { get; set; }
 
         [ObservableProperty]
         private int _numericValue;

@@ -143,6 +143,9 @@ namespace Bakım
             // 6. Arka plan bakım motoru (otomatik RAM temizliği, yüksek RAM uyarısı)
             GetService<IBackgroundMaintenanceService>().Start();
 
+            // Önceki oturum Oyun Modu açıkken çöktüyse güç planını geri yükle.
+            GetService<IGameModeService>().RecoverInterruptedSession();
+
             // Sentinel Kurulum Nöbetçisi (otomatik kurulum yakalama & analizör taraması)
             var sentinelService = GetService<ISetupSentinelService>();
             sentinelService.SetupDetected += OnSetupDetected;
@@ -232,7 +235,7 @@ namespace Bakım
                 if (targetApp == null)
                 {
                     MessageBox.Show(
-                        $"Kaldırılacak hedef program veya kısayol çözümlenemedi:\n\n{path}",
+                        $"Bu hedef için kaldırılabilecek bir program bulunamadı ya da hedef korumalı bir Windows bileşeni:\n\n{path}",
                         "Kaldırıcı Hatası",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -342,6 +345,14 @@ namespace Bakım
             // tema durumu oluşması yapısal olarak imkânsız hale gelir.
             services.AddSingleton<IThemeService>(_ => ThemeService.Shared);
 
+            // Güvenlik çekirdeği: silme, kayıt defteri, süreç ve geri yükleme noktası
+            // işlemlerinin TEK yolu. Yıkıcı işlem yapan her servis bunları kullanır.
+            services.AddSingleton(_ => Bakım.Core.Safety.PathSafetyGuard.Default);
+            services.AddSingleton<Bakım.Services.Safety.ISafeDeleteService, Bakım.Services.Safety.SafeDeleteService>();
+            services.AddSingleton<Bakım.Services.Safety.ISafeRegistryService, Bakım.Services.Safety.SafeRegistryService>();
+            services.AddSingleton<Bakım.Services.Safety.ISafeProcessService, Bakım.Services.Safety.SafeProcessService>();
+            services.AddSingleton<Bakım.Services.Safety.IRestorePointService, Bakım.Services.Safety.RestorePointService>();
+
             // Backend Sistem Servisleri (Singleton)
             services.AddSingleton<ISystemCleanService, SystemCleanService>();
             services.AddSingleton<ISystemInfoService, SystemInfoService>();
@@ -370,7 +381,6 @@ namespace Bakım
             services.AddSingleton<IEdgeTweaksService, EdgeTweaksService>();
             services.AddSingleton<ISettingsControlPanelTweaksService, SettingsControlPanelTweaksService>();
             services.AddSingleton<IFileExplorerTweaksService, FileExplorerTweaksService>();
-            services.AddSingleton<IGitHubUpdateService, GitHubUpdateService>();
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IVirusTotalCheckService, VirusTotalCheckService>();
             services.AddSingleton<IAutorunsScannerEngine, AutorunsScannerEngine>();
@@ -381,7 +391,14 @@ namespace Bakım
             // bu yüzden ViewModel'ler onları elle `new` ile üretmek zorunda kalıyordu.
             services.AddSingleton<ITelemetryService, TelemetryService>();
             services.AddSingleton<ICommandPaletteService, CommandPaletteService>();
-            services.AddSingleton<IFileThreatAnalyzerService, FileThreatAnalyzerService>();
+            // Analizör Geçmişi (§6): analiz servisi kaydeden bir dekoratörle sarılır; hangi modül
+            // analiz ederse etsin sonuç geçmişe yazılır.
+            services.AddSingleton<Bakım.Services.History.IAnalysisHistoryService, Bakım.Services.History.AnalysisHistoryService>();
+            services.AddSingleton<FileThreatAnalyzerService>();
+            services.AddSingleton<IFileThreatAnalyzerService>(sp => new Bakım.Services.History.RecordingFileThreatAnalyzer(
+                sp.GetRequiredService<FileThreatAnalyzerService>(),
+                sp.GetRequiredService<Bakım.Services.History.IAnalysisHistoryService>(),
+                sp.GetRequiredService<ILogService>()));
             services.AddSingleton<IStoreService, StoreService>();
             services.AddSingleton<IDuplicateFinderService, DuplicateFinderService>();
             services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
@@ -404,7 +421,9 @@ namespace Bakım
             services.AddTransient<PrivacyDebloatViewModel>();
             services.AddTransient<CrashAnalyzerViewModel>();
             services.AddTransient<UninstallerViewModel>();
-            services.AddTransient<AnalyzerViewModel>();
+            // Tekil: Kurulum Nöbetçisi "Analizörle tara" dediğinde ekrandaki örneğe dosya eklemeli.
+            // Transient iken her çağrı görünmeyen yeni bir örnek (ve yeni bir tam tarama) üretiyordu.
+            services.AddSingleton<AnalyzerViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();

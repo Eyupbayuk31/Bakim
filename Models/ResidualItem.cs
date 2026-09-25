@@ -7,7 +7,8 @@ namespace Bakım.Models
     {
         Folder,
         File,
-        RegistryKey
+        RegistryKey,
+        RegistryValue
     }
 
     public partial class ResidualItem : ObservableObject
@@ -25,20 +26,34 @@ namespace Bakım.Models
         public ResidualType Type { get; set; } = ResidualType.Folder;
         public long SizeInBytes { get; set; }
         public string Description { get; set; } = string.Empty;
-        public int ConfidenceScore { get; set; } = 100;
-        public bool IsSafeToDelete { get; set; } = true;
 
-        public string FormattedSize => SizeInBytes > 0 
-            ? (SizeInBytes >= 1024 * 1024 
-                ? $"{Math.Round((double)SizeInBytes / (1024 * 1024), 1)} MB" 
-                : $"{Math.Round((double)SizeInBytes / 1024, 1)} KB")
-            : (Type == ResidualType.RegistryKey ? "Kayıt Anahtarı" : "0 B");
+        /// <summary>100 kesin, 90 yüksek, 60 orta, 30 düşük (bkz. LeftoverItem).</summary>
+        public int ConfidenceScore { get; set; } = 60;
+
+        /// <summary>Neden kalıntı sayıldığı.</summary>
+        public string EvidenceText { get; set; } = string.Empty;
+
+        /// <summary>Kesin kanıtlı, bilinen köklerin dışındaki kurulum klasörü.</summary>
+        public bool AllowOutsideKnownRoots { get; set; }
+
+        /// <summary>Yüksek ve kesin güvenli öğeler "güvenli" sayılır ve varsayılan seçilir.</summary>
+        public bool IsSafeToDelete => ConfidenceScore >= 90;
+
+        public string FormattedSize => SizeInBytes > 0
+            ? Bakım.Core.Text.ByteFormatter.Format(SizeInBytes)
+            : Type switch
+            {
+                ResidualType.RegistryKey => "Kayıt Anahtarı",
+                ResidualType.RegistryValue => "Kayıt Değeri",
+                _ => "0 B"
+            };
 
         public string TypeName => Type switch
         {
             ResidualType.Folder => "Klasör",
             ResidualType.File => "Dosya",
             ResidualType.RegistryKey => "Kayıt Defteri",
+            ResidualType.RegistryValue => "Kayıt Değeri",
             _ => "Kalıntı"
         };
 
@@ -47,12 +62,23 @@ namespace Bakım.Models
             ResidualType.Folder => "Folder20",
             ResidualType.File => "Document20",
             ResidualType.RegistryKey => "Tag20",
+            ResidualType.RegistryValue => "Tag20",
             _ => "Apps20"
         };
 
-        public string RiskBadgeText => IsSafeToDelete ? "%100 Güvenli" : "İnceleyin";
+        /// <summary>
+        /// Mutlak ifade ("%100 Güvenli") kullanılmaz: kullanıcıya kanıtın gücü söylenir.
+        /// </summary>
+        public string RiskBadgeText => ConfidenceScore switch
+        {
+            >= 100 => "Kesin",
+            >= 90 => "Yüksek güven",
+            >= 60 => "İnceleyin",
+            _ => "Düşük güven"
+        };
+
         /// <summary>Kalıntının silinme güvenliğinin anlamsal tonu.</summary>
-        public Intent RiskIntent => IsSafeToDelete ? Intent.Success : Intent.Caution;
+        public Intent RiskIntent => ConfidenceScore >= 90 ? Intent.Success : Intent.Caution;
         public string RiskBadgeBackground => IsSafeToDelete ? "#1510B981" : "#15F59E0B";
     }
 }

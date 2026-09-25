@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Bakım.Models;
-using Microsoft.VisualBasic.FileIO;
+using Bakım.Services.Safety;
 
 namespace Bakım.Services.Sentinel.Actions
 {
@@ -12,79 +13,90 @@ namespace Bakım.Services.Sentinel.Actions
         public int DeletedFilesCount { get; set; }
         public int DeletedFoldersCount { get; set; }
         public int ProtectedModifiedFilesCount { get; set; }
+        public int BlockedCount { get; set; }
         public List<string> Errors { get; } = new();
     }
 
     /// <summary>
-    /// Kurulum sonras geri alma (revert) ilemlerini yneten gvenli motor.
-    /// Yalnzca oturum srasnda YEN RETLEN ("Created") dosyalar Geri Dnm
-    /// Kutusuna gnderir. nceden var olan veya deitirilen hibir dosyay ASLA silmez.
+    /// Kurulum sonrası geri alma (revert) işlemlerini yöneten güvenli motor.
+    ///
+    /// Kurallar:
+    ///   • Yalnızca oturum sırasında YENİ OLUŞTURULAN ("Created") dosyalara dokunulur;
+    ///     önceden var olan ya da değiştirilen hiçbir dosya silinmez.
+    ///   • Her silme <see cref="ISafeDeleteService"/> üzerinden yapılır: yol önce
+    ///     PathSafetyGuard'dan geçer (ör. C:\Windows altına bırakılmış bir sürücü
+    ///     dosyası silinmez), dosya Geri Dönüşüm Kutusu'na taşınır.
+    ///   • Geri Dönüşüm Kutusu başarısız olursa dosya KALICI SİLİNMEZ; hata raporlanır.
+    ///     (v3.20.0'daki ilk sürüm bu durumda sessizce File.Delete yapıyordu.)
+    ///   • Klasörler yalnızca boşsa kaldırılır.
     /// </summary>
     public static class RollbackPlanner
     {
-        /// <summary>
-        /// Raporlanan deiiklikleri gvenli ekilde geri alr.
-        /// </summary>
-        public static RollbackResult ExecuteSafeRollback(SetupDeltaReport report)
+        /// <summary>Senkron sarmalayıcı (testler ve eski çağrılar için).</summary>
+        public static RollbackResult ExecuteSafeRollback(SetupDeltaReport report, ISafeDeleteService? safeDelete = null) =>
+            ExecuteSafeRollbackAsync(report, safeDelete).GetAwaiter().GetResult();
+
+        public static async Task<RollbackResult> ExecuteSafeRollbackAsync(SetupDeltaReport report, ISafeDeleteService? safeDelete = null)
         {
+            safeDelete ??= App.TryGetService<ISafeDeleteService>() ?? new SafeDeleteService(NullLogService.Instance);
             var result = new RollbackResult();
+            string journal = UndoJournal.Create($"Kurulum geri alma: {report.AppName}");
 
-            // 1. Korunacak dosyalar belirle (ModifiedFiles asla silinemez!)
+            // 1. Korunacak dosyalar: değiştirilenler ve silinenler asla hedef olamaz.
             var protectedFiles = new HashSet<string>(report.ModifiedFiles, StringComparer.OrdinalIgnoreCase);
-            result.ProtectedModifiedFilesCount = protectedFiles.Count;
+            protectedFiles.UnionWith(report.DeletedFiles);
+            result.ProtectedModifiedFilesCount = report.ModifiedFiles.Count;
 
-            // 2. Yalnzca CreatedFiles listesindeki dosyalara ilem yap
-            // Geriye dnk uyumluluk: CreatedFiles bo ise AddedFiles kullan ama ModifiedFiles' hari tut
+            // 2. Hedef: yalnızca CreatedFiles. Eski raporlarda CreatedFiles yoksa
+            //    AddedFiles'tan değiştirilenler çıkarılarak kullanılır.
             var targetFiles = report.CreatedFiles.Count > 0
                 ? report.CreatedFiles
                 : report.AddedFiles.Where(f => !protectedFiles.Contains(f)).ToList();
 
-            foreach (var file in targetFiles)
+            foreach (var file in targetFiles.Where(f => !protectedFiles.Contains(f)))
             {
-                try
-                {
-                    // Ek koruma: dosya deitirilenler listesindeyse atla
-                    if (protectedFiles.Contains(file)) continue;
+                if (!File.Exists(file)) continue;
 
-                    if (File.Exists(file))
-                    {
-                        try
-                        {
-                            // Kalc silme yerine Geri Dnm Kutusu (Recycle Bin) kullanlr
-                            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(
-                                file,
-                                UIOption.OnlyErrorDialogs,
-                                RecycleOption.SendToRecycleBin);
-                            result.DeletedFilesCount++;
-                        }
-                        catch
-                        {
-                            // Geri Dnm Kutusu desteklenmiyorsa veya hata aldysa dorudan gvenli sil
-                            File.Delete(file);
-                            result.DeletedFilesCount++;
-                        }
-                    }
-                }
-                catch (Exception ex)
+                var r = await safeDelete.DeletePathAsync(file, isDirectory: false, new DeletePolicy(JournalId: journal));
+                if (r.Succeeded)
                 {
-                    result.Errors.Add($"Dosya silinemedi: {file} ({ex.Message})");
+                    result.DeletedFilesCount++;
+                }
+                else if (r.Outcome == DeleteOutcome.Blocked)
+                {
+                    result.BlockedCount++;
+                    result.Errors.Add($"Korumalı konum, silinmedi: {file} ({r.Message})");
+                }
+                else if (r.Outcome != DeleteOutcome.NotFound)
+                {
+                    result.Errors.Add($"Dosya silinemedi: {file} ({r.Message})");
                 }
             }
 
-            // 3. Yalnzca yeni eklenmi ve u an bo olan klasrleri sil (en derinden balayarak)
+            // 3. Yalnızca yeni eklenmiş ve şu an BOŞ olan klasörler (en derinden başlayarak).
             foreach (var folder in report.AddedFolders.OrderByDescending(f => f.Length))
             {
                 try
                 {
-                    if (Directory.Exists(folder) && !Directory.EnumerateFileSystemEntries(folder).Any())
-                    {
-                        Directory.Delete(folder);
-                        result.DeletedFoldersCount++;
-                    }
+                    if (!Directory.Exists(folder) || Directory.EnumerateFileSystemEntries(folder).Any()) continue;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    result.Errors.Add($"Klasr silinemedi: {folder} ({ex.Message})");
+                    continue;
+                }
+
+                var r = await safeDelete.DeletePathAsync(folder, isDirectory: true, new DeletePolicy(JournalId: journal));
+                if (r.Succeeded)
+                {
+                    result.DeletedFoldersCount++;
+                }
+                else if (r.Outcome == DeleteOutcome.Blocked)
+                {
+                    result.BlockedCount++;
+                }
+                else if (r.Outcome != DeleteOutcome.NotFound)
+                {
+                    result.Errors.Add($"Klasör silinemedi: {folder} ({r.Message})");
                 }
             }
 

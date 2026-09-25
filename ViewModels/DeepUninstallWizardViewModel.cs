@@ -5,14 +5,18 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Bakım.Core.Text;
+using Bakım.Helpers;
 using Bakım.Models;
 using Bakım.Services;
+using Bakım.Services.Safety;
+using Bakım.Services.Uninstall;
 
 namespace Bakım.ViewModels
 {
@@ -25,16 +29,31 @@ namespace Bakım.ViewModels
         Completed = 5
     }
 
+    /// <summary>
+    /// Derin kaldırma sihirbazı.
+    ///
+    /// v3.21 akışı: Onay (kapatılacak süreçler listelenir) → resmi kaldırıcı GERÇEKTEN
+    /// bitene kadar beklenir → sonuç doğrulanır → yalnızca kaldırma doğrulandıysa
+    /// kurulum klasörü ve Uninstall kaydı kalıntı sayılır → temizlik güvenli servislerle
+    /// yapılır (Geri Dönüşüm Kutusu + gerçek .reg yedeği) → gerçek sonuç raporlanır.
+    /// </summary>
     public partial class DeepUninstallWizardViewModel : ObservableObject
     {
         private readonly IDeepUninstallerService _deepUninstaller;
         private readonly IResidualScannerEngine _residualScanner;
+        private readonly ISafeProcessService? _safeProcess;
         private readonly ICollectionView _filteredView;
+        private IReadOnlyList<ProcessCandidate> _processesToClose = Array.Empty<ProcessCandidate>();
+        private CancellationTokenSource? _waitCts;
+        private string? _journalId;
 
         public InstalledAppItem TargetApp { get; }
 
         public ObservableCollection<ResidualItem> Residuals { get; } = new();
         public ICollectionView FilteredResiduals => _filteredView;
+
+        /// <summary>Temizlenemeyen öğeler ve nedenleri (tamamlandı ekranı).</summary>
+        public ObservableCollection<string> FailedItems { get; } = new();
 
         [ObservableProperty]
         private WizardStep _currentStep = WizardStep.Ready;
@@ -46,17 +65,30 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(StepNumber));
         }
 
-        // Step 1 Options
+        // Adım 1 seçenekleri
         [ObservableProperty]
         private bool _createRestorePoint = true;
 
         [ObservableProperty]
         private bool _killRelatedProcesses = true;
 
+        /// <summary>
+        /// Kayıt defteri yedeği artık her zaman alınır (SafeRegistryService yedek
+        /// alamazsa silmez). Özellik geriye dönük bağlama için tutulur.
+        /// </summary>
         [ObservableProperty]
         private bool _backupRegistryBeforeClean = true;
 
-        // Step 2 & 3 Status
+        [ObservableProperty]
+        private string _processesToCloseText = string.Empty;
+
+        [ObservableProperty]
+        private bool _canKillProcesses;
+
+        [ObservableProperty]
+        private string _restorePointHint = "Kaldırmadan önce Windows geri yükleme noktası oluşturur. Windows 24 saatte en fazla bir nokta oluşturur.";
+
+        // Adım 2 ve 3 durumu
         [ObservableProperty]
         private string _statusMessage = string.Empty;
 
@@ -66,7 +98,20 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isBusy;
 
-        // Step 4 Filtering & Selection
+        [ObservableProperty]
+        private bool _canStopWaiting;
+
+        // Adım 4: kaldırma sonucu
+        [ObservableProperty]
+        private bool _isUninstallConfirmed;
+
+        [ObservableProperty]
+        private string _uninstallBannerTitle = string.Empty;
+
+        [ObservableProperty]
+        private string _uninstallBannerDetail = string.Empty;
+
+        // Adım 4: filtre ve seçim
         [ObservableProperty]
         private string _searchText = string.Empty;
 
@@ -88,7 +133,7 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private string _formattedSelectedSize = "0 B";
 
-        // Step 5 Report
+        // Adım 5: rapor
         [ObservableProperty]
         private int _cleanedCount;
 
@@ -97,6 +142,15 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private string _formattedCleanedSize = "0 B";
+
+        [ObservableProperty]
+        private string _completionTitle = string.Empty;
+
+        [ObservableProperty]
+        private string _completionDetail = string.Empty;
+
+        [ObservableProperty]
+        private bool _hasFailures;
 
         [ObservableProperty]
         private string _registryBackupFilePath = string.Empty;
@@ -116,27 +170,79 @@ namespace Bakım.ViewModels
 
         public string DisplayVersion => !string.IsNullOrWhiteSpace(TargetApp.DisplayVersion)
             ? TargetApp.DisplayVersion
-            : "1.0.0";
+            : "—";
 
         public string InstallLocation => !string.IsNullOrWhiteSpace(TargetApp.InstallLocation)
             ? TargetApp.InstallLocation
-            : (!string.IsNullOrWhiteSpace(TargetApp.DisplayIconPath) ? Path.GetDirectoryName(TargetApp.DisplayIconPath) ?? string.Empty : "Bilinmeyen Konum");
+            : (!string.IsNullOrWhiteSpace(TargetApp.DisplayIconPath) ? Path.GetDirectoryName(TargetApp.DisplayIconPath.Split(',')[0].Trim('"')) ?? string.Empty : "Bilinmeyen Konum");
 
         public string FormattedSize => TargetApp.FormattedSize;
+
+        private bool HasUninstallCommand =>
+            !string.IsNullOrWhiteSpace(TargetApp.UninstallString) || !string.IsNullOrWhiteSpace(TargetApp.QuietUninstallString);
 
         public DeepUninstallWizardViewModel(
             InstalledAppItem targetApp,
             IDeepUninstallerService deepUninstaller,
             IResidualScannerEngine residualScanner)
+            : this(targetApp, deepUninstaller, residualScanner, App.TryGetService<ISafeProcessService>())
+        {
+        }
+
+        public DeepUninstallWizardViewModel(
+            InstalledAppItem targetApp,
+            IDeepUninstallerService deepUninstaller,
+            IResidualScannerEngine residualScanner,
+            ISafeProcessService? safeProcess)
         {
             TargetApp = targetApp;
             _deepUninstaller = deepUninstaller;
             _residualScanner = residualScanner;
+            _safeProcess = safeProcess;
 
             _filteredView = CollectionViewSource.GetDefaultView(Residuals);
             _filteredView.Filter = FilterResidualItem;
 
+            if (!UacHelper.IsAdministrator())
+            {
+                RestorePointHint = "Yönetici olarak çalışmadığı için geri yükleme noktası oluşturulamaz.";
+            }
+
+            RefreshProcessesToClose();
             StatusMessage = $"{AppName} için kaldırma ve kalıntı temizleme işlemi başlatılmaya hazır.";
+        }
+
+        /// <summary>Kapatılacak süreçleri önceden listeler (kullanıcı neyin kapanacağını görür).</summary>
+        public void RefreshProcessesToClose()
+        {
+            if (_safeProcess == null)
+            {
+                CanKillProcesses = false;
+                ProcessesToCloseText = "Süreç denetimi kullanılamıyor.";
+                return;
+            }
+
+            string? folder = !string.IsNullOrWhiteSpace(TargetApp.InstallLocation) ? TargetApp.InstallLocation : null;
+            _processesToClose = _safeProcess.FindProcessesUnder(folder, out string? refusal);
+
+            if (refusal != null)
+            {
+                CanKillProcesses = false;
+                KillRelatedProcesses = false;
+                ProcessesToCloseText = folder == null
+                    ? "Kurulum klasörü bilinmediği için süreç kapatılmayacak."
+                    : $"Güvenli kapsam dışında olduğu için süreç kapatılmayacak: {refusal}";
+            }
+            else if (_processesToClose.Count == 0)
+            {
+                CanKillProcesses = false;
+                ProcessesToCloseText = "Programa ait açık süreç yok.";
+            }
+            else
+            {
+                CanKillProcesses = true;
+                ProcessesToCloseText = "Kapatılacak: " + string.Join(", ", _processesToClose.Select(p => $"{p.Name} (PID {p.ProcessId})"));
+            }
         }
 
         partial void OnSearchTextChanged(string value)
@@ -148,24 +254,22 @@ namespace Bakım.ViewModels
         {
             if (obj is not ResidualItem item) return false;
 
-            // 1. Category Filter
             bool categoryMatch = SelectedFilter switch
             {
-                "Registry" => item.Type == ResidualType.RegistryKey,
+                "Registry" => item.Type is ResidualType.RegistryKey or ResidualType.RegistryValue,
                 "Folders" => item.Type == ResidualType.Folder,
                 "Files" => item.Type == ResidualType.File,
                 _ => true
             };
 
             if (!categoryMatch) return false;
-
-            // 2. Search Text
             if (string.IsNullOrWhiteSpace(SearchText)) return true;
 
-            string query = SearchText.Trim().ToLowerInvariant();
-            return item.Path.ToLowerInvariant().Contains(query) ||
-                   item.Description.ToLowerInvariant().Contains(query) ||
-                   item.TypeName.ToLowerInvariant().Contains(query);
+            string query = SearchText.Trim();
+            return item.Path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                   item.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                   item.EvidenceText.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                   item.TypeName.Contains(query, StringComparison.OrdinalIgnoreCase);
         }
 
         private void OnItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -182,97 +286,126 @@ namespace Bakım.ViewModels
             var selectedItems = Residuals.Where(r => r.IsSelected && !r.IsDeleted).ToList();
             SelectedCount = selectedItems.Count;
             SelectedSizeBytes = selectedItems.Sum(r => r.SizeInBytes);
-            FormattedSelectedSize = FormatBytes(SelectedSizeBytes);
+            FormattedSelectedSize = ByteFormatter.Format(SelectedSizeBytes);
             IsAllSelected = TotalCount > 0 && SelectedCount == TotalCount;
         }
 
-        #region Commands: Stepper Actions
+        #region Adımlar
 
         [RelayCommand]
         public async Task StartUninstallAsync()
         {
             CurrentStep = WizardStep.Uninstalling;
             IsBusy = true;
+            Residuals.Clear();
 
             try
             {
-                // 1. Create Restore Point if selected
-                if (CreateRestorePoint)
+                if (CreateRestorePoint && UacHelper.IsAdministrator())
                 {
-                    StatusMessage = "Sistem kararlılığını korumak için Windows Geri Yükleme Noktası oluşturuluyor...";
-                    LiveProcessStatus = "Geri Yükleme Noktası oluşturuluyor...";
-                    await _deepUninstaller.CreateRestorePointAsync(TargetApp.DisplayName);
+                    StatusMessage = "Windows geri yükleme noktası oluşturuluyor...";
+                    LiveProcessStatus = "Geri yükleme noktası oluşturuluyor...";
+                    var rp = await _deepUninstaller.CreateRestorePointDetailedAsync(AppName);
+                    LiveProcessStatus = rp.Message;
                 }
 
-                // 2. Kill related running processes if selected
-                if (KillRelatedProcesses)
+                if (KillRelatedProcesses && CanKillProcesses && _safeProcess != null)
                 {
-                    StatusMessage = "İlişkili arka plan süreçleri denetleniyor...";
-                    LiveProcessStatus = "Süreçler kontrol ediliyor...";
-                    KillProcessesForApp(TargetApp);
+                    StatusMessage = "Programa ait açık süreçler kapatılıyor...";
+                    RefreshProcessesToClose();
+                    var results = await _safeProcess.TerminateAsync(_processesToClose);
+                    int closed = results.Count(r => r.Succeeded);
+                    LiveProcessStatus = $"{closed}/{results.Count} süreç kapatıldı.";
                 }
 
-                // 3. Launch Uninstaller
-                bool launched = false;
-                if (!string.IsNullOrWhiteSpace(TargetApp.UninstallString) || !string.IsNullOrWhiteSpace(TargetApp.QuietUninstallString))
+                if (!HasUninstallCommand)
                 {
-                    StatusMessage = $"{AppName} resmi kaldırıcısı çalıştırılıyor... Lütfen kaldırma adımlarını tamamlayın.";
-                    LiveProcessStatus = "Resmi kaldırıcı penceresi açık — kapatılması bekleniyor...";
-                    launched = await _deepUninstaller.LaunchUninstallAsync(TargetApp, silent: false);
+                    // Kaldırıcısı olmayan (taşınabilir ya da bozuk kayıtlı) program.
+                    IsUninstallConfirmed = false;
+                    UninstallBannerTitle = "Resmi kaldırıcı bulunamadı";
+                    UninstallBannerDetail = "Bu program için bir kaldırma komutu kayıtlı değil. Aşağıda yalnızca programın klasörü ve ad eşleşmesiyle bulunan öğeler listeleniyor; lütfen tek tek inceleyin.";
+                    await ScanHeuristicInternalAsync();
+                    return;
                 }
 
-                if (!launched)
-                {
-                    LiveProcessStatus = "Resmi kaldırıcı bulunamadı veya doğrudan zorla kaldırma modu aktif.";
-                }
+                _waitCts = new CancellationTokenSource();
+                CanStopWaiting = true;
 
-                // 4. Automatically proceed to Stage 3: Deep Scan
-                await ScanResidualsInternalAsync();
+                var progress = new Progress<string>(msg => LiveProcessStatus = msg);
+                StatusMessage = $"{AppName} resmi kaldırıcısı çalışıyor. Kaldırıcı penceresindeki adımları tamamlayın.";
+                var run = await _deepUninstaller.RunUninstallAsync(TargetApp, silent: false, progress, _waitCts.Token);
+
+                CanStopWaiting = false;
+                IsUninstallConfirmed = run.IsRemoved;
+
+                if (run.IsRemoved)
+                {
+                    UninstallBannerTitle = run.Outcome == UninstallOutcome.RebootRequired
+                        ? $"{AppName} kaldırıldı (yeniden başlatma gerekiyor)"
+                        : $"{AppName} kaldırıldı";
+                    UninstallBannerDetail = "Kaldırma doğrulandı. Aşağıda geride kalan öğeler listeleniyor; yalnızca yüksek güvenli olanlar seçili gelir.";
+                    await ScanResidualsInternalAsync(ResidualScanOptions.Confirmed);
+                }
+                else
+                {
+                    UninstallBannerTitle = run.Outcome switch
+                    {
+                        UninstallOutcome.Cancelled => "Kaldırma tamamlanmadı",
+                        UninstallOutcome.TimedOut => "Kaldırıcı hâlâ bitmedi",
+                        UninstallOutcome.Failed => "Kaldırıcı başlatılamadı",
+                        _ => "Program hâlâ kurulu"
+                    };
+                    UninstallBannerDetail = run.Detail + " Program hâlâ kurulu göründüğü için hiçbir dosya ya da kayıt silinmeye önerilmiyor. Tekrar deneyebilir ya da Kaldırıcı ekranındaki 'Zorla Kaldır' seçeneğini kullanabilirsiniz.";
+                    StatusMessage = run.Detail;
+                    CurrentStep = WizardStep.Review;
+                    UpdateCalculations();
+                }
             }
             catch (Exception ex)
             {
+                AppLog.Error("Kaldırma sihirbazında hata.", ex, nameof(DeepUninstallWizardViewModel));
+                IsUninstallConfirmed = false;
+                UninstallBannerTitle = "Kaldırma sırasında hata";
+                UninstallBannerDetail = ex.Message + " Güvenlik için hiçbir öğe silinmeye önerilmiyor.";
                 StatusMessage = $"Kaldırma işlemi sırasında hata oluştu: {ex.Message}";
-                // Gracefully fallback to residual scan anyway
-                await ScanResidualsInternalAsync();
+                CurrentStep = WizardStep.Review;
             }
             finally
             {
+                CanStopWaiting = false;
+                _waitCts?.Dispose();
+                _waitCts = null;
                 IsBusy = false;
             }
         }
 
-        public async Task ScanResidualsInternalAsync()
+        /// <summary>
+        /// Kaldırıcıyı beklemeyi bırakır. Kaldırıcı ÖLDÜRÜLMEZ; sihirbaz sonucu
+        /// o anki duruma göre doğrular.
+        /// </summary>
+        [RelayCommand]
+        public void StopWaiting()
+        {
+            _waitCts?.Cancel();
+            LiveProcessStatus = "Bekleme bırakıldı; kaldırma sonucu kontrol ediliyor...";
+        }
+
+        public async Task ScanResidualsInternalAsync(ResidualScanOptions options)
         {
             CurrentStep = WizardStep.Scanning;
             IsBusy = true;
-            StatusMessage = "Kaldırma tamamlandı. Kayıt Defteri ve dosya sistemindeki derin artıklar taranıyor...";
-            LiveProcessStatus = "Kayıt defteri ve dizinler derinlemesine taranıyor...";
+            StatusMessage = "Dosya sistemi ve kayıt defterindeki kalıntılar taranıyor...";
+            LiveProcessStatus = "Kalıntılar taranıyor...";
 
             try
             {
-                var progress = new Progress<string>(msg =>
-                {
-                    LiveProcessStatus = msg;
-                });
-
-                var items = await _residualScanner.ScanResidualItemsAsync(TargetApp, progress);
-
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    Residuals.Clear();
-                    foreach (var itm in items)
-                    {
-                        itm.PropertyChanged += OnItemPropertyChanged;
-                        Residuals.Add(itm);
-                    }
-                    UpdateCalculations();
-                });
-
-                CurrentStep = WizardStep.Review;
-                StatusMessage = $"{TotalCount} adet artık kalıntı tespit edildi. Silinmesini istemediğiniz ögelerin işaretini kaldırabilirsiniz.";
+                var progress = new Progress<string>(msg => LiveProcessStatus = msg);
+                var items = await _residualScanner.ScanResidualItemsAsync(TargetApp, options, progress);
+                ShowResiduals(items);
             }
             catch (Exception ex)
             {
+                AppLog.Error("Kalıntı taraması başarısız.", ex, nameof(DeepUninstallWizardViewModel));
                 StatusMessage = $"Kalıntı taraması sırasında hata: {ex.Message}";
                 CurrentStep = WizardStep.Review;
             }
@@ -282,53 +415,106 @@ namespace Bakım.ViewModels
             }
         }
 
+        private async Task ScanHeuristicInternalAsync()
+        {
+            CurrentStep = WizardStep.Scanning;
+            IsBusy = true;
+            try
+            {
+                string target = !string.IsNullOrWhiteSpace(TargetApp.InstallLocation)
+                    ? TargetApp.InstallLocation
+                    : TargetApp.DisplayIconPath.Split(',')[0].Trim('"');
+                var leftovers = await _residualScanner.ScanHeuristicResidualsAsync(target, AppName);
+                var items = leftovers.Select(l => new ResidualItem
+                {
+                    Path = l.Path,
+                    Type = l.ItemType switch
+                    {
+                        LeftoverType.File => ResidualType.File,
+                        LeftoverType.RegistryKey => ResidualType.RegistryKey,
+                        LeftoverType.RegistryValue => ResidualType.RegistryValue,
+                        _ => ResidualType.Folder
+                    },
+                    SizeInBytes = l.SizeBytes,
+                    Description = l.Description,
+                    EvidenceText = l.EvidenceText,
+                    ConfidenceScore = l.ConfidenceScore,
+                    IsSelected = false // Kaldırıcısız programda hiçbir şey otomatik seçilmez.
+                }).ToList();
+                ShowResiduals(items);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private void ShowResiduals(IReadOnlyList<ResidualItem> items)
+        {
+            Application.Current?.Dispatcher.Invoke(() => AddResiduals(items));
+            if (Application.Current == null) AddResiduals(items);
+
+            CurrentStep = WizardStep.Review;
+            StatusMessage = TotalCount == 0
+                ? "Geride kalan öğe bulunamadı."
+                : $"{TotalCount} öğe bulundu. Silinmesini istemediklerinizin işaretini kaldırın.";
+        }
+
+        private void AddResiduals(IReadOnlyList<ResidualItem> items)
+        {
+            Residuals.Clear();
+            foreach (var itm in items)
+            {
+                itm.PropertyChanged += OnItemPropertyChanged;
+                Residuals.Add(itm);
+            }
+            UpdateCalculations();
+        }
+
         [RelayCommand]
         public async Task CleanSelectedResidualsAsync()
         {
             var selected = Residuals.Where(r => r.IsSelected && !r.IsDeleted).ToList();
             if (selected.Count == 0)
             {
-                MessageBox.Show("Lütfen temizlenecek en az bir kalıntı seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Lütfen temizlenecek en az bir öğe seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             IsBusy = true;
-            StatusMessage = "Seçilen kalıntılar güvenli motor ile temizleniyor...";
+            StatusMessage = "Seçilen öğeler temizleniyor (dosyalar Geri Dönüşüm Kutusu'na, kayıtlar yedeklenerek)...";
 
             try
             {
-                // 1. Registry Backup before clean if enabled
-                if (BackupRegistryBeforeClean)
+                var progress = new Progress<string>(msg => StatusMessage = msg);
+                var report = await _residualScanner.CleanResidualItemsDetailedAsync(selected, $"Kaldırma: {AppName}", progress);
+                _journalId = report.JournalId;
+
+                CleanedCount = report.SucceededCount;
+                CleanedSizeBytes = report.BytesFreed;
+                FormattedCleanedSize = ByteFormatter.Format(CleanedSizeBytes);
+
+                FailedItems.Clear();
+                foreach (var failure in report.Results.Where(r => !r.Succeeded && r.Outcome != DeleteOutcome.NotFound))
                 {
-                    var regKeys = selected.Where(s => s.Type == ResidualType.RegistryKey).ToList();
-                    if (regKeys.Count > 0)
-                    {
-                        StatusMessage = "Kayıt defteri yedeği alınıyor...";
-                        string backupPath = ExportRegistryBackupSafe(regKeys, TargetApp.DisplayName);
-                        if (!string.IsNullOrWhiteSpace(backupPath))
-                        {
-                            RegistryBackupFilePath = backupPath;
-                            HasRegistryBackup = true;
-                        }
-                    }
+                    FailedItems.Add($"{failure.Target} — {failure.Message}");
                 }
+                HasFailures = FailedItems.Count > 0;
 
-                // 2. Clean residuals
-                var progress = new Progress<string>(msg =>
-                {
-                    StatusMessage = msg;
-                });
+                HasRegistryBackup = report.HasRegistryBackup;
+                RegistryBackupFilePath = UndoJournal.GetDirectory(report.JournalId);
 
-                int cleanedCount = await _residualScanner.CleanResidualItemsAsync(selected, progress);
-                CleanedCount = cleanedCount;
-                CleanedSizeBytes = selected.Sum(s => s.SizeInBytes);
-                FormattedCleanedSize = FormatBytes(CleanedSizeBytes);
+                CompletionTitle = HasFailures
+                    ? $"{CleanedCount} öğe temizlendi, {FailedItems.Count} öğe temizlenemedi"
+                    : $"{CleanedCount} öğe temizlendi";
+                CompletionDetail = "Dosyalar Geri Dönüşüm Kutusu'na taşındı. Kayıt defteri öğeleri silinmeden önce yedeklendi ve geri yüklenebilir.";
 
                 CurrentStep = WizardStep.Completed;
-                StatusMessage = $"{CleanedCount} adet kalıntı başarıyla temizlendi!";
+                StatusMessage = CompletionTitle;
             }
             catch (Exception ex)
             {
+                AppLog.Error("Kalıntı temizliği başarısız.", ex, nameof(DeepUninstallWizardViewModel));
                 MessageBox.Show($"Kalıntılar temizlenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
@@ -337,16 +523,48 @@ namespace Bakım.ViewModels
             }
         }
 
+        /// <summary>Bu oturumda silinen kayıt defteri öğelerini yedekten geri yükler.</summary>
+        [RelayCommand]
+        public async Task RestoreRegistryAsync()
+        {
+            if (string.IsNullOrEmpty(_journalId)) return;
+
+            var confirm = MessageBox.Show(
+                "Bu kaldırma oturumunda silinen kayıt defteri öğeleri yedekten geri yüklensin mi?",
+                "Kayıt Defterini Geri Yükle", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            var (restored, failed) = await UndoJournal.RestoreRegistryAsync(_journalId);
+            StatusMessage = failed == 0
+                ? $"{restored} kayıt defteri yedeği geri yüklendi."
+                : $"{restored} yedek geri yüklendi, {failed} yedek geri yüklenemedi (yönetici gerekebilir).";
+        }
+
+        /// <summary>Geri Dönüşüm Kutusu'nu açar (silinen dosyalar buradan geri alınabilir).</summary>
+        [RelayCommand]
+        public void OpenRecycleBin()
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = "shell:RecycleBinFolder", UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Geri Dönüşüm Kutusu açılamadı.", ex, nameof(DeepUninstallWizardViewModel));
+            }
+        }
+
         [RelayCommand]
         public void SkipCleanup()
         {
-            RequestClose?.Invoke(false);
+            // Program kaldırıldıysa listeden çıkması gerekir; kalıntıları bırakmak bunu değiştirmez.
+            RequestClose?.Invoke(IsUninstallConfirmed);
         }
 
         [RelayCommand]
         public void Close()
         {
-            RequestClose?.Invoke(true);
+            RequestClose?.Invoke(IsUninstallConfirmed);
         }
 
         [RelayCommand]
@@ -359,8 +577,7 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public void ToggleSelectAll()
         {
-            bool newValue = !IsAllSelected;
-            SelectAll(newValue);
+            SelectAll(!IsAllSelected);
         }
 
         [RelayCommand]
@@ -393,26 +610,16 @@ namespace Bakım.ViewModels
             {
                 if (item.Type == ResidualType.Folder && Directory.Exists(item.Path))
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "explorer.exe",
-                        Arguments = $"\"{item.Path}\"",
-                        UseShellExecute = true
-                    });
+                    Process.Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = $"\"{item.Path}\"", UseShellExecute = true });
                 }
                 else if (item.Type == ResidualType.File && File.Exists(item.Path))
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "explorer.exe",
-                        Arguments = $"/select,\"{item.Path}\"",
-                        UseShellExecute = true
-                    });
+                    Process.Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = $"/select,\"{item.Path}\"", UseShellExecute = true });
                 }
-                else if (item.Type == ResidualType.RegistryKey)
+                else if (item.Type is ResidualType.RegistryKey or ResidualType.RegistryValue)
                 {
                     Clipboard.SetText(item.Path);
-                    MessageBox.Show($"Kayıt defteri anahtar yolu panoya kopyalandı:\n\n{item.Path}", "Panoya Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    StatusMessage = $"Kayıt defteri yolu panoya kopyalandı: {item.Path}";
                 }
             }
             catch (Exception ex)
@@ -430,100 +637,24 @@ namespace Bakım.ViewModels
                 Clipboard.SetText(item.Path);
                 StatusMessage = $"Yol panoya kopyalandı: {item.Path}";
             }
-            catch { }
+            catch (System.Runtime.InteropServices.ExternalException ex)
+            {
+                AppLog.Debug($"Pano kullanılamadı: {ex.Message}", nameof(DeepUninstallWizardViewModel));
+            }
         }
 
         [RelayCommand]
         public void OpenBackupFolder()
         {
-            if (string.IsNullOrWhiteSpace(RegistryBackupFilePath) || !File.Exists(RegistryBackupFilePath)) return;
+            if (string.IsNullOrWhiteSpace(RegistryBackupFilePath) || !Directory.Exists(RegistryBackupFilePath)) return;
             try
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "explorer.exe",
-                    Arguments = $"/select,\"{RegistryBackupFilePath}\"",
-                    UseShellExecute = true
-                });
+                Process.Start(new ProcessStartInfo { FileName = "explorer.exe", Arguments = $"\"{RegistryBackupFilePath}\"", UseShellExecute = true });
             }
-            catch { }
-        }
-
-        #endregion
-
-        #region Helpers
-
-        private static void KillProcessesForApp(InstalledAppItem app)
-        {
-            try
+            catch (Exception ex)
             {
-                string loc = app.InstallLocation?.TrimEnd('\\') ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(loc)) return;
-
-                var processes = Process.GetProcesses();
-                foreach (var p in processes)
-                {
-                    try
-                    {
-                        string path = p.MainModule?.FileName ?? string.Empty;
-                        if (path.StartsWith(loc, StringComparison.OrdinalIgnoreCase))
-                        {
-                            p.Kill();
-                            p.WaitForExit(3000);
-                        }
-                    }
-                    catch { }
-                }
+                AppLog.Warning("Yedek klasörü açılamadı.", ex, nameof(DeepUninstallWizardViewModel));
             }
-            catch { }
-        }
-
-        private static string ExportRegistryBackupSafe(List<ResidualItem> regItems, string appName)
-        {
-            try
-            {
-                string safeName = System.Text.RegularExpressions.Regex.Replace(appName, @"[^a-zA-Z0-9_\-]", "_");
-                string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bakim", "Backups");
-                Directory.CreateDirectory(folder);
-
-                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                string backupFile = Path.Combine(folder, $"RegBackup_{safeName}_{timestamp}.reg");
-
-                var sb = new StringBuilder();
-                sb.AppendLine("Windows Registry Editor Version 5.00");
-                sb.AppendLine($"; Bakım Sistem Optimizer - Kaldırma Öncesi Otomatik Kayıt Defteri Yedeği");
-                sb.AppendLine($"; Hedef Uygulama: {appName}");
-                sb.AppendLine($"; Tarih: {DateTime.Now:g}");
-                sb.AppendLine();
-
-                foreach (var item in regItems)
-                {
-                    sb.AppendLine($"; Yedeklenen Anahtar: {item.Path}");
-                    sb.AppendLine($"[-{item.Path}]");
-                    sb.AppendLine();
-                }
-
-                File.WriteAllText(backupFile, sb.ToString(), Encoding.Unicode);
-                return backupFile;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private static string FormatBytes(long bytes)
-        {
-            if (bytes <= 0) return "0 B";
-            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-            int i = 0;
-            double dblBytes = bytes;
-            while (dblBytes >= 1024 && i < suffixes.Length - 1)
-            {
-                dblBytes /= 1024;
-                i++;
-            }
-            return $"{dblBytes:0.##} {suffixes[i]}";
         }
 
         #endregion

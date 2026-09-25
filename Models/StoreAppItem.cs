@@ -24,7 +24,6 @@ namespace Bakım.Models
     public enum StoreInstallerType
     {
         Winget,
-        TechPowerUpVcAio,
         DirectXWeb,
         DirectHttpSilent
     }
@@ -56,9 +55,16 @@ namespace Bakım.Models
         public string Publisher { get; set; } = string.Empty;
         public string SizeText { get; set; } = "Bilinmiyor";
         public string WingetId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Tek kartta birden çok winget paketi (ör. tüm Visual C++ sürümleri). Doluysa
+        /// <see cref="WingetId"/> yerine bunlar sırayla kurulur.
+        /// </summary>
+        public string[] BundleWingetIds { get; set; } = Array.Empty<string>();
         public string DirectDownloadUrl { get; set; } = string.Empty;
         public string SilentInstallArgs { get; set; } = string.Empty;
         public StoreInstallerType InstallerType { get; set; } = StoreInstallerType.Winget;
+        /// <summary>Kurulu tespiti için DisplayName parçası; alternatifler "|" ile ayrılır.</summary>
         public string RegistryDetectKeyword { get; set; } = string.Empty;
 
         [ObservableProperty]

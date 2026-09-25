@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using Bakım.Models;
+using Bakım.Helpers;
 
 namespace Bakım.Services
 {
@@ -312,14 +313,14 @@ namespace Bakım.Services
         {
             return await Task.Run(() =>
             {
+                using var writes = WriteScope.Begin();
                 try
                 {
                     switch (tweak.Id)
                     {
                         // 1. Auto Repair at Boot
                         case "auto_repair_boot":
-                            string arg = enable ? "/set {default} recoveryenabled No" : "/set {default} recoveryenabled Yes";
-                            RunBcdedit(arg);
+                            RunBcdedit("/set", "{default}", "recoveryenabled", enable ? "No" : "Yes");
                             break;
 
                         // 4. Default Lock Screen Background
@@ -462,11 +463,19 @@ namespace Bakım.Services
                             return false;
                     }
 
+                    if (!writes.Succeeded)
+                    {
+                        tweak.LastError = writes.Describe();
+                        return false;
+                    }
+
+                    tweak.LastError = null;
                     tweak.IsEnabled = enable;
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    tweak.LastError = ex.Message;
                     return false;
                 }
             });
@@ -479,8 +488,7 @@ namespace Bakım.Services
                 try
                 {
                     int clamped = Math.Clamp(seconds, 0, 60);
-                    SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\Session Manager", "AutoChkTimeOut", clamped);
-                    return true;
+                    return SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\Session Manager", "AutoChkTimeOut", clamped);
                 }
                 catch
                 {
@@ -496,8 +504,7 @@ namespace Bakım.Services
                 try
                 {
                     int clamped = Math.Clamp(seconds, 0, 120);
-                    RunBcdedit($"/timeout {clamped}");
-                    return true;
+                    return RunBcdedit("/timeout", clamped.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 }
                 catch
                 {
@@ -732,54 +739,17 @@ namespace Bakım.Services
             }
         }
 
-        private static void RunBcdedit(string arguments)
-        {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "bcdedit.exe",
-                    Arguments = arguments,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
-                };
+        private static bool RunBcdedit(params string[] arguments) =>
+            ProcessRunner.RunReported("bcdedit " + string.Join(' ', arguments), "bcdedit.exe", arguments, TimeSpan.FromSeconds(20));
 
-                using var proc = Process.Start(psi);
-                proc?.WaitForExit();
-            }
-            catch { }
-        }
+        private static bool SetRegistryDword(RegistryKey root, string subKey, string valueName, int value) =>
+            VerifiedRegistry.SetDword(root, subKey, valueName, value);
 
-        private static void SetRegistryDword(RegistryKey root, string subKey, string valueName, int value)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKey, true);
-                key?.SetValue(valueName, value, RegistryValueKind.DWord);
-            }
-            catch { }
-        }
+        private static bool SetRegistryString(RegistryKey root, string subKey, string valueName, string value) =>
+            VerifiedRegistry.SetString(root, subKey, valueName, value);
 
-        private static void SetRegistryString(RegistryKey root, string subKey, string valueName, string value)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKey, true);
-                key?.SetValue(valueName, value, RegistryValueKind.String);
-            }
-            catch { }
-        }
-
-        private static void DeleteRegistryValue(RegistryKey root, string subKey, string valueName)
-        {
-            try
-            {
-                using var key = root.OpenSubKey(subKey, true);
-                key?.DeleteValue(valueName, false);
-            }
-            catch { }
-        }
+        private static bool DeleteRegistryValue(RegistryKey root, string subKey, string valueName) =>
+            VerifiedRegistry.DeleteValue(root, subKey, valueName);
 
         #endregion
     }

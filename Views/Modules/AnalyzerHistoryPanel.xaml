@@ -1,0 +1,350 @@
+<UserControl x:Class="Bakım.Views.Modules.AnalyzerHistoryPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:vm="clr-namespace:Bakım.ViewModels"
+             xmlns:c="clr-namespace:Bakım.Controls"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:AnalyzerHistoryViewModel}"
+             d:DesignHeight="700" d:DesignWidth="1100">
+
+    <UserControl.Resources>
+        <CollectionViewSource x:Key="GroupedRows" Source="{Binding Rows}">
+            <CollectionViewSource.GroupDescriptions>
+                <PropertyGroupDescription PropertyName="DayGroup"/>
+            </CollectionViewSource.GroupDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Filtre çubuğu -->
+            <RowDefinition Height="*"/>    <!-- 1: Liste + ayrıntı -->
+            <RowDefinition Height="Auto"/> <!-- 2: Durum -->
+        </Grid.RowDefinitions>
+
+        <!-- 0. Filtre çubuğu -->
+        <Border Grid.Row="0"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius.MD}"
+                Padding="{StaticResource Pad.CardCompact}"
+                Margin="{StaticResource Gap.Bottom.MD}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ui:TextBox Grid.Row="0" Grid.Column="0"
+                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                            PlaceholderText="Ada, yola, imzalayana ya da SHA-256'ya göre ara…"
+                            Icon="{ui:SymbolIcon Search24}"
+                            ClearButtonEnabled="True"
+                            Margin="{StaticResource Gap.Right.SM}"
+                            AutomationProperties.Name="Geçmişte ara"/>
+
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal">
+                    <ui:DropDownButton Appearance="Secondary"
+                                       Padding="{StaticResource Pad.Control}"
+                                       Margin="{StaticResource Gap.Right.SM}"
+                                       Icon="{ui:SymbolIcon ArrowDownload20}"
+                                       Content="Dışa aktar"
+                                       AutomationProperties.Name="Geçmişi dışa aktar">
+                        <ui:DropDownButton.Flyout>
+                            <ContextMenu>
+                                <MenuItem Header="CSV (Excel)" Command="{Binding ExportCommand}" CommandParameter="Csv"/>
+                                <MenuItem Header="JSON" Command="{Binding ExportCommand}" CommandParameter="Json"/>
+                                <MenuItem Header="HTML raporu" Command="{Binding ExportCommand}" CommandParameter="Html"/>
+                                <Separator/>
+                                <MenuItem Header="Kullanıcı adını maskele" IsCheckable="True" IsChecked="{Binding MaskUserNameOnExport}"/>
+                            </ContextMenu>
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
+                    <ui:Button Appearance="Secondary"
+                               Padding="{StaticResource Pad.Control}"
+                               Icon="{ui:SymbolIcon Delete20}"
+                               Content="Geçmişi temizle"
+                               Command="{Binding ClearAllCommand}"
+                               AutomationProperties.Name="Analizör geçmişinin tamamını sil"/>
+                </StackPanel>
+
+                <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="{StaticResource Gap.Top.SM}" VerticalAlignment="Center">
+                    <TextBlock Text="Tarih:" FontSize="{StaticResource Font.Body}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <RadioButton Content="Bugün" GroupName="HistRange" Margin="{StaticResource Gap.Right.SM}"
+                                 Command="{Binding SetRangeCommand}" CommandParameter="Today"/>
+                    <RadioButton Content="7 gün" GroupName="HistRange" Margin="{StaticResource Gap.Right.SM}"
+                                 Command="{Binding SetRangeCommand}" CommandParameter="7"/>
+                    <RadioButton Content="30 gün" GroupName="HistRange" Margin="{StaticResource Gap.Right.SM}"
+                                 Command="{Binding SetRangeCommand}" CommandParameter="30"/>
+                    <RadioButton Content="Tümü" GroupName="HistRange" IsChecked="True" Margin="0,0,16,0"
+                                 Command="{Binding SetRangeCommand}" CommandParameter="All"/>
+
+                    <TextBlock Text="Risk:" FontSize="{StaticResource Font.Body}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <CheckBox Content="Tehlikeli" IsChecked="{Binding ShowDangerous}" Margin="{StaticResource Gap.Right.SM}"/>
+                    <CheckBox Content="Şüpheli" IsChecked="{Binding ShowSuspicious}" Margin="{StaticResource Gap.Right.SM}"/>
+                    <CheckBox Content="Dikkat" IsChecked="{Binding ShowCaution}" Margin="0,0,16,0"/>
+
+                    <ComboBox ItemsSource="{Binding SourceOptions}"
+                              DisplayMemberPath="Value"
+                              SelectedValuePath="Key"
+                              SelectedValue="{Binding SelectedSource}"
+                              MinWidth="150"
+                              Margin="{StaticResource Gap.Right.SM}"
+                              AutomationProperties.Name="Kaynağa göre filtrele"/>
+                    <CheckBox Content="VirusTotal tespiti var" IsChecked="{Binding OnlyVirusTotalHits}" Margin="{StaticResource Gap.Right.SM}"/>
+                    <CheckBox Content="Kararsız" IsChecked="{Binding OnlyUndecided}"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <!-- 1. Zaman çizelgesi + ayrıntı paneli -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" MinWidth="360"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="2*" MinWidth="300"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Liste -->
+            <Border Grid.Column="0"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource Radius.MD}">
+                <Grid>
+                    <ListBox ItemsSource="{Binding Source={StaticResource GroupedRows}}"
+                             SelectedItem="{Binding Selected}"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True"
+                             VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                             VirtualizingPanel.VirtualizationMode="Recycling"
+                             AutomationProperties.Name="Analiz geçmişi">
+                        <ListBox.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontSize="{StaticResource Font.Body}"
+                                                   FontWeight="SemiBold"
+                                                   Margin="12,12,0,4"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListBox.GroupStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:AnalysisRecordRow}">
+                                <Grid Margin="4,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="44"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding TimeText}"
+                                               FontSize="{StaticResource Font.Body}"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                    <StackPanel Grid.Column="1" Margin="{StaticResource Gap.Right.SM}">
+                                        <TextBlock Text="{Binding FileName}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock FontSize="{StaticResource Font.Body}" TextTrimming="CharacterEllipsis"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                            <Run Text="{Binding ShortPath, Mode=OneWay}"/>
+                                            <Run Text=" · "/>
+                                            <Run Text="{Binding SourceText, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                        <c:StatusBadge Text="{Binding DecisionText}" Intent="Accent" Margin="{StaticResource Gap.Right.XS}"
+                                                       Visibility="{Binding HasDecision, Converter={StaticResource BoolToVis}}"/>
+                                        <c:StatusBadge Text="{Binding VtText}" Intent="Critical" Margin="{StaticResource Gap.Right.XS}"
+                                                       Visibility="{Binding HasVtHit, Converter={StaticResource BoolToVis}}"/>
+                                        <c:StatusBadge Text="{Binding RiskBadge}" Intent="{Binding Intent}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <c:EmptyState Icon="History24"
+                                  Title="Henüz kayıtlı analiz yok"
+                                  Description="Analizör, sağ tık, Kurulum Nöbetçisi, Kaldırıcı ya da Süreçler'den yaptığınız her dosya analizi burada kalıcı olarak saklanır. Filtre kullanıyorsanız temizlemeyi deneyin."
+                                  Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+                </Grid>
+            </Border>
+
+            <!-- Ayrıntı paneli -->
+            <Border Grid.Column="2"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource Radius.MD}"
+                    Padding="{StaticResource Pad.Card}">
+                <Grid>
+                    <TextBlock Text="Ayrıntıları görmek için soldan bir analiz seçin."
+                               FontSize="{StaticResource Font.Body}"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}"/>
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Selected.FileName}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold"
+                                       TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{Binding Selected.FilePath}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="{StaticResource Gap.Top.XS}"/>
+
+                            <WrapPanel Margin="{StaticResource Gap.Top.SM}">
+                                <c:StatusBadge Text="{Binding Selected.RiskBadge}" Intent="{Binding Selected.Intent}" Margin="{StaticResource Gap.Right.XS}"/>
+                                <c:StatusBadge Text="{Binding Selected.SourceText}" Intent="Neutral" Margin="{StaticResource Gap.Right.XS}"/>
+                                <c:StatusBadge Text="{Binding Selected.DecisionText}" Intent="Accent"
+                                               Visibility="{Binding Selected.HasDecision, Converter={StaticResource BoolToVis}}"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="{Binding Selected.DateText}" FontSize="{StaticResource Font.Body}"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="{StaticResource Gap.Top.XS}"/>
+                            <TextBlock Text="{Binding Selected.Record.SourceDetail}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+
+                            <TextBlock Text="Nedenler" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}"/>
+                            <ItemsControl ItemsSource="{Binding SelectedFactors}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="{StaticResource Gap.Top.XS}">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Grid.Column="1" FontSize="{StaticResource Font.Body}" Margin="8,0,0,0"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="+"/><Run Text="{Binding ScoreImpact, Mode=OneWay}"/>
+                                            </TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="İmza" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}"/>
+                            <TextBlock Text="{Binding SelectedSignatureText}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                            <TextBlock Text="VirusTotal" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}"/>
+                            <TextBlock Text="{Binding SelectedVtText}" FontSize="{StaticResource Font.Body}"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+
+                            <TextBlock Text="SHA-256" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Selected.Record.Sha256}" FontFamily="Consolas" FontSize="{StaticResource Font.Body}"
+                                           TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <ui:Button Grid.Column="1" Appearance="Transparent" Padding="6,4"
+                                           Icon="{ui:SymbolIcon Copy20}" ToolTip="Kopyala"
+                                           Command="{Binding CopyHashCommand}"
+                                           AutomationProperties.Name="SHA-256 değerini kopyala"/>
+                            </Grid>
+
+                            <TextBlock Text="Önceki analize göre" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}"
+                                       Visibility="{Binding CompareLines.Count, Converter={StaticResource InverseIntEqualsToVis}, ConverterParameter=0}"/>
+                            <ItemsControl ItemsSource="{Binding CompareLines}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock FontSize="{StaticResource Font.Body}" TextWrapping="Wrap" Margin="{StaticResource Gap.Top.XS}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                            <Run Text="• "/><Run Text="{Binding Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}"
+                                       Visibility="{Binding RelatedRows.Count, Converter={StaticResource InverseIntEqualsToVis}, ConverterParameter=0}">
+                                <Run Text="Bu dosyanın geçmişi ("/><Run Text="{Binding RelatedRows.Count, Mode=OneWay}"/><Run Text=")"/>
+                            </TextBlock>
+                            <ItemsControl ItemsSource="{Binding RelatedRows}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:AnalysisRecordRow}">
+                                        <TextBlock FontSize="{StaticResource Font.Body}" Margin="{StaticResource Gap.Top.XS}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                            <Run Text="• "/><Run Text="{Binding DateText, Mode=OneWay}"/>
+                                            <Run Text=" · "/><Run Text="{Binding RiskBadge, Mode=OneWay}"/>
+                                            <Run Text=" · "/><Run Text="{Binding SourceText, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <WrapPanel Margin="{StaticResource Gap.Top.MD}">
+                                <ui:Button Appearance="Primary" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                                           Icon="{ui:SymbolIcon ArrowSync20}" Content="Yeniden analiz"
+                                           IsEnabled="{Binding SelectedFileExists}"
+                                           Command="{Binding ReanalyzeCommand}"/>
+                                <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                                           Icon="{ui:SymbolIcon FolderOpen20}" Content="Konumu aç"
+                                           IsEnabled="{Binding SelectedFileExists}"
+                                           Command="{Binding OpenLocationCommand}"/>
+                                <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                                           Icon="{ui:SymbolIcon ShieldCheckmark20}" Content="Güven"
+                                           ToolTip="Aynı dosya (SHA-256) her yerde &quot;Güvenilen&quot; olarak işaretlenir."
+                                           Command="{Binding TrustCommand}"/>
+                                <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                                           Icon="{ui:SymbolIcon EyeOff20}" Content="Yok say"
+                                           Command="{Binding IgnoreCommand}"/>
+                                <ui:Button Appearance="Transparent" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                                           Content="Kararı kaldır"
+                                           Visibility="{Binding Selected.HasDecision, Converter={StaticResource BoolToVis}}"
+                                           Command="{Binding ClearDecisionCommand}"/>
+                                <ui:Button Appearance="Transparent" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                                           Icon="{ui:SymbolIcon Delete20}" Content="Geçmişten kaldır"
+                                           Command="{Binding RemoveSelectedCommand}"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="Not" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.SM}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:TextBox Text="{Binding NoteText, UpdateSourceTrigger=PropertyChanged}"
+                                            PlaceholderText="Bu dosya hakkında kendinize not…"
+                                            Margin="{StaticResource Gap.Right.SM}"
+                                            AutomationProperties.Name="Not"/>
+                                <ui:Button Grid.Column="1" Appearance="Secondary" Padding="{StaticResource Pad.Control}"
+                                           Content="Kaydet" Command="{Binding SaveNoteCommand}"/>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- 2. Durum satırı -->
+        <Grid Grid.Row="2" Margin="{StaticResource Gap.Top.SM}">
+            <TextBlock Text="{Binding ListSummary}" FontSize="{StaticResource Font.Body}"
+                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Body}" HorizontalAlignment="Right"
+                       TextTrimming="CharacterEllipsis" MaxWidth="700"
+                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+        </Grid>
+    </Grid>
+</UserControl>

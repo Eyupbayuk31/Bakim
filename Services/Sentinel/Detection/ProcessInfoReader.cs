@@ -8,9 +8,9 @@ using System.Text;
 namespace Bakım.Services.Sentinel.Detection
 {
     /// <summary>
-    /// UAC ile ykseltilmi srelerde dahi ynetici yetkisi gerektirmeden
-    /// (PROCESS_QUERY_LIMITED_INFORMATION) grnt yolunu, ebeveyn PID'sini
-    /// ve oluturulma zaman damgasn gvenle okuyan P/Invoke yardmcs.
+    /// UAC ile yükseltilmiş süreçlerde dahi yönetici yetkisi gerektirmeden
+    /// (PROCESS_QUERY_LIMITED_INFORMATION) görüntü yolunu, ebeveyn PID'sini
+    /// ve oluşturulma zaman damgasını güvenle okuyan P/Invoke yardımcısı.
     /// </summary>
     public static class ProcessInfoReader
     {
@@ -60,8 +60,8 @@ namespace Bakım.Services.Sentinel.Detection
         }
 
         /// <summary>
-        /// Srecin tam dosya yolunu dner. Standart Process.MainModule ulaamadnda
-        /// QueryFullProcessImageName ile UAC engellerini aar.
+        /// Sürecin tam dosya yolunu döner. Standart Process.MainModule ulaşamadığında
+        /// QueryFullProcessImageName ile UAC engellerini aşar.
         /// </summary>
         public static string? GetProcessExecutablePath(int processId)
         {
@@ -102,8 +102,8 @@ namespace Bakım.Services.Sentinel.Detection
         }
 
         /// <summary>
-        /// Srecin oluturulma zamann (UTC) dner. PID yeniden kullanmn (PID reuse)
-        /// engellemek iin kullanlr.
+        /// Sürecin oluşturulma zamanını (UTC) döner. PID yeniden kullanımını (PID reuse)
+        /// engellemek için kullanılır.
         /// </summary>
         public static DateTime? GetProcessCreationTimeUtc(int processId)
         {
@@ -141,7 +141,7 @@ namespace Bakım.Services.Sentinel.Detection
         }
 
         /// <summary>
-        /// Srecin ebeveyn sre kimliini (Parent PID) ToolHelp32 ile yetki engeli olmadan dner.
+        /// Sürecin ebeveyn süreç kimliğini (Parent PID) ToolHelp32 ile yetki engeli olmadan döner.
         /// </summary>
         public static int? GetParentProcessId(int processId)
         {
@@ -181,7 +181,7 @@ namespace Bakım.Services.Sentinel.Detection
         }
 
         /// <summary>
-        /// Sre hakkndaki tm nemli bilgileri tek seferde gvenle dner.
+        /// Süreç hakkındaki tüm önemli bilgileri tek seferde güvenle döner.
         /// </summary>
         public static bool TryGetProcessDetails(int processId, out string? path, out int? parentPid, out DateTime? creationTimeUtc)
         {

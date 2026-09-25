@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Bakım.Core.Safety;
 using Bakım.Models;
 
 namespace Bakım.Services
@@ -56,20 +57,27 @@ namespace Bakım.Services
                     }
                 }
 
-                // If target is a directory
+                // Klasör hedefi: ana exe'yi seç (kaldırıcı/kurulum/güncelleyici exe'leri değil).
                 if (Directory.Exists(targetExePath))
                 {
                     targetDir = targetExePath;
-                    // Try to find a main executable in the folder
-                    var exeFiles = Directory.GetFiles(targetDir, "*.exe", SearchOption.TopDirectoryOnly);
-                    if (exeFiles.Length > 0)
-                    {
-                        targetExePath = exeFiles[0];
-                    }
+                    targetExePath = PickMainExecutable(targetDir) ?? targetDir;
                 }
                 else if (File.Exists(targetExePath))
                 {
                     targetDir = Path.GetDirectoryName(targetExePath) ?? string.Empty;
+                }
+
+                // Korumalı sistem hedefleri (C:\Windows\explorer.exe, C:\Program Files kökü,
+                // Bakım'ın kendisi) asla kaldırma hedefi olmaz. Eskiden bunlar için
+                // InstallLocation = C:\Windows sentezlenip sihirbaz Windows süreçlerini
+                // kapatmaya çalışabiliyordu.
+                var dirCheck = PathSafetyGuard.Default.CheckDeletion(targetDir, isDirectory: true, allowOutsideKnownRoots: true);
+                if (dirCheck.Verdict == PathVerdict.ProtectedTree ||
+                    (dirCheck.Verdict == PathVerdict.ProtectedExact && Directory.Exists(cleanedPath) && !File.Exists(cleanedPath)))
+                {
+                    AppLog.Warning($"Sağ tık kaldırma hedefi korumalı olduğu için reddedildi: {cleanedPath} ({dirCheck.Reason})", null, nameof(ShellUninstallResolverService));
+                    return null;
                 }
 
                 // 2. Fetch all installed applications from system registry
@@ -102,16 +110,29 @@ namespace Bakım.Services
             string normDir = targetDir.TrimEnd('\\').ToLowerInvariant();
             string normShortcut = shortcutName.Trim().ToLowerInvariant();
 
-            // A. Exact or prefix match on InstallLocation
+            // A. Hedef klasör bir programın kurulum klasörüne eşit ya da onun ALTINDA.
+            //    En derin (en özgül) kurulum klasörü seçilir.
             if (!string.IsNullOrWhiteSpace(normDir))
             {
-                var matchByLoc = apps.FirstOrDefault(a =>
-                    !string.IsNullOrWhiteSpace(a.InstallLocation) &&
-                    (normDir.Equals(a.InstallLocation.TrimEnd('\\').ToLowerInvariant()) ||
-                     normDir.StartsWith(a.InstallLocation.TrimEnd('\\').ToLowerInvariant() + "\\") ||
-                     a.InstallLocation.TrimEnd('\\').ToLowerInvariant().StartsWith(normDir + "\\")));
+                var matchByLoc = apps
+                    .Where(a => !string.IsNullOrWhiteSpace(a.InstallLocation))
+                    .Select(a => (App: a, Loc: a.InstallLocation.TrimEnd('\\').ToLowerInvariant()))
+                    .Where(x => x.Loc.Length > 3 && (normDir == x.Loc || normDir.StartsWith(x.Loc + "\\")))
+                    .OrderByDescending(x => x.Loc.Length)
+                    .Select(x => x.App)
+                    .FirstOrDefault();
 
                 if (matchByLoc != null) return matchByLoc;
+
+                // Hedef, kurulum klasörünün ÜSTÜ ise (ör. "C:\Program Files\VideoLAN"
+                // → "…\VideoLAN\VLC") yalnızca TEK bir program eşleşiyorsa kabul edilir.
+                // Eskiden "C:\Program Files"a sağ tıklamak ilk bulunan programı seçiyordu.
+                var children = apps
+                    .Where(a => !string.IsNullOrWhiteSpace(a.InstallLocation) &&
+                                a.InstallLocation.TrimEnd('\\').ToLowerInvariant().StartsWith(normDir + "\\"))
+                    .ToList();
+                if (children.Count == 1 && PathSafetyGuard.Default.CheckDeletion(targetDir, isDirectory: true).IsAllowed)
+                    return children[0];
             }
 
             // B. Match on DisplayIconPath
@@ -139,15 +160,18 @@ namespace Bakım.Services
                 if (matchByUninst != null) return matchByUninst;
             }
 
-            // D. Match by Shortcut Name against DisplayName
+            // D. Kısayol adı ↔ program adı. Önce birebir eşitlik; önek eşleşmeleri yalnızca
+            //    TEK aday varsa kabul edilir ("Microsoft Edge" kısayolu "Microsoft Edge WebView2
+            //    Runtime" ile eşleşmemeli).
             if (!string.IsNullOrWhiteSpace(normShortcut) && normShortcut.Length >= 3)
             {
-                var matchByName = apps.FirstOrDefault(a =>
-                    a.DisplayName.Equals(normShortcut, StringComparison.OrdinalIgnoreCase) ||
-                    a.DisplayName.ToLowerInvariant().StartsWith(normShortcut + " ") ||
-                    normShortcut.StartsWith(a.DisplayName.ToLowerInvariant() + " "));
+                var exact = apps.FirstOrDefault(a => a.DisplayName.Equals(normShortcut, StringComparison.OrdinalIgnoreCase));
+                if (exact != null) return exact;
 
-                if (matchByName != null) return matchByName;
+                var prefix = apps.Where(a =>
+                    a.DisplayName.ToLowerInvariant().StartsWith(normShortcut + " ") ||
+                    normShortcut.StartsWith(a.DisplayName.ToLowerInvariant() + " ")).ToList();
+                if (prefix.Count == 1) return prefix[0];
             }
 
             return null;
@@ -192,7 +216,7 @@ namespace Bakım.Services
             {
                 string[] uninstCandidates = new[]
                 {
-                    "unins000.exe", "unins001.exe", "uninstall.exe", "uninst.exe", "setup.exe"
+                    "unins000.exe", "unins001.exe", "uninstall.exe", "uninst.exe"
                 };
 
                 foreach (var candidate in uninstCandidates)
@@ -206,12 +230,19 @@ namespace Bakım.Services
                 }
             }
 
+            // Taşınabilir program: klasör yalnızca güvenli kapsamdaysa (ör. "İndirilenler\\Araç")
+            // kurulum klasörü sayılır. İndirilenler/Masaüstü gibi kullanıcı klasörleri ASLA
+            // program klasörü sayılmaz; aksi halde klasörün tamamı silinmeye önerilirdi.
+            string safeInstallLocation = PathSafetyGuard.Default.CheckDeletion(targetDir, isDirectory: true).IsAllowed
+                ? targetDir
+                : string.Empty;
+
             return new InstalledAppItem
             {
                 DisplayName = displayName,
                 Publisher = publisher,
                 DisplayVersion = version,
-                InstallLocation = targetDir,
+                InstallLocation = safeInstallLocation,
                 DisplayIconPath = targetExePath,
                 UninstallString = uninstallerCmd,
                 EstimatedSizeBytes = sizeBytes,
@@ -220,6 +251,36 @@ namespace Bakım.Services
                 InstallerKind = InstallerType.GenericExe,
                 IsSystemComponent = false
             };
+        }
+
+        private static readonly string[] NonMainExePrefixes =
+        {
+            "unins", "uninst", "setup", "install", "update", "updater", "crash", "helper", "service", "elevate", "vc_redist", "dotnet"
+        };
+
+        /// <summary>
+        /// Klasördeki "ana" exe: kaldırıcı/kurulum/güncelleyici değil, adı klasöre en çok
+        /// benzeyen; eşitlikte en büyük dosya. (Eskiden ilk bulunan exe seçiliyordu — bu
+        /// unins000.exe bile olabiliyordu.)
+        /// </summary>
+        private static string? PickMainExecutable(string dir)
+        {
+            try
+            {
+                string folderName = Path.GetFileName(dir.TrimEnd('\\')).ToLowerInvariant();
+                return Directory.GetFiles(dir, "*.exe", SearchOption.TopDirectoryOnly)
+                    .Select(f => new FileInfo(f))
+                    .Where(f => !NonMainExePrefixes.Any(p => f.Name.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+                    .OrderByDescending(f => folderName.Contains(Path.GetFileNameWithoutExtension(f.Name).ToLowerInvariant()) ||
+                                            Path.GetFileNameWithoutExtension(f.Name).ToLowerInvariant().Contains(folderName))
+                    .ThenByDescending(f => f.Length)
+                    .Select(f => f.FullName)
+                    .FirstOrDefault();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
         }
 
         private static string? ResolveShortcutTarget(string shortcutPath)

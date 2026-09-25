@@ -211,15 +211,11 @@ namespace Bakım.ViewModels
             IsGameModeActive = _gameModeService.IsGameModeActive;
             if (IsGameModeActive)
             {
-                ShowToast("Ultra Oyun Modu Aktif!",
-                    $"Arka plan servisleri ve bildirimler donduruldu. {CleanCategory.FormatBytes(freed)} bellek oyuna ayrıldı!",
-                    InfoBarSeverity.Success, "TopSpeed24");
+                ShowToast("Oyun Modu Açık", _gameModeService.LastActionSummary, InfoBarSeverity.Success, "TopSpeed24");
             }
             else
             {
-                ShowToast("Oyun Modu Kapatıldı",
-                    "Arka plan koruma servisleri normale döndü.",
-                    InfoBarSeverity.Informational, "CheckmarkCircle24");
+                ShowToast("Oyun Modu Kapatıldı", _gameModeService.LastActionSummary, InfoBarSeverity.Informational, "CheckmarkCircle24");
             }
         }
 
@@ -232,7 +228,9 @@ namespace Bakım.ViewModels
                 if (cleanService != null)
                 {
                     long freed = await cleanService.AutoTrimWorkingSetsAsync();
-                    ShowToast("RAM Temizlendi", $"{CleanCategory.FormatBytes(freed)} bellek başarıyla serbest bırakıldı.", InfoBarSeverity.Success, "TopSpeed24");
+                    bool significant = Bakım.Core.Text.MemoryResultText.IsSignificant(freed);
+                    ShowToast("Bellek İşlemi", Bakım.Core.Text.MemoryResultText.Describe(freed),
+                        significant ? InfoBarSeverity.Success : InfoBarSeverity.Informational, "TopSpeed24");
                     await UpdateMiniTelemetryAsync();
                 }
             }
@@ -393,23 +391,40 @@ namespace Bakım.ViewModels
             }
         }
 
-        private void ExecuteQuickAction(string parameter, string title)
+        /// <summary>
+        /// Komut paleti hızlı eylemleri. Bildirim işlem BİTTİKTEN sonra ve gerçek sonuçla
+        /// gösterilir (eskiden işlem başlarken "başarıyla temizlendi" deniyordu).
+        /// </summary>
+        private async void ExecuteQuickAction(string parameter, string title)
+        {
+            try
+            {
+                await ExecuteQuickActionCoreAsync(parameter, title);
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"Hızlı eylem başarısız: {parameter}", ex, nameof(MainViewModel));
+                ShowToast("İşlem Başarısız", ex.Message, InfoBarSeverity.Error, "ErrorCircle24");
+            }
+        }
+
+        private async Task ExecuteQuickActionCoreAsync(string parameter, string title)
         {
             switch (parameter)
             {
                 case "QuickBoost":
-                    _ = Dashboard.OneClickBoostCommand.ExecuteAsync(null);
-                    ShowToast("Sistem Hızlandırıldı", "RAM ve geçici önbellek başarıyla temizlendi!", InfoBarSeverity.Success, "TopSpeed24");
+                    await Dashboard.OneClickBoostCommand.ExecuteAsync(null);
+                    ShowToast("Bellek İşlemi", Dashboard.OptimizationResultMessage, InfoBarSeverity.Informational, "TopSpeed24");
                     break;
 
                 case "RestartExplorer":
-                    _ = WindowsTweaker.RestartExplorerCommand.ExecuteAsync(null);
-                    ShowToast("Gezgin Yeniden Başlatıldı", "Windows Gezgini süreci tazelendi.", InfoBarSeverity.Success, "ArrowClockwise24");
+                    await WindowsTweaker.RestartExplorerCommand.ExecuteAsync(null);
+                    ShowToast("Gezgin Yeniden Başlatıldı", "Windows Gezgini yeniden başlatıldı.", InfoBarSeverity.Success, "ArrowClockwise24");
                     break;
 
                 case "CreateRestorePoint":
-                    _ = PrivacyDebloat.CreateRestorePointCommand.ExecuteAsync(null);
-                    ShowToast("Geri Yükleme Noktası", "Windows Sistem Koruması yedeği alındı.", InfoBarSeverity.Success, "History24");
+                    await PrivacyDebloat.CreateRestorePointCommand.ExecuteAsync(null);
+                    ShowToast("Geri Yükleme Noktası", PrivacyDebloat.LastRestorePointResult, InfoBarSeverity.Informational, "History24");
                     break;
 
                 case "ElevateAdmin":
@@ -436,7 +451,8 @@ namespace Bakım.ViewModels
                     break;
 
                 default:
-                    ShowToast("İşlem Tamamlandı", $"{title} başarıyla icra edildi.", InfoBarSeverity.Success, "CheckmarkCircle24");
+                    _log.Warning($"Tanınmayan hızlı eylem: {parameter}", null, nameof(MainViewModel));
+                    ShowToast("Bilinmeyen Eylem", $"'{title}' için tanımlı bir işlem yok.", InfoBarSeverity.Warning, "Warning24");
                     break;
             }
         }

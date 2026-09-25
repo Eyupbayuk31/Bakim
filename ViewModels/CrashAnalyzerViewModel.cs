@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -222,38 +223,21 @@ namespace Bakım.ViewModels
             }
         }
 
+        /// <summary>
+        /// Olay Görüntüleyici'yi açar. Eskiden burada System ve Application günlüklerini
+        /// tamamen silen bir düğme vardı (S-15): arıza teşhisi için gereken kayıtları yok
+        /// ediyordu ve bir bakım aracının yapması gereken bir iş değil.
+        /// </summary>
         [RelayCommand]
-        public async Task ClearEventLogsAsync()
+        public void OpenEventViewer()
         {
-            var confirm = MessageBox.Show(
-                "System ve Application olay günlüklerini tamamen temizlemek istediğinize emin misiniz?",
-                "Günlükleri Temizle",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (confirm != MessageBoxResult.Yes) return;
-
-            IsBusy = true;
-            StatusMessage = "Olay günlükleri temizleniyor...";
-
             try
             {
-                bool ok = await _crashService.ClearEventLogsAsync();
-                if (ok)
-                {
-                    Events.Clear();
-                    _filteredEvents.Refresh();
-                    MessageBox.Show("Windows Olay Günlükleri başarıyla temizlendi.", "Temizleme Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
-                    await RefreshAllAsync();
-                }
-                else
-                {
-                    MessageBox.Show("Olay günlükleri temizlenemedi. Yönetici yetkisi gerekebilir.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                Process.Start(new ProcessStartInfo("eventvwr.msc") { UseShellExecute = true });
             }
-            finally
+            catch (Exception ex)
             {
-                IsBusy = false;
+                StatusMessage = $"Olay Görüntüleyici açılamadı: {ex.Message}";
             }
         }
 

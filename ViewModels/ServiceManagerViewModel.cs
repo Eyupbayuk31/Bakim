@@ -209,7 +209,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"{item.DisplayName} başlatılamadı. Yönetici yetkisi gerekiyor olabilir.", "Hizmet Başlatma", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"{item.DisplayName} başlatılamadı: {_serviceManager.LastError}", "Hizmet Başlatma", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -248,7 +248,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"{item.DisplayName} durdurulamadı. Yönetici yetkisi gerekiyor olabilir.", "Hizmet Durdurma", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show($"{item.DisplayName} durdurulamadı: {_serviceManager.LastError}", "Hizmet Durdurma", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -269,6 +269,10 @@ namespace Bakım.ViewModels
                 {
                     item.Status = "Running";
                     _filteredServices.Refresh();
+                }
+                else
+                {
+                    MessageBox.Show($"{item.DisplayName} yeniden başlatılamadı: {_serviceManager.LastError}", "Hizmeti Yeniden Başlat", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -298,6 +302,10 @@ namespace Bakım.ViewModels
                     _ => "Manual"
                 };
                 _filteredServices.Refresh();
+            }
+            else
+            {
+                MessageBox.Show($"{param.Item.DisplayName} başlangıç türü değiştirilemedi: {_serviceManager.LastError}", "Başlangıç Türü", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 

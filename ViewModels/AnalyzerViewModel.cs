@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Bakım.Core.History;
 using Bakım.Models;
 using Bakım.Services;
 
@@ -21,7 +22,27 @@ namespace Bakım.ViewModels
         private readonly IAutorunsScannerEngine _scannerEngine;
         private readonly IVirusTotalCheckService _virusTotalService;
         private readonly IFileThreatAnalyzerService _threatAnalyzerService;
+        private readonly Bakım.Services.History.IAnalysisHistoryService _history;
         private readonly ICollectionView _filteredView;
+
+        /// <summary>Geçmiş ve Değişiklikler sekmeleri (Analizör Geçmişi, §6).</summary>
+        public AnalyzerHistoryViewModel History { get; }
+
+        /// <summary>Etkin sekme: Scan, History, Changes.</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsScanTab), nameof(IsHistoryTab), nameof(IsChangesTab))]
+        private string _activeTab = "Scan";
+
+        public bool IsScanTab => ActiveTab == "Scan";
+        public bool IsHistoryTab => ActiveTab == "History";
+        public bool IsChangesTab => ActiveTab == "Changes";
+
+        [RelayCommand]
+        public void SwitchTab(string tab)
+        {
+            ActiveTab = tab;
+            if (tab != "Scan") History.Refresh();
+        }
 
         public ObservableCollection<PersistenceItem> Items { get; } = new();
 
@@ -108,11 +129,15 @@ namespace Bakım.ViewModels
         public AnalyzerViewModel(
             IAutorunsScannerEngine scannerEngine,
             IVirusTotalCheckService virusTotalService,
-            IFileThreatAnalyzerService threatAnalyzerService)
+            IFileThreatAnalyzerService threatAnalyzerService,
+            Bakım.Services.History.IAnalysisHistoryService history)
         {
             _scannerEngine = scannerEngine;
             _virusTotalService = virusTotalService;
             _threatAnalyzerService = threatAnalyzerService;
+            _history = history;
+            History = new AnalyzerHistoryViewModel(history, threatAnalyzerService);
+            _ = History.InitializeAsync();
 
             ApiKeyInput = _virusTotalService.ApiKey;
             ApiKeyStatusText = _virusTotalService.HasApiKey ? "Kayıtlı ve Kullanıma Hazır" : "API Anahtarı Tanımlanmadı";
@@ -296,6 +321,8 @@ namespace Bakım.ViewModels
                 ScanStatusText = risky > 0
                     ? $"Tarama tamamlandı. {Items.Count} kalıcılık noktası — {risky} tanesi yüksek riskli, listenin en üstünde."
                     : $"Tarama tamamlandı. {Items.Count} kalıcılık noktası listelendi, yüksek riskli girdi yok.";
+
+                await SaveScanSnapshotAsync();
             }
             catch (Exception ex)
             {
@@ -305,6 +332,27 @@ namespace Bakım.ViewModels
             {
                 IsScanning = false;
                 UpdateStats();
+            }
+        }
+
+        /// <summary>
+        /// Taramanın anlık görüntüsünü geçmişe yazar ve bir önceki taramayla farkı hesaplar
+        /// (Değişiklikler sekmesi). Yeni girdi varsa durum satırında belirtilir.
+        /// </summary>
+        private async Task SaveScanSnapshotAsync()
+        {
+            try
+            {
+                await _history.SaveSnapshotAsync(Items.ToList(), "Manual");
+                History.RefreshSnapshots();
+                if (History.AddedCount > 0 || History.ChangedCount > 0)
+                {
+                    ScanStatusText += $" Önceki taramaya göre {History.AddedCount} yeni, {History.ChangedCount} değişen girdi var (Değişiklikler sekmesi).";
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Kalıcılık anlık görüntüsü kaydedilemedi.", ex, nameof(AnalyzerViewModel));
             }
         }
 
@@ -628,7 +676,11 @@ namespace Bakım.ViewModels
 
             try
             {
-                var analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(item.FilePath, item.Arguments, item);
+                ThreatAnalysisResult analysisResult;
+                using (AnalysisContext.Begin(AnalysisSource.Analyzer, item.LocationSource))
+                {
+                    analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(item.FilePath, item.Arguments, item);
+                }
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -676,6 +728,7 @@ namespace Bakım.ViewModels
 
             IsDeepAnalyzing = true;
             int analyzed = 0, elevated = 0;
+            using var analysisContext = AnalysisContext.Begin(AnalysisSource.Analyzer, "Toplu derin analiz");
 
             try
             {
@@ -743,7 +796,11 @@ namespace Bakım.ViewModels
 
             try
             {
-                var analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(selectedFile);
+                ThreatAnalysisResult analysisResult;
+                using (AnalysisContext.Begin(AnalysisSource.Analyzer, "Dosya İncele"))
+                {
+                    analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(selectedFile);
+                }
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -772,6 +829,11 @@ namespace Bakım.ViewModels
             if (filePaths == null) return;
             var validFiles = filePaths.Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f)).Distinct().ToList();
             if (validFiles.Count == 0) return;
+
+            // Çağıran (ör. Kurulum Nöbetçisi) kaynak belirttiyse o korunur.
+            using var analysisContext = AnalysisContext.Source == AnalysisSource.Unknown
+                ? AnalysisContext.Begin(AnalysisSource.Analyzer)
+                : null;
 
             // Tek dosya ise doğrudan derin AI tehdit analizi penceresini aç
             if (validFiles.Count == 1)

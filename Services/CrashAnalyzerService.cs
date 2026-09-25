@@ -13,7 +13,6 @@ namespace Bakım.Services
         Task<SystemHealthStats> CalculateHealthStatsAsync(List<BsodCrashItem> crashes, List<SystemEventItem> events);
         Task RunSfcScannowAsync(Action<string> onOutputReceived, Action<bool, string> onCompleted);
         Task RunDismRepairAsync(Action<string> onOutputReceived, Action<bool, string> onCompleted);
-        Task<bool> ClearEventLogsAsync();
         void OpenDumpLocation(string dumpPath);
     }
 
@@ -452,35 +451,6 @@ namespace Bakım.Services
                 {
                     onOutputReceived?.Invoke($"[KRİTİK HATA] {ex.Message}");
                     onCompleted?.Invoke(false, ex.Message);
-                }
-            });
-        }
-
-        public async Task<bool> ClearEventLogsAsync()
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "wevtutil.exe",
-                        Arguments = "cl System",
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
-                    using var p1 = Process.Start(psi);
-                    p1?.WaitForExit();
-
-                    psi.Arguments = "cl Application";
-                    using var p2 = Process.Start(psi);
-                    p2?.WaitForExit();
-
-                    return true;
-                }
-                catch
-                {
-                    return false;
                 }
             });
         }

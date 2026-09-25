@@ -11,6 +11,9 @@ using Bakım.Models;
 
 namespace Bakım.Services
 {
+    /// <summary>TRIM işleminin sonucu ve kullanıcıya gösterilecek açıklama.</summary>
+    public sealed record TrimResult(bool Succeeded, string Message);
+
     public interface ISystemInfoService
     {
         Task<SystemHardwareStats> GetSystemHardwareAsync();
@@ -18,8 +21,11 @@ namespace Bakım.Services
         Task<List<LargeDiskFileItem>> ScanLargeFilesAsync(string driveLetter, long minSizeBytes, IProgress<string>? progress, CancellationToken cancellationToken);
         Task<bool> DeleteLargeFileAsync(string filePath);
         Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath);
+
+        /// <summary>Son büyük dosya silme işleminin başarısızlık nedeni; başarılıysa boş.</summary>
+        string LastDeleteError { get; }
         Task<string> GenerateHardwareReportHtmlAsync();
-        Task<bool> OptimizeDriveTrimAsync(string driveLetter);
+        Task<TrimResult> OptimizeDriveTrimAsync(string driveLetter);
     }
 
     public class SystemInfoService : ISystemInfoService
@@ -716,107 +722,72 @@ namespace Bakım.Services
             }, cancellationToken);
         }
 
-        public async Task<bool> DeleteLargeFileAsync(string filePath)
+        /// <summary>
+        /// Büyük dosyayı kalıcı siler. Eskiden hiçbir yol denetimi yoktu; tarama sonucunda
+        /// görünen bir Windows dosyası (ör. MEMORY.DMP dışındaki sistem dosyaları) silinebiliyordu.
+        /// Artık PathSafetyGuard'dan geçer.
+        /// </summary>
+        public async Task<bool> DeleteLargeFileAsync(string filePath) =>
+            await DeleteThroughGuardAsync(filePath, permanent: true);
+
+        /// <summary>Büyük dosyayı Geri Dönüşüm Kutusu'na taşır (PathSafetyGuard denetimiyle).</summary>
+        public async Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath) =>
+            await DeleteThroughGuardAsync(filePath, permanent: false);
+
+        /// <summary>Son büyük dosya silme işleminin başarısızlık nedeni.</summary>
+        public string LastDeleteError { get; private set; } = string.Empty;
+
+        private async Task<bool> DeleteThroughGuardAsync(string filePath, bool permanent)
         {
-            return await Task.Run(() =>
+            if (string.IsNullOrWhiteSpace(filePath))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                        return false;
+                LastDeleteError = "Dosya yolu boş.";
+                return false;
+            }
 
-                    // Salt-okunur özniteliğini kaldır ve sil
-                    var attr = File.GetAttributes(filePath);
-                    if ((attr & FileAttributes.ReadOnly) != 0)
-                    {
-                        File.SetAttributes(filePath, attr & ~FileAttributes.ReadOnly);
-                    }
-
-                    File.Delete(filePath);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            var safeDelete = App.TryGetService<Safety.ISafeDeleteService>() ?? new Safety.SafeDeleteService(AppLog.Current);
+            var result = await safeDelete.DeletePathAsync(filePath, isDirectory: false,
+                new Safety.DeletePolicy(Permanent: permanent, AllowOutsideKnownRoots: true));
+            LastDeleteError = result.Succeeded ? string.Empty : result.Message;
+            return result.Succeeded;
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        private struct SHFILEOPSTRUCT
+        /// <summary>
+        /// SSD'ye TRIM (ReTrim) gönderir. Eskiden 10 sn sonra ExitCode okunmaya çalışılıyor,
+        /// süreç bitmediyse istisna "başarısız" sayılıyor ve PowerShell arka planda kalıyordu;
+        /// HDD'lerde de çalıştırılıyordu (D-9). Artık ortam türü önce kontrol edilir, büyük
+        /// sürücüler için 15 dk beklenir ve gerçek hata metni döndürülür.
+        /// </summary>
+        public async Task<TrimResult> OptimizeDriveTrimAsync(string driveLetter)
         {
-            public IntPtr hwnd;
-            [MarshalAs(UnmanagedType.U4)]
-            public int wFunc;
-            public string pFrom;
-            public string pTo;
-            public short fFlags;
-            [MarshalAs(UnmanagedType.Bool)]
-            public bool fAnyOperationsAborted;
-            public IntPtr hNameMappings;
-            public string lpszProgressTitle;
-        }
+            char letter = string.IsNullOrWhiteSpace(driveLetter) ? 'C' : char.ToUpperInvariant(driveLetter.Trim()[0]);
+            if (letter < 'A' || letter > 'Z')
+                return new TrimResult(false, "Geçersiz sürücü harfi.");
 
-        private const int FO_DELETE = 0x0003;
-        private const short FOF_ALLOWUNDO = 0x0040;
-        private const short FOF_NOCONFIRMATION = 0x0010;
-        private const short FOF_NOERRORUI = 0x0400;
-        private const short FOF_SILENT = 0x0004;
+            // Çıkış kodu 3 = HDD (TRIM desteklemez). "Unspecified" ortam türü (bazı NVMe/sanal
+            // diskler) engellenmez; Optimize-Volume desteklemiyorsa kendi hatasını verir.
+            string script =
+                $"$ErrorActionPreference = 'Stop'; " +
+                $"$disk = Get-Partition -DriveLetter {letter} | Get-Disk; " +
+                $"$pd = Get-PhysicalDisk | Where-Object {{ $_.DeviceId -eq [string]$disk.Number }}; " +
+                $"if ($pd -and $pd.MediaType -eq 'HDD') {{ exit 3 }}; " +
+                $"Optimize-Volume -DriveLetter {letter} -ReTrim";
 
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        private static extern int SHFileOperation(ref SHFILEOPSTRUCT FileOp);
+            var result = await Helpers.ProcessRunner.RunAsync("powershell.exe",
+                new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script },
+                TimeSpan.FromMinutes(15));
 
-        public async Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
-                        return false;
+            if (result.Succeeded)
+                return new TrimResult(true, $"{letter}: sürücüsüne TRIM gönderildi.");
+            if (result.Started && !result.TimedOut && result.ExitCode == 3)
+                return new TrimResult(false, $"{letter}: bir sabit disk (HDD); TRIM yalnızca SSD'lerde çalışır.");
+            if (result.TimedOut)
+                return new TrimResult(false, $"{letter}: TRIM 15 dakika içinde bitmedi ve durduruldu.");
 
-                    var fileOp = new SHFILEOPSTRUCT
-                    {
-                        wFunc = FO_DELETE,
-                        pFrom = filePath + '\0' + '\0',
-                        pTo = null!,
-                        fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT
-                    };
-
-                    int result = SHFileOperation(ref fileOp);
-                    return result == 0 && !fileOp.fAnyOperationsAborted && !File.Exists(filePath);
-                }
-                catch
-                {
-                    return false;
-                }
-            });
-        }
-
-        public async Task<bool> OptimizeDriveTrimAsync(string driveLetter)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(driveLetter)) driveLetter = "C";
-                    char letter = driveLetter[0];
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "powershell.exe",
-                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"Optimize-Volume -DriveLetter {letter} -ReTrim -Verbose\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    };
-                    using var proc = Process.Start(psi);
-                    proc?.WaitForExit(10000);
-                    return proc?.ExitCode == 0;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            string reason = result.Describe();
+            if (reason.Contains("Access", StringComparison.OrdinalIgnoreCase) || reason.Contains("erişim", StringComparison.OrdinalIgnoreCase))
+                reason = "yönetici izni gerekiyor";
+            return new TrimResult(false, $"{letter}: TRIM uygulanamadı ({reason}).");
         }
 
         public async Task<string> GenerateHardwareReportHtmlAsync()

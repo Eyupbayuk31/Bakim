@@ -6,9 +6,9 @@ using Bakım.Models;
 namespace Bakım.Services.Sentinel.Sensors
 {
     /// <summary>
-    /// Run/RunOnce deerlerini, Windows servislerini ve kritik sistem
-    /// anahtarlarn hem 64-bit hem de 32-bit kayt defteri grnmlerinde
-    /// deer dzeyinde yakalayan yksek duyarlkl sensr.
+    /// Run/RunOnce değerlerini, Windows servislerini ve kritik sistem
+    /// anahtarlarını hem 64-bit hem de 32-bit kayıt defteri görünümlerinde
+    /// değer düzeyinde yakalayan yüksek duyarlıklı sensör.
     /// </summary>
     public static class RegistryHotspotSensor
     {
@@ -30,8 +30,8 @@ namespace Bakım.Services.Sentinel.Sensors
         public const string ServicesSubKeyPath = @"SYSTEM\CurrentControlSet\Services";
 
         /// <summary>
-        /// Kritik kayt defteri noktalarndan ncesi/sonras karlatrmas iin
-        /// tam anlk durum (snapshot) alr. Anahtar adlarn ve Run/Services deerlerini ierir.
+        /// Kritik kayıt defteri noktalarından öncesi/sonrası karşılaştırması için
+        /// tam anlık durum (snapshot) alır. Anahtar adlarını ve Run/Services değerlerini içerir.
         /// </summary>
         public static Dictionary<string, string> CaptureHotspotSnapshot()
         {
@@ -44,7 +44,7 @@ namespace Bakım.Services.Sentinel.Sensors
             // 2. HKCU Run/RunOnce Deerleri
             CaptureRunValues(RegistryHive.CurrentUser, RegistryView.Default, "HKCU", map);
 
-            // 3. HKLM Services Anahtarlar ve Servis Bilgileri
+            // 3. HKLM Services Anahtarları ve Servis Bilgileri
             CaptureServices(map);
 
             // 4. Uninstall Anahtarlar (HKLM 64, HKLM 32, HKCU)
@@ -56,8 +56,8 @@ namespace Bakım.Services.Sentinel.Sensors
         }
 
         /// <summary>
-        /// ki snapshot arasndaki fark karp yeni eklenen/deien kaytlar,
-        /// servisleri ve balang girdilerini ayrtrr.
+        /// İki snapshot arasındaki farkı çıkarıp yeni eklenen/değişen kayıtları,
+        /// servisleri ve başlangıç girdilerini ayrıştırır.
         /// </summary>
         public static (List<SetupRegistryRecord> records, List<string> addedServices, List<string> addedStartupEntries) ComputeDelta(
             Dictionary<string, string> preSnapshot,
@@ -76,7 +76,7 @@ namespace Bakım.Services.Sentinel.Sensors
 
                 if (!existsInPre)
                 {
-                    // Yeni eklenen anahtar veya deer
+                    // Yeni eklenen anahtar veya değer
                     string hive = key.StartsWith("HKLM", StringComparison.OrdinalIgnoreCase) ? "HKLM" : "HKCU";
                     bool isService = key.Contains(@"\Services\", StringComparison.OrdinalIgnoreCase);
                     bool isRun = key.Contains(@"\Run", StringComparison.OrdinalIgnoreCase);
@@ -103,7 +103,7 @@ namespace Bakım.Services.Sentinel.Sensors
                 }
                 else if (preValueData != valueData)
                 {
-                    // Deitirilen deer
+                    // Değiştirilen değer
                     string hive = key.StartsWith("HKLM", StringComparison.OrdinalIgnoreCase) ? "HKLM" : "HKCU";
                     bool isService = key.Contains(@"\Services\", StringComparison.OrdinalIgnoreCase);
                     bool isRun = key.Contains(@"\Run", StringComparison.OrdinalIgnoreCase);
