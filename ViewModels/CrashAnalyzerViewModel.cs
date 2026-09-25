@@ -106,6 +106,24 @@ namespace Bakım.ViewModels
             SelectedEventLevel = level;
         }
 
+        /// <summary>Windows Güvenilirlik İzleyicisi çubukları (1–10).</summary>
+        public ObservableCollection<ReliabilityBar> ReliabilityBars { get; } = new();
+
+        [ObservableProperty] private bool _hasReliability;
+        [ObservableProperty] private string _reliabilityText = string.Empty;
+
+        private async Task LoadReliabilityAsync()
+        {
+            var days = await ReliabilityReader.ReadAsync(30);
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                ReliabilityBars.Clear();
+                foreach (var d in days) ReliabilityBars.Add(new ReliabilityBar(d));
+                HasReliability = ReliabilityBars.Count > 0;
+                ReliabilityText = "Windows güvenilirliği: " + Core.Health.ReliabilityTimeline.Describe(days);
+            });
+        }
+
         [RelayCommand]
         public async Task RefreshAllAsync()
         {
@@ -116,6 +134,7 @@ namespace Bakım.ViewModels
 
             try
             {
+                _ = LoadReliabilityAsync();
                 var crashesTask = _crashService.GetMinidumpCrashesAsync();
                 var eventsTask = _crashService.GetCriticalEventsAsync(7);
 
@@ -248,4 +267,20 @@ namespace Bakım.ViewModels
             RepairSummary = string.Empty;
         }
     }
+
+    public sealed class ReliabilityBar
+    {
+        public ReliabilityBar(Core.Health.ReliabilityDay day)
+        {
+            Height = 4 + 32 * day.Index / 10.0;
+            Tooltip = $"{day.Date:d MMM} · {day.Index:0.0}/10";
+            string key = day.Index >= 9 ? "SystemFillColorSuccessBrush" : day.Index >= 6 ? "SystemFillColorCautionBrush" : "SystemFillColorCriticalBrush";
+            Brush = System.Windows.Application.Current?.TryFindResource(key) as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.Gray;
+        }
+
+        public double Height { get; }
+        public string Tooltip { get; }
+        public System.Windows.Media.Brush Brush { get; }
+    }
 }
+

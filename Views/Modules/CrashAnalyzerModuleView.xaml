@@ -89,6 +89,23 @@
                             <TextBlock Text="{Binding Stats.HealthScore}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             <TextBlock Text="{Binding Stats.HealthStatusText, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         </StackPanel>
+                        <!-- Windows Güvenilirlik İzleyicisi: son 30 günün günlük en düşük endeksi (§5.10.4) -->
+                        <ItemsControl ItemsSource="{Binding ReliabilityBars}" Height="36" Margin="0,8,0,0"
+                                      Visibility="{Binding HasReliability, Converter={StaticResource BoolToVis}}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="5" Height="{Binding Height}" Margin="0,0,2,0" VerticalAlignment="Bottom"
+                                            CornerRadius="{StaticResource Radius.XS}" Background="{Binding Brush}" ToolTip="{Binding Tooltip}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding ReliabilityText}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="ShieldCheckmark24" FontSize="24" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                 </Grid>
