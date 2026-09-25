@@ -71,12 +71,37 @@ namespace Bakim.Tests
         }
 
         [Theory]
+        [InlineData(@"""C:\Windows\System32\msiexec.exe"" /i ""C:\Users\A\Downloads\7z2408-x64.msi""", true, "7z2408-x64")]
+        [InlineData(@"msiexec /package C:\Temp\app.msi /qn", true, "app")]
+        [InlineData(@"C:\Windows\system32\msiexec.exe /V", false, "")]
+        [InlineData(@"C:\Windows\syswow64\MsiExec.exe -Embedding 4A1B2C3D E Global\MSI0000", false, "")]
+        [InlineData(@"msiexec /x {23170F69-40C1-2702-2408-000001000000}", false, "")]
+        public void InstallerClassifier_Msiexec_UsesCommandLine(string commandLine, bool expected, string expectedName)
+        {
+            bool isMatch = InstallerClassifier.ClassifyProcess(
+                "msiexec", @"C:\Windows\System32\msiexec.exe", null, "Windows Installer - Unicode", "Windows Installer - Unicode",
+                commandLine, out SessionKind kind, out string name, out _);
+
+            if (expected)
+            {
+                Assert.True(isMatch);
+                Assert.Equal(SessionKind.Install, kind);
+                Assert.Equal(expectedName, name);
+            }
+            else
+            {
+                Assert.True(!isMatch || kind != SessionKind.Install);
+            }
+        }
+
+        [Theory]
         [InlineData("setup.exe", @"C:\Downloads\setup.exe", true)]
         [InlineData("installer.exe", @"C:\Users\User\Downloads\installer.exe", true)]
         [InlineData("vcredist_x64.exe", @"C:\Downloads\vcredist_x64.exe", true)]
         [InlineData("dxsetup.exe", @"C:\Downloads\dxsetup.exe", true)]
         [InlineData("program_kurulum.exe", @"C:\Users\User\Desktop\program_kurulum.exe", true)]
-        [InlineData("msiexec.exe", @"C:\Windows\System32\msiexec.exe", true)]
+        // Komut satırı bilinmeyen msiexec kurulum sayılmaz (arka plan /V sunucusu olabilir).
+        [InlineData("msiexec.exe", @"C:\Windows\System32\msiexec.exe", false)]
         [InlineData("notepad.exe", @"C:\Windows\notepad.exe", false)]
         [InlineData("explorer.exe", @"C:\Windows\explorer.exe", false)]
         [InlineData("taskmgr.exe", @"C:\Windows\System32\taskmgr.exe", false)]

@@ -228,7 +228,9 @@ namespace Bakım.Services
                             title,
                             desc,
                             prod,
-                            null,
+                            proc.ProcessName.Equals("msiexec", StringComparison.OrdinalIgnoreCase)
+                                ? ProcessInfoReader.TryGetCommandLine(proc.Id)
+                                : null,
                             out SessionKind kind,
                             out string detectedAppName,
                             out int confidenceScore);

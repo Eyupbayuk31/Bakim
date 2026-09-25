@@ -33,6 +33,9 @@ namespace Bakım.Services.Sentinel.Detection
         /// <summary>
         /// Bir sürecin kurulum, kaldırma veya güncelleme olup olmadığını puanlayarak belirler.
         /// </summary>
+        private static readonly System.Text.RegularExpressions.Regex MsiPackageArgument =
+            new("(?<msi>\"[^\"]+\\.msi\"|[^\\s\"]+\\.msi)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
         public static bool ClassifyProcess(
             string processName,
             string? executablePath,
@@ -106,18 +109,26 @@ namespace Bakım.Services.Sentinel.Detection
             // 4. Puanlama Matrisi (Faz 1.2 Puanlı Sınıflandırıcı)
             int score = 0;
 
-            // msiexec özel kontrolü
+            // msiexec özel kontrolü: yalnızca komut satırında bir .msi kurulumu (/i, /package) varsa.
+            // Windows, Windows Update / onarım / uygulama güncellemeleri için arka planda sürekli
+            // "msiexec /V" (sunucu) ve "msiexec -Embedding" (özel eylem) başlatır; komut satırı
+            // okunamadığında bunlar eskiden "Windows Installer - Unicode kuruldu" diye raporlanıyordu.
             if (pName == "msiexec")
             {
-                if (cmd.Contains("/i") || cmd.Contains("/package") || string.IsNullOrWhiteSpace(cmd))
+                var msiArg = MsiPackageArgument.Match(commandLine ?? string.Empty);
+                bool isInstallCommand = msiArg.Success &&
+                                        (cmd.Contains(" /i") || cmd.Contains(" -i") || cmd.Contains("/package") || cmd.Contains("-package"));
+                if (!isInstallCommand) return false;
+
+                kind = SessionKind.Install;
+                detectedAppName = Path.GetFileNameWithoutExtension(msiArg.Groups["msi"].Value.Trim('"'));
+                if (!string.IsNullOrWhiteSpace(windowTitle) && windowTitle.Length > 2 &&
+                    !windowTitle.Contains("Windows Installer", StringComparison.OrdinalIgnoreCase))
                 {
-                    score += 60;
+                    detectedAppName = windowTitle!;
                 }
-                else if (cmd.Contains("/v"))
-                {
-                    // msiexec /V arka plan sunucu sürecidir, kurulum başlatıcı değildir
-                    return false;
-                }
+                confidenceScore = 90;
+                return true;
             }
 
             // Dosya adı veya süreç adı anahtar kelime eşleşmesi

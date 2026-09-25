@@ -183,6 +183,28 @@ namespace Bakım.Services.Sentinel.Detection
         /// <summary>
         /// Süreç hakkındaki tüm önemli bilgileri tek seferde güvenle döner.
         /// </summary>
+        /// <summary>
+        /// Sürecin komut satırı (WMI). Pahalıdır; yalnızca komut satırı karar veren süreçler
+        /// (msiexec) için çağrılır. Okunamazsa null.
+        /// </summary>
+        public static string? TryGetCommandLine(int processId)
+        {
+            try
+            {
+                using var searcher = new System.Management.ManagementObjectSearcher(
+                    $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {processId}");
+                foreach (System.Management.ManagementObject obj in searcher.Get())
+                {
+                    using (obj) return obj["CommandLine"]?.ToString();
+                }
+            }
+            catch
+            {
+                // Erişim reddi / WMI hatası: bilinmiyor.
+            }
+            return null;
+        }
+
         public static bool TryGetProcessDetails(int processId, out string? path, out int? parentPid, out DateTime? creationTimeUtc)
         {
             path = GetProcessExecutablePath(processId);
