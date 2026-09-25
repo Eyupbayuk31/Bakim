@@ -49,6 +49,15 @@ namespace Bakım.Services
         private Task? _workerTask;
         private WatchedSetupSession? _activeSession;
         private Dictionary<string, string>? _preInstallHotspot;
+
+        /// <summary>
+        /// Boşta iken periyodik alınan kayıt defteri taban görüntüsü (P0-3). Kurulum ancak
+        /// başladıktan sonra fark edildiği için o anda alınan görüntü, kurulumun ilk saniyelerde
+        /// yazdığı Run/hizmet/Uninstall kayıtlarını "zaten vardı" sayıyordu.
+        /// </summary>
+        private Dictionary<string, string>? _baselineHotspot;
+        private DateTime _baselineTakenUtc = DateTime.MinValue;
+        private static readonly TimeSpan BaselineInterval = TimeSpan.FromSeconds(60);
         private bool _isDisposed;
         private bool _isEnabled;
 
@@ -158,6 +167,7 @@ namespace Bakım.Services
                         else
                         {
                             await ScanNewProcessesAsync();
+                            RefreshBaselineIfDue();
                         }
                     }
                 }
@@ -254,6 +264,20 @@ namespace Bakım.Services
             }
         }
 
+        private void RefreshBaselineIfDue()
+        {
+            if (IsMonitoringActiveSession || DateTime.UtcNow - _baselineTakenUtc < BaselineInterval) return;
+            try
+            {
+                _baselineHotspot = RegistryHotspotSensor.CaptureHotspotSnapshot();
+                _baselineTakenUtc = DateTime.UtcNow;
+            }
+            catch (Exception ex)
+            {
+                _log.Debug($"Nöbetçi taban görüntüsü alınamadı: {ex.Message}", nameof(SetupSentinelService));
+            }
+        }
+
         private async Task StartSessionAsync(int rootPid, long creationTicks, string procName, string appName, string exePath)
         {
             var session = new WatchedSetupSession
@@ -280,7 +304,12 @@ namespace Bakım.Services
             // 2. Pre-Snapshot: Registry Hotspot ve Run/Services Değerleri (P0-3, P0-4)
             try
             {
-                _preInstallHotspot = RegistryHotspotSensor.CaptureHotspotSnapshot();
+                // Kurulum sürecinden ÖNCE alınmış taban varsa o kullanılır; yoksa şimdi alınır.
+                var processStartUtc = creationTicks > 0 ? new DateTime(creationTicks, DateTimeKind.Utc) : DateTime.UtcNow;
+                bool baselineIsBefore = _baselineHotspot != null && _baselineTakenUtc <= processStartUtc;
+                _preInstallHotspot = baselineIsBefore ? _baselineHotspot : RegistryHotspotSensor.CaptureHotspotSnapshot();
+                if (baselineIsBefore)
+                    _log.Debug($"Kurulum öncesi taban görüntüsü kullanıldı ({(processStartUtc - _baselineTakenUtc).TotalSeconds:F0} sn önce).", nameof(SetupSentinelService));
                 session.PreSnapshot = await _installerMonitorService.TakePreInstallSnapshotAsync(appName);
             }
             catch (Exception ex)
@@ -614,6 +643,7 @@ namespace Bakım.Services
             {
                 _activeSession = null;
                 _preInstallHotspot = null;
+                _baselineTakenUtc = DateTime.MinValue; // kurulum bitti: taban hemen yenilensin
                 _finalizeLock.Release();
             }
         }
