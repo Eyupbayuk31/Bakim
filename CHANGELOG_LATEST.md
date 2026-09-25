@@ -1,44 +1,37 @@
-# Bakım v4.1.0 - Sürüm Notları
+# Bakım v4.1.1 - Sürüm Notları
 
-## Bakım 4.1: Yeni Nesil Fluent 2 UI & Slate Dark Tasarım Revizyonu, İnteraktif KPI ve Segmentli Kontroller
+## Kurulum Nöbetçisi Asenkron Donma & Kilitlenme Onarımı, Bellek İçi Filtreleme ve Güvenlik Güçlendirmesi
 
-Bakım v4.1.0 sürümü, uygulamanın tüm görsel arayüzünü modern Microsoft Windows 11 Fluent 2 tasarım dili ve Slate Dark (`#0F172A` / `#1E293B`) estetiği ile baştan aşağı yenilemektedir. Dağınık butonlar, uyumsuz başlık çubuğu öğeleri ve eski stil tab anahtarları tek bir tutarlı tasarım sistemi altında toplanmıştır.
-
----
-
-### 1. Yeni Nesil Başlık Çubuğu & Birleşik Sistem Sağlığı
-- **Spotlight Arama Hapı (Ctrl+K):** Dağınık arama kutusu yerine başlık çubuğunun merkezine oturan, klavye kısayolu etiketli modern Fluent Spotlight arama hapı entegre edildi.
-- **Birleşik Sistem Sağlığı & Yetki Hapı:** CPU yükü, RAM tüketimi ve UAC (Yönetici / Standart Kullanıcı) yetki durumu ayrık 3 dağınık etiket yerine tek bir şık sağlık hapı içinde birleştirildi.
-- **Kompakt Hızlı Aksiyonlar:** Oyun Modu anahtarı, tema değiştirici ve kullanıcı profili kompakt ikon haplarına dönüştürülerek pencere kontrolleri için ferah bir alan açıldı.
+Bakım v4.1.1 sürümü, Kurulum Nöbetçisi modülüne giriş yapıldığında diskteki oturum raporlarının UI iş parçacığında senkron taranması sonucu ortaya çıkan arayüz donmalarını ve kilitlenmelerini (sync-over-async deadlock) tamamen ortadan kaldırmaktadır. Mimari baştan sona asenkron ve savunmacı yapıya kavuşturulmuştur.
 
 ---
 
-### 2. Fluent 2 Kenar Çubuğu Sol Vurgu Göstergesi (Navigation Accent Pill)
-- **Dikey Accent Vurgu Hapı:** Kenar çubuğu menü öğelerine (NavSidebar) Windows 11 Ayarlar uygulamasındaki gibi dikey yuvarlatılmış 3px accent vurgu hapı eklendi.
-- **Akıcı Seçim Hissi:** Aktif sayfa değiştiğinde sol hap yumuşak geçişle belirir, aktif olmayan öğeler sade ve minimalist kalarak göz yormaz.
+### 1. Kurulum Nöbetçisi UI Donma & Deadlock Onarımı (Async Non-Blocking Architecture)
+- **Sıfır Senkron Disk Beklemesi:** Disk üzerindeki JSON oturum raporlarını senkron bekleyen (`.GetAwaiter().GetResult()`) çağrılar `ISetupSentinelService.LoadSavedReportsAsync()` ve `SessionStore.LoadAllReportsAsync()` üzerinden tamamen dikey asenkron mimariye dönüştürüldü.
+- **Akıcı Sayfa Açılışı:** Nöbetçi sayfasına geçildiğinde UI iş parçacığı asla kilitlenmez ("Yanıt Vermiyor" durumuna düşmez); raporlar arka planda taranarak hazır olduğunda arayüze pürüzsüz aktarılır.
+- **Arka Plan Raporlama Olayları:** Kurulum tamamlandığında tetiklenen `SetupFinished` olayları UI thread'ini dondurmadan arka planda asenkron yenilenir.
 
 ---
 
-### 3. SegmentedControl Tasarım Sistemi (Themes/Tokens/SegmentedControl.xaml)
-- **Yeniden Kullanılabilir Tasarım Bileşeni:** `FluentSegmentedContainer` ve `FluentSegmentedTabItem` stilleri geliştirilerek merkezi tema kütüphanesine eklendi.
-- **Tüm Alt Sekmelerde Tutarlılık:** 
-  - *Sistem Bilgisi* (Donanım / S.M.A.R.T.),
-  - *Ağ & Bağlantı Merkezi* (5 sekmeli anahtarlayıcı),
-  - *Gizlilik & Debloat* (Gizlilik & Telemetri / Bloatware Kaldırıcı),
-  - *Çökme & Mavi Ekran Analizörü* (BSOD / Olaylar / Onarım),
-  - *Sistem Temizliği* (Filtre ve önayar sekmeleri)
-  tümü bu modern kapsayıcıya geçirildi.
-- **Çökme Analizörü Aktif Sekme Onarımı:** Çökme Analizörü'nde aktif sekmenin görsel olarak vurgulanmaması sorunu `StringToNavAppearanceConverter` ile giderildi.
+### 2. Bellek İçi Akıllı ve Anlık Filtreleme (In-Memory Filter Engine)
+- **Arama Kutusunda Sıfır Disk I/O:** Arama çubuğuna yazılan her karakterde diskteki JSON dosyalarını yeniden okuyup ayrıştırma davranışı iptal edildi.
+- **Yüksek Performans:** Yüklenen raporlar bellekte tutularak arama ve filtreleme sorguları CPU bellek havuzunda anlık olarak çalıştırılır; binlerce kayıt bile olsa yazma anında sıfır gecikme sağlanır.
 
 ---
 
-### 4. İnteraktif KPI Kartları (StatCard Overhaul)
-- **Mikro Yükselme & Kenarlık Işıltısı:** `StatCard` bileşeni fare üzerine gelindiğinde -2px dikey yükselme (`CubicEaseOut`) ve yumuşak accent kenarlık parlamasıyla etkileşimli hale getirildi.
-- **Program Kaldırıcı Akıllı Filtreleme:** Kaldırılabilir Programlar ve Sistem Bileşenleri KPI kartları `IsInteractive="True"` ve `IsSelected` desteğiyle donatılarak tıklanabilir akıllı filtrelere dönüştürüldü.
-- **Sistem Çapında Standartlaşma:** Başlangıç Programları, Bellek Optimizasyonu (RAM mimari kartları), Gizlilik & Debloat ve Temizleyici modüllerindeki ad-hoc kutucuklar `StatCard` ile standartlaştırıldı.
+### 3. Defansif Koruma Rozet Güvenliği (Defensive Protection Badge)
+- **Null-Coalescing Güvenliği:** `ProtectionStatus` nesnesi için `?.` null denetimleri ve güvenli fallback metinleri ("Temel Mod", "Standart mod devrede.") tanımlandı.
+- **Çökme Önleme:** Sensör başlatma sırasında oluşabilecek istisnalarda veya geçiş anlarında arayüzün `NullReferenceException` ile çökmesi kesin olarak engellendi.
 
 ---
 
-### 5. Sıfır AI Hissiyatı & Titiz Tipografi
-- **Kod Tabanı Temizliği:** Ağ İzleyici modülündeki 100 satıra yakın eski buton şablonları tamamen temizlendi.
-- **Sıfır Geçersiz Sembol:** Tüm semboller ve renk token'ları `verify-symbols.py` ve `verify-tokens.py` ile %100 doğrulandı; 725+ birim test ve 19 UI duman testi eksiksiz geçti.
+### 4. Asenkron İlerleme Çubuğu & StatCard Optimizasyonu
+- **Zarif İlerleme Göstergesi:** Kurulum Nöbetçisi geçmişi yüklenirken liste üzerinde parlayan modern Fluent `ProgressBar` (`IsLoading` tetiklemeli) konumlandırıldı.
+- **StatCard Veri Uyumluluğu:** KPI sayaçları (`TotalCount`, `Last30Count`, `PersistenceCount`, `RiskyCount`) için `StringFormat` bağlamaları eklenerek tip dönüştürme performansı artırıldı.
+
+---
+
+### 5. Kapsamlı Test ve Doğrulama
+- **Yeni Birim Testleri:** `SentinelService_LoadSavedReportsAsync_ReturnsWithoutDeadlock` ve `SentinelViewModel_OnActivatedAsync_LoadsAsyncAndFiltersInMemory` testleri eklendi.
+- **727 Birim Testi:** Tüm testler %100 başarıyla geçti (`Bakim.Core.Tests` 440, `Bakim.Tests` 287).
+- **UI Duman ve Tasarım Doğrulaması:** 20 modül görünümü, tema geçişleri, DI konteyneri, semboller (`verify-symbols.py`) ve tokenlar (`verify-tokens.py`) sıfır hatayla doğrulandı.

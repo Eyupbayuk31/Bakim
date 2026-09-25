@@ -144,7 +144,8 @@ internal static class Program
             _ = mainVm.TweakerCategories;
             _ = mainVm.Settings;
             _ = mainVm.Store;
-            Console.WriteLine("  GECTI  | MainViewModel 15 alt modulu (TweakerCategories ve Store dahil) basariyla cozuldu");
+            _ = mainVm.Sentinel;
+            Console.WriteLine("  GECTI  | MainViewModel 16 alt modulu (Sentinel dahil) basariyla cozuldu");
 
             main.Close();
 
@@ -157,9 +158,7 @@ internal static class Program
         catch (Exception ex)
         {
             Failures.Add("konteyner");
-            Console.WriteLine($"  COKTU  | {ex.GetType().Name}: {ex.Message}");
-            if (ex.InnerException != null)
-                Console.WriteLine($"           ic istisna: {ex.InnerException.Message}");
+            Console.WriteLine($"  COKTU  | {ex.ToString()}");
         }
     }
 
@@ -419,6 +418,7 @@ internal static class Program
             ("WindowsTweakerModuleView", () => new WindowsTweakerModuleView()),
             ("SettingsModuleView",       () => new SettingsModuleView()),
             ("StoreModuleView",          () => new StoreModuleView()),
+            ("SentinelModuleView",       () => new SentinelModuleView()),
 
             ("Controls/SectionHeader",   () => new SectionHeader { Title = "Başlık", Description = "Açıklama", Icon = "Shield24" }),
             ("Controls/MetricChip",      () => new MetricChip { Icon = "TopSpeed24", Label = "RAM:", Value = "%58", Intent = Intent.Accent }),

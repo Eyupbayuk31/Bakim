@@ -101,7 +101,7 @@ namespace Bakım.Services.Sentinel.Storage
                 }
 
                 return reports;
-            });
+            }).ConfigureAwait(false);
         }
 
         public async Task<RollbackResult> RollbackReportAsync(SetupDeltaReport report)

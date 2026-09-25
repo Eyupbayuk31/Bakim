@@ -1056,13 +1056,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v411 = new ReleaseChangelogItem
+            {
+                Version = "v4.1.1",
+                ReleaseDate = "Eylül 2026",
+                Title = "Kurulum Nöbetçisi Asenkron Donma & Kilitlenme Onarımı, Bellek İçi Filtreleme ve Güvenlik Güçlendirmesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Kurulum Nöbetçisi UI Donma & Deadlock Onarımı: Disk üzerindeki geçmiş oturum raporlarının senkron yüklenmesi (GetAwaiter().GetResult()) yerine tamamen asenkron, iş parçacığını kilitlemeyen Task.Run / LoadSavedReportsAsync mimarisine geçilerek sayfa açılışındaki donmalar kökten giderildi.",
+                    "Bellek İçi Akıllı ve Anlık Filtreleme: Arama çubuğuna yazılan her karakterde disk I/O ve JSON ayrıştırma yapmak yerine, oturumların önbellekte filtrelenmesi sağlandı; arama ve listeleme anlık ve akıcı hale getirildi.",
+                    "Defansif Koruma Rozet Güvenliği: ProtectionStatus nesnesi için null güvenliği (null-coalescing) ve güvenli varsayılan fallback metinleri tanımlanarak olası NullReferenceException çökmeleri engellendi.",
+                    "Asenkron Yükleme Göstergesi: Kurulum Nöbetçisi oturumları okunurken kullanıcıyı bilgilendiren zarif Fluent ProgressBar göstergesi eklendi; StatCard değerleri StringFormat ile optimize edildi.",
+                    "Eksiksiz Test Kapsamı: Asenkron rapor yükleme ve bellek içi filtreleme yeteneklerini garanti altına alan yeni birim testleri eklendi; 727 birim test ve 20 UI duman testi eksiksiz geçti."
+                }
+            };
+
             var v410 = new ReleaseChangelogItem
             {
                 Version = "v4.1.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Yeni Nesil Fluent 2 UI & Slate Dark Tasarım Revizyonu, İnteraktif KPI ve Segmentli Kontroller",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Yeni Nesil Başlık Çubuğu & Birleşik Sistem Sağlığı: TitleBar 7 dağınık öğeden kurtarılarak Spotlight arama hapı (Ctrl+K), birleşik Sistem Sağlığı hapı (CPU, RAM, UAC durumu) ve kompakt hızlı aksiyon haplarıyla ferahlatıldı.",
@@ -1825,8 +1842,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v410;
+            LatestRelease = v411;
 
+            ReleaseHistory.Add(v411);
             ReleaseHistory.Add(v410);
             ReleaseHistory.Add(v400);
             ReleaseHistory.Add(v3230);

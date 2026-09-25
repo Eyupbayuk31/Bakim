@@ -93,10 +93,10 @@
 
         <!-- 2. Özet -->
         <UniformGrid Grid.Row="2" Rows="1" Columns="4" Margin="{StaticResource Gap.Bottom.MD}">
-            <c:StatCard Icon="BoxCheckmark24" Label="Kayıtlı oturum" Value="{Binding TotalCount}" Intent="Neutral" Margin="{StaticResource Gap.Right.SM}"/>
-            <c:StatCard Icon="CalendarLtr24" Label="Son 30 gün" Value="{Binding Last30Count}" Intent="Accent" Margin="{StaticResource Gap.Right.SM}"/>
-            <c:StatCard Icon="Rocket24" Label="Başlangıca/hizmete ekleyen" Value="{Binding PersistenceCount}" Intent="Neutral" Margin="{StaticResource Gap.Right.SM}"/>
-            <c:StatCard Icon="ShieldError24" Label="Dikkat gerektiren" Value="{Binding RiskyCount}" Intent="Caution"/>
+            <c:StatCard Icon="BoxCheckmark24" Label="Kayıtlı oturum" Value="{Binding TotalCount, StringFormat='{}{0}'}" Intent="Neutral" Margin="{StaticResource Gap.Right.SM}"/>
+            <c:StatCard Icon="CalendarLtr24" Label="Son 30 gün" Value="{Binding Last30Count, StringFormat='{}{0}'}" Intent="Accent" Margin="{StaticResource Gap.Right.SM}"/>
+            <c:StatCard Icon="Rocket24" Label="Başlangıca/hizmete ekleyen" Value="{Binding PersistenceCount, StringFormat='{}{0}'}" Intent="Neutral" Margin="{StaticResource Gap.Right.SM}"/>
+            <c:StatCard Icon="ShieldError24" Label="Dikkat gerektiren" Value="{Binding RiskyCount, StringFormat='{}{0}'}" Intent="Caution"/>
         </UniformGrid>
 
         <!-- 3. Arama -->
@@ -115,14 +115,19 @@
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.MD}">
             <Grid>
+                <ProgressBar IsIndeterminate="True" Height="2" VerticalAlignment="Top"
+                             Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}"
+                             Panel.ZIndex="10"/>
                 <ListBox ItemsSource="{Binding Source={StaticResource GroupedRows}}"
                          SelectedItem="{Binding Selected}"
                          BorderThickness="0"
                          Background="Transparent"
                          HorizontalContentAlignment="Stretch"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.CanContentScroll="True"
                          VirtualizingPanel.IsVirtualizing="True"
                          VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
                          AutomationProperties.Name="Kurulum geçmişi">
                     <ListBox.GroupStyle>
                         <GroupStyle>

@@ -28,6 +28,7 @@ namespace Bakım.Services
         void Stop();
         Task<SetupDeltaReport?> FinalizeActiveSessionAsync();
         Task<bool> SaveReportProfileAsync(SetupDeltaReport report);
+        Task<List<SetupDeltaReport>> LoadSavedReportsAsync();
         List<SetupDeltaReport> LoadSavedReports();
         Task<int> RevertReportAsync(SetupDeltaReport report);
 
@@ -946,9 +947,23 @@ namespace Bakım.Services
             return await _sessionStore.SaveReportAsync(report);
         }
 
+        public async Task<List<SetupDeltaReport>> LoadSavedReportsAsync()
+        {
+            return await _sessionStore.LoadAllReportsAsync().ConfigureAwait(false);
+        }
+
         public List<SetupDeltaReport> LoadSavedReports()
         {
-            return _sessionStore.LoadAllReportsAsync().GetAwaiter().GetResult();
+            try
+            {
+                return Task.Run(async () => await _sessionStore.LoadAllReportsAsync().ConfigureAwait(false))
+                    .GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                _log.Warning("LoadSavedReports senkron çağrıda hata.", ex, nameof(SetupSentinelService));
+                return new List<SetupDeltaReport>();
+            }
         }
 
         public async Task<int> RevertReportAsync(SetupDeltaReport report)

@@ -60,6 +60,7 @@ namespace Bakım.ViewModels
     {
         private readonly ISetupSentinelService _sentinel;
         private readonly IAppSettingsService _settings;
+        private List<SetupDeltaReport> _allReports = new();
         private bool _isActive;
 
         public SentinelViewModel(ISetupSentinelService sentinel, IAppSettingsService settings)
@@ -69,13 +70,14 @@ namespace Bakım.ViewModels
             _isEnabled = sentinel.IsEnabled;
             _notifyLevel = settings.Current.SentinelNotifyLevel;
 
-            _sentinel.SetupFinished += _ => OnUi(() => { if (_isActive) Refresh(); });
-            _sentinel.SetupDetected += _ => OnUi(UpdateStatus);
+            _sentinel.SetupFinished += report => OnUi(() => { if (_isActive) Refresh(); });
+            _sentinel.SetupDetected += session => OnUi(UpdateStatus);
         }
 
         public ObservableCollection<SentinelReportRow> Rows { get; } = new();
 
         [ObservableProperty] private bool _isEnabled;
+        [ObservableProperty] private bool _isLoading;
         [ObservableProperty] private string _statusTitle = string.Empty;
         [ObservableProperty] private string _statusDetail = string.Empty;
         [ObservableProperty] private bool _isMonitoring;
@@ -106,12 +108,12 @@ namespace Bakım.ViewModels
 
         public bool HasSelection => Selected != null;
 
-        public Core.Sentinel.SentinelProtectionStatus ProtectionStatus => _sentinel.ProtectionStatus;
-        public string ProtectionBadgeText => _sentinel.ProtectionStatus.BadgeText;
-        public string ProtectionDescription => _sentinel.ProtectionStatus.Description;
-        public bool IsTamKoruma => _sentinel.ProtectionStatus.Mode == Core.Sentinel.SentinelProtectionMode.TamKoruma;
+        public Core.Sentinel.SentinelProtectionStatus? ProtectionStatus => _sentinel.ProtectionStatus;
+        public string ProtectionBadgeText => _sentinel.ProtectionStatus?.BadgeText ?? "Temel Mod";
+        public string ProtectionDescription => _sentinel.ProtectionStatus?.Description ?? "Standart mod devrede.";
+        public bool IsTamKoruma => _sentinel.ProtectionStatus?.Mode == Core.Sentinel.SentinelProtectionMode.TamKoruma;
         public Intent ProtectionIntent => IsTamKoruma ? Intent.Accent : Intent.Neutral;
-        public string ActiveSensorsSummary => _sentinel.ProtectionStatus.ActiveSensorsSummary;
+        public string ActiveSensorsSummary => _sentinel.ProtectionStatus?.ActiveSensorsSummary ?? string.Empty;
 
         partial void OnIsEnabledChanged(bool value)
         {
@@ -121,14 +123,14 @@ namespace Bakım.ViewModels
             UpdateStatus();
         }
 
-        partial void OnSearchTextChanged(string value) => Refresh();
+        partial void OnSearchTextChanged(string value) => ApplyFilter();
 
-        public Task OnActivatedAsync()
+        public async Task OnActivatedAsync()
         {
             _isActive = true;
             IsEnabled = _sentinel.IsEnabled;
-            Refresh();
-            return Task.CompletedTask;
+            UpdateStatus();
+            await RefreshAsync();
         }
 
         public Task OnDeactivatedAsync()
@@ -165,22 +167,33 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
-        public void Refresh()
+        public async Task RefreshAsync()
         {
             UpdateStatus();
-
-            List<SetupDeltaReport> reports;
+            IsLoading = true;
             try
             {
-                reports = _sentinel.LoadSavedReports();
+                var reports = await _sentinel.LoadSavedReportsAsync().ConfigureAwait(false);
+                _allReports = reports ?? new List<SetupDeltaReport>();
             }
             catch (Exception ex)
             {
                 AppLog.Warning("Kurulum geçmişi okunamadı.", ex, nameof(SentinelViewModel));
-                reports = new List<SetupDeltaReport>();
+                _allReports = new List<SetupDeltaReport>();
+            }
+            finally
+            {
+                IsLoading = false;
             }
 
-            var merged = reports.Concat(_sentinel.RecentReports)
+            await OnUiAsync(ApplyFilter);
+        }
+
+        public void Refresh() => _ = RefreshAsync();
+
+        private void ApplyFilter()
+        {
+            var merged = _allReports.Concat(_sentinel.RecentReports)
                 .GroupBy(r => r.SessionId)
                 .Select(g => g.First())
                 .OrderByDescending(r => r.InstallTime)
@@ -229,6 +242,19 @@ namespace Bakım.ViewModels
             var dispatcher = Application.Current?.Dispatcher;
             if (dispatcher == null || dispatcher.CheckAccess()) action();
             else dispatcher.BeginInvoke(action);
+        }
+
+        private static async Task OnUiAsync(Action action)
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                action();
+            }
+            else
+            {
+                await dispatcher.InvokeAsync(action);
+            }
         }
     }
 }

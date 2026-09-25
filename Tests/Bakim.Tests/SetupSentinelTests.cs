@@ -4,6 +4,8 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Bakım.Models;
+using Bakım.Services;
+using Bakım.ViewModels;
 using Bakım.Services.Sentinel.Actions;
 using Bakım.Services.Sentinel.Detection;
 using Bakım.Services.Sentinel.Sensors;
@@ -277,6 +279,85 @@ namespace Bakim.Tests
 
             // Cleanup
             store.DeleteReport(report.SessionId);
+        }
+
+        [Fact]
+        public async Task SentinelService_LoadSavedReportsAsync_ReturnsWithoutDeadlock()
+        {
+            var store = new SessionStore();
+            var report = new SetupDeltaReport
+            {
+                SessionId = Guid.NewGuid().ToString("N"),
+                AppName = "Sentinel_Async_Test_App",
+                InstallTime = DateTime.UtcNow,
+                CreatedFiles = new List<string> { @"C:\Test\sentinel.exe" }
+            };
+
+            await store.SaveReportAsync(report);
+
+            var log = new NullLogService();
+            var settings = new AppSettingsService(log);
+            var monitor = new InstallerMonitorService();
+            var sentinel = new SetupSentinelService(monitor, settings, log, store);
+
+            var asyncReports = await sentinel.LoadSavedReportsAsync();
+            Assert.NotNull(asyncReports);
+            Assert.Contains(asyncReports, r => r.SessionId == report.SessionId);
+
+            var syncReports = sentinel.LoadSavedReports();
+            Assert.NotNull(syncReports);
+            Assert.Contains(syncReports, r => r.SessionId == report.SessionId);
+
+            store.DeleteReport(report.SessionId);
+        }
+
+        [Fact]
+        public async Task SentinelViewModel_OnActivatedAsync_LoadsAsyncAndFiltersInMemory()
+        {
+            var store = new SessionStore();
+            var report1 = new SetupDeltaReport
+            {
+                SessionId = Guid.NewGuid().ToString("N"),
+                AppName = "VLC Media Player",
+                InstallTime = DateTime.UtcNow,
+                CreatedFiles = new List<string> { @"C:\Program Files\VLC\vlc.exe" }
+            };
+            var report2 = new SetupDeltaReport
+            {
+                SessionId = Guid.NewGuid().ToString("N"),
+                AppName = "7-Zip",
+                InstallTime = DateTime.UtcNow.AddHours(-1),
+                CreatedFiles = new List<string> { @"C:\Program Files\7-Zip\7z.exe" }
+            };
+
+            await store.SaveReportAsync(report1);
+            await store.SaveReportAsync(report2);
+
+            var log = new NullLogService();
+            var settings = new AppSettingsService(log);
+            var monitor = new InstallerMonitorService();
+            var sentinel = new SetupSentinelService(monitor, settings, log, store);
+            var vm = new SentinelViewModel(sentinel, settings);
+
+            Assert.NotNull(vm.ProtectionBadgeText);
+            Assert.NotNull(vm.ProtectionDescription);
+
+            await vm.OnActivatedAsync();
+
+            Assert.Equal(2, vm.TotalCount);
+            Assert.Equal(2, vm.Rows.Count);
+            Assert.False(vm.IsEmpty);
+
+            // Filtreleme disk I/O yapmadan bellekte çalışmalı
+            vm.SearchText = "VLC";
+            Assert.Single(vm.Rows);
+            Assert.Equal("VLC Media Player", vm.Rows[0].AppName);
+
+            vm.SearchText = string.Empty;
+            Assert.Equal(2, vm.Rows.Count);
+
+            store.DeleteReport(report1.SessionId);
+            store.DeleteReport(report2.SessionId);
         }
     }
 }
