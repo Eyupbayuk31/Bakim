@@ -53,7 +53,11 @@ namespace Bakım.Core.Sentinel
 
         public static string GenerateInstallerLogonCommand(string installerFileName)
         {
-            string cleanName = Path.GetFileName(installerFileName);
+            if (string.IsNullOrWhiteSpace(installerFileName)) return string.Empty;
+            int lastBackslash = installerFileName.LastIndexOf('\\');
+            int lastSlash = installerFileName.LastIndexOf('/');
+            int lastSep = Math.Max(lastBackslash, lastSlash);
+            string cleanName = lastSep >= 0 ? installerFileName[(lastSep + 1)..] : installerFileName;
             return $@"cmd.exe /c start """" ""{SandboxSharedFolder}\{cleanName}""";
         }
     }
