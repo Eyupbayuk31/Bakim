@@ -654,6 +654,80 @@ namespace Bakım.ViewModels
             }
         }
 
+        /// <summary>
+        /// Tanılama paketi (P-8): son günlükler, ayarlar ve sistem özeti tek bir zip'te, masaüstüne.
+        /// Kullanıcı adı yollarda maskelenir; VirusTotal anahtarı gibi gizli ayarlar eklenmez.
+        /// Hata bildirirken "log klasörünü bul, dosyaları seç" adımlarının yerini alır.
+        /// </summary>
+        [RelayCommand]
+        public async Task ExportDiagnosticsAsync()
+        {
+            string zipPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                $"Bakim_Tanilama_{DateTime.Now:yyyyMMdd_HHmmss}.zip");
+            try
+            {
+                await Task.Run(() =>
+                {
+                    using var zip = System.IO.Compression.ZipFile.Open(zipPath, System.IO.Compression.ZipArchiveMode.Create);
+
+                    // 1. Son 7 günün günlükleri (en fazla 10 dosya)
+                    if (Directory.Exists(LogsDirectoryPath))
+                    {
+                        foreach (var log in new DirectoryInfo(LogsDirectoryPath).GetFiles("*.log")
+                                     .Where(f => f.LastWriteTime > DateTime.Now.AddDays(-7))
+                                     .OrderByDescending(f => f.LastWriteTime).Take(10))
+                        {
+                            using var src = new FileStream(log.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                            using var reader = new StreamReader(src);
+                            var entry = zip.CreateEntry("logs/" + log.Name);
+                            using var writer = new StreamWriter(entry.Open());
+                            writer.Write(MaskUserPaths(reader.ReadToEnd()));
+                        }
+                    }
+
+                    // 2. Ayarlar (gizli alanlar hariç)
+                    if (File.Exists(SettingsFilePath))
+                    {
+                        string json = File.ReadAllText(SettingsFilePath);
+                        json = System.Text.RegularExpressions.Regex.Replace(json,
+                            "\"(\\w*(ApiKey|Password|Token|Secret)\\w*)\"\\s*:\\s*\"[^\"]*\"", "\"$1\": \"***\"",
+                            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        WriteEntry(zip, "settings.json", MaskUserPaths(json));
+                    }
+
+                    // 3. Sistem özeti
+                    var summary = new System.Text.StringBuilder()
+                        .AppendLine($"Bakım: {AppInfo.Version}")
+                        .AppendLine($"Windows: {Environment.OSVersion.VersionString} ({(Environment.Is64BitOperatingSystem ? "64" : "32")} bit)")
+                        .AppendLine($".NET: {Environment.Version}")
+                        .AppendLine($"Yönetici: {UacHelper.IsAdministrator()}")
+                        .AppendLine($"İşlemci sayısı: {Environment.ProcessorCount}")
+                        .AppendLine($"Kültür: {System.Globalization.CultureInfo.CurrentUICulture.Name}")
+                        .AppendLine($"Oluşturulma: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                    WriteEntry(zip, "system.txt", summary.ToString());
+                });
+
+                _log.Info($"Tanılama paketi oluşturuldu: {zipPath}", nameof(SettingsViewModel));
+                Process.Start(new ProcessStartInfo("explorer.exe") { ArgumentList = { "/select,", zipPath }, UseShellExecute = false });
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Tanılama paketi oluşturulamadı.", ex, nameof(SettingsViewModel));
+                MessageBox.Show($"Tanılama paketi oluşturulamadı: {ex.Message}", "Tanılama", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private static void WriteEntry(System.IO.Compression.ZipArchive zip, string name, string content)
+        {
+            var entry = zip.CreateEntry(name);
+            using var writer = new StreamWriter(entry.Open());
+            writer.Write(content);
+        }
+
+        private static string MaskUserPaths(string text) =>
+            System.Text.RegularExpressions.Regex.Replace(text, @"([A-Za-z]:\\Users\\)[^\\""\s]+", "$1***",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
         [RelayCommand]
         public void ExportSettings()
         {

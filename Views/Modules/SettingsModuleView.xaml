@@ -808,6 +808,14 @@
                                                AutomationProperties.Name="Günlük klasörünü aç"
                                                Content="Log Klasörünü Aç"
                                                Icon="{ui:SymbolIcon FolderOpen20}"/>
+                                    <ui:Button Appearance="Secondary"
+                                               Command="{Binding ExportDiagnosticsCommand}"
+                                               Padding="12,7"
+                                               Margin="8,0,0,0"
+                                               ToolTip="Son günlükler, ayarlar ve sistem özeti tek zip'te masaüstüne kaydedilir (kullanıcı adı maskelenir). Hata bildirirken ekleyin."
+                                               AutomationProperties.Name="Tanılama paketi oluştur"
+                                               Content="Tanılama Paketi"
+                                               Icon="{ui:SymbolIcon DocumentArrowDown20}"/>
                                 </StackPanel>
                             </Grid>
 
