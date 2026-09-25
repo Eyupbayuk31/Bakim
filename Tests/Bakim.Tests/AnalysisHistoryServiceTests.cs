@@ -47,15 +47,27 @@ public sealed class AnalysisHistoryServiceTests : System.IDisposable
     [Fact]
     public async Task Record_PersistsAcrossInstances()
     {
+        Directory.CreateDirectory(_dir);
+        string file = Path.Combine(_dir, "x.exe");
+        File.WriteAllBytes(file, new byte[] { 0x4D, 0x5A });
+
         var service = CreateService();
-        var rec = await service.RecordAsync(Result(@"C:\Temp\x.exe"), AnalysisSource.Analyzer, "Dosya İncele");
+        var rec = await service.RecordAsync(Result(file), AnalysisSource.Analyzer, "Dosya İncele");
         Assert.NotNull(rec);
         Assert.Equal(AnalysisVerdict.Caution, rec!.Verdict);
+        Assert.NotNull(rec.FileLastWriteUtc);
         Assert.Equal("Unsigned", rec.SignatureStatus);
 
         var reopened = CreateService();
         Assert.Equal(1, reopened.Count);
         Assert.Equal("Dosya İncele", reopened.Query(AnalysisHistoryFilter.All).Single().SourceDetail);
+    }
+
+    [Fact]
+    public async Task MissingFile_IsRecordedAsMissing()
+    {
+        var rec = await CreateService().RecordAsync(Result(Path.Combine(_dir, "yok.exe")), AnalysisSource.Analyzer);
+        Assert.Equal(AnalysisVerdict.Missing, rec!.Verdict);
     }
 
     [Fact]

@@ -130,13 +130,14 @@ namespace Bakım.ViewModels
             IAutorunsScannerEngine scannerEngine,
             IVirusTotalCheckService virusTotalService,
             IFileThreatAnalyzerService threatAnalyzerService,
-            Bakım.Services.History.IAnalysisHistoryService history)
+            Bakım.Services.History.IAnalysisHistoryService history,
+            AnalyzerHistoryViewModel historyViewModel)
         {
             _scannerEngine = scannerEngine;
             _virusTotalService = virusTotalService;
             _threatAnalyzerService = threatAnalyzerService;
             _history = history;
-            History = new AnalyzerHistoryViewModel(history, threatAnalyzerService);
+            History = historyViewModel;
             _ = History.InitializeAsync();
 
             ApiKeyInput = _virusTotalService.ApiKey;
