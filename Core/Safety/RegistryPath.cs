@@ -43,6 +43,28 @@ namespace Bakım.Core.Safety
             return true;
         }
 
+        /// <summary>Değer ayırıcısı: "HKCU\Software\Foo → DeğerAdı".</summary>
+        public const string ValueSeparator = " → ";
+
+        /// <summary>
+        /// <see cref="ToString"/> çıktısını (isteğe bağlı değer adıyla) geri çözer.
+        /// "HKCU\Software\Foo [32] → Bar" → anahtar + görünüm + değer adı.
+        /// </summary>
+        public static bool TryParseWithValue(string? text, RegistryView defaultView, out RegistryPath result)
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(text)) return false;
+
+            int sep = text.IndexOf(ValueSeparator, StringComparison.Ordinal);
+            if (sep < 0) return TryParse(text, defaultView, out result);
+
+            if (!TryParse(text[..sep], defaultView, out var key)) return false;
+            string value = text[(sep + ValueSeparator.Length)..];
+            if (value.Length == 0) return false;
+            result = key.WithValue(value);
+            return true;
+        }
+
         public static RegistryPath Parse(string text, RegistryView defaultView = RegistryView.Registry64) =>
             TryParse(text, defaultView, out var r) ? r : throw new FormatException($"Geçersiz kayıt defteri yolu: {text}");
 
@@ -84,6 +106,6 @@ namespace Bakım.Core.Safety
         /// <summary>Alt anahtarın bölüm sayısı ("Software\Foo\Bar" → 3).</summary>
         public int SubKeyDepth => string.IsNullOrEmpty(SubKey) ? 0 : SubKey.Split('\\', StringSplitOptions.RemoveEmptyEntries).Length;
 
-        public override string ToString() => ValueName == null ? ToDisplay() : $"{ToDisplay()} → {ValueName}";
+        public override string ToString() => ValueName == null ? ToDisplay() : ToDisplay() + ValueSeparator + ValueName;
     }
 }

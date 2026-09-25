@@ -116,6 +116,12 @@ public class DependencyInjectionTests
     [InlineData(typeof(IBackgroundMaintenanceService))]
     [InlineData(typeof(IExitCleanupService))]
     [InlineData(typeof(ISetupSentinelService))]
+    [InlineData(typeof(Bakım.Services.Safety.ISafeDeleteService))]
+    [InlineData(typeof(Bakım.Services.Safety.ISafeRegistryService))]
+    [InlineData(typeof(Bakım.Services.Safety.ISafeProcessService))]
+    [InlineData(typeof(Bakım.Services.Safety.IRestorePointService))]
+    [InlineData(typeof(IResidualScannerEngine))]
+    [InlineData(typeof(IDeepUninstallerService))]
     public void CoreService_ResolvesAsSingleton(Type serviceType)
     {
         using var provider = BuildContainer();

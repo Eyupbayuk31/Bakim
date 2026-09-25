@@ -19,8 +19,8 @@ namespace Bakım.Services.Sentinel.Storage
     }
 
     /// <summary>
-    /// Kurulum raporlarnn ve delta kaytlarnn disk zerindeki saklama,
-    /// ykleme ve gvenli geri alma ilemlerini yneten tekil merkezi depo.
+    /// Kurulum raporlarının ve delta kayıtlarının disk üzerindeki saklama,
+    /// yükleme ve güvenli geri alma işlemlerini yöneten tekil merkezi depo.
     /// </summary>
     public class SessionStore : ISessionStore
     {
@@ -96,7 +96,7 @@ namespace Bakım.Services.Sentinel.Storage
                     }
                     catch
                     {
-                        // Bozuk veya uyumsuz eski ama dosyalarn sessizce atla
+                        // Bozuk veya uyumsuz eski şema dosyalarını sessizce atla
                     }
                 }
 
@@ -106,7 +106,7 @@ namespace Bakım.Services.Sentinel.Storage
 
         public async Task<RollbackResult> RollbackReportAsync(SetupDeltaReport report)
         {
-            return await Task.Run(() => RollbackPlanner.ExecuteSafeRollback(report));
+            return await RollbackPlanner.ExecuteSafeRollbackAsync(report);
         }
 
         public bool DeleteReport(string sessionId)

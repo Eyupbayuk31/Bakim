@@ -1,601 +1,658 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using Bakım.Core.Safety;
+using Bakım.Core.Text;
 using Bakım.Models;
+using Bakım.Services.Safety;
 
 namespace Bakım.Services
 {
-    public interface IResidualScannerEngine
+    /// <summary>
+    /// Kalıntı taramasının bağlamı.
+    /// </summary>
+    /// <param name="UninstallConfirmed">
+    /// Resmi kaldırıcının programı gerçekten kaldırdığı doğrulandı mı? Doğrulanmadıysa
+    /// kurulum klasörü ve Uninstall kaydı ASLA kalıntı olarak önerilmez: program hâlâ
+    /// kurulu olabilir (kullanıcı kaldırıcıda "İptal"e basmış olabilir).
+    /// </param>
+    public sealed record ResidualScanOptions(bool UninstallConfirmed)
     {
-        Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null);
-        Task<int> CleanResidualsAsync(IEnumerable<LeftoverItem> leftovers, IProgress<string>? progress = null);
-        Task<List<LeftoverItem>> ScanHeuristicResidualsAsync(string targetPathOrExe, string appNameHint);
-        Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, IProgress<string>? progress = null);
-        Task<int> CleanResidualItemsAsync(IEnumerable<ResidualItem> items, IProgress<string>? progress = null);
+        /// <summary>Kaldırma doğrulanmadı: yalnızca isim tabanlı, seçilmemiş adaylar.</summary>
+        public static ResidualScanOptions Unconfirmed { get; } = new(false);
+
+        /// <summary>Kaldırma doğrulandı: kurulum klasörü ve Uninstall kaydı kesin kalıntıdır.</summary>
+        public static ResidualScanOptions Confirmed { get; } = new(true);
     }
 
+    /// <summary>Temizlik sonucu: geri alma günlüğü ve öğe bazında sonuçlar.</summary>
+    public sealed record ResidualCleanReport(string JournalId, IReadOnlyList<OperationResult> Results)
+    {
+        public int SucceededCount => Results.Count(r => r.Succeeded);
+        public int FailedCount => Results.Count(r => !r.Succeeded && r.Outcome != DeleteOutcome.NotFound);
+        public long BytesFreed => Results.Where(r => r.Succeeded).Sum(r => r.BytesFreed);
+        public bool HasRegistryBackup => Directory.Exists(UndoJournal.GetDirectory(JournalId)) &&
+                                         Directory.EnumerateFiles(UndoJournal.GetDirectory(JournalId), "*.reg").Any();
+    }
+
+    public interface IResidualScannerEngine
+    {
+        /// <summary>Kaldırma doğrulanmamış varsayılır (güvenli varsayılan).</summary>
+        Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null);
+        Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, ResidualScanOptions options, IProgress<string>? progress = null);
+        Task<int> CleanResidualsAsync(IEnumerable<LeftoverItem> leftovers, IProgress<string>? progress = null);
+        Task<ResidualCleanReport> CleanResidualsDetailedAsync(IEnumerable<LeftoverItem> leftovers, string title, IProgress<string>? progress = null);
+        Task<List<LeftoverItem>> ScanHeuristicResidualsAsync(string targetPathOrExe, string appNameHint);
+        Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, IProgress<string>? progress = null);
+        Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, ResidualScanOptions options, IProgress<string>? progress = null);
+        Task<int> CleanResidualItemsAsync(IEnumerable<ResidualItem> items, IProgress<string>? progress = null);
+        Task<ResidualCleanReport> CleanResidualItemsDetailedAsync(IEnumerable<ResidualItem> items, string title, IProgress<string>? progress = null);
+    }
+
+    /// <summary>
+    /// Kaldırma sonrası kalıntı tarayıcısı.
+    ///
+    /// v3.21'de yeniden yazıldı. Eski motorun bulguları (bkz. docs/UNINSTALLER_V2_PLAN.md):
+    ///   • tek kelimelik ALT DİZE eşleşmesi %85 güven alıyor ve "%100 Güvenli" gösteriliyordu,
+    ///   • yayıncı + herhangi bir kelime %100 sayılıp toplu modda onaysız siliniyordu
+    ///     ("Google Drive" → %LocalAppData%\Google, Chrome profili dahil),
+    ///   • korunan klasör kontrolü yalnızca klasör ADINA bakıyordu (Program Files, İndirilenler korunmuyordu),
+    ///   • kurulum klasörü, program hâlâ kuruluyken bile %100 kalıntı sayılıyordu,
+    ///   • "HKCU\..." yolları HKLM sanılıyor, değerler anahtar gibi siliniyordu.
+    /// </summary>
     public class ResidualScannerEngine : IResidualScannerEngine
     {
-        private static readonly string[] GenericBlacklistTokens = new[]
-        {
-            "microsoft", "windows", "corporation", "inc", "ltd", "the", "app", "application",
-            "software", "installer", "setup", "update", "updater", "service", "system", "tool",
-            "tools", "common", "shared", "temp", "cache", "data", "bin", "lib", "help", "doc",
-            "support", "x86", "x64", "net", "framework", "runtime", "client", "desktop"
-        };
+        private readonly IUninstallerService _installedApps;
+        private readonly ISafeDeleteService _safeDelete;
+        private readonly ISafeRegistryService _safeRegistry;
+        private readonly PathSafetyGuard _guard;
+        private readonly ILogService _log;
 
-        private static readonly string[] ProtectedSystemNames = new[]
-        {
-            "windows", "system32", "syswow64", "winsxs", "drivers", "boot",
-            "system volume information", "$recycle.bin", "recovery", "msocache",
-            "microsoft", "windows nt", "windows defender", "internet explorer"
-        };
+        private const int Certain = (int)MatchConfidence.Certain;
+        private const int High = (int)MatchConfidence.High;
 
-        #region Stage 1 & 2: Complete Residual Scan
-
-        public async Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null)
+        public ResidualScannerEngine(
+            IUninstallerService installedApps,
+            ISafeDeleteService safeDelete,
+            ISafeRegistryService safeRegistry,
+            ILogService log)
+            : this(installedApps, safeDelete, safeRegistry, PathSafetyGuard.Default, log)
         {
+        }
+
+        public ResidualScannerEngine(
+            IUninstallerService installedApps,
+            ISafeDeleteService safeDelete,
+            ISafeRegistryService safeRegistry,
+            PathSafetyGuard guard,
+            ILogService log)
+        {
+            _installedApps = installedApps;
+            _safeDelete = safeDelete;
+            _safeRegistry = safeRegistry;
+            _guard = guard;
+            _log = log;
+        }
+
+        #region Tarama
+
+        public Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null) =>
+            ScanResidualsAsync(app, ResidualScanOptions.Unconfirmed, progress);
+
+        public async Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, ResidualScanOptions options, IProgress<string>? progress = null)
+        {
+            // Diğer kurulu programların klasörleri: bunların içine, üstüne ya da
+            // kendisine denk gelen hiçbir aday önerilmez.
+            var otherLocations = await GetOtherInstallLocationsAsync(app);
+
             return await Task.Run(() =>
             {
-                var leftovers = new List<LeftoverItem>();
-                var searchTokens = ExtractSearchTokens(app);
+                var results = new List<LeftoverItem>();
+                var matcher = new NameMatcher(app.DisplayName, app.Publisher);
 
-                if (searchTokens.Count == 0 && string.IsNullOrWhiteSpace(app.InstallLocation))
+                progress?.Report("Aşama 1: Dosya sistemi kalıntıları taranıyor...");
+                AddInstallLocation(app, options, otherLocations, results);
+                if (matcher.HasIdentity)
                 {
-                    return leftovers;
+                    ScanFolders(matcher, otherLocations, results);
+                    ScanStartMenuShortcuts(matcher, results);
                 }
 
-                progress?.Report("Aşama 1: Dosya sistemi ve dizin kalıntıları taranıyor...");
-
-                // 1. InstallLocation (Eğer dizin mevcutsa doğrudan %100 güvenilirlikle ekle)
-                if (!string.IsNullOrWhiteSpace(app.InstallLocation) && Directory.Exists(app.InstallLocation))
+                progress?.Report("Aşama 2: Kayıt defteri kalıntıları taranıyor...");
+                if (matcher.HasIdentity)
                 {
-                    if (!IsProtectedDirectory(app.InstallLocation))
-                    {
-                        long size = CalculateFolderSizeSafe(app.InstallLocation);
-                        leftovers.Add(new LeftoverItem
-                        {
-                            Path = app.InstallLocation,
-                            ItemType = LeftoverType.Folder,
-                            SizeBytes = size,
-                            FormattedSize = FormatBytes(size),
-                            Description = "Program Kurulum Ana Dizini Kalıntısı",
-                            ConfidenceScore = 100,
-                            IsSelected = true
-                        });
-                    }
+                    ScanRegistryRoot(RegistryHive.CurrentUser, RegistryView.Registry64, matcher, results);
+                    ScanRegistryRoot(RegistryHive.LocalMachine, RegistryView.Registry64, matcher, results);
+                    ScanRegistryRoot(RegistryHive.LocalMachine, RegistryView.Registry32, matcher, results);
+                    ScanFileAssociationValues(matcher, results);
                 }
+                AddUninstallKey(app, options, results);
 
-                // 2. Dosya Sistemi Arama Dizinleri
-                var candidateRoots = new List<string>
-                {
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "LocalLow"),
-                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), // ProgramData
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                    Path.GetTempPath(),
-                    Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms), // All Users Start Menu
-                    Environment.GetFolderPath(Environment.SpecialFolder.Programs)        // Current User Start Menu
-                };
-
-                foreach (string root in candidateRoots)
-                {
-                    if (!Directory.Exists(root)) continue;
-
-                    try
-                    {
-                        var dirInfo = new DirectoryInfo(root);
-                        foreach (var subDir in dirInfo.GetDirectories())
-                        {
-                            if (IsProtectedDirectory(subDir.FullName)) continue;
-
-                            string dirName = subDir.Name.ToLowerInvariant();
-                            int confidence = CalculateMatchConfidence(dirName, searchTokens, app);
-
-                            if (confidence >= 75)
-                            {
-                                if (!leftovers.Any(l => l.Path.Equals(subDir.FullName, StringComparison.OrdinalIgnoreCase)))
-                                {
-                                    long size = CalculateFolderSizeSafe(subDir.FullName);
-                                    leftovers.Add(new LeftoverItem
-                                    {
-                                        Path = subDir.FullName,
-                                        ItemType = LeftoverType.Folder,
-                                        SizeBytes = size,
-                                        FormattedSize = FormatBytes(size),
-                                        Description = $"{dirInfo.Name} Yetim Uygulama Klasörü",
-                                        ConfidenceScore = confidence,
-                                        IsSelected = true
-                                    });
-                                }
-                            }
-                        }
-
-                        // Kısayollar (.lnk) taraması
-                        if (root.Contains("Programs", StringComparison.OrdinalIgnoreCase))
-                        {
-                            foreach (var file in dirInfo.GetFiles("*.lnk", SearchOption.AllDirectories))
-                            {
-                                string fname = Path.GetFileNameWithoutExtension(file.Name).ToLowerInvariant();
-                                if (searchTokens.Any(t => fname.Contains(t)))
-                                {
-                                    if (!leftovers.Any(l => l.Path.Equals(file.FullName, StringComparison.OrdinalIgnoreCase)))
-                                    {
-                                        leftovers.Add(new LeftoverItem
-                                        {
-                                            Path = file.FullName,
-                                            ItemType = LeftoverType.File,
-                                            SizeBytes = file.Length,
-                                            FormattedSize = FormatBytes(file.Length),
-                                            Description = "Başlat Menüsü Yetim Kısayolu",
-                                            ConfidenceScore = 100,
-                                            IsSelected = true
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch { }
-                }
-
-                progress?.Report("Aşama 2: Kayıt Defteri (Registry) derin kalıntı taraması yapılıyor...");
-
-                // 3. Kayıt Defteri Taraması
-                ScanRegistryHive(RegistryHive.CurrentUser, @"Software", searchTokens, app, leftovers);
-                ScanRegistryHive(RegistryHive.LocalMachine, @"Software", searchTokens, app, leftovers);
-                ScanRegistryHive(RegistryHive.LocalMachine, @"Software\WOW6432Node", searchTokens, app, leftovers);
-                ScanRegistryFileExts(searchTokens, app, leftovers);
-
-                // Yetim Uninstall Kaydı
-                if (!string.IsNullOrWhiteSpace(app.RegistryKeyPath))
-                {
-                    if (!leftovers.Any(l => l.Path.Equals(app.RegistryKeyPath, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        leftovers.Add(new LeftoverItem
-                        {
-                            Path = app.RegistryKeyPath,
-                            ItemType = LeftoverType.RegistryKey,
-                            SizeBytes = 1024,
-                            FormattedSize = "1 KB",
-                            Description = "Windows Uninstall Kayıt Defteri Anahtarı",
-                            ConfidenceScore = 100,
-                            IsSelected = true
-                        });
-                    }
-                }
-
-                return leftovers;
+                return results
+                    .GroupBy(r => r.Path, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.OrderByDescending(x => x.ConfidenceScore).First())
+                    .OrderByDescending(r => r.ConfidenceScore)
+                    .ThenBy(r => r.ItemType)
+                    .ToList();
             });
         }
 
-        private void ScanRegistryHive(RegistryHive hive, string basePath, List<string> searchTokens, InstalledAppItem app, List<LeftoverItem> results)
+        private async Task<List<string>> GetOtherInstallLocationsAsync(InstalledAppItem target)
         {
             try
             {
-                using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
-                using var targetKey = baseKey.OpenSubKey(basePath);
-                if (targetKey == null) return;
-
-                foreach (string name in targetKey.GetSubKeyNames())
-                {
-                    string nameLower = name.ToLowerInvariant();
-                    if (GenericBlacklistTokens.Contains(nameLower)) continue;
-
-                    int confidence = CalculateMatchConfidence(nameLower, searchTokens, app);
-                    if (confidence >= 75)
-                    {
-                        string fullPath = $@"{hive}\{basePath}\{name}";
-                        if (!results.Any(r => r.Path.Equals(fullPath, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            results.Add(new LeftoverItem
-                            {
-                                Path = fullPath,
-                                ItemType = LeftoverType.RegistryKey,
-                                SizeBytes = 2048,
-                                FormattedSize = "2 KB",
-                                Description = "Yetim Yazılım Kayıt Defteri Anahtarı",
-                                ConfidenceScore = confidence,
-                                IsSelected = true
-                            });
-                        }
-                    }
-                }
+                var apps = await _installedApps.GetInstalledAppsAsync();
+                return apps
+                    .Where(a => !string.Equals(a.RegistryKeyPath, target.RegistryKeyPath, StringComparison.OrdinalIgnoreCase) ||
+                                string.IsNullOrEmpty(target.RegistryKeyPath))
+                    .Where(a => !string.Equals(a.DisplayName, target.DisplayName, StringComparison.OrdinalIgnoreCase))
+                    .Select(a => WindowsPath.Normalize(a.InstallLocation))
+                    .Where(p => p != null && WindowsPath.Depth(p) >= 1)
+                    .Select(p => p!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
             }
-            catch { }
-        }
-
-        private void ScanRegistryFileExts(List<string> searchTokens, InstalledAppItem app, List<LeftoverItem> results)
-        {
-            try
+            catch (Exception ex)
             {
-                using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
-                using var extsKey = baseKey.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts");
-                if (extsKey == null) return;
-
-                foreach (string ext in extsKey.GetSubKeyNames())
-                {
-                    try
-                    {
-                        using var sub = extsKey.OpenSubKey($@"{ext}\OpenWithProgids");
-                        if (sub == null) continue;
-
-                        foreach (string valName in sub.GetValueNames())
-                        {
-                            string valLower = valName.ToLowerInvariant();
-                            if (searchTokens.Any(t => valLower.Contains(t)))
-                            {
-                                string fullPath = $@"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{ext}\OpenWithProgids\{valName}";
-                                if (!results.Any(r => r.Path.Equals(fullPath, StringComparison.OrdinalIgnoreCase)))
-                                {
-                                    results.Add(new LeftoverItem
-                                    {
-                                        Path = fullPath,
-                                        ItemType = LeftoverType.RegistryKey,
-                                        SizeBytes = 512,
-                                        FormattedSize = "512 B",
-                                        Description = $"Dosya İlişkilendirme Kaydı ({ext})",
-                                        ConfidenceScore = 90,
-                                        IsSelected = true
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    catch { }
-                }
-            }
-            catch { }
-        }
-
-        #endregion
-
-        #region Heuristic Force Scan
-
-        public async Task<List<LeftoverItem>> ScanHeuristicResidualsAsync(string targetPathOrExe, string appNameHint)
-        {
-            return await Task.Run(() =>
-            {
-                var leftovers = new List<LeftoverItem>();
-                string cleanHint = CleanToken(appNameHint);
-                var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                if (!string.IsNullOrWhiteSpace(cleanHint))
-                {
-                    foreach (var p in cleanHint.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        if (p.Length >= 3 && !GenericBlacklistTokens.Contains(p.ToLowerInvariant()))
-                            tokens.Add(p.ToLowerInvariant());
-                    }
-                }
-
-                // If targetPathOrExe is a folder
-                if (Directory.Exists(targetPathOrExe))
-                {
-                    long size = CalculateFolderSizeSafe(targetPathOrExe);
-                    leftovers.Add(new LeftoverItem
-                    {
-                        Path = targetPathOrExe,
-                        ItemType = LeftoverType.Folder,
-                        SizeBytes = size,
-                        FormattedSize = FormatBytes(size),
-                        Description = "Zorla Kaldırılacak Uygulama Ana Dizini",
-                        ConfidenceScore = 100,
-                        IsSelected = true
-                    });
-                }
-                // If it's an executable file
-                else if (File.Exists(targetPathOrExe))
-                {
-                    string parentDir = Path.GetDirectoryName(targetPathOrExe) ?? string.Empty;
-                    if (!string.IsNullOrWhiteSpace(parentDir) && !IsProtectedDirectory(parentDir))
-                    {
-                        long size = CalculateFolderSizeSafe(parentDir);
-                        leftovers.Add(new LeftoverItem
-                        {
-                            Path = parentDir,
-                            ItemType = LeftoverType.Folder,
-                            SizeBytes = size,
-                            FormattedSize = FormatBytes(size),
-                            Description = "Zorla Kaldırılacak Uygulama Klasörü",
-                            ConfidenceScore = 100,
-                            IsSelected = true
-                        });
-                    }
-                }
-
-                // Scan AppData for tokens
-                if (tokens.Count > 0)
-                {
-                    var fakeApp = new InstalledAppItem
-                    {
-                        DisplayName = appNameHint,
-                        Publisher = string.Empty,
-                        InstallLocation = Directory.Exists(targetPathOrExe) ? targetPathOrExe : (Path.GetDirectoryName(targetPathOrExe) ?? string.Empty)
-                    };
-
-                    var subScan = ScanResidualsAsync(fakeApp).GetAwaiter().GetResult();
-                    foreach (var s in subScan)
-                    {
-                        if (!leftovers.Any(l => l.Path.Equals(s.Path, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            leftovers.Add(s);
-                        }
-                    }
-                }
-
-                return leftovers;
-            });
-        }
-
-        #endregion
-
-        #region Leftover Cleaner
-
-        public async Task<int> CleanResidualsAsync(IEnumerable<LeftoverItem> leftovers, IProgress<string>? progress = null)
-        {
-            return await Task.Run(() =>
-            {
-                int cleanedCount = 0;
-                var list = leftovers.ToList();
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    var item = list[i];
-                    progress?.Report($"Siliniyor ({i + 1}/{list.Count}): {Path.GetFileName(item.Path)}");
-
-                    try
-                    {
-                        if (item.ItemType == LeftoverType.Folder && Directory.Exists(item.Path))
-                        {
-                            if (!IsProtectedDirectory(item.Path))
-                            {
-                                RemoveReadOnlyAttributesRecursive(item.Path);
-                                Directory.Delete(item.Path, recursive: true);
-                                item.IsDeleted = true;
-                                cleanedCount++;
-                            }
-                        }
-                        else if (item.ItemType == LeftoverType.File && File.Exists(item.Path))
-                        {
-                            File.SetAttributes(item.Path, FileAttributes.Normal);
-                            File.Delete(item.Path);
-                            item.IsDeleted = true;
-                            cleanedCount++;
-                        }
-                        else if (item.ItemType == LeftoverType.RegistryKey)
-                        {
-                            if (DeleteRegistryKeySafe(item.Path))
-                            {
-                                item.IsDeleted = true;
-                                cleanedCount++;
-                            }
-                        }
-                    }
-                    catch { }
-                }
-
-                return cleanedCount;
-            });
-        }
-
-        private static void RemoveReadOnlyAttributesRecursive(string dirPath)
-        {
-            try
-            {
-                var dir = new DirectoryInfo(dirPath);
-                dir.Attributes &= ~FileAttributes.ReadOnly;
-                foreach (var file in dir.EnumerateFiles("*", SearchOption.AllDirectories))
-                {
-                    try { file.Attributes &= ~FileAttributes.ReadOnly; } catch { }
-                }
-            }
-            catch { }
-        }
-
-        private bool DeleteRegistryKeySafe(string fullPath)
-        {
-            try
-            {
-                int slashIndex = fullPath.IndexOf('\\');
-                if (slashIndex <= 0) return false;
-
-                string hiveStr = fullPath.Substring(0, slashIndex);
-                string subPath = fullPath.Substring(slashIndex + 1);
-
-                RegistryHive hive = hiveStr.Contains("Current", StringComparison.OrdinalIgnoreCase)
-                    ? RegistryHive.CurrentUser
-                    : RegistryHive.LocalMachine;
-
-                using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
-                baseKey.DeleteSubKeyTree(subPath, throwOnMissingSubKey: false);
-                return true;
-            }
-            catch
-            {
-                return false;
+                _log.Warning("Kurulu program listesi alınamadı; kalıntı taraması daha temkinli yapılacak.", ex, nameof(ResidualScannerEngine));
+                return new List<string>();
             }
         }
 
-        #endregion
-
-        #region Helpers & Match Scoring
-
-        private static int CalculateMatchConfidence(string targetName, List<string> tokens, InstalledAppItem app)
+        /// <summary>Aday klasör başka bir kurulu programın alanına dokunuyor mu?</summary>
+        private static bool OverlapsOtherApp(string folder, IReadOnlyList<string> otherLocations)
         {
-            string cleanApp = CleanToken(app.DisplayName).ToLowerInvariant();
-            string cleanPub = CleanToken(app.Publisher).ToLowerInvariant();
-
-            // Exact app name match
-            if (targetName.Equals(cleanApp, StringComparison.OrdinalIgnoreCase)) return 100;
-            if (cleanApp.Length >= 4 && targetName.Contains(cleanApp, StringComparison.OrdinalIgnoreCase)) return 100;
-
-            // Publisher + App token combination
-            bool matchesPub = !string.IsNullOrWhiteSpace(cleanPub) && targetName.Contains(cleanPub, StringComparison.OrdinalIgnoreCase);
-            bool matchesAnyToken = tokens.Any(t => targetName.Contains(t, StringComparison.OrdinalIgnoreCase));
-
-            if (matchesPub && matchesAnyToken) return 100;
-            if (matchesAnyToken) return 85;
-
-            return 0;
-        }
-
-        private static List<string> ExtractSearchTokens(InstalledAppItem app)
-        {
-            var tokens = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            string cleanName = CleanToken(app.DisplayName);
-            foreach (var part in cleanName.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            string? n = WindowsPath.Normalize(folder);
+            if (n == null) return true;
+            foreach (string other in otherLocations)
             {
-                string pLower = part.ToLowerInvariant();
-                if (pLower.Length >= 3 && !GenericBlacklistTokens.Contains(pLower))
-                {
-                    tokens.Add(pLower);
-                }
+                if (WindowsPath.IsUnderOrEqual(n, other) || WindowsPath.IsStrictlyUnder(other, n)) return true;
             }
-
-            if (!string.IsNullOrWhiteSpace(app.Publisher) &&
-                !app.Publisher.Contains("Bilinmeyen", StringComparison.OrdinalIgnoreCase))
-            {
-                string cleanPub = CleanToken(app.Publisher);
-                foreach (var part in cleanPub.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-                {
-                    string pLower = part.ToLowerInvariant();
-                    if (pLower.Length >= 4 && !GenericBlacklistTokens.Contains(pLower))
-                    {
-                        tokens.Add(pLower);
-                    }
-                }
-            }
-
-            return tokens.ToList();
-        }
-
-        private static string CleanToken(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
-            char[] chars = input.ToCharArray();
-            for (int i = 0; i < chars.Length; i++)
-            {
-                if (!char.IsLetterOrDigit(chars[i])) chars[i] = ' ';
-            }
-            return new string(chars).Trim();
-        }
-
-        private static bool IsProtectedDirectory(string fullPath)
-        {
-            if (string.IsNullOrWhiteSpace(fullPath)) return true;
-
-            string normalized = fullPath.TrimEnd('\\', '/').ToLowerInvariant();
-            string name = Path.GetFileName(normalized);
-
-            if (ProtectedSystemNames.Contains(name)) return true;
-
-            // Ensure we are not deleting C:\ or root drives
-            if (Path.GetPathRoot(fullPath)?.TrimEnd('\\', '/').Equals(normalized, StringComparison.OrdinalIgnoreCase) == true)
-            {
-                return true;
-            }
-
             return false;
         }
 
-        private static long CalculateFolderSizeSafe(string folderPath)
+        private void AddInstallLocation(InstalledAppItem app, ResidualScanOptions options, IReadOnlyList<string> otherLocations, List<LeftoverItem> results)
         {
-            try
+            if (!options.UninstallConfirmed) return;
+            if (string.IsNullOrWhiteSpace(app.InstallLocation) || !Directory.Exists(app.InstallLocation)) return;
+
+            var check = _guard.CheckDeletion(app.InstallLocation, isDirectory: true, allowOutsideKnownRoots: true);
+            if (!check.IsAllowed)
             {
-                var di = new DirectoryInfo(folderPath);
-                return di.EnumerateFiles("*", SearchOption.AllDirectories).Sum(fi => fi.Length);
+                _log.Info($"Kurulum klasörü korumalı olduğu için önerilmedi: {app.InstallLocation} ({check.Reason})", nameof(ResidualScannerEngine));
+                return;
             }
-            catch
+            if (OverlapsOtherApp(app.InstallLocation, otherLocations))
             {
-                return 0;
+                _log.Info($"Kurulum klasörü başka bir programla paylaşıldığı için önerilmedi: {app.InstallLocation}", nameof(ResidualScannerEngine));
+                return;
+            }
+
+            long size = SafeFolderSize(app.InstallLocation);
+            results.Add(new LeftoverItem
+            {
+                Path = check.NormalizedPath,
+                ItemType = LeftoverType.Folder,
+                SizeBytes = size,
+                FormattedSize = ByteFormatter.Format(size),
+                Description = "Programın kurulum klasörü",
+                EvidenceText = "Uninstall kaydındaki kurulum konumu; kaldırma doğrulandıktan sonra hâlâ duruyor.",
+                ConfidenceScore = Certain,
+                AllowOutsideKnownRoots = true,
+                IsSelected = true
+            });
+        }
+
+        private void AddUninstallKey(InstalledAppItem app, ResidualScanOptions options, List<LeftoverItem> results)
+        {
+            if (!options.UninstallConfirmed || string.IsNullOrWhiteSpace(app.RegistryKeyPath)) return;
+            if (!RegistryPath.TryParse(app.RegistryKeyPath, RegistryView.Registry64, out var key)) return;
+            if (!_safeRegistry.KeyExists(key)) return;
+
+            results.Add(new LeftoverItem
+            {
+                Path = key.ToDisplay(),
+                ItemType = LeftoverType.RegistryKey,
+                FormattedSize = "Kayıt anahtarı",
+                Description = "Yetim Uninstall kaydı",
+                EvidenceText = "Kaldırıcı çalıştıktan sonra program listesindeki kayıt silinmemiş.",
+                ConfidenceScore = Certain,
+                IsSelected = true
+            });
+        }
+
+        private static IEnumerable<(string Root, string Label)> CandidateRoots()
+        {
+            static string F(Environment.SpecialFolder f) => Environment.GetFolderPath(f);
+            string local = F(Environment.SpecialFolder.LocalApplicationData);
+            string profile = F(Environment.SpecialFolder.UserProfile);
+
+            yield return (local, "AppData\\Local");
+            yield return (Path.Combine(local, "Programs"), "AppData\\Local\\Programs");
+            yield return (F(Environment.SpecialFolder.ApplicationData), "AppData\\Roaming");
+            yield return (Path.Combine(profile, "AppData", "LocalLow"), "AppData\\LocalLow");
+            yield return (F(Environment.SpecialFolder.CommonApplicationData), "ProgramData");
+            yield return (F(Environment.SpecialFolder.ProgramFiles), "Program Files");
+            yield return (F(Environment.SpecialFolder.ProgramFilesX86), "Program Files (x86)");
+            yield return (F(Environment.SpecialFolder.MyDocuments), "Belgeler");
+        }
+
+        private void ScanFolders(NameMatcher matcher, IReadOnlyList<string> otherLocations, List<LeftoverItem> results)
+        {
+            foreach (var (root, label) in CandidateRoots())
+            {
+                if (string.IsNullOrEmpty(root) || !Directory.Exists(root)) continue;
+
+                foreach (var dir in SafeGetDirectories(root))
+                {
+                    var match = matcher.Match(dir.Name);
+
+                    if (match.Kind == MatchKind.PublisherRoot)
+                    {
+                        // Yayıncı klasörü (ör. %LocalAppData%\Google): kendisi asla aday olmaz,
+                        // yalnızca içindeki uygulama klasörüne bakılır.
+                        foreach (var child in SafeGetDirectories(dir.FullName))
+                        {
+                            var childMatch = matcher.Match(child.Name, dir.Name);
+                            if (childMatch.IsCandidate)
+                                AddFolderCandidate(child.FullName, $"{label}\\{dir.Name}", childMatch, otherLocations, results);
+                        }
+                        continue;
+                    }
+
+                    if (match.IsCandidate)
+                        AddFolderCandidate(dir.FullName, label, match, otherLocations, results);
+                }
             }
         }
 
-        private static string FormatBytes(long bytes)
+        /// <summary>
+        /// Bu adları taşıyan alt klasörler kullanıcı verisine işaret eder (tarayıcı profili,
+        /// oyun kayıtları, belgeler). Böyle bir klasör asla otomatik seçilmez.
+        /// </summary>
+        private static readonly string[] UserDataMarkers =
         {
-            if (bytes <= 0) return "0 MB";
-            if (bytes < 1024) return $"{bytes} B";
-            if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
-            if (bytes < 1024 * 1024 * 1024) return $"{bytes / (1024.0 * 1024.0):F1} MB";
-            return $"{bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
+            "User Data", "Profiles", "Profile", "Saves", "Save", "SaveGames", "Saved Games",
+            "Documents", "Backups", "Backup", "Projects", "Library"
+        };
+
+        private void AddFolderCandidate(string path, string label, NameMatch match, IReadOnlyList<string> otherLocations, List<LeftoverItem> results)
+        {
+            var check = _guard.CheckDeletion(path, isDirectory: true);
+            if (!check.IsAllowed) return;
+            if (OverlapsOtherApp(path, otherLocations)) return;
+
+            int confidence = (int)match.Confidence;
+            string evidence = match.Reason;
+
+            bool inDocuments = label.StartsWith("Belgeler", StringComparison.OrdinalIgnoreCase);
+            string? marker = UserDataMarkers.FirstOrDefault(m => Directory.Exists(Path.Combine(path, m)));
+            if (inDocuments || marker != null)
+            {
+                confidence = Math.Min(confidence, (int)MatchConfidence.Medium);
+                evidence += inDocuments
+                    ? " Belgeler klasöründe: kişisel dosyalar içerebilir, lütfen inceleyin."
+                    : $" Kullanıcı verisi içeriyor ('{marker}'): profil ya da kayıtlar silinebilir, lütfen inceleyin.";
+            }
+
+            long size = SafeFolderSize(path);
+            results.Add(new LeftoverItem
+            {
+                Path = check.NormalizedPath,
+                ItemType = LeftoverType.Folder,
+                SizeBytes = size,
+                FormattedSize = ByteFormatter.Format(size),
+                Description = $"{label} klasörü",
+                EvidenceText = evidence,
+                ConfidenceScore = confidence,
+                IsSelected = confidence >= High
+            });
+        }
+
+        private void ScanStartMenuShortcuts(NameMatcher matcher, List<LeftoverItem> results)
+        {
+            foreach (var root in new[]
+                     {
+                         Environment.GetFolderPath(Environment.SpecialFolder.Programs),
+                         Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),
+                         Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),
+                         Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+                     })
+            {
+                if (string.IsNullOrEmpty(root) || !Directory.Exists(root)) continue;
+
+                IEnumerable<FileInfo> shortcuts;
+                try
+                {
+                    var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, MaxRecursionDepth = 3 };
+                    shortcuts = new DirectoryInfo(root).EnumerateFiles("*.lnk", options).ToList();
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    continue;
+                }
+
+                foreach (var file in shortcuts)
+                {
+                    var match = matcher.Match(Path.GetFileNameWithoutExtension(file.Name));
+                    if (match.Confidence < MatchConfidence.High) continue;
+                    if (!_guard.CheckDeletion(file.FullName, isDirectory: false).IsAllowed) continue;
+
+                    results.Add(new LeftoverItem
+                    {
+                        Path = file.FullName,
+                        ItemType = LeftoverType.File,
+                        SizeBytes = file.Length,
+                        FormattedSize = ByteFormatter.Format(file.Length),
+                        Description = "Yetim kısayol",
+                        EvidenceText = match.Reason,
+                        ConfidenceScore = (int)match.Confidence,
+                        IsSelected = true
+                    });
+                }
+            }
+        }
+
+        private void ScanRegistryRoot(RegistryHive hive, RegistryView view, NameMatcher matcher, List<LeftoverItem> results)
+        {
+            try
+            {
+                using var baseKey = RegistryKey.OpenBaseKey(hive, view);
+                using var software = baseKey.OpenSubKey("Software");
+                if (software == null) return;
+
+                foreach (string name in software.GetSubKeyNames())
+                {
+                    var match = matcher.Match(name);
+
+                    if (match.Kind == MatchKind.PublisherRoot)
+                    {
+                        using var vendor = software.OpenSubKey(name);
+                        if (vendor == null) continue;
+                        foreach (string child in vendor.GetSubKeyNames())
+                        {
+                            var childMatch = matcher.Match(child, name);
+                            if (childMatch.IsCandidate)
+                                AddRegistryCandidate(new RegistryPath(hive, view, $@"Software\{name}\{child}"), childMatch, results);
+                        }
+                        continue;
+                    }
+
+                    if (match.IsCandidate)
+                        AddRegistryCandidate(new RegistryPath(hive, view, $@"Software\{name}"), match, results);
+                }
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                _log.Debug($"Kayıt defteri kökü okunamadı: {hive} {view} — {ex.Message}", nameof(ResidualScannerEngine));
+            }
+        }
+
+        private static void AddRegistryCandidate(RegistryPath key, NameMatch match, List<LeftoverItem> results)
+        {
+            // Yayıncı kökü ("Software\Vendor") ancak açık izinle silinebilir; burada
+            // aday olarak eklenen tek seviyeli anahtarlar uygulamanın kendi adını taşır.
+            bool vendorRootLike = key.SubKeyDepth == 2;
+            var check = RegistrySafetyGuard.CheckKeyDeletion(key, allowVendorRoot: vendorRootLike);
+            if (!check.IsAllowed) return;
+
+            results.Add(new LeftoverItem
+            {
+                Path = key.ToDisplay(),
+                ItemType = LeftoverType.RegistryKey,
+                FormattedSize = "Kayıt anahtarı",
+                Description = "Uygulama ayar anahtarı",
+                EvidenceText = match.Reason,
+                ConfidenceScore = (int)match.Confidence,
+                IsSelected = (int)match.Confidence >= High
+            });
+        }
+
+        /// <summary>
+        /// Explorer\FileExts\.ext\OpenWithProgids altındaki DEĞERLER (anahtar değil).
+        /// ProgId genellikle "Uygulama.uzantı" biçimindedir; ilk bölüm eşleştirilir.
+        /// </summary>
+        private static void ScanFileAssociationValues(NameMatcher matcher, List<LeftoverItem> results)
+        {
+            const string fileExts = @"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts";
+            try
+            {
+                using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
+                using var exts = baseKey.OpenSubKey(fileExts);
+                if (exts == null) return;
+
+                foreach (string ext in exts.GetSubKeyNames())
+                {
+                    using var progIds = exts.OpenSubKey($@"{ext}\OpenWithProgids");
+                    if (progIds == null) continue;
+
+                    foreach (string progId in progIds.GetValueNames())
+                    {
+                        if (string.IsNullOrEmpty(progId)) continue;
+                        string appPart = progId.Split('.')[0];
+                        var match = matcher.Match(appPart);
+                        if (match.Confidence < MatchConfidence.High) continue;
+
+                        var valuePath = new RegistryPath(RegistryHive.CurrentUser, RegistryView.Registry64, $@"{fileExts}\{ext}\OpenWithProgids", progId);
+                        results.Add(new LeftoverItem
+                        {
+                            Path = valuePath.ToString(),
+                            ItemType = LeftoverType.RegistryValue,
+                            FormattedSize = "Kayıt değeri",
+                            Description = $"Dosya ilişkilendirmesi ({ext})",
+                            EvidenceText = $"'{progId}' ilişkilendirmesi: {match.Reason}",
+                            ConfidenceScore = (int)MatchConfidence.Medium,
+                            IsSelected = false
+                        });
+                    }
+                }
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                // İlişkilendirmeler okunamadıysa tarama eksik kalır; kritik değil.
+            }
         }
 
         #endregion
 
-        #region ResidualItem Extended API (V42.0)
+        #region Zorla kaldırma taraması
 
-        public async Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, IProgress<string>? progress = null)
+        /// <summary>
+        /// Uninstall kaydı olmayan (taşınabilir/bozuk) programlar için tarama.
+        /// Eski sürüm hedef exe'nin ÜST klasörünü %100 güvenle ekliyordu; İndirilenler'deki
+        /// bir exe için İndirilenler'in tamamı silinecekler listesine giriyordu. Artık
+        /// klasör yalnızca <see cref="PathSafetyGuard"/> izin verirse ve "Yüksek" güvenle eklenir.
+        /// </summary>
+        public async Task<List<LeftoverItem>> ScanHeuristicResidualsAsync(string targetPathOrExe, string appNameHint)
         {
-            var leftovers = await ScanResidualsAsync(app, progress);
-            return leftovers.Select(l => new ResidualItem
+            string? folder = Directory.Exists(targetPathOrExe)
+                ? targetPathOrExe
+                : (File.Exists(targetPathOrExe) ? Path.GetDirectoryName(targetPathOrExe) : null);
+
+            var fakeApp = new InstalledAppItem { DisplayName = appNameHint, Publisher = string.Empty, InstallLocation = folder ?? string.Empty };
+            var results = await ScanResidualsAsync(fakeApp, ResidualScanOptions.Unconfirmed);
+
+            if (!string.IsNullOrEmpty(folder))
             {
-                Path = l.Path,
-                Type = l.ItemType switch
+                var check = _guard.CheckDeletion(folder, isDirectory: true);
+                if (check.IsAllowed && !results.Any(r => r.Path.Equals(check.NormalizedPath, StringComparison.OrdinalIgnoreCase)))
                 {
-                    LeftoverType.Folder => ResidualType.Folder,
-                    LeftoverType.File => ResidualType.File,
-                    LeftoverType.RegistryKey => ResidualType.RegistryKey,
-                    _ => ResidualType.Folder
-                },
-                SizeInBytes = l.SizeBytes,
-                Description = l.Description,
-                ConfidenceScore = l.ConfidenceScore,
-                IsSafeToDelete = l.ConfidenceScore >= 80,
-                IsSelected = true
-            }).ToList();
+                    long size = SafeFolderSize(folder);
+                    results.Insert(0, new LeftoverItem
+                    {
+                        Path = check.NormalizedPath,
+                        ItemType = LeftoverType.Folder,
+                        SizeBytes = size,
+                        FormattedSize = ByteFormatter.Format(size),
+                        Description = "Programın klasörü",
+                        EvidenceText = "Seçilen programın bulunduğu klasör.",
+                        ConfidenceScore = High,
+                        IsSelected = true
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        #endregion
+
+        #region Temizlik
+
+        public async Task<int> CleanResidualsAsync(IEnumerable<LeftoverItem> leftovers, IProgress<string>? progress = null)
+        {
+            var report = await CleanResidualsDetailedAsync(leftovers, "Kalıntı temizliği", progress);
+            return report.SucceededCount;
+        }
+
+        public async Task<ResidualCleanReport> CleanResidualsDetailedAsync(IEnumerable<LeftoverItem> leftovers, string title, IProgress<string>? progress = null)
+        {
+            var list = leftovers.ToList();
+            string journal = UndoJournal.Create(title);
+            var results = new List<OperationResult>();
+
+            // Önce kayıt defteri (yedek alınır), sonra dosyalar, en son klasörler (derinden sığa).
+            var ordered = list
+                .OrderBy(l => l.ItemType switch
+                {
+                    LeftoverType.RegistryValue => 0,
+                    LeftoverType.RegistryKey => 1,
+                    LeftoverType.File => 2,
+                    _ => 3
+                })
+                .ThenByDescending(l => l.Path.Length)
+                .ToList();
+
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                var item = ordered[i];
+                progress?.Report($"Temizleniyor ({i + 1}/{ordered.Count}): {item.Path}");
+
+                OperationResult result = item.ItemType switch
+                {
+                    LeftoverType.RegistryKey => RegistryPath.TryParse(item.Path, RegistryView.Registry64, out var key)
+                        ? await _safeRegistry.DeleteKeyAsync(key, journal)
+                        : new OperationResult(item.Path, DeleteOutcome.Failed, "Kayıt defteri yolu çözümlenemedi.", 0),
+
+                    LeftoverType.RegistryValue => RegistryPath.TryParseWithValue(item.Path, RegistryView.Registry64, out var value) && value.ValueName != null
+                        ? await _safeRegistry.DeleteValueAsync(value, journal)
+                        : new OperationResult(item.Path, DeleteOutcome.Failed, "Kayıt defteri değeri çözümlenemedi.", 0),
+
+                    LeftoverType.File => await _safeDelete.DeletePathAsync(item.Path, isDirectory: false, new DeletePolicy(JournalId: journal)),
+
+                    _ => await _safeDelete.DeletePathAsync(item.Path, isDirectory: true,
+                        new DeletePolicy(AllowOutsideKnownRoots: item.AllowOutsideKnownRoots && item.ConfidenceScore >= Certain, JournalId: journal)),
+                };
+
+                item.IsDeleted = result.Succeeded || result.Outcome == DeleteOutcome.NotFound;
+                if (result.Succeeded && result.BytesFreed == 0 && item.SizeBytes > 0)
+                    result = result with { BytesFreed = item.SizeBytes };
+                results.Add(result);
+            }
+
+            return new ResidualCleanReport(journal, results);
+        }
+
+        #endregion
+
+        #region ResidualItem API
+
+        public Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, IProgress<string>? progress = null) =>
+            ScanResidualItemsAsync(app, ResidualScanOptions.Unconfirmed, progress);
+
+        public async Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, ResidualScanOptions options, IProgress<string>? progress = null)
+        {
+            var leftovers = await ScanResidualsAsync(app, options, progress);
+            return leftovers.Select(ToResidual).ToList();
         }
 
         public async Task<int> CleanResidualItemsAsync(IEnumerable<ResidualItem> items, IProgress<string>? progress = null)
         {
-            var mapped = items.Select(r => new LeftoverItem
-            {
-                Path = r.Path,
-                ItemType = r.Type switch
-                {
-                    ResidualType.Folder => LeftoverType.Folder,
-                    ResidualType.File => LeftoverType.File,
-                    ResidualType.RegistryKey => LeftoverType.RegistryKey,
-                    _ => LeftoverType.Folder
-                },
-                SizeBytes = r.SizeInBytes,
-                Description = r.Description,
-                ConfidenceScore = r.ConfidenceScore,
-                IsSelected = r.IsSelected
-            }).ToList();
-
-            int count = await CleanResidualsAsync(mapped, progress);
-
-            foreach (var r in items)
-            {
-                var m = mapped.FirstOrDefault(x => x.Path.Equals(r.Path, StringComparison.OrdinalIgnoreCase));
-                if (m != null && m.IsDeleted)
-                {
-                    r.IsDeleted = true;
-                }
-            }
-
-            return count;
+            var report = await CleanResidualItemsDetailedAsync(items, "Kalıntı temizliği", progress);
+            return report.SucceededCount;
         }
 
-        public static async Task<List<ResidualItem>> ScanResidualsStaticAsync(string appName, string? publisher = null, string? installLocation = null)
+        public async Task<ResidualCleanReport> CleanResidualItemsDetailedAsync(IEnumerable<ResidualItem> items, string title, IProgress<string>? progress = null)
         {
-            var engine = new ResidualScannerEngine();
-            var app = new InstalledAppItem
+            var source = items.ToList();
+            var mapped = source.Select(ToLeftover).ToList();
+            var report = await CleanResidualsDetailedAsync(mapped, title, progress);
+
+            for (int i = 0; i < source.Count; i++)
             {
-                DisplayName = appName,
-                Publisher = publisher ?? string.Empty,
-                InstallLocation = installLocation ?? string.Empty
-            };
-            return await engine.ScanResidualItemsAsync(app);
+                if (mapped[i].IsDeleted) source[i].IsDeleted = true;
+            }
+            return report;
+        }
+
+        private static ResidualItem ToResidual(LeftoverItem l) => new()
+        {
+            Path = l.Path,
+            Type = l.ItemType switch
+            {
+                LeftoverType.File => ResidualType.File,
+                LeftoverType.RegistryKey => ResidualType.RegistryKey,
+                LeftoverType.RegistryValue => ResidualType.RegistryValue,
+                _ => ResidualType.Folder
+            },
+            SizeInBytes = l.SizeBytes,
+            Description = l.Description,
+            EvidenceText = l.EvidenceText,
+            ConfidenceScore = l.ConfidenceScore,
+            AllowOutsideKnownRoots = l.AllowOutsideKnownRoots,
+            IsSelected = l.IsSelected
+        };
+
+        private static LeftoverItem ToLeftover(ResidualItem r) => new()
+        {
+            Path = r.Path,
+            ItemType = r.Type switch
+            {
+                ResidualType.File => LeftoverType.File,
+                ResidualType.RegistryKey => LeftoverType.RegistryKey,
+                ResidualType.RegistryValue => LeftoverType.RegistryValue,
+                _ => LeftoverType.Folder
+            },
+            SizeBytes = r.SizeInBytes,
+            Description = r.Description,
+            EvidenceText = r.EvidenceText,
+            ConfidenceScore = r.ConfidenceScore,
+            AllowOutsideKnownRoots = r.AllowOutsideKnownRoots,
+            IsSelected = r.IsSelected
+        };
+
+        #endregion
+
+        #region Yardımcılar
+
+        private static IEnumerable<DirectoryInfo> SafeGetDirectories(string path)
+        {
+            try
+            {
+                return new DirectoryInfo(path).GetDirectories()
+                    .Where(d => (d.Attributes & FileAttributes.ReparsePoint) == 0)
+                    .ToList();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+            {
+                return Array.Empty<DirectoryInfo>();
+            }
+        }
+
+        private static long SafeFolderSize(string path)
+        {
+            try
+            {
+                var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint };
+                return new DirectoryInfo(path).EnumerateFiles("*", options).Sum(f => f.Length);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return 0;
+            }
         }
 
         #endregion

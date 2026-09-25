@@ -274,8 +274,9 @@
                                                FontSize="13"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text="Kaldırma öncesinde sistem kararlılığını garantiye almak için geri dönüş noktası alır (~15 sn)."
-                                               FontSize="11.5"
+                                    <TextBlock Text="{Binding RestorePointHint}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
@@ -283,30 +284,35 @@
 
                             <!-- Kill Processes Option -->
                             <CheckBox IsChecked="{Binding KillRelatedProcesses, Mode=TwoWay}"
+                                      IsEnabled="{Binding CanKillProcesses}"
+                                      AutomationProperties.Name="Programa ait açık süreçleri kapat"
                                       Margin="0,0,0,12"
                                       Cursor="Hand">
                                 <StackPanel Margin="6,0,0,0">
-                                    <TextBlock Text="İlişkili Çalışan Süreçleri Otomatik Kapat"
+                                    <TextBlock Text="Programa Ait Açık Süreçleri Kapat"
                                                FontSize="13"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text="Uygulamanın arka planda kilitli dosya bırakmaması için açık süreçlerini güvenle sonlandırır."
-                                               FontSize="11.5"
+                                    <TextBlock Text="{Binding ProcessesToCloseText}"
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
                             </CheckBox>
 
                             <!-- Backup Registry Option -->
-                            <CheckBox IsChecked="{Binding BackupRegistryBeforeClean, Mode=TwoWay}"
-                                      Cursor="Hand">
+                            <CheckBox IsChecked="{Binding BackupRegistryBeforeClean, Mode=OneWay}"
+                                      IsEnabled="False"
+                                      AutomationProperties.Name="Kayıt defteri yedeği her zaman alınır">
                                 <StackPanel Margin="6,0,0,0">
-                                    <TextBlock Text="Kayıt Defteri Temizliği Öncesinde .reg Yedeği Al"
+                                    <TextBlock Text="Kayıt Defteri Yedeği Her Zaman Alınır"
                                                FontSize="13"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text="Silinecek kayıt defteri anahtarlarını yerel yedek dosyasına kaydeder; dilediğiniz an geri yükleyebilirsiniz."
-                                               FontSize="11.5"
+                                    <TextBlock Text="Silinecek her kayıt defteri öğesi önce yedeklenir; yedek alınamazsa silinmez. Dosyalar Geri Dönüşüm Kutusu'na taşınır."
+                                               FontSize="12"
+                                               TextWrapping="Wrap"
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
@@ -350,7 +356,7 @@
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    HorizontalAlignment="Center"/>
 
-                        <TextBlock Text="Lütfen programın açılan penceresindeki kaldırma adımlarını tamamlayın. Kaldırıcı kapandığında Bakım otomatik olarak sistem kalıntılarını taramaya başlayacaktır."
+                        <TextBlock Text="Programın açılan penceresindeki kaldırma adımlarını tamamlayın. Bakım, kaldırıcının gerçekten bitmesini bekler ve programın kaldırıldığını doğruladıktan sonra kalıntıları tarar."
                                    FontSize="13"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                    TextAlignment="Center"
@@ -365,9 +371,21 @@
                                 HorizontalAlignment="Center">
                             <TextBlock Text="{Binding LiveProcessStatus}"
                                        FontSize="12"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                        HorizontalAlignment="Center"/>
                         </Border>
+
+                        <ui:Button Content="Beklemeyi Bırak"
+                                   Appearance="Secondary"
+                                   Command="{Binding StopWaitingCommand}"
+                                   Visibility="{Binding CanStopWaiting, Converter={StaticResource BoolToVis}}"
+                                   ToolTip="Kaldırıcı kapatılmaz; Bakım yalnızca beklemeyi bırakıp sonucu kontrol eder."
+                                   AutomationProperties.Name="Beklemeyi bırak"
+                                   HorizontalAlignment="Center"
+                                   Padding="16,6"
+                                   Margin="0,16,0,0"/>
                     </StackPanel>
                 </Grid>
 
@@ -421,37 +439,62 @@
                         <RowDefinition Height="Auto"/> <!-- Actions Footer -->
                     </Grid.RowDefinitions>
 
-                    <!-- Success Banner -->
+                    <!-- Kaldırma sonucu: doğrulandı -->
                     <Border Grid.Row="0"
-                            Background="#1010B981"
-                            BorderBrush="#4010B981"
+                            Background="{DynamicResource Brush.Success.Subtle}"
+                            BorderBrush="{DynamicResource SystemFillColorSuccessBrush}"
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="14,10"
-                            Margin="0,0,0,12">
+                            Margin="0,0,0,12"
+                            Visibility="{Binding IsUninstallConfirmed, Converter={StaticResource BoolToVis}}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-
-                            <ui:SymbolIcon Grid.Column="0"
-                                           Symbol="CheckmarkCircle24"
-                                           FontSize="26"
+                            <ui:SymbolIcon Grid.Column="0" Symbol="CheckmarkCircle24" FontSize="26"
                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                           Margin="0,0,12,0"
-                                           VerticalAlignment="Center"/>
-
+                                           Margin="0,0,12,0" VerticalAlignment="Center"/>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding AppName}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text=" Başarıyla Kaldırıldı!" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                                </StackPanel>
-                                <TextBlock Text="Sistemde bulunan artık kalıntılar listelenmiştir. Silinmesini istemediğiniz ögelerin işaretini kaldırabilirsiniz:"
-                                           FontSize="12"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding UninstallBannerTitle}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding UninstallBannerDetail}" FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                             </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Kaldırma sonucu: doğrulanamadı / iptal / kaldırıcı yok -->
+                    <Border Grid.Row="0"
+                            Background="{DynamicResource Brush.Caution.Subtle}"
+                            BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="14,10"
+                            Margin="0,0,0,12"
+                            Visibility="{Binding IsUninstallConfirmed, Converter={StaticResource InverseBoolToVis}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:SymbolIcon Grid.Column="0" Symbol="Warning24" FontSize="26"
+                                           Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                           Margin="0,0,12,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding UninstallBannerTitle}" FontWeight="Bold" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding UninstallBannerDetail}" FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="2" Content="Tekrar Dene"
+                                       Appearance="Secondary"
+                                       Icon="{ui:SymbolIcon ArrowClockwise20}"
+                                       Command="{Binding StartUninstallCommand}"
+                                       AutomationProperties.Name="Kaldırmayı tekrar dene"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,0,0"
+                                       Padding="12,6"/>
                         </Grid>
                     </Border>
 
@@ -644,8 +687,16 @@
                                                        ToolTip="{Binding Path}"/>
                                             <TextBlock Text="{Binding Description}"
                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                       FontSize="11"
+                                                       FontSize="12"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding EvidenceText}"
                                                        Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding EvidenceText}"
+                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                       FontSize="12"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding EvidenceText}"
+                                                       Margin="0,1,0,0"/>
                                         </StackPanel>
 
                                         <!-- Size & Risk Badge -->
@@ -664,9 +715,19 @@
                                                     Padding="6,2"
                                                     VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding RiskBadgeText}"
-                                                           Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                                           FontSize="10.5"
-                                                           FontWeight="Medium"/>
+                                                           FontSize="11"
+                                                           FontWeight="Medium">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSafeToDelete}" Value="False">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
                                             </Border>
                                         </StackPanel>
                                     </Grid>
@@ -717,7 +778,7 @@
                       VerticalAlignment="Center" HorizontalAlignment="Center">
                     <StackPanel HorizontalAlignment="Center" MaxWidth="540">
                         <Border Width="64" Height="64" CornerRadius="32"
-                                Background="#1510B981"
+                                Background="{DynamicResource Brush.Success.Subtle}"
                                 BorderBrush="{DynamicResource SystemFillColorSuccessBrush}"
                                 BorderThickness="2"
                                 HorizontalAlignment="Center"
@@ -729,14 +790,18 @@
                                            VerticalAlignment="Center"/>
                         </Border>
 
-                        <TextBlock Text="Sistem Başarıyla Temizlendi!"
+                        <TextBlock Text="{Binding CompletionTitle}"
                                    FontSize="20"
                                    FontWeight="Bold"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    HorizontalAlignment="Center"/>
 
-                        <TextBlock Text="Uygulamaya ait tüm yetim dosyalar ve kayıt defteri anahtarları güvenle temizlendi."
+                        <TextBlock Text="{Binding CompletionDetail}"
                                    FontSize="13"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                    HorizontalAlignment="Center"
                                    Margin="0,6,0,22"/>
@@ -750,7 +815,7 @@
                                     Padding="16"
                                     Margin="0,0,8,0">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Temizlenen Kalıntı" FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Temizlenen Öğe" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
                                     <TextBlock Text="{Binding CleanedCount}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -762,11 +827,33 @@
                                     Padding="16"
                                     Margin="8,0,0,0">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Kurtarılan Disk Alanı" FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Boşaltılan Alan" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
                                     <TextBlock Text="{Binding FormattedCleanedSize}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
+
+                        <!-- Temizlenemeyen öğeler -->
+                        <Border Background="{DynamicResource Brush.Caution.Subtle}"
+                                BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,0,0,12"
+                                Visibility="{Binding HasFailures, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <TextBlock Text="Temizlenemeyen öğeler" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,6"/>
+                                <ScrollViewer MaxHeight="110" VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding FailedItems}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" FontSize="12" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,1"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </Border>
 
                         <!-- Registry Backup Information -->
                         <Border Background="{DynamicResource ApplicationBackgroundBrush}"
@@ -786,26 +873,43 @@
                                 <ui:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="Kayıt Defteri Yedeği Alındı" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Kayıt defteri yedeği alındı" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="{Binding RegistryBackupFilePath}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="300"/>
                                 </StackPanel>
 
-                                <ui:Button Grid.Column="2"
-                                           Content="Yedeği Göster"
-                                           Appearance="Secondary"
-                                           Command="{Binding OpenBackupFolderCommand}"
-                                           Padding="8,4"
-                                           FontSize="11.5"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ui:Button Content="Yedeği Göster"
+                                               Appearance="Secondary"
+                                               Command="{Binding OpenBackupFolderCommand}"
+                                               AutomationProperties.Name="Kayıt defteri yedek klasörünü göster"
+                                               Padding="8,4"
+                                               Margin="0,0,6,0"
+                                               FontSize="12"/>
+                                    <ui:Button Content="Geri Yükle"
+                                               Appearance="Secondary"
+                                               Command="{Binding RestoreRegistryCommand}"
+                                               AutomationProperties.Name="Silinen kayıt defteri öğelerini geri yükle"
+                                               Padding="8,4"
+                                               FontSize="12"/>
+                                </StackPanel>
                             </Grid>
                         </Border>
 
-                        <ui:Button Content="Tamamla ve Kapat"
-                                   Appearance="Primary"
-                                   Command="{Binding CloseCommand}"
-                                   HorizontalAlignment="Center"
-                                   Padding="30,10"
-                                   FontSize="13.5"
-                                   FontWeight="SemiBold"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <ui:Button Content="Geri Dönüşüm Kutusunu Aç"
+                                       Appearance="Secondary"
+                                       Icon="{ui:SymbolIcon Delete20}"
+                                       Command="{Binding OpenRecycleBinCommand}"
+                                       AutomationProperties.Name="Geri Dönüşüm Kutusunu aç"
+                                       Padding="16,10"
+                                       Margin="0,0,10,0"/>
+                            <ui:Button Content="Tamamla ve Kapat"
+                                       Appearance="Primary"
+                                       Command="{Binding CloseCommand}"
+                                       Padding="30,10"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"/>
+                        </StackPanel>
                     </StackPanel>
                 </Grid>
 

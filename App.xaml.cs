@@ -232,7 +232,7 @@ namespace Bakım
                 if (targetApp == null)
                 {
                     MessageBox.Show(
-                        $"Kaldırılacak hedef program veya kısayol çözümlenemedi:\n\n{path}",
+                        $"Bu hedef için kaldırılabilecek bir program bulunamadı ya da hedef korumalı bir Windows bileşeni:\n\n{path}",
                         "Kaldırıcı Hatası",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -341,6 +341,14 @@ namespace Bakım
             // Tema: statik Shared ile aynı örnek kaydedilir, böylece iki farklı
             // tema durumu oluşması yapısal olarak imkânsız hale gelir.
             services.AddSingleton<IThemeService>(_ => ThemeService.Shared);
+
+            // Güvenlik çekirdeği: silme, kayıt defteri, süreç ve geri yükleme noktası
+            // işlemlerinin TEK yolu. Yıkıcı işlem yapan her servis bunları kullanır.
+            services.AddSingleton(_ => Bakım.Core.Safety.PathSafetyGuard.Default);
+            services.AddSingleton<Bakım.Services.Safety.ISafeDeleteService, Bakım.Services.Safety.SafeDeleteService>();
+            services.AddSingleton<Bakım.Services.Safety.ISafeRegistryService, Bakım.Services.Safety.SafeRegistryService>();
+            services.AddSingleton<Bakım.Services.Safety.ISafeProcessService, Bakım.Services.Safety.SafeProcessService>();
+            services.AddSingleton<Bakım.Services.Safety.IRestorePointService, Bakım.Services.Safety.RestorePointService>();
 
             // Backend Sistem Servisleri (Singleton)
             services.AddSingleton<ISystemCleanService, SystemCleanService>();

@@ -17,7 +17,13 @@ public class ShellUninstallResolverTests
 
         public Task<List<InstalledAppItem>> GetInstalledAppsAsync() => Task.FromResult(MockApps);
         public Task<bool> LaunchUninstallAsync(InstalledAppItem app, bool silent = false) => Task.FromResult(true);
+        public Task<Bakım.Services.Uninstall.UninstallRunResult> RunUninstallAsync(InstalledAppItem app, bool silent, IProgress<string>? progress = null, System.Threading.CancellationToken ct = default) =>
+            Task.FromResult(new Bakım.Services.Uninstall.UninstallRunResult(Bakım.Services.Uninstall.UninstallOutcome.Removed, 0, TimeSpan.Zero, "test"));
+        public bool IsStillInstalled(InstalledAppItem app) => false;
+        public bool SupportsSilentUninstall(InstalledAppItem app) => true;
         public Task<bool> CreateRestorePointAsync(string appName) => Task.FromResult(true);
+        public Task<Bakım.Services.Safety.RestorePointResult> CreateRestorePointDetailedAsync(string description) =>
+            Task.FromResult(new Bakım.Services.Safety.RestorePointResult(Bakım.Services.Safety.RestorePointOutcome.Created, "test"));
         public Task<BatchUninstallResult> ExecuteBatchSilentUninstallAsync(IEnumerable<InstalledAppItem> apps, bool autoClean, IProgress<BatchUninstallProgress>? progress = null) => Task.FromResult(new BatchUninstallResult());
         public Task<int> ExecuteForceUninstallAsync(InstalledAppItem app, IProgress<string>? progress = null) => Task.FromResult(1);
         public Task<long> ExecuteAutoCleanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null) => Task.FromResult(1024L);
@@ -27,6 +33,12 @@ public class ShellUninstallResolverTests
     private class MockResidualScannerEngine : IResidualScannerEngine
     {
         public Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null) => Task.FromResult(new List<LeftoverItem>());
+        public Task<List<LeftoverItem>> ScanResidualsAsync(InstalledAppItem app, ResidualScanOptions options, IProgress<string>? progress = null) => Task.FromResult(new List<LeftoverItem>());
+        public Task<ResidualCleanReport> CleanResidualsDetailedAsync(IEnumerable<LeftoverItem> leftovers, string title, IProgress<string>? progress = null) =>
+            Task.FromResult(new ResidualCleanReport("test", Array.Empty<Bakım.Services.Safety.OperationResult>()));
+        public Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, ResidualScanOptions options, IProgress<string>? progress = null) => Task.FromResult(new List<ResidualItem>());
+        public Task<ResidualCleanReport> CleanResidualItemsDetailedAsync(IEnumerable<ResidualItem> items, string title, IProgress<string>? progress = null) =>
+            Task.FromResult(new ResidualCleanReport("test", Array.Empty<Bakım.Services.Safety.OperationResult>()));
         public Task<int> CleanResidualsAsync(IEnumerable<LeftoverItem> leftovers, IProgress<string>? progress = null) => Task.FromResult(0);
         public Task<List<LeftoverItem>> ScanHeuristicResidualsAsync(string targetPathOrExe, string appNameHint) => Task.FromResult(new List<LeftoverItem>());
         public Task<List<ResidualItem>> ScanResidualItemsAsync(InstalledAppItem app, IProgress<string>? progress = null) => Task.FromResult(new List<ResidualItem>());

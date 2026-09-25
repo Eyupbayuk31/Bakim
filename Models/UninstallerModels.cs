@@ -9,7 +9,9 @@ namespace Bakım.Models
     {
         Folder,
         File,
-        RegistryKey
+        RegistryKey,
+        /// <summary>Tek bir kayıt defteri değeri ("HKCU\...\OpenWithProgids → VLC.mp4").</summary>
+        RegistryValue
     }
 
     public enum InstallerType
@@ -19,7 +21,10 @@ namespace Bakım.Models
         Nsis,
         InstallShield,
         GenericExe,
-        Custom
+        Custom,
+        WixBurn,
+        Squirrel,
+        Steam
     }
 
     public partial class InstalledAppItem : ObservableObject
@@ -40,7 +45,13 @@ namespace Bakım.Models
         public ImageSource? IconSource { get; set; }
 
         public InstallerType InstallerKind { get; set; } = InstallerType.GenericExe;
-        public bool HasSilentUninstall => !string.IsNullOrWhiteSpace(QuietUninstallString) || InstallerKind != InstallerType.GenericExe;
+        /// <summary>
+        /// Sessiz kaldırma mümkün mü? InstallShield yanıt dosyası ister, Steam ve genel
+        /// exe'lerin sessiz parametresi bilinmez (eskiden bunlar da "sessiz" sayılıyordu).
+        /// </summary>
+        public bool HasSilentUninstall => !string.IsNullOrWhiteSpace(QuietUninstallString) ||
+                                          InstallerKind is InstallerType.Msi or InstallerType.InnoSetup or InstallerType.Nsis
+                                              or InstallerType.WixBurn or InstallerType.Squirrel;
         public bool IsMonitored { get; set; }
 
         [ObservableProperty]
@@ -57,10 +68,24 @@ namespace Bakım.Models
         public long SizeBytes { get; set; }
         public string FormattedSize { get; set; } = "0 KB";
         public string Description { get; set; } = string.Empty;
-        public int ConfidenceScore { get; set; } = 100; // 0-100%
+
+        /// <summary>
+        /// Güven: 100 kesin kanıt (kaldırma öncesi iz, doğrulanmış kurulum klasörü),
+        /// 90 yüksek (ad birebir), 60 orta, 30 düşük. İsimden gelen kanıt asla 100 olmaz.
+        /// </summary>
+        public int ConfidenceScore { get; set; } = 60;
+
+        /// <summary>Bu öğenin neden kalıntı sayıldığı (kullanıcıya gösterilir).</summary>
+        public string EvidenceText { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Bilinen uygulama köklerinin dışındaki bir klasörün silinmesine izin verir
+        /// (yalnızca kesin kanıtlı kurulum klasörleri için).
+        /// </summary>
+        public bool AllowOutsideKnownRoots { get; set; }
 
         [ObservableProperty]
-        private bool _isSelected = true;
+        private bool _isSelected;
 
         [ObservableProperty]
         private bool _isDeleted;
@@ -70,6 +95,7 @@ namespace Bakım.Models
             LeftoverType.Folder => "Klasör",
             LeftoverType.File => "Dosya",
             LeftoverType.RegistryKey => "Kayıt Defteri",
+            LeftoverType.RegistryValue => "Kayıt Değeri",
             _ => "Kalıntı"
         };
 
@@ -78,6 +104,7 @@ namespace Bakım.Models
             LeftoverType.Folder => "AccentTextFillColorPrimaryBrush",
             LeftoverType.File => "SystemFillColorCautionBrush",
             LeftoverType.RegistryKey => "SystemFillColorCriticalBrush",
+            LeftoverType.RegistryValue => "SystemFillColorCriticalBrush",
             _ => "TextFillColorSecondaryBrush"
         };
     }

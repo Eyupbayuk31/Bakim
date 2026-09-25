@@ -73,7 +73,9 @@ namespace Bakım.ViewModels
         public ResidualCleanupViewModel(InstalledAppItem targetApp, IEnumerable<ResidualItem> items, IResidualScannerEngine? scannerEngine = null)
         {
             TargetApp = targetApp;
-            _scannerEngine = scannerEngine ?? new ResidualScannerEngine();
+            _scannerEngine = scannerEngine
+                ?? App.TryGetService<IResidualScannerEngine>()
+                ?? throw new InvalidOperationException("Kalıntı motoru kullanılamıyor.");
 
             foreach (var item in items)
             {
@@ -104,7 +106,7 @@ namespace Bakım.ViewModels
             {
                 "Folders" => item.Type == ResidualType.Folder,
                 "Files" => item.Type == ResidualType.File,
-                "Registry" => item.Type == ResidualType.RegistryKey,
+                "Registry" => item.Type is ResidualType.RegistryKey or ResidualType.RegistryValue,
                 _ => true
             };
         }
@@ -162,7 +164,7 @@ namespace Bakım.ViewModels
             }
 
             var confirm = MessageBox.Show(
-                $"{AppName} uygulamasına ait seçilen {selected.Count} adet kalıntı ({FormattedSelectedSize}) kalıcı olarak silinecektir.\n\nİşlemi onaylıyor musunuz?",
+                $"{AppName} uygulamasına ait seçilen {selected.Count} öğe ({FormattedSelectedSize}) temizlenecek.\n\nDosyalar Geri Dönüşüm Kutusu'na taşınır, kayıt defteri öğeleri silinmeden önce yedeklenir.\n\nDevam edilsin mi?",
                 "Kalıntıları Temizle",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -180,16 +182,25 @@ namespace Bakım.ViewModels
 
             try
             {
-                int count = await _scannerEngine.CleanResidualItemsAsync(selected, progress);
+                var report = await _scannerEngine.CleanResidualItemsDetailedAsync(selected, $"Kalıntı temizliği: {AppName}", progress);
+                int count = report.SucceededCount;
                 CleanedCount = count;
-                WasCleaned = true;
+                WasCleaned = count > 0;
 
-                StatusText = $"{count} adet kalıntı başarıyla temizlendi!";
+                string failures = string.Join("\n", report.Results
+                    .Where(r => !r.Succeeded && r.Outcome != Bakım.Services.Safety.DeleteOutcome.NotFound)
+                    .Take(8)
+                    .Select(r => $"• {r.Target}: {r.Message}"));
+
+                StatusText = report.FailedCount == 0
+                    ? $"{count} öğe temizlendi."
+                    : $"{count} öğe temizlendi, {report.FailedCount} öğe temizlenemedi.";
                 MessageBox.Show(
-                    $"{count} adet kalıntı ({FormattedSelectedSize}) başarıyla temizlendi!",
-                    "Kalıntı Temizliği Tamamlandı",
+                    StatusText + $"\nBoşaltılan alan: {Bakım.Core.Text.ByteFormatter.Format(report.BytesFreed)}" +
+                    (failures.Length > 0 ? "\n\nTemizlenemeyenler:\n" + failures : string.Empty),
+                    "Kalıntı Temizliği",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                    report.FailedCount == 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
 
                 RequestClose?.Invoke(true);
             }

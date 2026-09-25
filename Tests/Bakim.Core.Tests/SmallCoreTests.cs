@@ -194,3 +194,25 @@ public class SensorReadingTests
         Assert.Equal("≈62 °C", new SensorReading(62, SensorQuality.Estimated, "°C", "tahmin").Display);
     }
 }
+
+public class RegistryValuePathTests
+{
+    [Fact]
+    public void ValuePath_RoundTrips()
+    {
+        var p = RegistryPath.Parse(@"HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.mp4\OpenWithProgids").WithValue("VLC.mp4");
+        string text = p.ToString();
+        Assert.True(RegistryPath.TryParseWithValue(text, RegistryView.Registry64, out var back));
+        Assert.Equal(RegistryHive.CurrentUser, back.Hive);
+        Assert.Equal("VLC.mp4", back.ValueName);
+        Assert.Equal(p.SubKey, back.SubKey);
+    }
+
+    [Fact]
+    public void KeyWithoutValue_ParsesAsKey()
+    {
+        Assert.True(RegistryPath.TryParseWithValue(@"HKLM\Software\Foo [32]", RegistryView.Registry64, out var p));
+        Assert.Null(p.ValueName);
+        Assert.Equal(RegistryView.Registry32, p.View);
+    }
+}
