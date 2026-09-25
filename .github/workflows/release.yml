@@ -38,6 +38,15 @@ jobs:
             echo "TAG_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
           fi
 
+      - name: Verify Tag Matches BakimVersion
+        shell: pwsh
+        run: |
+          # Tek sürüm kaynağı: Directory.Build.props. Etiket farklıysa uygulama kendini eski
+          # sürüm sanar ve sonsuz güncelleme döngüsüne girer; sürüm burada durdurulur.
+          $props = [xml](Get-Content Directory.Build.props)
+          $expected = "v" + $props.Project.PropertyGroup.BakimVersion
+          if ($env:TAG_NAME -ne $expected) { throw "Etiket ($env:TAG_NAME) BakimVersion ($expected) ile aynı değil!" }
+
       - name: Verify XAML Design Tokens and Symbols
         shell: pwsh
         run: |
@@ -60,13 +69,14 @@ jobs:
         run: |
           $proj = (Get-ChildItem -Path . -Filter "*Bak*.csproj" -File | Select-Object -First 1).FullName
           Write-Host "Hedef proje derleniyor: $proj"
-          dotnet publish $proj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/win-x64
+          $version = $env:TAG_NAME.TrimStart('v', 'V')
+          dotnet publish $proj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=$version -p:AssemblyVersion=$version.0 -p:FileVersion=$version.0 -o publish/win-x64
 
       - name: Rename and Package Artifacts
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.11.1" }
+          if (-not $tag) { throw "Sürüm etiketi yok." }
           
           # Derleme adi artik dogrudan Bakim.exe uretiyor (AssemblyName).
           # Kendine kopyalama hata verecegi icin yalnizca varligi dogrulanir.
@@ -84,7 +94,7 @@ jobs:
         shell: pwsh
         run: |
           $tag = $env:TAG_NAME
-          if (-not $tag) { $tag = "v3.11.1" }
+          if (-not $tag) { throw "Sürüm etiketi yok." }
           $cleanVersion = $tag.TrimStart('v', 'V')
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null

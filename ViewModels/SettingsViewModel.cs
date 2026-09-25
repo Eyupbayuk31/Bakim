@@ -894,13 +894,34 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3210 = new ReleaseChangelogItem
+            {
+                Version = "v3.21.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Güvenlik ve Dürüstlük Sürümü: Veri Kaybı Riskleri Kapatıldı, Uydurma Değerler Kaldırıldı",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Güvenli Kaldırıcı: yayıncı klasörü ya da kurulu başka bir programın klasörü artık kalıntı sayılmaz; yalnızca kesin kalıntılar otomatik temizlenir, her silme Geri Dönüşüm Kutusu'na gider ve kayıt defteri silinmeden önce yedeklenir (geri yüklenebilir).",
+                    "Kaldırma gerçekten bitti mi? Kaldırıcı ve alt süreçleri sonuna kadar izlenir, sonuç Uninstall kaydından doğrulanır; iptal, yeniden başlatma gereksinimi ve başarısızlık ayrı ayrı gösterilir.",
+                    "Temizleyici yalnızca her kategorinin kendi klasörlerinde siler; yolunda \"temp\" ya da \"cache\" geçen herhangi bir dosya artık hedef değildir. Temp'te son 24 saatin dosyaları korunur, Spotify çevrimdışı şarkıları varsayılan seçili değil.",
+                    "Uydurma değerler kaldırıldı: sıcaklık ölçülemiyorsa \"—\" gösterilir, RAM boşaltma sabit \"450 MB\" yerine ölçülen farkı söyler, oyun modu önceki güç planını geri yükler.",
+                    "İnce ayarlar yazıldıktan sonra geri okunarak doğrulanır; yazılamayan ayar \"uygulandı\" görünmez, nedeni gösterilir. Güvenliği azaltan ayarlar kırmızı rozet ve ayrı onay alır.",
+                    "Mağaza: üçüncü taraf Visual C++ paketi yerine resmî winget paketleri; DirectX kurulumunun Microsoft imzası doğrulanır; kurulum sonucu çıkış kodundan okunur.",
+                    "UAC'siz yönetici kısayolu yalnızca standart kullanıcıların değiştiremediği programlar için oluşturulur; .vbs yerine .lnk.",
+                    "Analizör ve Optimizör kritik sistem süreçlerini sonlandırmaz; analizörde dosya silme Geri Dönüşüm Kutusu'nu kullanır. Olay günlüklerini silen düğme kaldırıldı.",
+                    "Güncelleyici yalnızca resmî Bakim-vX.Y.Z-Setup.exe paketini indirir ve boyutunu doğrular. Sürüm numarası artık tek bir yerden gelir."
+                }
+            };
+
             var v3200 = new ReleaseChangelogItem
             {
                 Version = "v3.20.0",
                 ReleaseDate = "25 Eylül 2026",
                 Title = "Kurulum Nöbetçisi v2 (Faz 0): Stabilizasyon, Derin Sensörler & Güvenli Geri Alma",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Güvenli Geri Alma ve Veri Kaybı Önleme (P0-1): Değiştirilen dosyalar (ModifiedFiles) asla silinmez; yalnızca kurulum anında üretilen yeni dosyalar Geri Dönüşüm Kutusu (Recycle Bin) güvencesiyle temizlenir.",
@@ -1567,8 +1588,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3200;
+            LatestRelease = v3210;
 
+            ReleaseHistory.Add(v3210);
             ReleaseHistory.Add(v3200);
             ReleaseHistory.Add(v3191);
             ReleaseHistory.Add(v3190);

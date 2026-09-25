@@ -1,0 +1,13 @@
+<Project>
+  <!--
+    TEK SÜRÜM KAYNAĞI (H-15). Sürüm yalnızca burada değişir:
+      • Bakım.csproj → Version / AssemblyVersion / FileVersion
+      • Uygulama içi metinler → AppInfo.Version (derleme sürümünden okunur)
+      • Bakim_Setup.iss → sürüm iş akışında /DMyAppVersion ile verilir; yerel derleme
+        varsayılanı Core testlerinde bu dosyayla karşılaştırılır.
+      • release.yml → etiket (vX.Y.Z) bu değerle aynı değilse sürüm durdurulur.
+  -->
+  <PropertyGroup>
+    <BakimVersion>3.21.0</BakimVersion>
+  </PropertyGroup>
+</Project>

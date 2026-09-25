@@ -16,7 +16,7 @@ namespace Bakım.Services
     public class UpdateInfo
     {
         public bool IsUpdateAvailable { get; set; }
-        public string CurrentVersion { get; set; } = "3.20.0";
+        public string CurrentVersion { get; set; } = AppInfo.Version;
 
         /// <summary>
         /// Sürüm denetimi için varsayılan zaman aşımı (saniye).
@@ -35,17 +35,7 @@ namespace Bakım.Services
     {
         // TARGET REPO: Eyupbayuk31/Bakim
         private const string GitHubApiUrl = "https://api.github.com/repos/Eyupbayuk31/Bakim/releases/latest";
-        public const string DefaultCurrentVersion = "3.20.0";
-
-        public static Version GetCurrentVersion()
-        {
-            var asmVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            if (asmVersion != null && asmVersion > new Version(1, 0, 0))
-            {
-                return asmVersion;
-            }
-            return new Version(2, 8, 0);
-        }
+        public static Version GetCurrentVersion() => AppInfo.VersionNumber;
 
         public static string GetDefaultChangelog()
         {
