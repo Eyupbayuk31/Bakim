@@ -15,6 +15,69 @@ namespace Bakım.Services
         public CommandPaletteService()
         {
             _commands = BuildCommandCatalog();
+            _commands.AddRange(BuildDeepLinks());
+            _commands.AddRange(BuildTweakCommands());
+        }
+
+        /// <summary>Katalog kategorisi → Windows Ayarları sekmesi.</summary>
+        private static readonly Dictionary<string, string> TweakCategoryKeys = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Davranışlar (Behavior)"] = "Behavior",
+            ["Açılış & Oturum (Boot & Logon)"] = "BootLogon",
+            ["Masaüstü & Görev Çubuğu"] = "DesktopTaskbar",
+            ["Dosya Gezgini"] = "FileExplorer",
+            ["Ayarlar & Denetim Masası"] = "SettingsCpl",
+            ["Microsoft Edge"] = "Edge",
+        };
+
+        /// <summary>Her veri tabanlı ince ayar ayrı bir komut: "Ayar: …" → ilgili sekme (§5.16 arama).</summary>
+        private static IEnumerable<CommandPaletteItem> BuildTweakCommands()
+        {
+            IReadOnlyList<Bakım.Core.Tweaks.TweakDefinition> definitions;
+            try
+            {
+                definitions = Bakım.Services.Tweaks.TweakEngine.Definitions;
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or System.IO.IOException)
+            {
+                AppLog.Warning("İnce ayar komutları yüklenemedi.", ex, nameof(CommandPaletteService));
+                yield break;
+            }
+            foreach (var d in definitions)
+            {
+                if (!TweakCategoryKeys.TryGetValue(d.Category, out string? key)) continue;
+                yield return new CommandPaletteItem
+                {
+                    Title = $"Ayar: {d.Title}",
+                    Category = "Windows Ayarları",
+                    Description = d.Description,
+                    IconName = "Wrench24",
+                    ActionKind = CommandActionKind.Navigate,
+                    TargetParameter = $"WindowsTweaker:{key}",
+                    KeyboardShortcut = d.Category
+                };
+            }
+        }
+
+        /// <summary>Filtreli derin bağlantılar (Etkinlik Merkezi türleri, raporlar).</summary>
+        private static IEnumerable<CommandPaletteItem> BuildDeepLinks()
+        {
+            CommandPaletteItem Link(string title, string description, string icon, string target) => new()
+            {
+                Title = title,
+                Category = "Geçmiş",
+                Description = description,
+                IconName = icon,
+                ActionKind = CommandActionKind.Navigate,
+                TargetParameter = target,
+                KeyboardShortcut = "Geçmiş"
+            };
+            yield return Link("Kaldırma geçmişi", "Kaldırılan programlar ve kalıntı temizlikleri; kayıt defteri yedeklerini geri yükleme.", "AppsList24", "Activity?kind=Uninstall");
+            yield return Link("Temizlik geçmişi", "Temizleyici ve Hızlı Bakım kayıtları.", "Broom24", "Activity?kind=Clean");
+            yield return Link("Ayar değişiklikleri geçmişi", "Windows Ayarları'nda yapılan değişiklikler ve geri alma.", "Wrench24", "Activity?kind=Tweak");
+            yield return Link("Başlangıç değişiklikleri geçmişi", "Açılıştan kaldırılan ya da eklenen programlar.", "Rocket24", "Activity?kind=StartupChange");
+            yield return Link("Hizmet değişiklikleri geçmişi", "Başlangıç türü ve profil değişiklikleri.", "DeveloperBoard24", "Activity?kind=ServiceChange");
+            yield return Link("Kurulum raporları", "Kurulum Nöbetçisi'nin kaydettiği kurulumlar ve risk kararları.", "ShieldCheckmark24", "Sentinel");
         }
 
         public List<CommandPaletteItem> GetAllCommands()
@@ -27,15 +90,14 @@ namespace Bakım.Services
             if (string.IsNullOrWhiteSpace(query))
                 return _commands.Take(12).ToList();
 
-            string cleanQuery = query.Trim().ToLowerInvariant();
-
+            // Türkçe duyarsız, çok kelimeli arama: "kaldirici gecmis" → "Kaldırma geçmişi".
             return _commands
-                .Where(c => c.Title.ToLowerInvariant().Contains(cleanQuery) ||
-                            c.Description.ToLowerInvariant().Contains(cleanQuery) ||
-                            c.Category.ToLowerInvariant().Contains(cleanQuery))
-                .OrderByDescending(c => c.Title.ToLowerInvariant().StartsWith(cleanQuery))
-                .ThenByDescending(c => c.Category.ToLowerInvariant().Contains(cleanQuery))
+                .Select(c => (Command: c, Score: Bakım.Core.Text.SearchText.Score(query, c.Title, c.Category, c.Description, c.KeyboardShortcut)))
+                .Where(x => x.Score > 0)
+                .OrderByDescending(x => x.Score)
+                .ThenBy(x => x.Command.Title.Length)
                 .Take(15)
+                .Select(x => x.Command)
                 .ToList();
         }
 

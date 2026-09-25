@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Bakım.Models;
@@ -37,17 +39,45 @@ namespace Bakım.Views.Windows
             if (isActive)
             {
                 BtnGameMode.Appearance = ControlAppearance.Success;
-                StatusText.Text = "Oyun Modu Aktif (Sistem Donduruldu)";
+                StatusText.Text = "Oyun Modu açık";
                 StatusText.Foreground = (System.Windows.Media.Brush)FindResource("SystemFillColorSuccessBrush");
             }
             else
             {
                 BtnGameMode.Appearance = ControlAppearance.Secondary;
-                StatusText.Text = "Sistem Nöbette (Arka Plan Aktif)";
+                StatusText.Text = "Arka plan bakımı etkin";
                 StatusText.Foreground = (System.Windows.Media.Brush)FindResource("TextFillColorSecondaryBrush");
             }
 
+            RefreshSentinelAndActivity();
             _ = RefreshTelemetryAsync();
+        }
+
+        /// <summary>Nöbetçi durumu ve son 3 etkinlik (§5.19).</summary>
+        private void RefreshSentinelAndActivity()
+        {
+            var sentinel = App.TryGetService<ISetupSentinelService>();
+            SentinelText.Text = sentinel == null ? "Kurulum Nöbetçisi kullanılamıyor"
+                : !sentinel.IsEnabled ? "Kurulum Nöbetçisi kapalı"
+                : sentinel.IsMonitoringActiveSession ? $"İzleniyor: {sentinel.ActiveSession?.AppName}"
+                : sentinel.RecentReports.FirstOrDefault() is { } last ? $"Son kurulum: {last.AppName}"
+                : "Kurulum Nöbetçisi etkin";
+
+            var activity = App.TryGetService<Bakım.Services.Activity.IActivityService>();
+            var recent = activity?.Entries
+                .Where(e => e.Kind != Bakım.Core.Activity.ActivityKind.Restore)
+                .OrderByDescending(e => e.AtUtc)
+                .Take(3)
+                .Select(e => $"{e.AtUtc.ToLocalTime():HH:mm} · {e.Title}")
+                .ToList() ?? new List<string>();
+            RecentActivityList.ItemsSource = recent.Count > 0 ? recent : new List<string> { "Henüz etkinlik yok." };
+        }
+
+        private void BtnActivity_Click(object sender, RoutedEventArgs e)
+        {
+            this.Hide();
+            _trayIconService.RestoreWindow();
+            _navigationService.Navigate("Activity");
         }
 
         private async Task RefreshTelemetryAsync()
@@ -87,16 +117,18 @@ namespace Bakım.Views.Windows
             try
             {
                 BtnQuickBoost.IsEnabled = false;
-                BtnQuickBoost.Content = "Temizleniyor...";
-                long freed = await _cleanService.AutoTrimWorkingSetsAsync();
-                await RefreshTelemetryAsync();
-                _trayIconService.ShowBalloon("Bellek İşlemi", Bakım.Core.Text.MemoryResultText.Describe(freed));
+                BtnQuickBoost.Content = "Bakım yapılıyor...";
+                var quick = App.TryGetService<IQuickMaintenanceService>();
+                if (quick == null) return;
+                var result = await quick.RunAsync(null, System.Threading.CancellationToken.None);
+                _trayIconService.ShowBalloon("Hızlı Bakım", result.Summary);
+                RefreshSentinelAndActivity();
             }
             catch { }
             finally
             {
                 BtnQuickBoost.IsEnabled = true;
-                BtnQuickBoost.Content = "Hızlı RAM Boşalt";
+                BtnQuickBoost.Content = "Hızlı Bakım";
             }
         }
 
