@@ -424,6 +424,7 @@ namespace Bakım
             // Tekil: Kurulum Nöbetçisi "Analizörle tara" dediğinde ekrandaki örneğe dosya eklemeli.
             // Transient iken her çağrı görünmeyen yeni bir örnek (ve yeni bir tam tarama) üretiyordu.
             services.AddSingleton<AnalyzerViewModel>();
+            services.AddSingleton<AnalyzerHistoryViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();
