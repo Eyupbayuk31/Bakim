@@ -787,15 +787,8 @@ namespace Bakım.ViewModels
         {
             string drive = string.IsNullOrWhiteSpace(driveName) ? "C" : driveName.Substring(0, 1);
             StatusText = $"{drive}: sürücüsüne TRIM komutu gönderiliyor...";
-            bool ok = await _infoService.OptimizeDriveTrimAsync(drive);
-            if (ok)
-            {
-                StatusText = $"{drive}: sürücüsü başarıyla optimize edildi (TRIM tamamlandı).";
-            }
-            else
-            {
-                StatusText = $"{drive}: TRIM komutu uygulanamadı (Yönetici yetkisi gerekebilir).";
-            }
+            var result = await _infoService.OptimizeDriveTrimAsync(drive);
+            StatusText = result.Message;
         }
 
         [RelayCommand]

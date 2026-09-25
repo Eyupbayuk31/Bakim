@@ -48,6 +48,9 @@ namespace Bakım.Models
         [ObservableProperty]
         private bool _isBusy;
 
+        /// <summary>Son uygulama denemesinde başarısız olan yazımların özeti (yoksa null).</summary>
+        public string? LastError { get; set; }
+
         [ObservableProperty]
         private int _numericValue;
 

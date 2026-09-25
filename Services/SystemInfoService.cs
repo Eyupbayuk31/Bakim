@@ -11,6 +11,9 @@ using Bakım.Models;
 
 namespace Bakım.Services
 {
+    /// <summary>TRIM işleminin sonucu ve kullanıcıya gösterilecek açıklama.</summary>
+    public sealed record TrimResult(bool Succeeded, string Message);
+
     public interface ISystemInfoService
     {
         Task<SystemHardwareStats> GetSystemHardwareAsync();
@@ -19,7 +22,7 @@ namespace Bakım.Services
         Task<bool> DeleteLargeFileAsync(string filePath);
         Task<bool> DeleteLargeFileToRecycleBinAsync(string filePath);
         Task<string> GenerateHardwareReportHtmlAsync();
-        Task<bool> OptimizeDriveTrimAsync(string driveLetter);
+        Task<TrimResult> OptimizeDriveTrimAsync(string driveLetter);
     }
 
     public class SystemInfoService : ISystemInfoService
@@ -793,30 +796,42 @@ namespace Bakım.Services
             });
         }
 
-        public async Task<bool> OptimizeDriveTrimAsync(string driveLetter)
+        /// <summary>
+        /// SSD'ye TRIM (ReTrim) gönderir. Eskiden 10 sn sonra ExitCode okunmaya çalışılıyor,
+        /// süreç bitmediyse istisna "başarısız" sayılıyor ve PowerShell arka planda kalıyordu;
+        /// HDD'lerde de çalıştırılıyordu (D-9). Artık ortam türü önce kontrol edilir, büyük
+        /// sürücüler için 15 dk beklenir ve gerçek hata metni döndürülür.
+        /// </summary>
+        public async Task<TrimResult> OptimizeDriveTrimAsync(string driveLetter)
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(driveLetter)) driveLetter = "C";
-                    char letter = driveLetter[0];
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "powershell.exe",
-                        Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"Optimize-Volume -DriveLetter {letter} -ReTrim -Verbose\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    };
-                    using var proc = Process.Start(psi);
-                    proc?.WaitForExit(10000);
-                    return proc?.ExitCode == 0;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            char letter = string.IsNullOrWhiteSpace(driveLetter) ? 'C' : char.ToUpperInvariant(driveLetter.Trim()[0]);
+            if (letter < 'A' || letter > 'Z')
+                return new TrimResult(false, "Geçersiz sürücü harfi.");
+
+            // Çıkış kodu 3 = HDD (TRIM desteklemez). "Unspecified" ortam türü (bazı NVMe/sanal
+            // diskler) engellenmez; Optimize-Volume desteklemiyorsa kendi hatasını verir.
+            string script =
+                $"$ErrorActionPreference = 'Stop'; " +
+                $"$disk = Get-Partition -DriveLetter {letter} | Get-Disk; " +
+                $"$pd = Get-PhysicalDisk | Where-Object {{ $_.DeviceId -eq [string]$disk.Number }}; " +
+                $"if ($pd -and $pd.MediaType -eq 'HDD') {{ exit 3 }}; " +
+                $"Optimize-Volume -DriveLetter {letter} -ReTrim";
+
+            var result = await Helpers.ProcessRunner.RunAsync("powershell.exe",
+                new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script },
+                TimeSpan.FromMinutes(15));
+
+            if (result.Succeeded)
+                return new TrimResult(true, $"{letter}: sürücüsüne TRIM gönderildi.");
+            if (result.Started && !result.TimedOut && result.ExitCode == 3)
+                return new TrimResult(false, $"{letter}: bir sabit disk (HDD); TRIM yalnızca SSD'lerde çalışır.");
+            if (result.TimedOut)
+                return new TrimResult(false, $"{letter}: TRIM 15 dakika içinde bitmedi ve durduruldu.");
+
+            string reason = result.Describe();
+            if (reason.Contains("Access", StringComparison.OrdinalIgnoreCase) || reason.Contains("erişim", StringComparison.OrdinalIgnoreCase))
+                reason = "yönetici izni gerekiyor";
+            return new TrimResult(false, $"{letter}: TRIM uygulanamadı ({reason}).");
         }
 
         public async Task<string> GenerateHardwareReportHtmlAsync()

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
 using Bakım.Models;
+using Bakım.Helpers;
 
 namespace Bakım.Services
 {
@@ -180,6 +181,7 @@ namespace Bakım.Services
         {
             return await Task.Run(() =>
             {
+                using var writes = WriteScope.Begin();
                 try
                 {
                     switch (tweak.Id)
@@ -240,11 +242,19 @@ namespace Bakım.Services
                             break;
                     }
 
+                    if (!writes.Succeeded)
+                    {
+                        tweak.LastError = writes.Describe();
+                        return false;
+                    }
+
+                    tweak.LastError = null;
                     tweak.IsEnabled = enable;
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    tweak.LastError = ex.Message;
                     return false;
                 }
             });
@@ -308,62 +318,75 @@ namespace Bakım.Services
                     new() { PackageName = "Microsoft.Windows.Photos", DisplayName = "Fotoğraflar", Category = "Hayati Sistem Bileşeni", Description = "Görüntü ve fotoğraf görüntüleme bileşeni.", IsEssential = true }
                 };
 
-                // Check actual installed status via PowerShell
-                try
+                // Kurulu paketleri PowerShell ile tespit et. Başarısız olursa hepsi "kurulu"
+                // görünür (model varsayılanı); kaldırma zaten sonucu doğruladığı için güvenlidir.
+                var scan = ProcessRunner.Run("powershell.exe",
+                    new[] { "-NoProfile", "-NonInteractive", "-Command", "Get-AppxPackage | Select-Object -ExpandProperty Name" },
+                    TimeSpan.FromSeconds(30));
+                if (scan.Succeeded)
                 {
-                    var psi = new ProcessStartInfo
+                    var installed = new HashSet<string>(
+                        scan.StdOut.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                        StringComparer.OrdinalIgnoreCase);
+                    foreach (var app in candidateList)
                     {
-                        FileName = "powershell.exe",
-                        Arguments = "-NoProfile -Command \"Get-AppxPackage | Select-Object -ExpandProperty Name\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true
-                    };
-                    using var proc = Process.Start(psi);
-                    if (proc != null)
-                    {
-                        string output = proc.StandardOutput.ReadToEnd();
-                        proc.WaitForExit(4000);
-
-                        foreach (var app in candidateList)
-                        {
-                            app.IsInstalled = output.Contains(app.PackageName, StringComparison.OrdinalIgnoreCase);
-                        }
+                        app.IsInstalled = installed.Contains(app.PackageName);
                     }
                 }
-                catch { }
+                else
+                {
+                    AppLog.Warning($"Bloatware taraması başarısız: {scan.Describe()}", null, nameof(PrivacyDebloatService));
+                }
 
                 return candidateList.OrderByDescending(a => a.IsEssential).ThenByDescending(a => a.IsInstalled).ToList();
             });
         }
 
+        /// <summary>
+        /// Paketi geçerli kullanıcı için kaldırır ve sonucu doğrular (D-4). Eskiden runas ile
+        /// görünür PowerShell açılıyor, 10 sn sonra sonuç ne olursa olsun "kaldırıldı" deniyordu.
+        /// Ad joker karakter olmadan tam eşleşir; paket adları sabit listeden gelir.
+        /// </summary>
         public async Task<bool> RemoveBloatwareAsync(BloatwareAppItem app)
         {
             if (app.IsEssential) return false;
-
-            return await Task.Run(() =>
+            if (!IsSafePackageName(app.PackageName))
             {
-                try
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "powershell.exe",
-                        Arguments = $"-NoProfile -Command \"Get-AppxPackage -Name *{app.PackageName}* | Remove-AppxPackage\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-                    using var proc = Process.Start(psi);
-                    proc?.WaitForExit(10000);
-                    app.IsInstalled = false;
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+                app.LastError = "Geçersiz paket adı.";
+                return false;
+            }
+
+            string name = app.PackageName;
+            var removal = await ProcessRunner.RunAsync("powershell.exe", new[]
+            {
+                "-NoProfile", "-NonInteractive", "-Command",
+                $"$p = Get-AppxPackage -Name '{name}'; if ($p) {{ $p | Remove-AppxPackage -ErrorAction Stop }}"
+            }, TimeSpan.FromMinutes(2));
+
+            var check = await ProcessRunner.RunAsync("powershell.exe", new[]
+            {
+                "-NoProfile", "-NonInteractive", "-Command",
+                $"(Get-AppxPackage -Name '{name}' | Measure-Object).Count"
+            }, TimeSpan.FromSeconds(30));
+
+            bool gone = check.Succeeded && check.StdOut.Trim() == "0";
+            if (gone)
+            {
+                app.IsInstalled = false;
+                app.LastError = null;
+                return true;
+            }
+
+            app.LastError = !removal.Succeeded
+                ? $"Remove-AppxPackage {removal.Describe()}"
+                : check.Succeeded
+                    ? "Komut hatasız bitti ama paket hâlâ kurulu görünüyor."
+                    : $"Sonuç doğrulanamadı: {check.Describe()}";
+            return false;
         }
+
+        private static bool IsSafePackageName(string name) =>
+            !string.IsNullOrWhiteSpace(name) && name.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '_' || c == '-');
 
         #endregion
 
@@ -408,15 +431,8 @@ namespace Bakım.Services
             return false;
         }
 
-        private static void SetRegistryDword(RegistryKey root, string subKeyPath, string valueName, int val)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKeyPath, true);
-                key?.SetValue(valueName, val, RegistryValueKind.DWord);
-            }
-            catch { }
-        }
+        private static bool SetRegistryDword(RegistryKey root, string subKeyPath, string valueName, int val) =>
+            VerifiedRegistry.SetDword(root, subKeyPath, valueName, val);
 
         private static bool CheckServiceDisabled(string serviceName)
         {
@@ -436,37 +452,44 @@ namespace Bakım.Services
             return false;
         }
 
+        /// <summary>
+        /// Hizmetin başlangıç türünü sc.exe ile ayarlar ve kayıt defterinden doğrular.
+        /// Geri alırken Windows varsayılanına döner (DiagTrack: otomatik, diğerleri: el ile);
+        /// eskiden her şey "demand" yapılıyordu ve her sc çağrısı ayrı bir UAC penceresi açıyordu.
+        /// </summary>
         private static void ConfigureServiceState(string serviceName, bool disable)
+        {
+            int startValue = disable ? 4 : DefaultServiceStart(serviceName);
+            string startMode = startValue switch { 2 => "auto", 3 => "demand", _ => "disabled" };
+
+            bool configured = ProcessRunner.RunReported($"{serviceName} hizmeti ({startMode})", "sc.exe",
+                new[] { "config", serviceName, "start=", startMode }, TimeSpan.FromSeconds(20));
+            if (!configured) return;
+
+            if (ReadServiceStart(serviceName) != startValue)
+            {
+                WriteScope.Report($"{serviceName} hizmeti: başlangıç türü doğrulanamadı");
+                return;
+            }
+
+            // Durdurma en iyi çabadır: hizmet zaten durmuş olabilir; kalıcı ayar yukarıda yapıldı.
+            if (disable) ProcessRunner.Run("sc.exe", new[] { "stop", serviceName }, TimeSpan.FromSeconds(20));
+        }
+
+        private static int DefaultServiceStart(string serviceName) =>
+            serviceName.Equals("DiagTrack", StringComparison.OrdinalIgnoreCase) ? 2 : 3;
+
+        private static int? ReadServiceStart(string serviceName)
         {
             try
             {
-                string startMode = disable ? "disabled" : "demand";
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "sc.exe",
-                    Arguments = $"config \"{serviceName}\" start= {startMode}",
-                    CreateNoWindow = true,
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-                using var proc = Process.Start(psi);
-                proc?.WaitForExit(3000);
-
-                if (disable)
-                {
-                    var stopPsi = new ProcessStartInfo
-                    {
-                        FileName = "sc.exe",
-                        Arguments = $"stop \"{serviceName}\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-                    using var stopProc = Process.Start(stopPsi);
-                    stopProc?.WaitForExit(3000);
-                }
+                using var key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}", false);
+                return key?.GetValue("Start") is int start ? start : null;
             }
-            catch { }
+            catch
+            {
+                return null;
+            }
         }
 
         private static bool CheckHostsBlocked()
@@ -487,7 +510,11 @@ namespace Bakım.Services
         {
             try
             {
-                if (!File.Exists(HostsFilePath)) return;
+                if (!File.Exists(HostsFilePath))
+                {
+                    WriteScope.Report("hosts dosyası bulunamadı");
+                    return;
+                }
                 string content = File.ReadAllText(HostsFilePath);
 
                 if (block)
@@ -511,7 +538,16 @@ namespace Bakım.Services
                     File.WriteAllLines(HostsFilePath, cleanLines);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                string reason = ex is UnauthorizedAccessException ? "erişim reddedildi (yönetici izni gerekir)" : ex.Message;
+                WriteScope.Report($"hosts dosyası: {reason}");
+                return;
+            }
+
+            // Microsoft Defender bu girdileri "HostsFileHijack" sayıp geri alabilir; sonucu doğrula.
+            if (CheckHostsBlocked() != block)
+                WriteScope.Report("hosts dosyası: değişiklik kalıcı olmadı (güvenlik yazılımı geri almış olabilir)");
         }
 
         #endregion

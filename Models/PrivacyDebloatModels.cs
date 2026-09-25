@@ -17,6 +17,12 @@ namespace Bakım.Models
         [ObservableProperty]
         private bool _isBusy;
 
+        /// <summary>Son uygulama denemesinde başarısız olan yazımların özeti (yoksa null).</summary>
+        public string? LastError { get; set; }
+
+        /// <summary>Anahtar tıklamayla değişip işlem başarısız olduğunda görünümü gerçek duruma döndürür.</summary>
+        public void NotifyStateChanged() => OnPropertyChanged(nameof(IsEnabled));
+
         public string BadgeBrush => RiskLevel switch
         {
             "Önerilen" => "SystemFillColorSuccessBrush",
@@ -39,6 +45,9 @@ namespace Bakım.Models
 
         [ObservableProperty]
         private bool _isBusy;
+
+        /// <summary>Son kaldırma denemesi başarısızsa nedeni (yoksa null).</summary>
+        public string? LastError { get; set; }
     }
 
     public class PrivacyStats

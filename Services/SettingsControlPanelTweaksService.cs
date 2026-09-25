@@ -1,5 +1,6 @@
 using Microsoft.Win32;
 using Bakım.Models;
+using Bakım.Helpers;
 
 namespace Bakım.Services
 {
@@ -118,6 +119,7 @@ namespace Bakım.Services
         {
             return await Task.Run(() =>
             {
+                using var writes = WriteScope.Begin();
                 try
                 {
                     switch (tweak.Id)
@@ -195,11 +197,19 @@ namespace Bakım.Services
                             return false;
                     }
 
+                    if (!writes.Succeeded)
+                    {
+                        tweak.LastError = writes.Describe();
+                        return false;
+                    }
+
+                    tweak.LastError = null;
                     tweak.IsEnabled = enable;
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    tweak.LastError = ex.Message;
                     return false;
                 }
             });
@@ -279,44 +289,17 @@ namespace Bakım.Services
             }
         }
 
-        private static void SetRegistryDword(RegistryKey root, string subKey, string valueName, int value)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKey, true);
-                key?.SetValue(valueName, value, RegistryValueKind.DWord);
-            }
-            catch { }
-        }
+        private static bool SetRegistryDword(RegistryKey root, string subKey, string valueName, int value) =>
+            VerifiedRegistry.SetDword(root, subKey, valueName, value);
 
-        private static void SetRegistryString(RegistryKey root, string subKey, string valueName, string value)
-        {
-            try
-            {
-                using var key = root.CreateSubKey(subKey, true);
-                key?.SetValue(valueName, value, RegistryValueKind.String);
-            }
-            catch { }
-        }
+        private static bool SetRegistryString(RegistryKey root, string subKey, string valueName, string value) =>
+            VerifiedRegistry.SetString(root, subKey, valueName, value);
 
-        private static void DeleteRegistryValue(RegistryKey root, string subKey, string valueName)
-        {
-            try
-            {
-                using var key = root.OpenSubKey(subKey, true);
-                key?.DeleteValue(valueName, false);
-            }
-            catch { }
-        }
+        private static bool DeleteRegistryValue(RegistryKey root, string subKey, string valueName) =>
+            VerifiedRegistry.DeleteValue(root, subKey, valueName);
 
-        private static void DeleteRegistryKey(RegistryKey root, string subKey)
-        {
-            try
-            {
-                root.DeleteSubKeyTree(subKey, false);
-            }
-            catch { }
-        }
+        private static bool DeleteRegistryKey(RegistryKey root, string subKey) =>
+            VerifiedRegistry.DeleteKeyTree(root, subKey);
 
         #endregion
     }

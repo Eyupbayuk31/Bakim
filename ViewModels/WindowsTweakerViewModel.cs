@@ -379,7 +379,9 @@ namespace Bakım.ViewModels
                 else
                 {
                     tweak.NotifyStateChanged();
-                    OperationResultBanner = $"'{tweak.Title}' ayarı uygulanamadı. Yönetici izinlerini kontrol edin.";
+                    OperationResultBanner = string.IsNullOrEmpty(tweak.LastError)
+                        ? $"'{tweak.Title}' ayarı uygulanamadı. Yönetici izinlerini kontrol edin."
+                        : $"'{tweak.Title}' ayarı uygulanamadı: {tweak.LastError}";
                     ResultBannerSeverity = InfoBarSeverity.Error;
                     HasResultBanner = true;
                 }

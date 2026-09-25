@@ -203,6 +203,14 @@ namespace Bakım.ViewModels
                 {
                     tweak.IsEnabled = newState;
                     UpdateStats();
+                    StatusMessage = $"'{tweak.Title}' {(newState ? "uygulandı" : "varsayılana döndürüldü")}.";
+                }
+                else
+                {
+                    tweak.NotifyStateChanged();
+                    StatusMessage = $"'{tweak.Title}' uygulanamadı.";
+                    MessageBox.Show($"'{tweak.Title}' uygulanamadı.\n\n{tweak.LastError ?? "Yönetici izni gerekebilir."}",
+                        "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -219,10 +227,19 @@ namespace Bakım.ViewModels
             try
             {
                 bool ok = await _privacyService.ApplyAllRecommendedAsync(Tweaks.ToList());
+                foreach (var tweak in Tweaks) tweak.NotifyStateChanged();
                 UpdateStats();
                 if (ok)
                 {
-                    MessageBox.Show("Önerilen tüm gizlilik ve telemetri kuralları başarıyla uygulandı!", "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Önerilen tüm gizlilik kuralları uygulandı ve doğrulandı.", "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    var failed = Tweaks.Where(t => t.IsRecommended && !t.IsEnabled && !string.IsNullOrEmpty(t.LastError))
+                                       .Select(t => $"• {t.Title}: {t.LastError}")
+                                       .ToList();
+                    string detail = failed.Count > 0 ? string.Join("\n", failed) : "Bazı kurallar uygulanamadı.";
+                    MessageBox.Show($"Önerilen kuralların bir kısmı uygulanamadı:\n\n{detail}", "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -247,9 +264,21 @@ namespace Bakım.ViewModels
             StatusMessage = "Windows varsayılan ayarlarına dönülüyor...";
             try
             {
-                await _privacyService.RestoreAllDefaultsAsync(Tweaks.ToList());
+                bool ok = await _privacyService.RestoreAllDefaultsAsync(Tweaks.ToList());
+                foreach (var tweak in Tweaks) tweak.NotifyStateChanged();
                 UpdateStats();
-                MessageBox.Show("Tüm gizlilik ayarları Windows varsayılanlarına sıfırlandı.", "Varsayılan Ayarlar", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (ok)
+                {
+                    MessageBox.Show("Tüm gizlilik ayarları Windows varsayılanlarına döndürüldü.", "Varsayılan Ayarlar", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    var failed = Tweaks.Where(t => t.IsEnabled && !string.IsNullOrEmpty(t.LastError))
+                                       .Select(t => $"• {t.Title}: {t.LastError}")
+                                       .ToList();
+                    string detail = failed.Count > 0 ? string.Join("\n", failed) : "Bazı ayarlar geri alınamadı.";
+                    MessageBox.Show($"Bazı ayarlar varsayılana döndürülemedi:\n\n{detail}", "Varsayılan Ayarlar", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
             finally
             {
@@ -311,7 +340,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("Uygulama kaldırılamadı. Yönetici ayrıcalıkları gerekebilir.", "Kaldırma Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"{app.DisplayName} kaldırılamadı.\n\n{app.LastError ?? "Neden bilinmiyor."}", "Kaldırma Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             finally
@@ -340,6 +369,7 @@ namespace Bakım.ViewModels
 
             IsBusy = true;
             int removed = 0;
+            var failed = new List<string>();
             try
             {
                 foreach (var app in safeApps)
@@ -353,9 +383,21 @@ namespace Bakım.ViewModels
                         app.IsInstalled = false;
                         removed++;
                     }
+                    else
+                    {
+                        failed.Add($"• {app.DisplayName}: {app.LastError ?? "neden bilinmiyor"}");
+                    }
                 }
                 UpdateStats();
-                MessageBox.Show($"{removed} adet gereksiz bloatware uygulaması başarıyla temizlendi.", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (failed.Count == 0)
+                {
+                    MessageBox.Show($"{removed} uygulama kaldırıldı ve doğrulandı.", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"{removed} uygulama kaldırıldı, {failed.Count} uygulama kaldırılamadı:\n\n{string.Join("\n", failed)}",
+                        "Temizlik Kısmen Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             }
             finally
             {
