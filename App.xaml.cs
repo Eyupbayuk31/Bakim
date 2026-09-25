@@ -1,8 +1,10 @@
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Bakım.Models;
 using Bakım.Services;
 using Bakım.ViewModels;
+using Bakım.Views.Dialogs;
 
 namespace Bakım
 {
@@ -141,6 +143,11 @@ namespace Bakım
             // 6. Arka plan bakım motoru (otomatik RAM temizliği, yüksek RAM uyarısı)
             GetService<IBackgroundMaintenanceService>().Start();
 
+            // Sentinel Kurulum Nöbetçisi (otomatik kurulum yakalama & analizör taraması)
+            var sentinelService = GetService<ISetupSentinelService>();
+            sentinelService.SetupDetected += OnSetupDetected;
+            sentinelService.SetupFinished += OnSetupFinished;
+
             // 7. Hedef Kaldırma Parametresi Denetimi (--uninstall-target "<path>")
             string? uninstallTarget = null;
             if (e.Args != null)
@@ -241,6 +248,7 @@ namespace Bakım
                 AppLog.Info($"Uygulama kapanıyor (çıkış kodu {e.ApplicationExitCode}).", "Shutdown");
 
                 TryGetService<IBackgroundMaintenanceService>()?.Stop();
+                TryGetService<ISetupSentinelService>()?.Stop();
                 TryGetService<ITrayIconService>()?.Detach();
 
                 // Çıkışta otomatik temizlik tercihi
@@ -259,6 +267,52 @@ namespace Bakım
                 _logService?.Dispose();
                 base.OnExit(e);
             }
+        }
+
+        private SetupDetectedFlyoutWindow? _sentinelFlyoutWindow;
+
+        private void OnSetupDetected(WatchedSetupSession session)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                try
+                {
+                    if (_sentinelFlyoutWindow == null || !_sentinelFlyoutWindow.IsLoaded)
+                    {
+                        _sentinelFlyoutWindow = new SetupDetectedFlyoutWindow();
+                        _sentinelFlyoutWindow.Closed += (s, e) => _sentinelFlyoutWindow = null;
+                    }
+
+                    _sentinelFlyoutWindow.SetMonitoringSession(session);
+                    _sentinelFlyoutWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Error("Kurulum nöbetçi bildirim penceresi açılamadı.", ex, "App");
+                }
+            });
+        }
+
+        private void OnSetupFinished(SetupDeltaReport report)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                try
+                {
+                    if (_sentinelFlyoutWindow == null || !_sentinelFlyoutWindow.IsLoaded)
+                    {
+                        _sentinelFlyoutWindow = new SetupDetectedFlyoutWindow();
+                        _sentinelFlyoutWindow.Closed += (s, e) => _sentinelFlyoutWindow = null;
+                    }
+
+                    _sentinelFlyoutWindow.SetFinishedReport(report);
+                    _sentinelFlyoutWindow.Show();
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Error("Kurulum tamamlandı bildirim penceresi açılamadı.", ex, "App");
+                }
+            });
         }
 
         /// <summary>
@@ -310,6 +364,7 @@ namespace Bakım
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IVirusTotalCheckService, VirusTotalCheckService>();
             services.AddSingleton<IAutorunsScannerEngine, AutorunsScannerEngine>();
+            services.AddSingleton<ISetupSentinelService, SetupSentinelService>();
 
             // v3.1'de eklenen kayıtlar: bu servisler daha önce hiç kayıtlı değildi,
             // bu yüzden ViewModel'ler onları elle `new` ile üretmek zorunda kalıyordu.

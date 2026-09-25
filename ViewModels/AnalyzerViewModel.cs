@@ -766,6 +766,102 @@ namespace Bakım.ViewModels
             }
         }
 
+        [RelayCommand]
+        public async Task AnalyzeSpecificFilesAsync(System.Collections.Generic.IEnumerable<string> filePaths)
+        {
+            if (filePaths == null) return;
+            var validFiles = filePaths.Where(f => !string.IsNullOrWhiteSpace(f) && File.Exists(f)).Distinct().ToList();
+            if (validFiles.Count == 0) return;
+
+            // Tek dosya ise doğrudan derin AI tehdit analizi penceresini aç
+            if (validFiles.Count == 1)
+            {
+                string singleFile = validFiles[0];
+                ScanStatusText = $"{Path.GetFileName(singleFile)} için tehdit analizi yürütülüyor...";
+                try
+                {
+                    var analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(singleFile);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, _threatAnalyzerService, _scannerEngine, _virusTotalService);
+                        if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
+                        {
+                            dialog.Owner = Application.Current.MainWindow;
+                        }
+                        dialog.ShowDialog();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Analiz sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                return;
+            }
+
+            // Çoklu dosya: Analizör listesine ekle ve toplu derin analiz yürüt
+            ScanStatusText = $"{validFiles.Count} adet kurulum dosyası Analizör'e aktarılıyor...";
+            IsScanning = true;
+
+            try
+            {
+                var newItems = new System.Collections.Generic.List<PersistenceItem>();
+
+                foreach (var file in validFiles)
+                {
+                    var item = new PersistenceItem
+                    {
+                        Name = Path.GetFileName(file),
+                        FilePath = file,
+                        LocationSource = "Kurulum Nöbetçisi",
+                        Category = PersistenceCategory.StartupFolder,
+                        CategoryDisplayName = "Kurulum Dosyası",
+                        IsEnabled = true,
+                        FileCreatedUtc = File.GetCreationTimeUtc(file)
+                    };
+
+                    try
+                    {
+                        var report = await _threatAnalyzerService.AnalyzeFileAsync(file, string.Empty, item);
+                        item.Signature = report.IsSigned
+                            ? SignatureStatus.Verified
+                            : (report.DigitalSignatureText.Contains("GEÇERSİZ", StringComparison.OrdinalIgnoreCase)
+                                ? SignatureStatus.InvalidOrTampered
+                                : SignatureStatus.Unsigned);
+
+                        if (!string.IsNullOrWhiteSpace(report.SignerName))
+                            item.SignatureSignerName = report.SignerName;
+
+                        if (!string.IsNullOrWhiteSpace(report.Sha256))
+                            item.Sha256Hash = report.Sha256;
+                    }
+                    catch { }
+
+                    newItems.Add(item);
+                }
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    foreach (var item in newItems)
+                    {
+                        Items.Insert(0, item);
+                    }
+                    ApplyRiskSorting();
+                    UpdateStats();
+                });
+
+                ScanStatusText = $"{validFiles.Count} adet kurulum dosyası başarıyla incelendi ve listeye eklendi.";
+            }
+            catch (Exception ex)
+            {
+                ScanStatusText = $"Kurulum dosyaları incelenirken hata: {ex.Message}";
+            }
+            finally
+            {
+                IsScanning = false;
+                UpdateStats();
+            }
+        }
+
         #endregion
     }
 }

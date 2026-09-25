@@ -70,13 +70,13 @@ namespace Bakım.Services
         private const string RepositoryOwner = "Eyupbayuk31";
         private const string RepositoryName = "Bakim";
         private const string ReleasesApiUrl = $"https://api.github.com/repos/{RepositoryOwner}/{RepositoryName}/releases/latest";
-        public const string CurrentAppVersion = "3.18.6";
+        public const string CurrentAppVersion = "3.19.0";
 
         private static readonly HttpClient HttpClient = new HttpClient();
 
         static GitHubUpdateService()
         {
-            HttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Bakim-SystemOptimizer", "3.18.6"));
+            HttpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Bakim-SystemOptimizer", "3.19.0"));
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github.v3+json"));
             HttpClient.Timeout = TimeSpan.FromSeconds(15);
         }

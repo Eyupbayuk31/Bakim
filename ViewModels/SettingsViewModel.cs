@@ -144,6 +144,9 @@ namespace Bakım.ViewModels
         private bool _createRestorePointOnUninstall = true;
 
         [ObservableProperty]
+        private bool _isSentinelSetupGuardEnabled = true;
+
+        [ObservableProperty]
         private string _autostartHealthBadgeText = "Denetleniyor...";
 
         [ObservableProperty]
@@ -276,6 +279,17 @@ namespace Bakım.ViewModels
         partial void OnPromptRestorePointBeforeUninstallChanged(bool value) => AutoSaveSettings();
         partial void OnCreateRestorePointOnUninstallChanged(bool value) => AutoSaveSettings();
 
+        partial void OnIsSentinelSetupGuardEnabledChanged(bool value)
+        {
+            if (_isInitializing) return;
+            var sentinel = App.TryGetService<ISetupSentinelService>();
+            if (sentinel != null)
+            {
+                sentinel.IsEnabled = value;
+            }
+            AutoSaveSettings();
+        }
+
         partial void OnStartWithWindowsChanged(bool value)
         {
             if (_isInitializing) return;
@@ -369,6 +383,7 @@ namespace Bakım.ViewModels
             AutoCleanOnExit = data.AutoCleanOnExit;
             PromptRestorePointBeforeUninstall = data.PromptRestorePointBeforeUninstall;
             CreateRestorePointOnUninstall = data.CreateRestorePointOnUninstall;
+            IsSentinelSetupGuardEnabled = data.IsSentinelSetupGuardEnabled;
             VerboseLogging = data.VerboseLogging;
 
             VirusTotalApiKey = VirusTotalCheckService.ResolveApiKey(data);
@@ -396,6 +411,7 @@ namespace Bakım.ViewModels
             data.TaskSchedulerAutoStart = IsTaskSchedulerAutoStart;
             data.PromptRestorePointBeforeUninstall = PromptRestorePointBeforeUninstall;
             data.CreateRestorePointOnUninstall = CreateRestorePointOnUninstall;
+            data.IsSentinelSetupGuardEnabled = IsSentinelSetupGuardEnabled;
             data.VerboseLogging = VerboseLogging;
 
             return data;
@@ -879,13 +895,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3190 = new ReleaseChangelogItem
+            {
+                Version = "v3.19.0",
+                ReleaseDate = "25 Eylül 2026",
+                Title = "Kurulum Nöbetçisi (Sentinel Setup Guard) & Sezgisel EDR Analizör Entegrasyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Otonom Kurulum Yakalama (Setup Sentinel Watchdog): Yeni bir yazılım (.exe / .msi) kurulurken arka planda kurulum süreçlerini ve alt süreçlerini (PID tree) otomatik tespit eder, dosya sistemi ve kayıt defteri değişikliklerini anlık kaydeder.",
+                    "Canlı Masaüstü Bildirim HUD'ı (SetupDetectedFlyoutWindow): Kurulum başladığında sağ alt köşede zarif Fluent 2 bildirim kartıyla canlı izleme başlatır; kurulum bittiğinde eklenen dosya, yürütülebilir (.exe/.dll) ve kayıt defteri istatistiklerini özetler.",
+                    "Analizör & Sezgisel Tehdit Taraması Entegrasyonu: Kurulum bitiminde tek tıkla kurulan tüm yürütülebilir dosyaları Analizör modülüne aktarır, PE başlıklarını, Microsoft dijital imzalarını ve VirusTotal analizini otomatik önerir.",
+                    "Kurulum Değişiklikleri İnceleme Penceresi (Delta Inspector): Eklenen tüm dosyaları, kayıt defteri anahtarlarını, yeni Windows servislerini ve başlangıç girdilerini gerçek zamanlı arama ve JSON dışa aktarma yeteneğiyle detaylı sunar.",
+                    "Modül Tercihleri & Güçlü Denetim: Ayarlar modülünden Kurulum Nöbetçisi tek tıkla açılıp kapatılabilir; sistem kaynaklarını sıfır gecikmeyle arka planda korur."
+                }
+            };
+
             var v3186 = new ReleaseChangelogItem
             {
                 Version = "v3.18.6",
                 ReleaseDate = "24 Eylül 2026",
                 Title = "Windows Gezgini Bağlam Menüsü Taşınması, Canlı Tray Mini HUD & Global Kısayollar",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Windows Gezgini Sağ Tık Menüsü Ayarlara Taşındı: Program Kaldırma sayfasında işlevsiz duran sağ tık menü butonu kaldırılarak doğrudan Ayarlar modülüne (Sistem & Başlangıç ve Modül Tercihleri) gerçek ToggleSwitch ve canlı aktif/pasif durum rozetiyle taşındı.",
@@ -1500,8 +1533,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3186;
+            LatestRelease = v3190;
 
+            ReleaseHistory.Add(v3190);
             ReleaseHistory.Add(v3186);
             ReleaseHistory.Add(v3185);
             ReleaseHistory.Add(v3184);

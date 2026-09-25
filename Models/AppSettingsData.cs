@@ -45,6 +45,10 @@ namespace Bakım.Models
         /// <summary>Ayrıntılı günlükleme (Debug seviyesi) açık mı.</summary>
         public bool VerboseLogging { get; set; } = false;
 
+        // --- Kurulum Nöbetçisi (Sentinel Setup Guard) ---
+        /// <summary>Yeni kurulum başlatıldığında arka planda otomatik algılayıp izleme.</summary>
+        public bool IsSentinelSetupGuardEnabled { get; set; } = true;
+
         public AppSettingsData Clone() => (AppSettingsData)MemberwiseClone();
     }
 }

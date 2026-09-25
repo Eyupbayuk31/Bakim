@@ -115,6 +115,7 @@ public class DependencyInjectionTests
     [InlineData(typeof(ITrayIconService))]
     [InlineData(typeof(IBackgroundMaintenanceService))]
     [InlineData(typeof(IExitCleanupService))]
+    [InlineData(typeof(ISetupSentinelService))]
     public void CoreService_ResolvesAsSingleton(Type serviceType)
     {
         using var provider = BuildContainer();
