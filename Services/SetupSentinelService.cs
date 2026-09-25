@@ -22,6 +22,7 @@ namespace Bakım.Services
         bool IsMonitoringActiveSession { get; }
         WatchedSetupSession? ActiveSession { get; }
         IReadOnlyList<SetupDeltaReport> RecentReports { get; }
+        SentinelProtectionStatus ProtectionStatus { get; }
 
         void Start();
         void Stop();
@@ -91,6 +92,13 @@ namespace Bakım.Services
             ".exe", ".dll", ".sys", ".bat", ".cmd", ".ps1", ".vbs", ".msi"
         };
 
+        private readonly UsnJournalSensor? _usnSensor;
+        private readonly KernelTraceSensor? _kernelTrace;
+        private bool _isUsnActive;
+        private bool _isTraceActive;
+
+        public SentinelProtectionStatus ProtectionStatus { get; private set; }
+
         public SetupSentinelService(
             IInstallerMonitorService installerMonitorService,
             IAppSettingsService settingsService,
@@ -101,6 +109,30 @@ namespace Bakım.Services
             _settingsService = settingsService;
             _log = log;
             _sessionStore = sessionStore ?? new SessionStore();
+
+            try
+            {
+                _usnSensor = new UsnJournalSensor();
+                _isUsnActive = _usnSensor.InitializeDrive('C');
+            }
+            catch (Exception ex)
+            {
+                _log.Debug($"USN başlatılamadı: {ex.Message}", nameof(SetupSentinelService));
+            }
+
+            try
+            {
+                _kernelTrace = new KernelTraceSensor();
+                _kernelTrace.ProcessStarted += OnKernelProcessStarted;
+                _isTraceActive = _kernelTrace.Start();
+            }
+            catch (Exception ex)
+            {
+                _log.Debug($"Kernel izleyici başlatılamadı: {ex.Message}", nameof(SetupSentinelService));
+            }
+
+            bool isAdmin = UacHelper.IsAdministrator();
+            ProtectionStatus = SentinelProtectionPolicy.Evaluate(isAdmin, _isUsnActive, _isTraceActive);
 
             _isEnabled = _settingsService.Current.IsSentinelSetupGuardEnabled;
 
@@ -690,6 +722,35 @@ namespace Bakım.Services
                     }
                 }
 
+                // USN Journal Değişiklikleri (Tam Koruma Modu / NÖB Faz 8)
+                if (_usnSensor != null && _isUsnActive)
+                {
+                    try
+                    {
+                        var usnRecords = _usnSensor.PollChanges('C');
+                        foreach (var record in usnRecords)
+                        {
+                            if (string.IsNullOrWhiteSpace(record.FileName)) continue;
+                            if (record.IsFileCreated && !uniqueCreated.Any(f => f.EndsWith(record.FileName, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                string candidate = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), record.FileName);
+                                if (File.Exists(candidate))
+                                {
+                                    uniqueCreated.Add(candidate);
+                                    if (ExecutableExtensions.Contains(Path.GetExtension(candidate).ToLowerInvariant()))
+                                    {
+                                        report.AddedExecutables.Add(candidate);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Debug($"USN günlüğü okunamadı: {ex.Message}", nameof(SetupSentinelService));
+                    }
+                }
+
                 // Registry Delta: Hotspot Sensörü ile Run ve Services Değerleri (P0-4, P0-5)
                 try
                 {
@@ -905,12 +966,32 @@ namespace Bakım.Services
             return $"{mb:F1} MB";
         }
 
+        private void OnKernelProcessStarted(int pid, string name, int parentPid)
+        {
+            var session = _activeSession;
+            if (session != null && session.IsActive)
+            {
+                lock (_lock)
+                {
+                    if (session.TrackedProcessIds.Contains(parentPid) && !session.TrackedProcessIds.Contains(pid))
+                    {
+                        session.TrackedProcessIds.Add(pid);
+                        long creationTicks = ProcessInfoReader.GetProcessCreationTimeUtc(pid)?.Ticks ?? DateTime.UtcNow.Ticks;
+                        session.TrackedProcesses[(pid, creationTicks)] = true;
+                        _log.Debug($"[Tam Koruma] Çocuk süreç bağlandı: {name} (PID: {pid}, Ebeveyn: {parentPid})", nameof(SetupSentinelService));
+                    }
+                }
+            }
+        }
+
         public void Dispose()
         {
             if (_isDisposed) return;
             _isDisposed = true;
 
             Stop();
+            _kernelTrace?.Dispose();
+            _usnSensor?.Dispose();
             _finalizeLock.Dispose();
         }
     }

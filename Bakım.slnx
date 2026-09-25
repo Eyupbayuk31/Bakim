@@ -5,4 +5,7 @@
     <Project Path="Tests/Bakim.Tests/Bakim.Tests.csproj" />
     <Project Path="Tests/Bakim.Core.Tests/Bakim.Core.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="Tools/BakimShell/BakimShell.csproj" />
+  </Folder>
 </Solution>

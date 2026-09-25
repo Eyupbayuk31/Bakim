@@ -77,6 +77,30 @@ namespace Bakım.ViewModels
         public string VtButtonText => IsUploadingToVt ? "Yükleniyor..." : (HasVtRecord ? $"VirusTotal ({Result.VirusTotalMalicious}/{Result.VirusTotalTotal})" : "VT'ye Gönder ve Tara");
         public string VtButtonIcon => HasVtRecord ? "Globe20" : "ArrowUpload20";
 
+        public bool CanLaunchInSandbox =>
+            !string.IsNullOrWhiteSpace(FilePath) &&
+            File.Exists(FilePath) &&
+            (App.TryGetService<Bakım.Services.Sentinel.IWindowsSandboxService>()?.IsSandboxInstalled ?? false);
+
+        [RelayCommand]
+        public async Task LaunchInSandboxAsync()
+        {
+            var sandbox = App.TryGetService<Bakım.Services.Sentinel.IWindowsSandboxService>();
+            if (sandbox == null) return;
+
+            StatusText = "Windows Sandbox hazırlanıyor...";
+            var outcome = await sandbox.LaunchInstallerPreviewAsync(FilePath, enableNetworking: false);
+            StatusText = outcome.Message;
+            if (outcome.Succeeded)
+            {
+                MessageBox.Show("Windows Sandbox yalıtılmış ortamında güvenle başlatıldı.", "Sandbox Önizleme", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show(outcome.Message, "Sandbox Başlatılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         // PE Binary Röntgen Properties
         public bool HasPeAnalysis => Result.HasPeAnalysis;
         public PeHeaderInfo? PeHeader => Result.PeHeader;

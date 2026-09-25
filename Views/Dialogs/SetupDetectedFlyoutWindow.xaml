@@ -48,7 +48,12 @@
                             <ui:SymbolIcon Symbol="Eye24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Kurulum Nöbetçisi Devrede" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Kurulum Nöbetçisi Devrede" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <Border x:Name="FlyoutProtectionBadge" Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock x:Name="FlyoutProtectionText" Text="Tam Koruma" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                </Border>
+                            </StackPanel>
                             <TextBlock x:Name="MonitoringAppNameText" Text="Yeni Yazılım Kurulumu İzleniyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>

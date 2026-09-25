@@ -47,7 +47,12 @@
                         <ui:SymbolIcon Symbol="Document24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="DialogTitleText" Text="Kurulum Değişiklikleri Raporu" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="DialogTitleText" Text="Kurulum Değişiklikleri Raporu" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <Border x:Name="ProtectionStatusBadge" Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="ProtectionStatusText" Text="Tam Koruma Modu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            </Border>
+                        </StackPanel>
                         <TextBlock x:Name="DialogSubtitleText" Text="Sistem izleme detayları" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -353,6 +358,17 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <ui:Button x:Name="SandboxPreviewButton"
+                               Appearance="Secondary"
+                               Click="OnSandboxPreviewClicked"
+                               Padding="12,7"
+                               Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Desktop24" FontSize="15" Margin="0,0,6,0"/>
+                            <TextBlock Text="Sandbox'ta Önizle" FontSize="{StaticResource Font.Caption}"/>
+                        </StackPanel>
+                    </ui:Button>
+
                     <ui:Button Appearance="Secondary"
                                Click="OnExportJsonClicked"
                                Padding="12,7"

@@ -1222,12 +1222,27 @@
                             <MenuItem Header="Güvenli Olarak İşaretle"
                                       Command="{Binding WhitelistCommand}"
                                       Icon="{ui:SymbolIcon ShieldCheckmark20}"/>
+                            <Separator Visibility="{Binding CanLaunchInSandbox, Converter={StaticResource BoolToVis}}"/>
+                            <MenuItem Header="Windows Sandbox'ta Önizle"
+                                      Command="{Binding LaunchInSandboxCommand}"
+                                      Visibility="{Binding CanLaunchInSandbox, Converter={StaticResource BoolToVis}}"
+                                      Icon="{ui:SymbolIcon Desktop20}"/>
                         </ContextMenu>
                     </ui:DropDownButton.Flyout>
                 </ui:DropDownButton>
 
                 <!-- Sağ: birincil eylemler -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding LaunchInSandboxCommand}"
+                               Visibility="{Binding CanLaunchInSandbox, Converter={StaticResource BoolToVis}}"
+                               Padding="{StaticResource Pad.Control}"
+                               Margin="{StaticResource Gap.Right.SM}"
+                               Icon="{ui:SymbolIcon Desktop20}"
+                               Content="Sandbox'ta Önizle"
+                               ToolTip="Windows Sandbox yalıtılmış ortamında ana sisteme dokunmadan çalıştırır."
+                               AutomationProperties.Name="Windows Sandbox ile güvenli önizleme"/>
+
                     <ui:Button Appearance="Secondary"
                                Command="{Binding OpenVirusTotalCommand}"
                                IsEnabled="{Binding IsUploadingToVt, Converter={StaticResource InverseBool}}"

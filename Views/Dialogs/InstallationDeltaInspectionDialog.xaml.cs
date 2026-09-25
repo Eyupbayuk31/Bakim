@@ -73,6 +73,16 @@ namespace Bakım.Views.Dialogs
             DialogTitleText.Text = $"{_report.AppName} — Kurulum Raporu";
             DialogSubtitleText.Text = $"{_report.InstallTime.ToLocalTime():yyyy-MM-dd HH:mm} • Toplam Boyut: {_report.FormattedSize}";
 
+            var sentinel = App.TryGetService<ISetupSentinelService>();
+            if (sentinel?.ProtectionStatus != null)
+            {
+                ProtectionStatusText.Text = sentinel.ProtectionStatus.BadgeText;
+                ProtectionStatusBadge.ToolTip = sentinel.ProtectionStatus.Description;
+            }
+
+            var sandbox = App.TryGetService<Bakım.Services.Sentinel.IWindowsSandboxService>();
+            SandboxPreviewButton.Visibility = (sandbox?.IsSandboxInstalled ?? false) ? Visibility.Visible : Visibility.Collapsed;
+
             KpiFilesText.Text = _report.AddedFiles.Count.ToString();
             KpiExecutablesText.Text = _report.AddedExecutables.Count.ToString();
             KpiRegistryText.Text = _report.AddedRegistryRecords.Count.ToString();
@@ -378,6 +388,34 @@ namespace Bakım.Views.Dialogs
                 }
             }
             catch { }
+        }
+
+        private async void OnSandboxPreviewClicked(object sender, RoutedEventArgs e)
+        {
+            var sandbox = App.TryGetService<Bakım.Services.Sentinel.IWindowsSandboxService>();
+            if (sandbox == null) return;
+
+            string target = _report.InstallerPath;
+            if (string.IsNullOrWhiteSpace(target) || !File.Exists(target))
+            {
+                target = _report.AddedExecutables.FirstOrDefault() ?? _report.CreatedFiles.FirstOrDefault() ?? string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(target) || !File.Exists(target))
+            {
+                MessageBox.Show("Sandbox'ta çalıştırılacak geçerli bir kurulum veya yürütülebilir dosyası bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var result = await sandbox.LaunchInstallerPreviewAsync(target, enableNetworking: false);
+            if (result.Succeeded)
+            {
+                MessageBox.Show(result.Message, "Windows Sandbox", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show(result.Message, "Sandbox Başlatılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }

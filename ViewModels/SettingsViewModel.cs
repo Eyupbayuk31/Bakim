@@ -1056,13 +1056,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v400 = new ReleaseChangelogItem
+            {
+                Version = "v4.0.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Bakım 4.0: Tam Koruma Modu, NTFS USN Günlüğü, Kernel Süreç Takibi & Windows Sandbox Önizleme",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Tam Koruma Modu (NÖB Faz 8): Arka plan çekirdek süreç başlatma izleyicisi (Win32_ProcessStartTrace) ve düşük seviye NTFS USN (Update Sequence Number) değişiklik günlüğü ile sıfır kaçırma garantisi.",
+                    "Sıfır UAC Sürtünmeli Sağ Tık (BakimShell): Hafif ve bağımsız asInvoker kabuk yürütücüsü sayesinde Windows Gezgini sağ tık 'Bakım ile Kaldır' çağrıları UAC uyarısı vermeden çalışan Bakım sürecine <200ms IPC ile aktarılır.",
+                    "Windows Sandbox Önizleme Motoru (NÖB Faz 10): Şüpheli veya tehlikeli kurulum dosyalarını sisteminize bulaştırmadan tek tıkla izole Windows Sandbox ortamında güvenle çalıştırıp inceleme yeteneği.",
+                    "Derin Süreç Ağacı ve Alt Süreç Atfı: Kurulumların arka planda gizlice başlattığı alt süreçler milisaniyelik WMI izleme ile tespit edilir ve değişiklik raporuna eksiksiz eklenir.",
+                    "Akıllı Sensör Telemetrisi: Kurulum Nöbetçisi arayüzünde aktif çalışan sensörlerin (USN Journal, Kernel Trace, 64 KB FSW, Registry Hotspot) canlı durum rozetleri ve detayları.",
+                    "Gelişmiş Tehdit Analiz ve İnceleme Diyalogları: Tehdit analiz ekranında doğrudan Sandbox'ta önizleme butonu, dinamik koruma seviyesi durumu ve zenginleştirilmiş telemetri kartları."
+                }
+            };
+
             var v3230 = new ReleaseChangelogItem
             {
                 Version = "v3.23.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Ağ Teşhis Paketi, DNS Karşılaştırma, Güvenli Avcı Modu & TrustedInstaller Dürüstlüğü",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Ağ Teşhisleri (Traceroute): TTL tabanlı sekme sekme paket rotalama, ters DNS çözümleme ve canlı gecikme ölçümü.",
@@ -1789,8 +1807,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3230;
+            LatestRelease = v400;
 
+            ReleaseHistory.Add(v400);
             ReleaseHistory.Add(v3230);
             ReleaseHistory.Add(v3220);
             ReleaseHistory.Add(v3210);

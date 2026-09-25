@@ -73,6 +73,8 @@ jobs:
           Write-Host "Hedef proje derleniyor: $proj"
           $version = $env:TAG_NAME.TrimStart('v', 'V')
           dotnet publish $proj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:Version=$version -p:AssemblyVersion=$version.0 -p:FileVersion=$version.0 -o publish/win-x64
+          Write-Host "BakimShell projesi derleniyor..."
+          dotnet publish Tools/BakimShell/BakimShell.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:Version=$version -p:AssemblyVersion=$version.0 -p:FileVersion=$version.0 -o publish/win-x64
 
       - name: Rename and Package Artifacts
         shell: pwsh
@@ -85,9 +87,12 @@ jobs:
           if (-not (Test-Path "publish\win-x64\Bakim.exe")) {
               throw "Bakim.exe bulunamadi - AssemblyName degismis olabilir."
           }
+          if (-not (Test-Path "publish\win-x64\BakimShell.exe")) {
+              throw "BakimShell.exe bulunamadi."
+          }
           
           # Create zip package
-          Compress-Archive -Path "publish\win-x64\Bakim.exe" -DestinationPath "Bakim-$tag-win-x64.zip" -Force
+          Compress-Archive -Path "publish\win-x64\Bakim.exe", "publish\win-x64\BakimShell.exe" -DestinationPath "Bakim-$tag-win-x64.zip" -Force
 
       - name: Install Inno Setup
         run: choco install innosetup -y
@@ -101,6 +106,7 @@ jobs:
           
           New-Item -ItemType Directory -Path "Releases" -Force | Out-Null
           Copy-Item "publish\win-x64\Bakim.exe" "Releases\Bakim.exe"
+          Copy-Item "publish\win-x64\BakimShell.exe" "Releases\BakimShell.exe"
           
           $iscc = Get-Command "iscc.exe" -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
           if (-not $iscc) {
@@ -129,4 +135,5 @@ jobs:
           files: |
             Releases/Bakim-*-Setup.exe
             publish/win-x64/Bakim.exe
+            publish/win-x64/BakimShell.exe
             Bakim-*.zip

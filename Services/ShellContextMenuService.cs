@@ -35,6 +35,9 @@ namespace Bakım.Services
 
         private static string GetExePath()
         {
+            string shellExe = Path.Combine(AppContext.BaseDirectory, "BakimShell.exe");
+            if (File.Exists(shellExe)) return shellExe;
+
             string? exePath = Environment.ProcessPath;
             if (!string.IsNullOrWhiteSpace(exePath) && File.Exists(exePath)) return exePath;
             return Path.Combine(AppContext.BaseDirectory, "Bakim.exe");

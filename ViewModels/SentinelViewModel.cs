@@ -106,6 +106,13 @@ namespace Bakım.ViewModels
 
         public bool HasSelection => Selected != null;
 
+        public Core.Sentinel.SentinelProtectionStatus ProtectionStatus => _sentinel.ProtectionStatus;
+        public string ProtectionBadgeText => _sentinel.ProtectionStatus.BadgeText;
+        public string ProtectionDescription => _sentinel.ProtectionStatus.Description;
+        public bool IsTamKoruma => _sentinel.ProtectionStatus.Mode == Core.Sentinel.SentinelProtectionMode.TamKoruma;
+        public Intent ProtectionIntent => IsTamKoruma ? Intent.Accent : Intent.Neutral;
+        public string ActiveSensorsSummary => _sentinel.ProtectionStatus.ActiveSensorsSummary;
+
         partial void OnIsEnabledChanged(bool value)
         {
             if (_sentinel.IsEnabled == value) return;
@@ -148,6 +155,13 @@ namespace Bakım.ViewModels
                 StatusTitle = "Nöbetçi etkin";
                 StatusDetail = "Başlatılan kurulumlar otomatik algılanır; her kurulumun eklediği dosya, başlangıç girdisi ve hizmet kaydedilir.";
             }
+
+            OnPropertyChanged(nameof(ProtectionStatus));
+            OnPropertyChanged(nameof(ProtectionBadgeText));
+            OnPropertyChanged(nameof(ProtectionDescription));
+            OnPropertyChanged(nameof(IsTamKoruma));
+            OnPropertyChanged(nameof(ProtectionIntent));
+            OnPropertyChanged(nameof(ActiveSensorsSummary));
         }
 
         [RelayCommand]

@@ -61,15 +61,23 @@
                                Margin="{StaticResource Gap.Right.MD}" VerticalAlignment="Center"
                                Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding StatusTitle}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <c:StatusBadge Margin="10,0,0,0"
+                                       Text="{Binding ProtectionBadgeText}"
+                                       Intent="{Binding ProtectionIntent}"
+                                       ToolTip="{Binding ActiveSensorsSummary}"/>
                         <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Margin="10,0,0,0"
                                          Visibility="{Binding IsMonitoring, Converter={StaticResource BoolToVis}}"/>
                     </StackPanel>
                     <TextBlock Text="{Binding StatusDetail}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
                                Margin="{StaticResource Gap.Top.XS}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{Binding ActiveSensorsSummary, StringFormat='Aktif Sensörler: {0}'}"
+                               FontSize="{StaticResource Font.Caption}"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               Margin="{StaticResource Gap.Top.XS}"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <ui:ToggleSwitch IsChecked="{Binding IsEnabled}" HorizontalAlignment="Right"

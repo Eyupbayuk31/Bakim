@@ -51,6 +51,10 @@
     <None Remove="Tests\**" />
     <Resource Remove="Tests\**" />
     <ApplicationDefinition Remove="Tests\**" />
+    <Compile Remove="Tools\**" />
+    <Page Remove="Tools\**" />
+    <None Remove="Tools\**" />
+    <Resource Remove="Tools\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -49,6 +49,14 @@ namespace Bakım.Views.Dialogs
                 : session.AppName;
 
             MonitoringStatusDetailText.Text = $"PID {session.RootProcessId} izleniyor • Değişiklikler anlık yakalanıyor";
+
+            var sentinel = App.TryGetService<ISetupSentinelService>();
+            if (sentinel?.ProtectionStatus != null)
+            {
+                FlyoutProtectionText.Text = sentinel.ProtectionStatus.BadgeText;
+                FlyoutProtectionBadge.ToolTip = sentinel.ProtectionStatus.Description;
+            }
+
             PositionAtBottomRight();
         }
 

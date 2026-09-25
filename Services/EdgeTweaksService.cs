@@ -35,31 +35,8 @@ namespace Bakım.Services
 
             return await Task.Run(() =>
             {
-                using var writes = WriteScope.Begin();
-                try
-                {
-                    switch (tweak.Id)
-                    {
-
-                        default:
-                            return false;
-                    }
-
-                    if (!writes.Succeeded)
-                    {
-                        tweak.LastError = writes.Describe();
-                        return false;
-                    }
-
-                    tweak.LastError = null;
-                    tweak.IsEnabled = enable;
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    tweak.LastError = ex.Message;
-                    return false;
-                }
+                tweak.LastError = "Ayar bulunamadı.";
+                return false;
             });
         }
 

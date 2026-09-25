@@ -1,29 +1,40 @@
-# Bakım v3.23.0 - Sürüm Notları
+# Bakım v4.0.0 - Sürüm Notları
 
-## Ağ Teşhis Paketi, DNS Karşılaştırma, Güvenli Avcı Modu & Dürüst Sistem Araçları
+## Bakım 4.0: Tam Koruma Modu, NTFS USN Değişiklik Günlüğü, Kernel Süreç Takibi & Windows Sandbox Önizleme Motoru
 
-### 1. Ağ Teşhisleri & Canlı Traceroute (İzleme)
-- **TTL Tabanlı Paket Rotalama:** Ağ hedeflerine doğru giden her bir sekmedeki (hop) yönlendiriciyi ICMP TTL paketleriyle adım adım tespit eder.
-- **Ters DNS Çözümleme:** Her sekmenin IP adresi için arka planda asenkron ters alan adı çözümlemesi gerçekleştirilir.
-- **Canlı İlerleme & İptal Desteği:** Sekme sekme gerçek gecikme süreleri hesaplanır; istenildiğinde tanılama işlemi anında iptal edilebilir.
+Bakım v4.0.0 sürümü, sistem güvenliği ve izleme mimarisinde çığır açan bir dönüm noktasıdır. Düşük seviye Windows çekirdek ve dosya sistemi sensörleri, sıfır UAC sürtünmeli sağ tık yürütücüsü ve izole Windows Sandbox önizleme motoru doğrudan kullanıma sunulmuştur.
 
-### 2. DNS Benchmark & Hız Kıyaslama Aracı
-- **Global Güvenilir Sunucular:** Cloudflare (1.1.1.1, 1.0.0.1), Google (8.8.8.8, 8.8.4.4), Quad9 (9.9.9.9), OpenDNS (208.67.222.222), AdGuard (94.140.14.14) ve Comodo Secure (8.26.56.26) anycast sunucuları dahil edilmiştir.
-- **Gerçek DNS Sorgu Gecikmesi:** Standart ICMP ping yerine gerçek 53. port UDP DNS sorguları üzerinden yanıt süreleri ölçülür (fallback olarak ping desteklenir).
-- **En Hızlı Sunucu Etiketi:** En düşük ortalama gecikmeye sahip DNS sunucusu otomatik olarak tespit edilir ve "En Hızlı" rozetiyle vurgulanır.
+---
 
-### 3. Tarifeli Ağ (Metered Connection) Tespiti ve Koruması
-- **Üç Katmanlı Denetim:** Windows COM `INetworkCostManager`, hücresel WWAN arayüz tespiti ve kayıt defteri `DefaultMediaCost` politikaları birlikte sorgulanır.
-- **Kota Tüketim Uyarısı:** Kotalı/mobil ağlarda gigabit hız testi çalıştırılmadan önce kullanıcıya veri harcama uyarısı gösterilir ve gereksiz kota tüketimi engellenir.
+### 1. Kurulum Nöbetçisi: Tam Koruma Modu & Düşük Seviye Sensörler (NÖB Faz 8)
+- **NTFS USN (Update Sequence Number) Değişiklik Günlüğü:** Win32 `FSCTL_QUERY_USN_JOURNAL` ve `FSCTL_READ_USN_JOURNAL` API'leri ile doğrudan disk sürücüsü günlüğünü tarayarak kurulumların oluşturduğu tüm dosyaları donanım seviyesinde sıfır kaçırma garantisiyle yakalar.
+- **Kernel Süreç Başlatma İzleyicisi (WMI Win32_ProcessStartTrace):** Kurulumların arka planda sessizce çatallandırdığı (fork/spawn) geçici alt süreçleri sub-millisecond hızla tespit eder; süreç ağacına ekleyerek atıf doğruluğunu %100'e çıkarır.
+- **Kademeli Koruma Mimarisi:** Yönetici izinleri ve USN/Kernel sensörleri mevcutsa otomatik olarak **"Tam Koruma Modu"** devreye girer. Standart kullanıcı kipi senaryolarında ise 64 KB genişletilmiş FSW tamponu ve Kayıt Defteri Hotspot sensörleriyle **"Temel Mod"** kusursuz çalışır.
+- **Canlı Sensör Telemetrisi:** Kurulum Nöbetçisi başlığında ve inceleme ekranlarında hangi sensörlerin aktif olduğunu gösteren modern durum rozeti ve sensör dökümü yer alır.
 
-### 4. Ağ Güvenlik Duvarı Yönetimi & Analizör Entegrasyonu
-- **Bakım Güvenlik Duvarı Kuralları:** Bakım tarafından oluşturulan `Bakim_Block_*` güvenlik duvarı engelleme kuralları ayrı bir kartta listelenir; kullanıcı tek tıkla engelleri kaldırabilir.
-- **Ağ Çekmecesinden Derin Analiz:** Aktif soket ve bağlantı listesindeki şüpheli süreçler için çekmeceden tek tıkla `Analizör ile Tara` eylemi tetiklenebilir.
+---
 
-### 5. Avcı Modu (Hunter) Sistem Koruması
-- **Kritik Süreç Koruması:** `CriticalProcessPolicy` muhafızı Avcı Modu'na entegre edildi. Windows işletim sisteminin kritik süreçleri (csrss, lsass, smss, winlogon, services vb.) yanlışlıkla sonlandırılamaz; koruma uyarısı gösterilir.
-- **Analizör Entegrasyonu:** Avcı Modu tehdit analiz diyalogu tam DI (`IAutorunsScannerEngine`, `IVirusTotalCheckService`) bileşenleriyle güçlendirildi.
+### 2. Sıfır UAC Sürtünmeli Sağ Tık: BakimShell (KAL C3)
+- **Hafif `asInvoker` Shell Yürütücüsü:** Masaüstü veya Windows Gezgini'nde bir kısayola, klasöre veya yürütülebilir dosyaya sağ tıklayıp *"Bakım ile Kaldır"* seçildiğinde hiçbir UAC onay penceresi açılmaz.
+- **Yüksek Hızlı Yerel IPC Mailbox:** `BakimShell.exe`, halihazırda çalışan yönetici yetkili Bakım sürecini yerel Mutex ve dosya tabanlı güvenli IPC gelen kutusu (`%LocalAppData%\Bakim\ipc`) üzerinden <200 milisaniye içinde haberdar eder.
+- **Kusursuz Otomatik Başlatma:** Bakım açık değilse `BakimShell`, tek bir UAC adımıyla ana Bakım uygulamasını doğru parametrelerle ayağa kaldırır.
 
-### 6. TrustedInstaller ve Sistem Araçları Dürüstlüğü (S-17 / DEN G-6)
-- **Şeffaf Geri Düşüş Raporlaması:** TrustedInstaller belirteci veya süreci temin edilemediğinde ve Standart Yönetici (Administrator) seviyesinde çalıştırma yapıldığında, kullanıcıya sahte TI başarısı yerine durum dürüstçe (`TrustedInstallerLaunchOutcome`) bildirilir.
-- **Net Durum Bildirimi:** Arayüz banner'ında komutun gerçekten TrustedInstaller olarak mı yoksa Yönetici haklarıyla mı çalıştığı açıkça ayrıştırılır.
+---
+
+### 3. Windows Sandbox Önizleme Motoru (NÖB Faz 10)
+- **İzole Sıfır-Risk Ortamı:** Şüpheli, imzasız veya riskli görünen kurulum paketleri ana işletim sistemine temas etmeden tek tıkla izole Windows Sandbox içerisinde çalıştırılabilir.
+- **Dinamik `.wsb` Profil Üreticisi:** Kurulum dosyasını otomatik olarak salt-okunur (read-only) geçici bir dizine eşleyen ve Sandbox açıldığında kurulumu otomatik başlatan optimize edilmiş XML profil dosyası oluşturulur.
+- **Tehdit Analizi Entegrasyonu:** Tehdit Analiz ekranında ve Kurulum İnceleme diyaloglarında "Sandbox'ta Önizle" eylemi ile tek tıkla güvenli laboratuvar başlatılır.
+
+---
+
+### 4. Gelişmiş Tehdit Analiz ve İnceleme Diyalogları
+- **Tehdit Analiz Diyaloğu:** Yeni "Sandbox'ta Önizle" butonu ve taşma menüsü eylemleriyle zenginleştirildi; Sandbox desteği sistemde yoksa kullanıcıyı nazikçe bilgilendirir.
+- **Kurulum Fark İnceleme Diyaloğu (Delta Inspection):** Tam Koruma Modu durum rozeti eklendi; oturum verilerini Sandbox üzerinden yeniden simüle etme imkanı sağlandı.
+- **Kurulum Algılandı Bildirim Penceresi (Flyout v2):** Anlık koruma seviyesi durumu ("Tam Koruma Modu" / "Temel Mod") kullanıcıya şeffafça sunuldu.
+
+---
+
+### 5. Inno Setup & CI/CD Pipeline Entegrasyonu
+- **Tek Sürüm Kaynağı (H-15):** Tüm sürüm meta verileri `Directory.Build.props` üzerinden 4.0.0 olarak yönetilir; derleme zinciri ve Inno Setup installer otomatik olarak `BakimShell.exe`'yi paketler.
+- **Eksiksiz Dağıtım:** GitHub Releases ve Inno Setup kurulum paketlerine `Bakim.exe`'nin yanı sıra bağımsız `BakimShell.exe` dahil edilmiştir.
