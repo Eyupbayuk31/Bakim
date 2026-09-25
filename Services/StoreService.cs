@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -44,26 +43,10 @@ namespace Bakım.Services
 
         public async Task<bool> IsWingetAvailableAsync()
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    using var p = Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "winget",
-                        Arguments = "--version",
-                        CreateNoWindow = true,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true
-                    });
-                    p?.WaitForExit(3000);
-                    return p?.ExitCode == 0;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            // İlk çalıştırmada winget birkaç saniye sürebilir; eskiden 3 sn sonra ExitCode
+            // okunmaya çalışılıp istisna "winget yok" sayılıyordu.
+            var result = await Helpers.ProcessRunner.RunAsync("winget", new[] { "--version" }, TimeSpan.FromSeconds(20));
+            return result.Succeeded;
         }
 
         public List<StoreAppItem> GetCatalog()
@@ -75,16 +58,25 @@ namespace Bakım.Services
                 // ==========================================
                 new()
                 {
-                    Id = "tpu_vcredist_aio",
-                    Name = "Visual C++ All-in-One (TechPowerUp)",
-                    Description = "2005'ten 2022'ye kadar (x86 & x64) tüm Microsoft Visual C++ kütüphanelerini tek seferde kurar.",
+                    Id = "vcredist_all",
+                    Name = "Visual C++ Çalışma Zamanları (2005–2022)",
+                    Description = "Oyunların ve programların ihtiyaç duyduğu tüm Microsoft Visual C++ kütüphanelerini (x86 & x64) resmi winget paketlerinden kurar.",
                     Category = StoreCategory.Runtimes,
                     CategoryDisplayName = "Runtimes",
                     IconSymbol = "DeveloperBoard24",
-                    Publisher = "TechPowerUp / abbodi1406",
-                    SizeText = "32.1 MB",
-                    InstallerType = StoreInstallerType.TechPowerUpVcAio,
-                    RegistryDetectKeyword = "Visual C++ 2015-2022"
+                    Publisher = "Microsoft Corporation",
+                    SizeText = "≈ 90 MB (12 paket)",
+                    InstallerType = StoreInstallerType.Winget,
+                    BundleWingetIds = new[]
+                    {
+                        "Microsoft.VCRedist.2005.x86", "Microsoft.VCRedist.2005.x64",
+                        "Microsoft.VCRedist.2008.x86", "Microsoft.VCRedist.2008.x64",
+                        "Microsoft.VCRedist.2010.x86", "Microsoft.VCRedist.2010.x64",
+                        "Microsoft.VCRedist.2012.x86", "Microsoft.VCRedist.2012.x64",
+                        "Microsoft.VCRedist.2013.x86", "Microsoft.VCRedist.2013.x64",
+                        "Microsoft.VCRedist.2015+.x86", "Microsoft.VCRedist.2015+.x64"
+                    },
+                    RegistryDetectKeyword = "Visual C++ 2015-2022|Visual C++ v14"
                 },
                 new()
                 {
@@ -908,7 +900,8 @@ namespace Bakım.Services
                     {
                         if (string.IsNullOrWhiteSpace(app.RegistryDetectKeyword)) continue;
 
-                        bool found = installedNames.Any(n => n.IndexOf(app.RegistryDetectKeyword, StringComparison.OrdinalIgnoreCase) >= 0);
+                        var keywords = app.RegistryDetectKeyword.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        bool found = installedNames.Any(n => keywords.Any(k => n.Contains(k, StringComparison.OrdinalIgnoreCase)));
                         app.IsInstalled = found;
                         if (found && app.Status == StoreInstallStatus.Idle)
                         {
@@ -935,9 +928,6 @@ namespace Bakım.Services
             {
                 switch (app.InstallerType)
                 {
-                    case StoreInstallerType.TechPowerUpVcAio:
-                        return await InstallTechPowerUpVcAioAsync(app, progress, cancellationToken);
-
                     case StoreInstallerType.DirectXWeb:
                         return await InstallDirectXWebAsync(app, progress, cancellationToken);
 
@@ -956,234 +946,23 @@ namespace Bakım.Services
             }
         }
 
-        #region TechPowerUp / abbodi1406 Visual C++ All-in-One Downloader & Silent Installer
-
-        private async Task<bool> InstallTechPowerUpVcAioAsync(StoreAppItem app, Action<int, string>? progress, CancellationToken ct)
-        {
-            string exeFile = Path.Combine(Path.GetTempPath(), "VisualCppRedist_AIO_x86_x64.exe");
-            string zipFile = Path.Combine(Path.GetTempPath(), "Visual-C-Runtimes-All-in-One.zip");
-            string tempDir = Path.Combine(Path.GetTempPath(), "Bakim_VCRedist_AIO");
-
-            try
-            {
-                app.Status = StoreInstallStatus.Downloading;
-                progress?.Report(5, "Yüksek hızlı CDN sunucularına bağlanılıyor...");
-
-                // 1. Birincil ve en hızlı kaynak: abbodi1406 resmi GitHub Gigabit CDN doğrudan tek exe (32.1 MB)
-                string directExeUrl = "https://github.com/abbodi1406/vcredist/releases/latest/download/VisualCppRedist_AIO_x86_x64.exe";
-                bool exeDownloadSuccess = false;
-
-                try
-                {
-                    progress?.Report(10, "Visual C++ AIO paketi indiriliyor (32.1 MB)...");
-                    await DownloadFileWithProgressAsync(directExeUrl, exeFile, (pct, status) =>
-                    {
-                        int overall = 10 + (int)(pct * 0.65);
-                        app.ProgressPercentage = overall;
-                        app.StatusMessage = status;
-                        progress?.Report(overall, status);
-                    }, ct);
-
-                    if (File.Exists(exeFile) && new FileInfo(exeFile).Length > 10 * 1024 * 1024)
-                    {
-                        exeDownloadSuccess = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _log.Warning($"Doğrudan AIO Exe indirilemedi ({ex.Message}), alternatif kaynaklar deneniyor...", ex, nameof(StoreService));
-                }
-
-                if (exeDownloadSuccess)
-                {
-                    app.Status = StoreInstallStatus.Installing;
-                    progress?.Report(80, "Tüm Visual C++ (2005-2022 x86/x64) kütüphaneleri kuruluyor...");
-
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = exeFile,
-                        Arguments = "/ai /gm2", // /ai = unattended silent install, /gm2 = disable 7z extraction dialog
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-
-                    using var p = Process.Start(psi);
-                    if (p != null)
-                    {
-                        await p.WaitForExitAsync(ct);
-                    }
-
-                    progress?.Report(98, "Geçici kurulum dosyaları temizleniyor...");
-                    try { if (File.Exists(exeFile)) File.Delete(exeFile); } catch { }
-
-                    app.Status = StoreInstallStatus.Installed;
-                    app.IsInstalled = true;
-                    app.ProgressPercentage = 100;
-                    app.StatusMessage = "Tüm Visual C++ Kütüphaneleri Kurulu";
-                    progress?.Report(100, "Tebrikler! 2005-2022 tüm C++ kütüphaneleri başarıyla kuruldu.");
-                    return true;
-                }
-
-                // 2. İkincil kaynak (Yedek zip): TechPowerUp veya GitHub Zip
-                progress?.Report(15, "Yedek paket kaynağı çözümleniyor...");
-                string downloadUrl = await ResolveTechPowerUpUrlAsync();
-                if (string.IsNullOrWhiteSpace(downloadUrl))
-                {
-                    downloadUrl = "https://github.com/abbodi1406/vcredist/releases/latest/download/VisualCppRedist_AIO_x86_x64.zip";
-                }
-
-                progress?.Report(20, "Yedek arşiv indiriliyor...");
-                await DownloadFileWithProgressAsync(downloadUrl, zipFile, (pct, status) =>
-                {
-                    int overall = 20 + (int)(pct * 0.55);
-                    app.ProgressPercentage = overall;
-                    app.StatusMessage = status;
-                    progress?.Report(overall, status);
-                }, ct);
-
-                if (!File.Exists(zipFile))
-                {
-                    throw new FileNotFoundException("İndirilen kurulum arşivi bulunamadı.");
-                }
-
-                app.Status = StoreInstallStatus.Installing;
-                progress?.Report(75, "Arşiv çıkartılıyor...");
-                if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
-                Directory.CreateDirectory(tempDir);
-                ZipFile.ExtractToDirectory(zipFile, tempDir, true);
-
-                progress?.Report(80, "Tüm Visual C++ kütüphaneleri kuruluyor (Sessiz Mod)...");
-                string batFile = Path.Combine(tempDir, "install_all.bat");
-                if (!File.Exists(batFile))
-                {
-                    var foundBat = Directory.GetFiles(tempDir, "*.bat").FirstOrDefault();
-                    if (foundBat != null) batFile = foundBat;
-                }
-
-                if (!File.Exists(batFile))
-                {
-                    var foundExe = Directory.GetFiles(tempDir, "*.exe").FirstOrDefault();
-                    if (foundExe != null)
-                    {
-                        var psiExe = new ProcessStartInfo
-                        {
-                            FileName = foundExe,
-                            Arguments = "/ai /gm2",
-                            WorkingDirectory = tempDir,
-                            CreateNoWindow = true,
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        using var pExe = Process.Start(psiExe);
-                        if (pExe != null) await pExe.WaitForExitAsync(ct);
-                    }
-                    else
-                    {
-                        throw new FileNotFoundException("Kurulum betiği veya çalıştırılabilir dosya bulunamadı.");
-                    }
-                }
-                else
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = $"/c \"{batFile}\" /y",
-                        WorkingDirectory = tempDir,
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-                    using var p = Process.Start(psi);
-                    if (p != null) await p.WaitForExitAsync(ct);
-                }
-
-                progress?.Report(98, "Geçici dosyalar temizleniyor...");
-                try { if (File.Exists(zipFile)) File.Delete(zipFile); } catch { }
-                try { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); } catch { }
-
-                app.Status = StoreInstallStatus.Installed;
-                app.IsInstalled = true;
-                app.ProgressPercentage = 100;
-                app.StatusMessage = "Tüm Visual C++ Kütüphaneleri Kurulu";
-                progress?.Report(100, "Tebrikler! 2005-2022 tüm C++ kütüphaneleri başarıyla kuruldu.");
-                return true;
-            }
-            catch
-            {
-                try { if (File.Exists(exeFile)) File.Delete(exeFile); } catch { }
-                try { if (File.Exists(zipFile)) File.Delete(zipFile); } catch { }
-                try { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); } catch { }
-                throw;
-            }
-        }
-
-        private async Task<string> ResolveTechPowerUpUrlAsync()
-        {
-            try
-            {
-                string pageUrl = "https://www.techpowerup.com/download/visual-c-redistributable-runtime-package-all-in-one/";
-                var req = new HttpRequestMessage(HttpMethod.Get, pageUrl);
-                var pageResp = await HttpClient.SendAsync(req);
-                var html = await pageResp.Content.ReadAsStringAsync();
-
-                // Find active id: <input type="hidden" name="id" value="3150" />
-                var idMatch = Regex.Match(html, @"name=""id""\s+value=""(\d+)""");
-                string id = idMatch.Success ? idMatch.Groups[1].Value : "3150";
-
-                // Server IDs: 27 (DE), 25 (NL), 5 (UK-1), 22 (UK-2)
-                var servers = new[] { "27", "25", "5", "22", "12" };
-
-                foreach (var serverId in servers)
-                {
-                    try
-                    {
-                        var postData = new Dictionary<string, string>
-                        {
-                            { "id", id },
-                            { "server_id", serverId }
-                        };
-
-                        using var postReq = new HttpRequestMessage(HttpMethod.Post, pageUrl)
-                        {
-                            Content = new FormUrlEncodedContent(postData)
-                        };
-
-                        // Send with auto-redirect disabled to catch the 302 Location header
-                        using var handler = new HttpClientHandler { AllowAutoRedirect = false };
-                        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(8) };
-                        client.DefaultRequestHeaders.UserAgent.ParseAdd(HttpClient.DefaultRequestHeaders.UserAgent.ToString());
-
-                        using var resp = await client.SendAsync(postReq);
-                        if ((int)resp.StatusCode == 302 && resp.Headers.Location != null)
-                        {
-                            return resp.Headers.Location.ToString();
-                        }
-                    }
-                    catch { }
-                }
-            }
-            catch (Exception ex)
-            {
-                _log.Warning($"TechPowerUp indirme adresi çözülemedi: {ex.Message}", ex, nameof(StoreService));
-            }
-
-            return string.Empty;
-        }
-
-        #endregion
-
         #region DirectX End-User Runtime Installer
 
+        /// <summary>
+        /// Microsoft'un DirectX web kurulumunu indirir, imzacının "Microsoft Corporation"
+        /// olduğunu doğrular ve yönetici olarak çalıştırır (S-10). Dosya rastgele adlı bir
+        /// klasöre iner ve çalışırken yazmaya kapalı tutulur; sonuç çıkış kodundan okunur (D-5).
+        /// </summary>
         private async Task<bool> InstallDirectXWebAsync(StoreAppItem app, Action<int, string>? progress, CancellationToken ct)
         {
-            string tempExe = Path.Combine(Path.GetTempPath(), "dxwebsetup.exe");
-            string downloadUrl = "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe";
+            const string downloadUrl = "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe";
+            string stagingDir = CreateStagingDirectory();
+            string exePath = Path.Combine(stagingDir, "dxwebsetup.exe");
 
             try
             {
                 progress?.Report(10, "Microsoft DirectX Web Kurulumu indiriliyor...");
-                await DownloadFileWithProgressAsync(downloadUrl, tempExe, (pct, status) =>
+                await DownloadFileWithProgressAsync(downloadUrl, exePath, (pct, status) =>
                 {
                     int overall = 10 + (int)(pct * 0.40);
                     app.ProgressPercentage = overall;
@@ -1191,37 +970,33 @@ namespace Bakım.Services
                     progress?.Report(overall, status);
                 }, ct);
 
-                app.Status = StoreInstallStatus.Installing;
-                progress?.Report(55, "DirectX kütüphaneleri taranıyor ve kuruluyor (/Q Sessiz)...");
+                // Doğrulamadan önce kilitle: doğrulama ile çalıştırma arasında dosya değiştirilemesin.
+                using var fileLock = new FileStream(exePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                var psi = new ProcessStartInfo
+                progress?.Report(52, "Dijital imza doğrulanıyor...");
+                var signature = Helpers.SignatureInspector.Inspect(exePath);
+                if (!signature.IsTrusted || !string.Equals(signature.Signer, "Microsoft Corporation", StringComparison.Ordinal))
                 {
-                    FileName = tempExe,
-                    Arguments = "/q",
-                    CreateNoWindow = true,
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-
-                using var p = Process.Start(psi);
-                if (p != null)
-                {
-                    await p.WaitForExitAsync(ct);
+                    _log.Warning($"dxwebsetup.exe imzası reddedildi: {signature.Describe()}", null, nameof(StoreService));
+                    return Fail(app, progress, $"İndirilen dosyanın imzası doğrulanamadı ({signature.Describe()}). Kurulum yapılmadı.");
                 }
 
-                try { if (File.Exists(tempExe)) File.Delete(tempExe); } catch { }
+                app.Status = StoreInstallStatus.Installing;
+                progress?.Report(55, "DirectX kütüphaneleri kuruluyor (sessiz)...");
 
-                app.Status = StoreInstallStatus.Installed;
-                app.IsInstalled = true;
-                app.ProgressPercentage = 100;
-                app.StatusMessage = "DirectX Kütüphaneleri Güncel";
-                progress?.Report(100, "DirectX kurulumu başarıyla tamamlandı.");
-                return true;
+                var run = await RunElevatedAsync(exePath, "/Q", ct);
+                if (run.Cancelled)
+                    return Fail(app, progress, "Yönetici izni verilmedi; kurulum iptal edildi.");
+                if (!run.Started)
+                    return Fail(app, progress, "Kurulum başlatılamadı.");
+                if (run.ExitCode != 0)
+                    return Fail(app, progress, $"DirectX kurulumu başarısız oldu (çıkış kodu {run.ExitCode}).");
+
+                return Succeed(app, progress, "DirectX Kütüphaneleri Güncel", "DirectX kurulumu tamamlandı.");
             }
-            catch (Exception)
+            finally
             {
-                try { if (File.Exists(tempExe)) File.Delete(tempExe); } catch { }
-                throw;
+                TryDeleteDirectory(stagingDir);
             }
         }
 
@@ -1229,75 +1004,189 @@ namespace Bakım.Services
 
         #region WinGet CLI Silent Installer
 
+        // winget çıkış kodları (winget-cli, doc/windows/package-manager/winget/returnCodes.md).
+        private const int WingetNoApplicableUpdate = unchecked((int)0x8A15002B);      // zaten kurulu ve güncel
+        private const int WingetPackageAlreadyInstalled = unchecked((int)0x8A150061);
+        private const int WingetInstallerAlreadyInstalled = unchecked((int)0x8A15010D);
+        private const int WingetRebootRequiredToFinish = unchecked((int)0x8A150109);  // kuruldu, yeniden başlatma gerekli
+        private const int WingetRebootInitiated = unchecked((int)0x8A15010B);
+
         private async Task<bool> InstallViaWingetAsync(StoreAppItem app, Action<int, string>? progress, CancellationToken ct)
         {
-            if (string.IsNullOrWhiteSpace(app.WingetId))
+            var ids = app.BundleWingetIds.Length > 0
+                ? app.BundleWingetIds
+                : string.IsNullOrWhiteSpace(app.WingetId) ? Array.Empty<string>() : new[] { app.WingetId };
+            if (ids.Length == 0)
             {
                 throw new InvalidOperationException("Bu uygulama için paket kimliği (WingetId) tanımlanmamış.");
             }
 
-            app.Status = StoreInstallStatus.Downloading;
-            progress?.Report(10, $"WinGet üzerinden indiriliyor: {app.Name} ({app.WingetId})...");
+            var failures = new List<string>();
+            bool rebootNeeded = false;
 
+            for (int i = 0; i < ids.Length; i++)
+            {
+                string id = ids[i];
+                int start = i * 100 / ids.Length;
+                int span = Math.Max(1, 100 / ids.Length);
+                string prefix = ids.Length > 1 ? $"[{i + 1}/{ids.Length}] " : string.Empty;
+
+                app.Status = StoreInstallStatus.Downloading;
+                progress?.Report(start, $"{prefix}WinGet üzerinden indiriliyor: {id}...");
+
+                int exitCode = await RunWingetInstallAsync(app, id, prefix, start, span, progress, ct);
+                if (exitCode == WingetRebootRequiredToFinish || exitCode == WingetRebootInitiated)
+                {
+                    rebootNeeded = true;
+                }
+                else if (exitCode != 0 && exitCode != WingetPackageAlreadyInstalled
+                         && exitCode != WingetInstallerAlreadyInstalled && exitCode != WingetNoApplicableUpdate)
+                {
+                    failures.Add($"{id} (0x{exitCode:X8})");
+                    _log.Warning($"winget {id} başarısız: 0x{exitCode:X8}", null, nameof(StoreService));
+                }
+            }
+
+            if (failures.Count == ids.Length)
+            {
+                throw new InvalidOperationException(ids.Length == 1
+                    ? $"WinGet kurulumu başarısız oldu: {failures[0]}."
+                    : $"Hiçbir paket kurulamadı: {string.Join(", ", failures)}");
+            }
+
+            if (failures.Count > 0)
+            {
+                // Bazıları kuruldu: "Kuruldu" demek yanlış olur.
+                return Fail(app, progress, $"{ids.Length - failures.Count}/{ids.Length} paket kuruldu. Kurulamayanlar: {string.Join(", ", failures)}");
+            }
+
+            string done = rebootNeeded ? "Kuruldu (yeniden başlatma gerekli)" : "Başarıyla Kuruldu";
+            return Succeed(app, progress, done, rebootNeeded
+                ? $"{app.Name} kuruldu; tamamlanması için bilgisayarı yeniden başlatın."
+                : $"{app.Name} başarıyla kuruldu!");
+        }
+
+        private static async Task<int> RunWingetInstallAsync(StoreAppItem app, string id, string prefix, int start, int span,
+            Action<int, string>? progress, CancellationToken ct)
+        {
             var psi = new ProcessStartInfo
             {
                 FileName = "winget",
-                Arguments = $"install --id \"{app.WingetId}\" --silent --accept-package-agreements --accept-source-agreements --disable-interactivity",
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
+            foreach (var arg in new[] { "install", "--id", id, "--exact", "--source", "winget", "--silent",
+                                        "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity" })
+            {
+                psi.ArgumentList.Add(arg);
+            }
 
             using var process = new Process { StartInfo = psi };
             process.Start();
+            var stderrTask = process.StandardError.ReadToEndAsync(CancellationToken.None);
 
-            var readOutputTask = Task.Run(async () =>
+            string? line;
+            while ((line = await process.StandardOutput.ReadLineAsync(ct)) != null)
             {
-                string? line;
-                while ((line = await process.StandardOutput.ReadLineAsync(ct)) != null)
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                var match = Regex.Match(line, @"(\d{1,3})%");
+                if (match.Success && int.TryParse(match.Groups[1].Value, out int pct))
                 {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        if (line.Contains("%"))
-                        {
-                            var match = Regex.Match(line, @"(\d{1,3})%");
-                            if (match.Success && int.TryParse(match.Groups[1].Value, out int pct))
-                            {
-                                app.ProgressPercentage = Math.Min(95, pct);
-                                app.StatusMessage = $"İndiriliyor: %{pct}";
-                                progress?.Report(pct, line.Trim());
-                            }
-                        }
-                        else if (line.Contains("Kuruluyor") || line.Contains("Installing") || line.Contains("Starting package install"))
-                        {
-                            app.Status = StoreInstallStatus.Installing;
-                            app.StatusMessage = "Kuruluyor...";
-                            progress?.Report(85, "Kuruluyor...");
-                        }
-                    }
+                    int overall = Math.Min(99, start + pct * span / 100);
+                    app.ProgressPercentage = overall;
+                    app.StatusMessage = $"{prefix}İndiriliyor: %{pct}";
+                    progress?.Report(overall, prefix + line.Trim());
                 }
-            }, ct);
-
-            await process.WaitForExitAsync(ct);
-            await readOutputTask;
-
-            if (process.ExitCode == 0 || process.ExitCode == -1978335189) // 0x8A15002B: Already installed
-            {
-                app.Status = StoreInstallStatus.Installed;
-                app.IsInstalled = true;
-                app.ProgressPercentage = 100;
-                app.StatusMessage = "Başarıyla Kuruldu";
-                progress?.Report(100, $"{app.Name} başarıyla kuruldu!");
-                return true;
+                else if (line.Contains("Kuruluyor") || line.Contains("Installing") || line.Contains("Starting package install"))
+                {
+                    app.Status = StoreInstallStatus.Installing;
+                    app.StatusMessage = $"{prefix}Kuruluyor...";
+                    progress?.Report(Math.Min(99, start + span * 85 / 100), $"{prefix}Kuruluyor...");
+                }
             }
 
-            throw new InvalidOperationException($"WinGet kurulumu başarısız oldu (Hata Kodu: {process.ExitCode}).");
+            try
+            {
+                await process.WaitForExitAsync(ct);
+            }
+            catch (OperationCanceledException)
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+                throw;
+            }
+            await stderrTask;
+            return process.ExitCode;
         }
 
         #endregion
 
         #region Helpers
+
+        private sealed record ElevatedRun(bool Started, bool Cancelled, int ExitCode);
+
+        /// <summary>Her indirme için rastgele adlı, kullanıcıya özel bir klasör (sabit %TEMP% adı yerine).</summary>
+        private static string CreateStagingDirectory()
+        {
+            string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Bakim", "Downloads", Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        private static void TryDeleteDirectory(string dir)
+        {
+            try { if (Directory.Exists(dir)) Directory.Delete(dir, true); } catch { }
+        }
+
+        private static async Task<ElevatedRun> RunElevatedAsync(string exePath, string arguments, CancellationToken ct)
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = arguments,
+                WorkingDirectory = Path.GetDirectoryName(exePath) ?? string.Empty,
+                UseShellExecute = true,
+                Verb = "runas"
+            };
+
+            Process? process;
+            try
+            {
+                process = Process.Start(psi);
+            }
+            catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223) // ERROR_CANCELLED (UAC reddi)
+            {
+                return new ElevatedRun(false, true, -1);
+            }
+
+            if (process == null) return new ElevatedRun(false, false, -1);
+            using (process)
+            {
+                await process.WaitForExitAsync(ct);
+                return new ElevatedRun(true, false, process.ExitCode);
+            }
+        }
+
+        private static bool Succeed(StoreAppItem app, Action<int, string>? progress, string status, string message)
+        {
+            app.Status = StoreInstallStatus.Installed;
+            app.IsInstalled = true;
+            app.ProgressPercentage = 100;
+            app.StatusMessage = status;
+            progress?.Report(100, message);
+            return true;
+        }
+
+        private static bool Fail(StoreAppItem app, Action<int, string>? progress, string message)
+        {
+            app.Status = StoreInstallStatus.Failed;
+            app.StatusMessage = message;
+            progress?.Report(app.ProgressPercentage, message);
+            return false;
+        }
 
         private static async Task DownloadFileWithProgressAsync(string url, string destinationPath, Action<int, string>? progress, CancellationToken ct)
         {
