@@ -31,6 +31,9 @@ namespace Bakım.Services
     /// <summary>Temizlik sonucu: geri alma günlüğü ve öğe bazında sonuçlar.</summary>
     public sealed record ResidualCleanReport(string JournalId, IReadOnlyList<OperationResult> Results)
     {
+        /// <summary>Etkinlik Merkezi kaydının kimliği ("Geri al" bu kayıt üzerinden yapılır).</summary>
+        public string? ActivityId { get; init; }
+
         public int SucceededCount => Results.Count(r => r.Succeeded);
         public int FailedCount => Results.Count(r => !r.Succeeded && r.Outcome != DeleteOutcome.NotFound);
         public long BytesFreed => Results.Where(r => r.Succeeded).Sum(r => r.BytesFreed);
@@ -553,7 +556,25 @@ namespace Bakım.Services
                 results.Add(result);
             }
 
-            return new ResidualCleanReport(journal, results);
+            var report = new ResidualCleanReport(journal, results);
+            return report with { ActivityId = RecordActivity(title, report)?.Id };
+        }
+
+        /// <summary>Temizliği Etkinlik Merkezi'ne yazar; kayıt defteri yedeği varsa tek tıkla geri alınabilir.</summary>
+        private static Core.Activity.ActivityEntry? RecordActivity(string title, ResidualCleanReport report)
+        {
+            var activity = App.TryGetService<Activity.IActivityService>();
+            if (activity == null || report.Results.Count == 0) return null;
+
+            int ok = report.SucceededCount, failed = report.FailedCount;
+            string summary = $"{ok} kalıntı temizlendi · {Core.Text.ByteFormatter.Format(report.BytesFreed)}" +
+                             (failed > 0 ? $" · {failed} temizlenemedi" : "") +
+                             (report.HasRegistryBackup ? " · kayıt defteri yedeği var, dosyalar Geri Dönüşüm Kutusu'nda" : "");
+            var items = report.Results.Select(r => new Core.Activity.ActivityItem(r.Target, "Sil", r.Outcome.ToString(), r.Message));
+
+            return Activity.ActivityRecording.RecordWithRegBackup(activity, Core.Activity.ActivityKind.Uninstall, "Kaldırıcı", title,
+                summary, Core.Activity.ActivityQuery.OutcomeFromCounts(ok, failed),
+                UndoJournal.GetDirectory(report.JournalId), items, deepLink: "Uninstaller");
         }
 
         #endregion

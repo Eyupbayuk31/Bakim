@@ -129,6 +129,8 @@ namespace Bakım.Services.Safety
                 if (key == null)
                     return Log(journalId, new OperationResult(display, DeleteOutcome.NotFound, "Anahtar kayboldu.", 0), backup);
 
+                // Etkin bir yakalama kapsamı varsa değer düzeyinde geri alma için özgün değer.
+                Helpers.RegistryCapture.Track(key, keyWithValue.ValueName!);
                 key.DeleteValue(keyWithValue.ValueName!, throwOnMissingValue: false);
                 return Log(journalId, new OperationResult(display, DeleteOutcome.Deleted, "Değer silindi (yedeklendi).", 0), backup);
             }

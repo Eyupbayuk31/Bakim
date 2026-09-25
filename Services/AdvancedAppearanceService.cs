@@ -95,15 +95,25 @@ namespace Bakım.Services
                 {
                     using (var key = Registry.CurrentUser.CreateSubKey(WindowMetricsKey))
                     {
+                        Bakım.Helpers.RegistryCapture.Track(key, "IconSpacing");
                         key.SetValue("IconSpacing", PixelsToTwips(data.IconSpacing), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "IconVerticalSpacing");
                         key.SetValue("IconVerticalSpacing", PixelsToTwips(data.IconVerticalSpacing), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "ScrollWidth");
                         key.SetValue("ScrollWidth", PixelsToTwips(data.ScrollWidth), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "ScrollHeight");
                         key.SetValue("ScrollHeight", PixelsToTwips(data.ScrollWidth), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "BorderWidth");
                         key.SetValue("BorderWidth", PixelsToTwips(data.BorderWidth), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "PaddedBorderWidth");
                         key.SetValue("PaddedBorderWidth", PixelsToTwips(data.PaddedBorderWidth), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "CaptionHeight");
                         key.SetValue("CaptionHeight", PixelsToTwips(data.CaptionHeight), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "CaptionWidth");
                         key.SetValue("CaptionWidth", PixelsToTwips(data.CaptionHeight), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "MenuHeight");
                         key.SetValue("MenuHeight", PixelsToTwips(data.MenuHeight), RegistryValueKind.String);
+                        Bakım.Helpers.RegistryCapture.Track(key, "MenuWidth");
                         key.SetValue("MenuWidth", PixelsToTwips(data.MenuHeight), RegistryValueKind.String);
                     }
 
@@ -119,6 +129,7 @@ namespace Bakım.Services
                             uint dwmColor = 0xFF000000 | ((uint)b << 16) | ((uint)g << 8) | r;
 
                             using var dwmKey = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\DWM");
+                            Bakım.Helpers.RegistryCapture.Track(dwmKey, "AccentColorInactive");
                             dwmKey.SetValue("AccentColorInactive", (int)dwmColor, RegistryValueKind.DWord);
                         }
                     }
@@ -142,15 +153,25 @@ namespace Bakım.Services
                     using (var key = Registry.CurrentUser.CreateSubKey(WindowMetricsKey))
                     {
                         // Default Windows 10/11 factory metrics (twips = -15 * pixels)
+                        Bakım.Helpers.RegistryCapture.Track(key, "IconSpacing");
                         key.SetValue("IconSpacing", "-1125", RegistryValueKind.String); // 75px
+                        Bakım.Helpers.RegistryCapture.Track(key, "IconVerticalSpacing");
                         key.SetValue("IconVerticalSpacing", "-1125", RegistryValueKind.String); // 75px
+                        Bakım.Helpers.RegistryCapture.Track(key, "ScrollWidth");
                         key.SetValue("ScrollWidth", "-255", RegistryValueKind.String); // 17px
+                        Bakım.Helpers.RegistryCapture.Track(key, "ScrollHeight");
                         key.SetValue("ScrollHeight", "-255", RegistryValueKind.String); // 17px
+                        Bakım.Helpers.RegistryCapture.Track(key, "BorderWidth");
                         key.SetValue("BorderWidth", "-15", RegistryValueKind.String); // 1px
+                        Bakım.Helpers.RegistryCapture.Track(key, "PaddedBorderWidth");
                         key.SetValue("PaddedBorderWidth", "-60", RegistryValueKind.String); // 4px
+                        Bakım.Helpers.RegistryCapture.Track(key, "CaptionHeight");
                         key.SetValue("CaptionHeight", "-330", RegistryValueKind.String); // 22px
+                        Bakım.Helpers.RegistryCapture.Track(key, "CaptionWidth");
                         key.SetValue("CaptionWidth", "-330", RegistryValueKind.String); // 22px
+                        Bakım.Helpers.RegistryCapture.Track(key, "MenuHeight");
                         key.SetValue("MenuHeight", "-285", RegistryValueKind.String); // 19px
+                        Bakım.Helpers.RegistryCapture.Track(key, "MenuWidth");
                         key.SetValue("MenuWidth", "-285", RegistryValueKind.String); // 19px
                     }
 
@@ -158,6 +179,7 @@ namespace Bakım.Services
                     try
                     {
                         using var dwmKey = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\DWM");
+                        Bakım.Helpers.RegistryCapture.Track(dwmKey, "AccentColorInactive");
                         dwmKey.DeleteValue("AccentColorInactive", false);
                     }
                     catch { }

@@ -127,6 +127,8 @@ namespace Bakım.Services
                         case "cpl_classic_user_accounts":
                             if (enable)
                             {
+                                // Anahtar yoksa geri almada tamamen silinir.
+                                Bakım.Helpers.RegistryCapture.TrackKey(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{7A8CAE00-C21A-4F2E-8BCE-82370E0A5FA3}");
                                 using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{7A8CAE00-C21A-4F2E-8BCE-82370E0A5FA3}", true);
                                 key?.SetValue("", "Klasik Kullanıcı Hesapları");
                             }
@@ -139,6 +141,8 @@ namespace Bakım.Services
                         case "cpl_classic_personalization":
                             if (enable)
                             {
+                                // Anahtar yoksa geri almada tamamen silinir.
+                                Bakım.Helpers.RegistryCapture.TrackKey(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{ED834ED6-4B5A-4bfe-8F11-A626DCB6A921}");
                                 using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{ED834ED6-4B5A-4bfe-8F11-A626DCB6A921}", true);
                                 key?.SetValue("", "Klasik Kişiselleştirme");
                             }
@@ -151,6 +155,8 @@ namespace Bakım.Services
                         case "cpl_windows_update":
                             if (enable)
                             {
+                                // Anahtar yoksa geri almada tamamen silinir.
+                                Bakım.Helpers.RegistryCapture.TrackKey(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{36eef7db-88ad-4e81-ad49-0e313f0c35f8}");
                                 using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{36eef7db-88ad-4e81-ad49-0e313f0c35f8}", true);
                                 key?.SetValue("", "Windows Update");
                             }

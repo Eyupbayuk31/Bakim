@@ -267,6 +267,7 @@ namespace Bakım.Services
 
                     using (var key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\DWM"))
                     {
+                        Bakım.Helpers.RegistryCapture.Track(key, "AccentColorInactive");
                         key.SetValue("AccentColorInactive", (int)dwmColor, RegistryValueKind.DWord);
                     }
 
@@ -370,7 +371,9 @@ namespace Bakım.Services
             {
                 using var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
                 int val = dark ? 0 : 1; // 0 = Dark, 1 = Light
+                Bakım.Helpers.RegistryCapture.Track(key, "AppsUseLightTheme");
                 key.SetValue("AppsUseLightTheme", val, RegistryValueKind.DWord);
+                Bakım.Helpers.RegistryCapture.Track(key, "SystemUsesLightTheme");
                 key.SetValue("SystemUsesLightTheme", val, RegistryValueKind.DWord);
                 return true;
             }
@@ -398,6 +401,7 @@ namespace Bakım.Services
             try
             {
                 using var key = Registry.CurrentUser.CreateSubKey(@"Control Panel\Desktop");
+                Bakım.Helpers.RegistryCapture.Track(key, "MinAnimate");
                 key.SetValue("MinAnimate", disabled ? "0" : "1", RegistryValueKind.String);
                 return true;
             }
@@ -428,10 +432,12 @@ namespace Bakım.Services
                 if (enable)
                 {
                     // Default dark gray inactive: 0xFF2B2B2B
+                    Bakım.Helpers.RegistryCapture.Track(key, "AccentColorInactive");
                     key.SetValue("AccentColorInactive", unchecked((int)0xFF2B2B2B), RegistryValueKind.DWord);
                 }
                 else
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key, "AccentColorInactive");
                     key.DeleteValue("AccentColorInactive", false);
                 }
                 return true;
@@ -460,6 +466,7 @@ namespace Bakım.Services
             try
             {
                 using var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\DWM");
+                Bakım.Helpers.RegistryCapture.Track(key, "AnimationsShiftKey");
                 key.SetValue("AnimationsShiftKey", enable ? 1 : 0, RegistryValueKind.DWord);
                 return true;
             }
@@ -487,6 +494,7 @@ namespace Bakım.Services
             try
             {
                 using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI\BootAnimation");
+                Bakım.Helpers.RegistryCapture.Track(key, "DisableStartupSound");
                 key.SetValue("DisableStartupSound", enable ? 0 : 1, RegistryValueKind.DWord);
                 return true;
             }
@@ -514,6 +522,7 @@ namespace Bakım.Services
             try
             {
                 using var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes");
+                Bakım.Helpers.RegistryCapture.Track(key, "ThemeChangesMousePointers");
                 key.SetValue("ThemeChangesMousePointers", protect ? 0 : 1, RegistryValueKind.DWord);
                 return true;
             }
@@ -541,6 +550,7 @@ namespace Bakım.Services
             try
             {
                 using var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes");
+                Bakım.Helpers.RegistryCapture.Track(key, "ThemeChangesDesktopIcons");
                 key.SetValue("ThemeChangesDesktopIcons", protect ? 0 : 1, RegistryValueKind.DWord);
                 return true;
             }

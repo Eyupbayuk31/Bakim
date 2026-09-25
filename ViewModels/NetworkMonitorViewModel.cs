@@ -6,7 +6,9 @@ using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
+using Bakım.Core.Activity;
 using Bakım.Services;
+using Bakım.Services.Activity;
 
 namespace Bakım.ViewModels
 {
@@ -14,13 +16,16 @@ namespace Bakım.ViewModels
     {
         private readonly IAppSettingsService _settingsService;
         private readonly INetworkMonitorService _networkService;
+        private readonly IActivityService _activity;
         private readonly DispatcherTimer _timer;
         private List<NetworkConnectionItem> _allConnections = new();
         private CancellationTokenSource? _speedTestCts;
 
         public NetworkMonitorViewModel(INetworkMonitorService networkService,
-            IAppSettingsService settingsService)
+            IAppSettingsService settingsService,
+            IActivityService activity)
         {
+            _activity = activity;
             _settingsService = settingsService;
             _networkService = networkService;
 
@@ -273,9 +278,17 @@ namespace Bakım.ViewModels
             if (item.IsBlocked)
             {
                 var ok = await _networkService.UnblockProcessInFirewallAsync(item);
+                _activity.RecordFirewallChange($"'{item.ProcessName}' ağ engeli kaldırıldı",
+                    ok ? item.ProcessPath : $"Kaldırılamadı: {_networkService.LastFirewallError}",
+                    ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed,
+                    new FirewallUndoPayload(NetworkMonitorService.FirewallRuleName(item.ProcessPath), item.ProcessPath, Added: false));
                 if (ok)
                 {
                     MessageBox.Show($"{item.ProcessName} güvenlik duvarı engeli kaldırıldı.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"{item.ProcessName} engeli kaldırılamadı: {_networkService.LastFirewallError}", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             else
@@ -289,9 +302,17 @@ namespace Bakım.ViewModels
                 if (confirm == MessageBoxResult.Yes)
                 {
                     var ok = await _networkService.BlockProcessInFirewallAsync(item);
+                    _activity.RecordFirewallChange($"'{item.ProcessName}' ağ erişimi engellendi",
+                        ok ? item.ProcessPath : $"Engellenemedi: {_networkService.LastFirewallError}",
+                        ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed,
+                        new FirewallUndoPayload(NetworkMonitorService.FirewallRuleName(item.ProcessPath), item.ProcessPath, Added: true));
                     if (ok)
                     {
                         MessageBox.Show($"{item.ProcessName} için giden bağlantı engelleme kuralı eklendi.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"{item.ProcessName} engellenemedi: {_networkService.LastFirewallError}", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }

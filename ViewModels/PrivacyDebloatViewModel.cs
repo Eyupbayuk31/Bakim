@@ -5,17 +5,22 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
+using Bakım.Core.Activity;
+using Bakım.Helpers;
 using Bakım.Services;
+using Bakım.Services.Activity;
 
 namespace Bakım.ViewModels
 {
     public partial class PrivacyDebloatViewModel : ObservableObject
     {
         private readonly IPrivacyDebloatService _privacyService;
+        private readonly IActivityService _activity;
 
-        public PrivacyDebloatViewModel(IPrivacyDebloatService privacyService)
+        public PrivacyDebloatViewModel(IPrivacyDebloatService privacyService, IActivityService activity)
         {
             _privacyService = privacyService;
+            _activity = activity;
 
             Tweaks = new ObservableCollection<PrivacyTweakItem>();
             BloatwareApps = new ObservableCollection<BloatwareAppItem>();
@@ -198,7 +203,15 @@ namespace Bakım.ViewModels
             try
             {
                 bool newState = !tweak.IsEnabled;
-                bool ok = await _privacyService.ApplyTweakAsync(tweak, newState);
+                bool ok;
+                using (var capture = RegistryCapture.Begin())
+                {
+                    ok = await _privacyService.ApplyTweakAsync(tweak, newState);
+                    _activity.RecordRegistryChange(ActivityKind.Tweak, "Gizlilik",
+                        $"'{tweak.Title}' {(newState ? "uygulandı" : "varsayılana döndürüldü")}",
+                        ok ? $"{capture.Items.Count} kayıt değeri" : $"Uygulanamadı: {tweak.LastError}",
+                        ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed, capture.Items, deepLink: "PrivacyDebloat");
+                }
                 if (ok)
                 {
                     tweak.IsEnabled = newState;
@@ -226,7 +239,14 @@ namespace Bakım.ViewModels
             StatusMessage = "Önerilen tüm gizlilik kuralları uygulanıyor...";
             try
             {
-                bool ok = await _privacyService.ApplyAllRecommendedAsync(Tweaks.ToList());
+                bool ok;
+                using (var capture = RegistryCapture.Begin())
+                {
+                    ok = await _privacyService.ApplyAllRecommendedAsync(Tweaks.ToList());
+                    _activity.RecordRegistryChange(ActivityKind.Tweak, "Gizlilik", "Önerilen gizlilik kuralları uygulandı",
+                        $"{capture.Items.Count} kayıt değeri" + (ok ? "" : " · bazı kurallar uygulanamadı"),
+                        ok ? ActivityOutcome.Succeeded : ActivityOutcome.PartiallySucceeded, capture.Items, deepLink: "PrivacyDebloat");
+                }
                 foreach (var tweak in Tweaks) tweak.NotifyStateChanged();
                 UpdateStats();
                 if (ok)
@@ -264,7 +284,14 @@ namespace Bakım.ViewModels
             StatusMessage = "Windows varsayılan ayarlarına dönülüyor...";
             try
             {
-                bool ok = await _privacyService.RestoreAllDefaultsAsync(Tweaks.ToList());
+                bool ok;
+                using (var capture = RegistryCapture.Begin())
+                {
+                    ok = await _privacyService.RestoreAllDefaultsAsync(Tweaks.ToList());
+                    _activity.RecordRegistryChange(ActivityKind.Tweak, "Gizlilik", "Gizlilik ayarları Windows varsayılanlarına döndürüldü",
+                        $"{capture.Items.Count} kayıt değeri" + (ok ? "" : " · bazı ayarlar döndürülemedi"),
+                        ok ? ActivityOutcome.Succeeded : ActivityOutcome.PartiallySucceeded, capture.Items, deepLink: "PrivacyDebloat");
+                }
                 foreach (var tweak in Tweaks) tweak.NotifyStateChanged();
                 UpdateStats();
                 if (ok)
@@ -332,6 +359,10 @@ namespace Bakım.ViewModels
             try
             {
                 bool ok = await _privacyService.RemoveBloatwareAsync(app);
+                _activity.RecordSimple(ActivityKind.Uninstall, "Gizlilik", $"\"{app.DisplayName}\" kaldırıldı",
+                    ok ? app.PackageName : $"Kaldırılamadı: {app.LastError}",
+                    ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed,
+                    new[] { new ActivityItem(app.PackageName, "Appx kaldır", ok ? "Tamam" : "Başarısız", app.LastError) }, deepLink: "PrivacyDebloat");
                 if (ok)
                 {
                     app.IsInstalled = false;
@@ -389,6 +420,11 @@ namespace Bakım.ViewModels
                     }
                 }
                 UpdateStats();
+                _activity.RecordSimple(ActivityKind.Uninstall, "Gizlilik", $"{removed} gereksiz uygulama kaldırıldı",
+                    failed.Count == 0 ? $"{removed} uygulama" : $"{removed} kaldırıldı · {failed.Count} kaldırılamadı",
+                    ActivityQuery.OutcomeFromCounts(removed, failed.Count),
+                    safeApps.Select(a => new ActivityItem(a.PackageName, "Appx kaldır", a.IsInstalled ? "Başarısız" : "Tamam", a.LastError)),
+                    deepLink: "PrivacyDebloat");
                 if (failed.Count == 0)
                 {
                     MessageBox.Show($"{removed} uygulama kaldırıldı ve doğrulandı.", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);

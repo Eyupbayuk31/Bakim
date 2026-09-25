@@ -126,13 +126,17 @@ namespace Bakım.ViewModels
 
         #endregion
 
+        private readonly Bakım.Services.Activity.IActivityService _activity;
+
         public AnalyzerViewModel(
             IAutorunsScannerEngine scannerEngine,
             IVirusTotalCheckService virusTotalService,
             IFileThreatAnalyzerService threatAnalyzerService,
             Bakım.Services.History.IAnalysisHistoryService history,
-            AnalyzerHistoryViewModel historyViewModel)
+            AnalyzerHistoryViewModel historyViewModel,
+            Bakım.Services.Activity.IActivityService activity)
         {
+            _activity = activity;
             _scannerEngine = scannerEngine;
             _virusTotalService = virusTotalService;
             _threatAnalyzerService = threatAnalyzerService;
@@ -371,7 +375,17 @@ namespace Bakım.ViewModels
 
             try
             {
-                bool success = await _scannerEngine.ToggleItemAsync(item, targetState);
+                bool success;
+                using (var capture = Bakım.Helpers.RegistryCapture.Begin())
+                {
+                    success = await _scannerEngine.ToggleItemAsync(item, targetState);
+                    Bakım.Services.Activity.ActivityRecording.RecordRegistryChange(_activity,
+                        Bakım.Core.Activity.ActivityKind.StartupChange, "Analizör",
+                        $"'{item.Name}' {(targetState ? "etkinleştirildi" : "devre dışı bırakıldı")}",
+                        item.LocationSource,
+                        success ? Bakım.Core.Activity.ActivityOutcome.Succeeded : Bakım.Core.Activity.ActivityOutcome.Failed,
+                        capture.Items, deepLink: "Analyzer", handler: Bakım.Core.Activity.UndoHandlers.StartupApproved);
+                }
                 if (!success)
                 {
                     // Revert state on failure
@@ -418,7 +432,22 @@ namespace Bakım.ViewModels
             item.IsBusy = true;
             try
             {
-                bool success = await _scannerEngine.DeleteItemAsync(item);
+                bool success;
+                using (var capture = Bakım.Helpers.RegistryCapture.Begin())
+                {
+                    success = await _scannerEngine.DeleteItemAsync(item);
+                    var outcome = success ? Bakım.Core.Activity.ActivityOutcome.Succeeded : Bakım.Core.Activity.ActivityOutcome.Failed;
+                    string title = $"'{item.Name}' kalıcılık girdisi silindi";
+                    if (!string.IsNullOrEmpty(item.SourceFilePath))
+                        Bakım.Services.Activity.ActivityRecording.RecordRecycled(_activity, Bakım.Core.Activity.ActivityKind.StartupChange, "Analizör",
+                            title, "Kısayol Geri Dönüşüm Kutusu'na taşındı", outcome,
+                            new[] { new Bakım.Core.Activity.ActivityItem(item.SourceFilePath, "Geri Dönüşüm Kutusu", success ? "Tamam" : "Başarısız") },
+                            deepLink: "Analyzer");
+                    else
+                        Bakım.Services.Activity.ActivityRecording.RecordRegistryChange(_activity, Bakım.Core.Activity.ActivityKind.StartupChange, "Analizör",
+                            title, item.LocationSource, outcome, capture.Items, deepLink: "Analyzer",
+                            handler: Bakım.Core.Activity.UndoHandlers.StartupApproved);
+                }
                 if (success)
                 {
                     Application.Current.Dispatcher.Invoke(() =>

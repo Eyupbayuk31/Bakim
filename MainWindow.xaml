@@ -70,6 +70,9 @@
         <DataTemplate DataType="{x:Type vm:AnalyzerViewModel}">
             <modules:AnalyzerView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ActivityCenterViewModel}">
+            <modules:ActivityCenterView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:WindowsTweakerViewModel}">
             <modules:WindowsTweakerModuleView/>
         </DataTemplate>
@@ -470,6 +473,22 @@
                                        Icon="{ui:SymbolIcon Wrench24}"
                                        ToolTip="Windows Tweaker &amp; İnce Ayarlar">
                                 <TextBlock Text="Windows Tweaker" 
+                                           Margin="6,0,0,0" 
+                                           VerticalAlignment="Center" 
+                                           Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>
+                            </ui:Button>
+
+                            <!-- 13. Etkinlik Merkezi -->
+                            <ui:Button Appearance="{Binding CurrentNavKey, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Activity'}"
+                                       HorizontalAlignment="Stretch" 
+                                       HorizontalContentAlignment="Left"
+                                       Padding="10,8" 
+                                       Margin="0,0,0,4"
+                                       Command="{Binding NavigateCommand}" 
+                                       CommandParameter="Activity"
+                                       Icon="{ui:SymbolIcon History24}"
+                                       ToolTip="Etkinlik Merkezi — yapılan değişiklikler ve geri alma">
+                                <TextBlock Text="Etkinlik Merkezi" 
                                            Margin="6,0,0,0" 
                                            VerticalAlignment="Center" 
                                            Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}"/>

@@ -16,6 +16,7 @@ using Bakım.Helpers;
 using Bakım.Models;
 using Bakım.Services;
 using Bakım.Services.Safety;
+using Bakım.Services.Activity;
 using Bakım.Services.Uninstall;
 
 namespace Bakım.ViewModels
@@ -46,6 +47,7 @@ namespace Bakım.ViewModels
         private IReadOnlyList<ProcessCandidate> _processesToClose = Array.Empty<ProcessCandidate>();
         private CancellationTokenSource? _waitCts;
         private string? _journalId;
+        private string? _activityId;
 
         public InstalledAppItem TargetApp { get; }
 
@@ -337,6 +339,16 @@ namespace Bakım.ViewModels
 
                 CanStopWaiting = false;
                 IsUninstallConfirmed = run.IsRemoved;
+                App.TryGetService<Bakım.Services.Activity.IActivityService>()?.RecordSimple(
+                    Bakım.Core.Activity.ActivityKind.Uninstall, "Kaldırıcı",
+                    run.IsRemoved ? $"\"{AppName}\" kaldırıldı" : $"\"{AppName}\" kaldırılamadı",
+                    run.IsRemoved
+                        ? (run.Outcome == UninstallOutcome.RebootRequired ? "Resmi kaldırıcı · yeniden başlatma gerekiyor" : "Resmi kaldırıcı · kaldırma doğrulandı")
+                        : run.Detail,
+                    run.IsRemoved ? Bakım.Core.Activity.ActivityOutcome.Succeeded
+                        : run.Outcome == UninstallOutcome.Cancelled ? Bakım.Core.Activity.ActivityOutcome.Cancelled
+                        : Bakım.Core.Activity.ActivityOutcome.Failed,
+                    deepLink: "Uninstaller");
 
                 if (run.IsRemoved)
                 {
@@ -487,8 +499,9 @@ namespace Bakım.ViewModels
             try
             {
                 var progress = new Progress<string>(msg => StatusMessage = msg);
-                var report = await _residualScanner.CleanResidualItemsDetailedAsync(selected, $"Kaldırma: {AppName}", progress);
+                var report = await _residualScanner.CleanResidualItemsDetailedAsync(selected, $"\"{AppName}\" kalıntıları temizlendi", progress);
                 _journalId = report.JournalId;
+                _activityId = report.ActivityId;
 
                 CleanedCount = report.SucceededCount;
                 CleanedSizeBytes = report.BytesFreed;
@@ -533,6 +546,15 @@ namespace Bakım.ViewModels
                 "Bu kaldırma oturumunda silinen kayıt defteri öğeleri yedekten geri yüklensin mi?",
                 "Kayıt Defterini Geri Yükle", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (confirm != MessageBoxResult.Yes) return;
+
+            // Etkinlik Merkezi üzerinden: kayıt "Geri alındı" olarak işaretlenir, HKLM yedekleri tek UAC ile yüklenir.
+            var activity = App.TryGetService<Bakım.Services.Activity.IActivityService>();
+            if (activity != null && _activityId != null)
+            {
+                var result = await activity.UndoAsync(_activityId);
+                StatusMessage = result.Message;
+                return;
+            }
 
             var (restored, failed) = await UndoJournal.RestoreRegistryAsync(_journalId);
             StatusMessage = failed == 0

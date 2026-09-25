@@ -43,6 +43,7 @@ namespace Bakım.ViewModels
         private readonly Lazy<CrashAnalyzerViewModel> _crashAnalyzer;
         private readonly Lazy<UninstallerViewModel> _uninstaller;
         private readonly Lazy<AnalyzerViewModel> _analyzer;
+        private readonly Lazy<ActivityCenterViewModel> _activityCenter;
         private readonly Lazy<WindowsTweakerViewModel> _windowsTweaker;
         private readonly Lazy<SettingsViewModel> _settings;
         private readonly Lazy<TweakerCategoriesViewModel> _tweakerCategories;
@@ -97,6 +98,7 @@ namespace Bakım.ViewModels
             _crashAnalyzer = Lazy(_services.GetRequiredService<CrashAnalyzerViewModel>);
             _uninstaller = Lazy(_services.GetRequiredService<UninstallerViewModel>);
             _analyzer = Lazy(_services.GetRequiredService<AnalyzerViewModel>);
+            _activityCenter = Lazy(_services.GetRequiredService<ActivityCenterViewModel>);
             _windowsTweaker = Lazy(_services.GetRequiredService<WindowsTweakerViewModel>);
             _settings = Lazy(_services.GetRequiredService<SettingsViewModel>);
             _tweakerCategories = Lazy(_services.GetRequiredService<TweakerCategoriesViewModel>);
@@ -134,6 +136,7 @@ namespace Bakım.ViewModels
         public CrashAnalyzerViewModel CrashAnalyzer => _crashAnalyzer.Value;
         public UninstallerViewModel Uninstaller => _uninstaller.Value;
         public AnalyzerViewModel Analyzer => _analyzer.Value;
+        public ActivityCenterViewModel ActivityCenter => _activityCenter.Value;
         public WindowsTweakerViewModel WindowsTweaker => _windowsTweaker.Value;
         public SettingsViewModel Settings => _settings.Value;
         public TweakerCategoriesViewModel TweakerCategories => _tweakerCategories.Value;
@@ -590,6 +593,7 @@ namespace Bakım.ViewModels
                 AppModule.WindowsTweaker => WindowsTweaker,
                 AppModule.Settings => Settings,
                 AppModule.Store => Store,
+                AppModule.ActivityCenter => ActivityCenter,
                 _ => Dashboard
             };
 

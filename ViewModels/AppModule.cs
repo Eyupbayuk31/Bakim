@@ -26,7 +26,8 @@ namespace Bakım.ViewModels
         Analyzer,
         WindowsTweaker,
         Settings,
-        Store
+        Store,
+        ActivityCenter
     }
 
     /// <summary>XAML'deki metin anahtarlarını modüllere çeviren tek kayıt tablosu.</summary>
@@ -59,6 +60,9 @@ namespace Bakım.ViewModels
                 ["Tweaker"] = AppModule.WindowsTweaker,
                 ["WindowsTweaker"] = AppModule.WindowsTweaker,
                 ["Settings"] = AppModule.Settings,
+                ["Activity"] = AppModule.ActivityCenter,
+                ["ActivityCenter"] = AppModule.ActivityCenter,
+                ["Etkinlik"] = AppModule.ActivityCenter,
             };
 
         /// <summary>

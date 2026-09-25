@@ -273,13 +273,17 @@ namespace Bakım.Services
             {
                 if (enable)
                 {
+                    // Geri almada tüm CLSID anahtarı özgün haline (genellikle "yok") döner.
+                    Bakım.Helpers.RegistryCapture.TrackKey(Registry.CurrentUser, @"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}");
                     using var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32");
+                    Bakım.Helpers.RegistryCapture.Track(key, string.Empty);
                     key.SetValue(string.Empty, string.Empty);
                 }
                 else
                 {
                     try
                     {
+                        Bakım.Helpers.RegistryCapture.TrackKey(Registry.CurrentUser, @"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}");
                         Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}", false);
                     }
                     catch { }
@@ -315,6 +319,7 @@ namespace Bakım.Services
             try
             {
                 using var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced");
+                Bakım.Helpers.RegistryCapture.Track(key, "TaskbarAl");
                 key.SetValue("TaskbarAl", enable ? 0 : 1, RegistryValueKind.DWord);
                 return true;
             }
@@ -346,6 +351,7 @@ namespace Bakım.Services
             try
             {
                 using var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                Bakım.Helpers.RegistryCapture.Track(key, "ColorPrevalence");
                 key.SetValue("ColorPrevalence", enable ? 1 : 0, RegistryValueKind.DWord);
                 return true;
             }
@@ -384,6 +390,7 @@ namespace Bakım.Services
                 // HKCU BackgroundAccessApplications
                 using (var key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications"))
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key, "GlobalUserDisabled");
                     key.SetValue("GlobalUserDisabled", disable ? 1 : 0, RegistryValueKind.DWord);
                 }
 
@@ -391,9 +398,15 @@ namespace Bakım.Services
                 using (var cuPolicy = Registry.CurrentUser.CreateSubKey(@"Software\Policies\Microsoft\Windows\AppPrivacy"))
                 {
                     if (disable)
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(cuPolicy, "LetAppsRunInBackground");
                         cuPolicy.SetValue("LetAppsRunInBackground", 2, RegistryValueKind.DWord);
+                    }
                     else
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(cuPolicy, "LetAppsRunInBackground");
                         cuPolicy.DeleteValue("LetAppsRunInBackground", false);
+                    }
                 }
 
                 // HKLM AppPrivacy
@@ -401,9 +414,15 @@ namespace Bakım.Services
                 {
                     using var lmPolicy = Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Windows\AppPrivacy");
                     if (disable)
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(lmPolicy, "LetAppsRunInBackground");
                         lmPolicy.SetValue("LetAppsRunInBackground", 2, RegistryValueKind.DWord);
+                    }
                     else
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(lmPolicy, "LetAppsRunInBackground");
                         lmPolicy.DeleteValue("LetAppsRunInBackground", false);
+                    }
                 }
                 catch { }
 
@@ -446,9 +465,15 @@ namespace Bakım.Services
                 using (var cuPolicy = Registry.CurrentUser.CreateSubKey(@"Software\Policies\Microsoft\Windows\WindowsCopilot"))
                 {
                     if (disable)
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(cuPolicy, "TurnOffWindowsCopilot");
                         cuPolicy.SetValue("TurnOffWindowsCopilot", 1, RegistryValueKind.DWord);
+                    }
                     else
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(cuPolicy, "TurnOffWindowsCopilot");
                         cuPolicy.DeleteValue("TurnOffWindowsCopilot", false);
+                    }
                 }
 
                 // Policies HKLM
@@ -456,15 +481,22 @@ namespace Bakım.Services
                 {
                     using var lmPolicy = Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Windows\WindowsCopilot");
                     if (disable)
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(lmPolicy, "TurnOffWindowsCopilot");
                         lmPolicy.SetValue("TurnOffWindowsCopilot", 1, RegistryValueKind.DWord);
+                    }
                     else
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(lmPolicy, "TurnOffWindowsCopilot");
                         lmPolicy.DeleteValue("TurnOffWindowsCopilot", false);
+                    }
                 }
                 catch { }
 
                 // Hide Copilot Button in Taskbar
                 using (var advKey = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"))
                 {
+                    Bakım.Helpers.RegistryCapture.Track(advKey, "ShowCopilotButton");
                     advKey.SetValue("ShowCopilotButton", disable ? 0 : 1, RegistryValueKind.DWord);
                 }
 
@@ -506,25 +538,39 @@ namespace Bakım.Services
                 using (var cuPol = Registry.CurrentUser.CreateSubKey(@"Software\Policies\Microsoft\Windows\Explorer"))
                 {
                     if (disable)
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(cuPol, "HideRecommendedSection");
                         cuPol.SetValue("HideRecommendedSection", 1, RegistryValueKind.DWord);
+                    }
                     else
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(cuPol, "HideRecommendedSection");
                         cuPol.DeleteValue("HideRecommendedSection", false);
+                    }
                 }
 
                 try
                 {
                     using var lmPol = Registry.LocalMachine.CreateSubKey(@"Software\Policies\Microsoft\Windows\Explorer");
                     if (disable)
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(lmPol, "HideRecommendedSection");
                         lmPol.SetValue("HideRecommendedSection", 1, RegistryValueKind.DWord);
+                    }
                     else
+                    {
+                        Bakım.Helpers.RegistryCapture.Track(lmPol, "HideRecommendedSection");
                         lmPol.DeleteValue("HideRecommendedSection", false);
+                    }
                 }
                 catch { }
 
                 // Explorer Advanced: Track recent progs & docs
                 using (var adv = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"))
                 {
+                    Bakım.Helpers.RegistryCapture.Track(adv, "Start_TrackProgs");
                     adv.SetValue("Start_TrackProgs", disable ? 0 : 1, RegistryValueKind.DWord);
+                    Bakım.Helpers.RegistryCapture.Track(adv, "Start_TrackDocs");
                     adv.SetValue("Start_TrackDocs", disable ? 0 : 1, RegistryValueKind.DWord);
                 }
 
@@ -561,10 +607,12 @@ namespace Bakım.Services
                 using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Shell Extensions\Blocked");
                 if (enable)
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key, "{e2bf9676-5f8f-435c-97eb-11607a5bedf7}");
                     key.SetValue("{e2bf9676-5f8f-435c-97eb-11607a5bedf7}", string.Empty, RegistryValueKind.String);
                 }
                 else
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key, "{e2bf9676-5f8f-435c-97eb-11607a5bedf7}");
                     key.DeleteValue("{e2bf9676-5f8f-435c-97eb-11607a5bedf7}", false);
                 }
                 return true;
@@ -599,10 +647,12 @@ namespace Bakım.Services
                 using var key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\PolicyManager\current\device\Stickers");
                 if (enable)
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key, "EnableStickers");
                     key.SetValue("EnableStickers", 1, RegistryValueKind.DWord);
                 }
                 else
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key, "EnableStickers");
                     key.SetValue("EnableStickers", 0, RegistryValueKind.DWord);
                 }
                 return true;
@@ -638,11 +688,13 @@ namespace Bakım.Services
 
                 using (var key1 = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel"))
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key1, "{2cc5ca98-6485-489a-920e-b3e88a6ccce3}");
                     key1.SetValue("{2cc5ca98-6485-489a-920e-b3e88a6ccce3}", val, RegistryValueKind.DWord);
                 }
 
                 using (var key2 = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\ClassicStartMenu"))
                 {
+                    Bakım.Helpers.RegistryCapture.Track(key2, "{2cc5ca98-6485-489a-920e-b3e88a6ccce3}");
                     key2.SetValue("{2cc5ca98-6485-489a-920e-b3e88a6ccce3}", val, RegistryValueKind.DWord);
                 }
 

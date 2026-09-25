@@ -416,6 +416,15 @@ namespace Bakım
                 sp.GetRequiredService<FileThreatAnalyzerService>(),
                 sp.GetRequiredService<Bakım.Services.History.IAnalysisHistoryService>(),
                 sp.GetRequiredService<ILogService>()));
+            // Etkinlik Merkezi (§7): her değişikliğin kaydı ve geri alma işleyicileri.
+            services.AddSingleton<Bakım.Services.Activity.IUndoHandler>(_ => new Bakım.Services.Activity.RegistryValuesUndoHandler());
+            services.AddSingleton<Bakım.Services.Activity.IUndoHandler>(_ => new Bakım.Services.Activity.RegistryValuesUndoHandler(Bakım.Core.Activity.UndoHandlers.StartupApproved));
+            services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Activity.RegImportUndoHandler>();
+            services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Activity.ServiceConfigUndoHandler>();
+            services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Activity.FirewallRuleUndoHandler>();
+            services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Activity.RecycleBinUndoHandler>();
+            services.AddSingleton<Bakım.Services.Activity.IActivityService>(sp =>
+                new Bakım.Services.Activity.ActivityService(sp.GetServices<Bakım.Services.Activity.IUndoHandler>()));
             services.AddSingleton<IStoreService, StoreService>();
             services.AddSingleton<IDuplicateFinderService, DuplicateFinderService>();
             services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
@@ -442,6 +451,7 @@ namespace Bakım
             // Transient iken her çağrı görünmeyen yeni bir örnek (ve yeni bir tam tarama) üretiyordu.
             services.AddSingleton<AnalyzerViewModel>();
             services.AddSingleton<AnalyzerHistoryViewModel>();
+            services.AddSingleton<ActivityCenterViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();

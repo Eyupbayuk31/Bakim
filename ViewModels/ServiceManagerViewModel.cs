@@ -5,17 +5,21 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
+using Bakım.Core.Activity;
 using Bakım.Services;
+using Bakım.Services.Activity;
 
 namespace Bakım.ViewModels
 {
     public partial class ServiceManagerViewModel : ObservableObject
     {
         private readonly IServiceManagerService _serviceManager;
+        private readonly IActivityService _activity;
 
-        public ServiceManagerViewModel(IServiceManagerService serviceManager)
+        public ServiceManagerViewModel(IServiceManagerService serviceManager, IActivityService activity)
         {
             _serviceManager = serviceManager;
+            _activity = activity;
 
             Services = new ObservableCollection<ServiceItem>();
             Drivers = new ObservableCollection<DriverItem>();
@@ -202,6 +206,10 @@ namespace Bakım.ViewModels
             try
             {
                 var ok = await _serviceManager.StartServiceAsync(item.ServiceName);
+                _activity.RecordServiceChange($"'{item.DisplayName}' başlatıldı",
+                    ok ? item.ServiceName : $"Başlatılamadı: {_serviceManager.LastError}",
+                    ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed,
+                    ActivityRecording.ReadServiceState(item.ServiceName, item.DisplayName, restoreRunning: false, includeStartType: false));
                 if (ok)
                 {
                     item.Status = "Running";
@@ -241,6 +249,10 @@ namespace Bakım.ViewModels
             try
             {
                 var ok = await _serviceManager.StopServiceAsync(item.ServiceName);
+                _activity.RecordServiceChange($"'{item.DisplayName}' durduruldu",
+                    ok ? item.ServiceName : $"Durdurulamadı: {_serviceManager.LastError}",
+                    ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed,
+                    ActivityRecording.ReadServiceState(item.ServiceName, item.DisplayName, restoreRunning: true, includeStartType: false));
                 if (ok)
                 {
                     item.Status = "Stopped";
@@ -292,7 +304,13 @@ namespace Bakım.ViewModels
                 return;
             }
 
+            // Özgün başlangıç türü değişiklikten ÖNCE okunur (geri alma için).
+            var original = ActivityRecording.ReadServiceState(param.Item.ServiceName, param.Item.DisplayName, restoreRunning: null, includeStartType: true);
             var ok = await _serviceManager.SetStartupTypeAsync(param.Item.ServiceName, param.Type);
+            string typeLabel = param.Type.ToLowerInvariant() switch { "auto" => "Otomatik", "disabled" => "Devre dışı", _ => "El ile" };
+            _activity.RecordServiceChange($"'{param.Item.DisplayName}' başlangıç türü: {typeLabel}",
+                ok ? param.Item.ServiceName : $"Değiştirilemedi: {_serviceManager.LastError}",
+                ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed, original);
             if (ok)
             {
                 param.Item.StartupType = param.Type switch

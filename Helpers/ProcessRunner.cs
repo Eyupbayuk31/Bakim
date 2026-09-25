@@ -136,7 +136,7 @@ namespace Bakım.Helpers
     /// </summary>
     public static class ElevatedPowerShell
     {
-        public sealed record Result(bool Succeeded, bool Cancelled, string Message);
+        public sealed record Result(bool Succeeded, bool Cancelled, string Message, int ExitCode = 0);
 
         public static async Task<Result> RunAsync(string script, TimeSpan timeout, CancellationToken ct = default)
         {
@@ -147,7 +147,7 @@ namespace Bakım.Helpers
                 var run = await ProcessRunner.RunAsync("powershell.exe",
                     new[] { "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", fullScript },
                     timeout, ct).ConfigureAwait(false);
-                return new Result(run.Succeeded, false, run.Describe());
+                return new Result(run.Succeeded, false, run.Describe(), run.ExitCode);
             }
 
             // -EncodedCommand: tırnak/kaçış sorunları olmadan ShellExecute argümanı.
@@ -192,7 +192,7 @@ namespace Bakım.Helpers
                 }
                 return process.ExitCode == 0
                     ? new Result(true, false, "başarılı")
-                    : new Result(false, false, $"çıkış kodu {process.ExitCode}");
+                    : new Result(false, false, $"çıkış kodu {process.ExitCode}", process.ExitCode);
             }
         }
 

@@ -491,6 +491,8 @@ namespace Bakım.Services
                         case "explorer_enable_classic_search":
                             if (enable)
                             {
+                                // Anahtar yoksa geri almada tamamen silinir.
+                                Bakım.Helpers.RegistryCapture.TrackKey(Registry.CurrentUser, @"Software\Classes\CLSID\{1d64637d-31e9-4706-970d-0399b943d0b6}");
                                 using var key = Registry.CurrentUser.CreateSubKey(@"Software\Classes\CLSID\{1d64637d-31e9-4706-970d-0399b943d0b6}\TreatAs", true);
                                 key?.SetValue("", "{00000000-0000-0000-0000-000000000000}");
                             }

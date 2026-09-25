@@ -84,6 +84,36 @@ namespace Bakım.Helpers
             }
         }
 
+        /// <summary>
+        /// Doğrudan <c>key.SetValue/DeleteValue</c> kullanan eski servisler için: açık anahtardaki
+        /// değerin özgün halini kaydeder. Etkin kapsam yoksa hiçbir şey yapmaz.
+        /// </summary>
+        public static void Track(RegistryKey? key, string valueName)
+        {
+            var capture = CurrentCapture.Value;
+            if (capture == null || key == null) return;
+            try
+            {
+                int slash = key.Name.IndexOf('\\');
+                string root = slash < 0 ? key.Name : key.Name[..slash];
+                string subKey = slash < 0 ? string.Empty : key.Name[(slash + 1)..];
+                object? value = key.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                if (value == null)
+                {
+                    capture.Add(new RegistryValueSnapshot(root, subKey, valueName, false, null, null));
+                    return;
+                }
+                var kind = key.GetValueKind(valueName);
+                capture.Add(new RegistryValueSnapshot(root, subKey, valueName, true, kind.ToString(), Encode(kind, value)));
+            }
+            catch
+            {
+            }
+        }
+
+        /// <summary>Tüm bir anahtarın özgün halini kaydeder (yoksa "yoktu": geri almada silinir).</summary>
+        public static void TrackKey(RegistryKey root, string subKey) => BeforeKeyDelete(root, subKey);
+
         internal static void BeforeKeyDelete(RegistryKey root, string subKey)
         {
             var capture = CurrentCapture.Value;
@@ -136,6 +166,71 @@ namespace Bakım.Helpers
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Kayıt zaten özgün halinde mi? (Yazma hiç gerçekleşmemiş ya da kullanıcı elle geri almış
+        /// olabilir.) Böyle bir değer için geri alma yazma gerektirmez ve yönetici izni istemez.
+        /// </summary>
+        public static bool IsCurrent(RegistryValueSnapshot s)
+        {
+            var root = RootFromName(s.Root);
+            if (root == null) return false;
+            try
+            {
+                using var key = root.OpenSubKey(s.SubKey, false);
+                if (s.ValueName == null) return !s.Existed && key == null;
+
+                object? value = key?.GetValue(s.ValueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                if (!s.Existed) return value == null;
+                if (key == null || value == null) return false;
+                var kind = key.GetValueKind(s.ValueName);
+                return string.Equals(kind.ToString(), s.Kind, StringComparison.Ordinal) &&
+                       string.Equals(Encode(kind, value), s.Data, StringComparison.Ordinal);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Değer düzeyindeki bir anlık görüntüyü geri yazan PowerShell satırı (yönetici olmadan
+        /// HKLM'ye yazılamadığında tek UAC onayıyla toplu geri yükleme için). Var olan bir anahtar
+        /// ağacının yeniden yazımı desteklenmez: null döner.
+        /// </summary>
+        public static string? ToPowerShell(RegistryValueSnapshot s)
+        {
+            if (RootFromName(s.Root) == null) return null;
+            string path = Q($"Registry::{s.Root}\\{s.SubKey}");
+
+            if (s.ValueName == null)
+            {
+                // Bakım'ın oluşturduğu anahtar: silinir. Var olan bir ağacın geri yazımı betiklenmez.
+                return s.Existed ? null : $"if (Test-Path -LiteralPath {path}) {{ Remove-Item -LiteralPath {path} -Recurse -Force }}";
+            }
+            string name = Q(s.ValueName);
+
+            if (!s.Existed)
+                return $"if (Test-Path -LiteralPath {path}) {{ Remove-ItemProperty -LiteralPath {path} -Name {name} -ErrorAction SilentlyContinue }}";
+
+            var kind = Enum.Parse<RegistryValueKind>(s.Kind ?? nameof(RegistryValueKind.String));
+            string? literal = kind switch
+            {
+                RegistryValueKind.String or RegistryValueKind.ExpandString => Q(s.Data ?? string.Empty),
+                RegistryValueKind.DWord => "([int]" + (s.Data ?? "0") + ")",
+                RegistryValueKind.QWord => "([long]" + (s.Data ?? "0") + ")",
+                RegistryValueKind.MultiString => "@(" + string.Join(",", (JsonSerializer.Deserialize<string[]>(s.Data ?? "[]") ?? Array.Empty<string>()).Select(Q)) + ")",
+                RegistryValueKind.Binary => "([byte[]]@(" + string.Join(",", Convert.FromBase64String(s.Data ?? string.Empty)) + "))",
+                _ => null
+            };
+            if (literal == null) return null;
+
+            // New-Item -Force var olan anahtarı SİLİP yeniden oluşturur; yalnızca yoksa oluşturulur.
+            return $"if (-not (Test-Path -LiteralPath {path})) {{ New-Item -Path {path} -Force | Out-Null }}; " +
+                   $"New-ItemProperty -LiteralPath {path} -Name {name} -PropertyType {kind} -Value {literal} -Force | Out-Null";
+
+            static string Q(string v) => "'" + v.Replace("'", "''") + "'";
         }
 
         private static RegistryKey? RootFromName(string name) => name.ToUpperInvariant() switch

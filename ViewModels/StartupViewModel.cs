@@ -9,18 +9,23 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using Bakım.Models;
+using Bakım.Core.Activity;
+using Bakım.Helpers;
 using Bakım.Services;
+using Bakım.Services.Activity;
 
 namespace Bakım.ViewModels
 {
     public partial class StartupViewModel : ObservableObject
     {
         private readonly IStartupService _startupService;
+        private readonly IActivityService _activity;
         private List<StartupProgramItem> _allPrograms = new();
 
-        public StartupViewModel(IStartupService startupService)
+        public StartupViewModel(IStartupService startupService, IActivityService activity)
         {
             _startupService = startupService;
+            _activity = activity;
             StartupPrograms = new ObservableCollection<StartupProgramItem>();
 
             _ = RefreshAsync();
@@ -130,7 +135,16 @@ namespace Bakım.ViewModels
             try
             {
                 bool newState = item.IsEnabled;
-                bool success = await _startupService.SetStartupProgramStateAsync(item, newState);
+                bool success;
+                using (var capture = RegistryCapture.Begin())
+                {
+                    success = await _startupService.SetStartupProgramStateAsync(item, newState);
+                    _activity.RecordRegistryChange(ActivityKind.StartupChange, "Başlangıç",
+                        $"'{item.Name}' {(newState ? "etkinleştirildi" : "devre dışı bırakıldı")}",
+                        success ? item.RegistryPath : "Yetki yetersiz: durum değiştirilemedi",
+                        success ? ActivityOutcome.Succeeded : ActivityOutcome.Failed, capture.Items,
+                        deepLink: "Startup", handler: UndoHandlers.StartupApproved);
+                }
 
                 if (success)
                 {
@@ -156,13 +170,19 @@ namespace Bakım.ViewModels
             }
         }
 
+        private static bool IsFolderItem(StartupProgramItem item) =>
+            item.LocationType.Contains("Klasör") || item.RegistryPath.Contains("Klasör");
+
         [RelayCommand]
         public async Task DeleteProgramAsync(StartupProgramItem? item)
         {
             if (item == null) return;
 
             var result = MessageBox.Show(
-                $"'{item.Name}' uygulamasını başlangıçtan tamamen silmek istediğinize emin misiniz?\n\nKonum: {item.RegistryPath}\nDosya: {item.FilePath}\n\nBu işlem geri alınamaz.",
+                $"'{item.Name}' uygulamasını başlangıçtan silmek istediğinize emin misiniz?\n\nKonum: {item.RegistryPath}\nDosya: {item.FilePath}\n\n" +
+                (IsFolderItem(item)
+                    ? "Kısayol Geri Dönüşüm Kutusu'na taşınır."
+                    : "Kayıt defteri girdisi yedeklenir; Etkinlik Merkezi'nden geri alabilirsiniz."),
                 "Başlangıçtan Sil",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -172,7 +192,19 @@ namespace Bakım.ViewModels
             IsBusy = true;
             try
             {
-                bool ok = await _startupService.DeleteStartupProgramAsync(item);
+                bool ok;
+                using (var capture = RegistryCapture.Begin())
+                {
+                    ok = await _startupService.DeleteStartupProgramAsync(item);
+                    var outcome = ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed;
+                    string title = $"'{item.Name}' başlangıçtan silindi";
+                    if (IsFolderItem(item))
+                        _activity.RecordRecycled(ActivityKind.StartupChange, "Başlangıç", title, "Kısayol Geri Dönüşüm Kutusu'na taşındı",
+                            outcome, new[] { new ActivityItem(item.FilePath, "Geri Dönüşüm Kutusu", ok ? "Tamam" : "Başarısız") }, deepLink: "Startup");
+                    else
+                        _activity.RecordRegistryChange(ActivityKind.StartupChange, "Başlangıç", title, item.RegistryPath,
+                            outcome, capture.Items, deepLink: "Startup", handler: UndoHandlers.StartupApproved);
+                }
                 if (ok)
                 {
                     _allPrograms.Remove(item);
@@ -222,7 +254,13 @@ namespace Bakım.ViewModels
             IsBusy = true;
             try
             {
-                bool ok = await _startupService.AddNewStartupProgramAsync(appName, filePath);
+                bool ok;
+                using (var capture = RegistryCapture.Begin())
+                {
+                    ok = await _startupService.AddNewStartupProgramAsync(appName, filePath);
+                    _activity.RecordRegistryChange(ActivityKind.StartupChange, "Başlangıç", $"'{appName}' başlangıca eklendi", filePath,
+                        ok ? ActivityOutcome.Succeeded : ActivityOutcome.Failed, capture.Items, deepLink: "Startup", handler: UndoHandlers.StartupApproved);
+                }
                 if (ok)
                 {
                     await RefreshAsync();
@@ -270,10 +308,20 @@ namespace Bakım.ViewModels
             int disabledCount = 0;
             try
             {
-                foreach (var app in highImpacts)
+                using (var capture = RegistryCapture.Begin())
                 {
-                    bool ok = await _startupService.SetStartupProgramStateAsync(app, false);
-                    if (ok) disabledCount++;
+                    var items = new List<ActivityItem>();
+                    foreach (var app in highImpacts)
+                    {
+                        bool ok = await _startupService.SetStartupProgramStateAsync(app, false);
+                        if (ok) disabledCount++;
+                        items.Add(new ActivityItem(app.Name, "Devre dışı bırak", ok ? "Tamam" : "Başarısız"));
+                    }
+                    _activity.RecordRegistryChange(ActivityKind.StartupChange, "Başlangıç",
+                        $"Açılış hızlandırıldı: {disabledCount} uygulama devre dışı",
+                        string.Join(", ", highImpacts.Select(a => a.Name)),
+                        ActivityQuery.OutcomeFromCounts(disabledCount, highImpacts.Count - disabledCount), capture.Items,
+                        deepLink: "Startup", handler: UndoHandlers.StartupApproved);
                 }
 
                 CalculateStats();

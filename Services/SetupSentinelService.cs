@@ -626,6 +626,7 @@ namespace Bakım.Services
 
                 // Raporu Tekil SessionStore'a Kaydet (P0-6)
                 await _sessionStore.SaveReportAsync(report);
+                RecordActivity(report);
 
                 lock (_lock)
                 {
@@ -676,6 +677,32 @@ namespace Bakım.Services
                 report.QuickRiskSummary = "Temiz kurulum • Yürütülebilir tehdit saptanmadı";
                 report.RiskBadgeBrush = "AccentTextFillColorPrimaryBrush";
             }
+        }
+
+        /// <summary>Kurulum oturumunu Etkinlik Merkezi'ne yazar (ayrıntılı rapor Kaldırıcı'dadır).</summary>
+        private static void RecordActivity(SetupDeltaReport report)
+        {
+            var activity = App.TryGetService<Activity.IActivityService>();
+            if (activity == null) return;
+
+            string verb = report.Kind switch
+            {
+                SessionKind.Uninstall => "kaldırıldı",
+                SessionKind.Update => "güncellendi",
+                _ => "kuruldu"
+            };
+            string summary = $"+{report.CreatedFiles.Count:N0} dosya · {report.FormattedSize}" +
+                             (report.AddedStartupEntries.Count > 0 ? $" · {report.AddedStartupEntries.Count} başlangıç girdisi" : "") +
+                             (report.AddedServices.Count > 0 ? $" · {report.AddedServices.Count} hizmet" : "") +
+                             (string.IsNullOrWhiteSpace(report.QuickRiskSummary) ? "" : $" · {report.QuickRiskSummary}");
+            var items = report.AddedExecutables.Select(e => new Core.Activity.ActivityItem(e, "Yürütülebilir", "Eklendi"))
+                .Concat(report.AddedStartupEntries.Select(e => new Core.Activity.ActivityItem(e, "Başlangıç", "Eklendi")))
+                .Concat(report.AddedServices.Select(e => new Core.Activity.ActivityItem(e, "Hizmet", "Eklendi")));
+
+            Activity.ActivityRecording.RecordSimple(activity, Core.Activity.ActivityKind.SetupSession, "Kurulum Nöbetçisi",
+                $"\"{report.AppName}\" {verb}", summary,
+                report.IsPossiblyIncomplete ? Core.Activity.ActivityOutcome.PartiallySucceeded : Core.Activity.ActivityOutcome.Succeeded,
+                items, deepLink: "Uninstaller");
         }
 
         public async Task<bool> SaveReportProfileAsync(SetupDeltaReport report)

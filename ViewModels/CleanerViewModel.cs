@@ -12,18 +12,23 @@ using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
+using Bakım.Core.Activity;
+using ActivityKind = Bakım.Core.Activity.ActivityKind;
 using Bakım.Services;
+using Bakım.Services.Activity;
 
 namespace Bakım.ViewModels
 {
     public partial class CleanerViewModel : ObservableObject
     {
         private readonly ISystemCleanService _cleanService;
+        private readonly IActivityService _activity;
         private CancellationTokenSource? _cts;
 
-        public CleanerViewModel(ISystemCleanService cleanService)
+        public CleanerViewModel(ISystemCleanService cleanService, IActivityService activity)
         {
             _cleanService = cleanService;
+            _activity = activity;
             Categories = new ObservableCollection<CleanCategory>(_cleanService.GetDefaultCategories());
             ScannedFiles = new ObservableCollection<CleanFileItem>();
 
@@ -504,6 +509,8 @@ namespace Bakım.ViewModels
                     cat.FileCount = 0;
                 }
 
+                RecordCleanActivity(itemsToClean, result, cancelled: false);
+
                 HasResultBanner = true;
                 OperationResultBanner = $"Başarıyla {result.TotalFilesDeleted} dosya silindi ve {result.FormattedBytesFreed} alan kazanıldı! ({result.TotalFilesSkipped} dosya kilitli/korumalı olduğu için güvenle atlandı)";
                 StatusText = "Temizlik operasyonu tamamlandı.";
@@ -513,6 +520,15 @@ namespace Bakım.ViewModels
             catch (OperationCanceledException)
             {
                 StatusText = "Temizlik işlemi iptal edildi.";
+                int deleted = itemsToClean.Count(i => i.IsDeleted);
+                if (deleted > 0)
+                {
+                    RecordCleanActivity(itemsToClean, new CleanResult
+                    {
+                        TotalFilesDeleted = deleted,
+                        TotalBytesFreed = itemsToClean.Where(i => i.IsDeleted).Sum(i => i.SizeBytes)
+                    }, cancelled: true);
+                }
             }
             catch (Exception ex)
             {
@@ -523,6 +539,40 @@ namespace Bakım.ViewModels
                 IsCleaning = false;
                 IsBusy = false;
             }
+        }
+
+        /// <summary>Temizliği Etkinlik Merkezi'ne yazar: kategori başına dosya sayısı ve boyut.</summary>
+        private void RecordCleanActivity(IReadOnlyList<CleanFileItem> requested, CleanResult result, bool cancelled)
+        {
+            var byCategory = requested
+                .GroupBy(i => string.IsNullOrEmpty(i.CategoryName) ? "Diğer" : i.CategoryName)
+                .Select(g =>
+                {
+                    int deleted = g.Count(i => i.IsDeleted);
+                    long bytes = g.Where(i => i.IsDeleted).Sum(i => i.SizeBytes);
+                    int skipped = g.Count() - deleted;
+                    return new ActivityItem(g.Key, "Temizle",
+                        $"{deleted} dosya · {CleanCategory.FormatBytes(bytes)}",
+                        skipped > 0 ? $"{skipped} dosya kilitli/korumalı olduğu için atlandı" : null);
+                })
+                .ToList();
+
+            var categories = byCategory.Select(c => c.Target).ToList();
+            string title = categories.Count switch
+            {
+                0 => "Temizlik yapıldı",
+                1 => $"{categories[0]} temizlendi",
+                _ => $"{categories.Count} kategori temizlendi"
+            };
+            // Kilitli dosyaları atlamak olağandır; hiçbir dosya silinemediyse başarısızdır.
+            var outcome = cancelled ? ActivityOutcome.Cancelled
+                : result.TotalFilesDeleted == 0 && result.TotalFilesSkipped > 0 ? ActivityOutcome.Failed
+                : ActivityOutcome.Succeeded;
+
+            _activity.RecordSimple(ActivityKind.Clean, "Temizleyici", title,
+                $"{result.TotalFilesDeleted:N0} dosya · {result.FormattedBytesFreed}" +
+                (result.TotalFilesSkipped > 0 ? $" · {result.TotalFilesSkipped:N0} atlandı" : ""),
+                outcome, byCategory, deepLink: "Cleaner");
         }
 
         #endregion

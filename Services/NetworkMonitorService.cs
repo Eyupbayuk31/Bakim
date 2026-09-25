@@ -23,6 +23,7 @@ namespace Bakım.Services
         Task RunSpeedTestAsync(IProgress<SpeedTestProgress> progress, CancellationToken ct);
         Task<bool> BlockProcessInFirewallAsync(NetworkConnectionItem item);
         Task<bool> UnblockProcessInFirewallAsync(NetworkConnectionItem item);
+        string LastFirewallError { get; }
         bool KillProcess(int pid);
         void OpenProcessLocation(string processPath);
     }
@@ -1120,62 +1121,36 @@ namespace Bakım.Services
 
         #region 6. Güvenlik Duvarı ve Süreç Kontrolü
 
+        /// <summary>Bakım'ın bu program için eklediği engelleme kuralının adı.</summary>
+        public static string FirewallRuleName(string processPath) => $"Bakim_Block_{Path.GetFileNameWithoutExtension(processPath)}";
+
+        // Eskiden netsh "runas" ile başlatılıp 3 sn bekleniyor ve sonuç ne olursa olsun true
+        // dönülüyordu: UAC reddedilse bile arayüz "engellendi" gösteriyordu. Artık kural
+        // NetSecurity cmdlet'leriyle yazılır ve çıkış kodu doğrulanır.
         public async Task<bool> BlockProcessInFirewallAsync(NetworkConnectionItem item)
         {
-            return await Task.Run(() =>
+            if (string.IsNullOrWhiteSpace(item.ProcessPath) || !File.Exists(item.ProcessPath))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(item.ProcessPath) || !File.Exists(item.ProcessPath))
-                        return false;
+                LastFirewallError = "Programın dosya yolu bulunamadı.";
+                return false;
+            }
 
-                    string ruleName = $"Bakim_Block_{Path.GetFileNameWithoutExtension(item.ProcessPath)}";
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "netsh",
-                        Arguments = $"advfirewall firewall add rule name=\"{ruleName}\" dir=out action=block program=\"{item.ProcessPath}\" enable=yes",
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-                    using var proc = Process.Start(psi);
-                    proc?.WaitForExit(3000);
-                    item.IsBlocked = true;
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            var result = await Activity.FirewallRules.AddBlockAsync(FirewallRuleName(item.ProcessPath), item.ProcessPath);
+            LastFirewallError = result.Succeeded ? string.Empty : (result.Cancelled ? "Yönetici izni verilmedi." : result.Message);
+            if (result.Succeeded) item.IsBlocked = true;
+            return result.Succeeded;
         }
 
         public async Task<bool> UnblockProcessInFirewallAsync(NetworkConnectionItem item)
         {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    string ruleName = $"Bakim_Block_{Path.GetFileNameWithoutExtension(item.ProcessPath)}";
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "netsh",
-                        Arguments = $"advfirewall firewall delete rule name=\"{ruleName}\"",
-                        CreateNoWindow = true,
-                        UseShellExecute = true,
-                        Verb = "runas"
-                    };
-                    using var proc = Process.Start(psi);
-                    proc?.WaitForExit(3000);
-                    item.IsBlocked = false;
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
+            var result = await Activity.FirewallRules.RemoveAsync(FirewallRuleName(item.ProcessPath));
+            LastFirewallError = result.Succeeded ? string.Empty : (result.Cancelled ? "Yönetici izni verilmedi." : result.Message);
+            if (result.Succeeded) item.IsBlocked = false;
+            return result.Succeeded;
         }
+
+        /// <summary>Son güvenlik duvarı işleminin başarısızlık nedeni.</summary>
+        public string LastFirewallError { get; private set; } = string.Empty;
 
         public bool KillProcess(int pid)
         {

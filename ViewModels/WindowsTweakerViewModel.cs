@@ -5,7 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Helpers;
 using Bakım.Models;
+using Bakım.Core.Activity;
 using Bakım.Services;
+using Bakım.Services.Activity;
 using Wpf.Ui.Controls;
 
 namespace Bakım.ViewModels
@@ -24,6 +26,7 @@ namespace Bakım.ViewModels
         private readonly IEdgeTweaksService _edgeService;
         private readonly ISettingsControlPanelTweaksService _settingsCplService;
         private readonly IFileExplorerTweaksService _fileExplorerService;
+        private readonly IActivityService _activity;
         private readonly ICollectionView _filteredTweaks;
 
         public WindowsTweakerViewModel(
@@ -39,8 +42,10 @@ namespace Bakım.ViewModels
             IEdgeTweaksService edgeService,
             ISettingsControlPanelTweaksService settingsCplService,
             IFileExplorerTweaksService fileExplorerService,
-            PrivacyDebloatViewModel privacyDebloat)
+            PrivacyDebloatViewModel privacyDebloat,
+            IActivityService activity)
         {
+            _activity = activity;
             _behaviorService = behaviorService;
             _bootLogonService = bootLogonService;
             _desktopTaskbarService = desktopTaskbarService;
@@ -374,12 +379,19 @@ namespace Bakım.ViewModels
             try
             {
                 bool success;
+                IReadOnlyList<RegistryValueSnapshot> originals;
                 using (var capture = Bakım.Helpers.RegistryCapture.Begin())
                 {
                     success = await ApplyTweakDirectAsync(tweak, targetState);
                     // Değer düzeyinde geri alma için dokunulan değerlerin özgün halleri (H-13).
-                    await _snapshotService.RecordRegistryOriginalsAsync(tweak, capture.Items);
+                    originals = capture.Items;
+                    await _snapshotService.RecordRegistryOriginalsAsync(tweak, originals);
                 }
+
+                _activity.RecordRegistryChange(ActivityKind.Tweak, "Windows Ayarları",
+                    $"'{tweak.Title}' {(targetState ? "uygulandı" : "varsayılana döndürüldü")}",
+                    success ? $"{tweak.Category} · {originals.Count} kayıt değeri" : $"Uygulanamadı: {tweak.LastError}",
+                    success ? ActivityOutcome.Succeeded : ActivityOutcome.Failed, originals, deepLink: "Tweaker");
 
                 if (success)
                 {
@@ -678,15 +690,22 @@ namespace Bakım.ViewModels
                 var cplList = AllTweaks.Where(t => t.Category.Contains("Ayarlar")).ToList();
                 var edgeList = AllTweaks.Where(t => t.Category.Contains("Edge")).ToList();
 
-                await _win11Service.ApplyAllRecommendedAsync(win11List);
-                await _appearanceService.ApplyAllRecommendedAsync(appearanceList);
-                await _behaviorService.ApplyAllRecommendedAsync(behaviorList);
-                await _bootLogonService.ApplyAllRecommendedAsync(bootList);
-                await _desktopTaskbarService.ApplyAllRecommendedAsync(desktopList);
-                await _contextMenuService.ApplyAllRecommendedAsync(contextList);
-                await _fileExplorerService.ApplyAllRecommendedAsync(feList);
-                await _settingsCplService.ApplyAllRecommendedAsync(cplList);
-                await _edgeService.ApplyAllRecommendedAsync(edgeList);
+                using (var capture = Bakım.Helpers.RegistryCapture.Begin())
+                {
+                    await _win11Service.ApplyAllRecommendedAsync(win11List);
+                    await _appearanceService.ApplyAllRecommendedAsync(appearanceList);
+                    await _behaviorService.ApplyAllRecommendedAsync(behaviorList);
+                    await _bootLogonService.ApplyAllRecommendedAsync(bootList);
+                    await _desktopTaskbarService.ApplyAllRecommendedAsync(desktopList);
+                    await _contextMenuService.ApplyAllRecommendedAsync(contextList);
+                    await _fileExplorerService.ApplyAllRecommendedAsync(feList);
+                    await _settingsCplService.ApplyAllRecommendedAsync(cplList);
+                    await _edgeService.ApplyAllRecommendedAsync(edgeList);
+
+                    // Toplu işlem tek kayıt: "Geri al" tüm önerilenleri tek seferde özgün haline döndürür.
+                    _activity.RecordRegistryChange(ActivityKind.Tweak, "Windows Ayarları", "Önerilen ince ayarlar uygulandı",
+                        $"{capture.Items.Count} kayıt değeri değiştirildi", ActivityOutcome.Succeeded, capture.Items, deepLink: "Tweaker");
+                }
 
                 _snapshotService.BroadcastSettingsChange();
                 CanRestartExplorer = true;
@@ -728,15 +747,21 @@ namespace Bakım.ViewModels
                 var cplList = AllTweaks.Where(t => t.Category.Contains("Ayarlar")).ToList();
                 var edgeList = AllTweaks.Where(t => t.Category.Contains("Edge")).ToList();
 
-                await _win11Service.RestoreDefaultsAsync(win11List);
-                await _appearanceService.RestoreDefaultsAsync(appearanceList);
-                await _behaviorService.RestoreDefaultsAsync(behaviorList);
-                await _bootLogonService.RestoreDefaultsAsync(bootList);
-                await _desktopTaskbarService.RestoreDefaultsAsync(desktopList);
-                await _contextMenuService.RestoreDefaultsAsync(contextList);
-                await _fileExplorerService.RestoreDefaultsAsync(feList);
-                await _settingsCplService.RestoreDefaultsAsync(cplList);
-                await _edgeService.RestoreDefaultsAsync(edgeList);
+                using (var capture = Bakım.Helpers.RegistryCapture.Begin())
+                {
+                    await _win11Service.RestoreDefaultsAsync(win11List);
+                    await _appearanceService.RestoreDefaultsAsync(appearanceList);
+                    await _behaviorService.RestoreDefaultsAsync(behaviorList);
+                    await _bootLogonService.RestoreDefaultsAsync(bootList);
+                    await _desktopTaskbarService.RestoreDefaultsAsync(desktopList);
+                    await _contextMenuService.RestoreDefaultsAsync(contextList);
+                    await _fileExplorerService.RestoreDefaultsAsync(feList);
+                    await _settingsCplService.RestoreDefaultsAsync(cplList);
+                    await _edgeService.RestoreDefaultsAsync(edgeList);
+
+                    _activity.RecordRegistryChange(ActivityKind.Tweak, "Windows Ayarları", "Tüm ince ayarlar Windows varsayılanlarına döndürüldü",
+                        $"{capture.Items.Count} kayıt değeri değiştirildi", ActivityOutcome.Succeeded, capture.Items, deepLink: "Tweaker");
+                }
 
                 _snapshotService.BroadcastSettingsChange();
                 CanRestartExplorer = true;

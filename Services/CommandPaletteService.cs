@@ -238,6 +238,16 @@ namespace Bakım.Services
                 },
                 new()
                 {
+                    Title = "Etkinlik Merkezi — Değişiklikler & Geri Alma",
+                    Category = "Sayfa Navigasyonu",
+                    Description = "Bakım'ın yaptığı tüm temizlik, kaldırma, ince ayar, başlangıç ve hizmet değişiklikleri; tek tıkla geri alma.",
+                    IconName = "History24",
+                    ActionKind = CommandActionKind.Navigate,
+                    TargetParameter = "Activity",
+                    KeyboardShortcut = "Etkinlik"
+                },
+                new()
+                {
                     Title = "Windows Tweaker (Tüm Ayarlar)",
                     Category = "Sayfa Navigasyonu",
                     Description = "150+ Windows ince ayarı, görünüm ve davranış özelleştirme.",

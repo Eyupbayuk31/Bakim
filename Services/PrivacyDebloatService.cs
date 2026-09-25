@@ -462,6 +462,10 @@ namespace Bakım.Services
             int startValue = disable ? 4 : DefaultServiceStart(serviceName);
             string startMode = startValue switch { 2 => "auto", 3 => "demand", _ => "disabled" };
 
+            // Geri alma için hizmetin özgün başlangıç türü (Services\{ad}\Start).
+            using (var serviceKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}", false))
+                RegistryCapture.Track(serviceKey, "Start");
+
             bool configured = ProcessRunner.RunReported($"{serviceName} hizmeti ({startMode})", "sc.exe",
                 new[] { "config", serviceName, "start=", startMode }, TimeSpan.FromSeconds(20));
             if (!configured) return;
