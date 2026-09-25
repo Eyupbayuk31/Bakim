@@ -19,44 +19,45 @@ namespace Bakım.Services
         private const string KeyName = "BakimUninstall";
         private const string MenuText = "Bakım ile Kaldır";
 
-        private static readonly string[] SubTargetKeys = new[]
+        /// <summary>
+        /// Menünün görüneceği türler (KAL S-6, S-7):
+        ///   • Kısayol, exe, .msi paketi, .url (Steam oyunları) — her zaman.
+        ///   • Klasör — yalnızca Shift + sağ tık ("Extended"); eskiden her klasörde görünüyordu.
+        /// </summary>
+        private static readonly (string Key, bool ExtendedOnly)[] Targets =
         {
-            @"lnkfile\shell",
-            @"exefile\shell",
-            @"Directory\shell"
+            (@"lnkfile\shell", false),
+            (@"exefile\shell", false),
+            (@"Msi.Package\shell", false),
+            (@"InternetShortcut\shell", false),
+            (@"Directory\shell", true)
         };
 
         private static string GetExePath()
         {
-            try
-            {
-                string? exePath = Process.GetCurrentProcess().MainModule?.FileName;
-                if (!string.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
-                {
-                    return exePath;
-                }
-            }
-            catch { }
-
-            string fallback = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Bakim.exe");
-            return fallback;
+            string? exePath = Environment.ProcessPath;
+            if (!string.IsNullOrWhiteSpace(exePath) && File.Exists(exePath)) return exePath;
+            return Path.Combine(AppContext.BaseDirectory, "Bakim.exe");
         }
 
+        private static string CommandFor(string exePath) => $"\"{exePath}\" --uninstall-target \"%1\"";
+
+        /// <summary>
+        /// Kayıtlı ve komut GÜNCEL Bakım yolunu gösteriyorsa true (S-8). Bakım taşındı ya da
+        /// güncellendiyse false döner; açılıştaki otomatik kayıt menüyü kendiliğinden onarır.
+        /// </summary>
         public bool IsContextMenuRegistered()
         {
             try
             {
-                // Check in HKCU first
-                using var hkcu = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{SubTargetKeys[0]}\{KeyName}");
-                if (hkcu != null) return true;
-
-                // Check in HKLM
-                using var hklm = Registry.LocalMachine.OpenSubKey($@"Software\Classes\{SubTargetKeys[0]}\{KeyName}");
-                if (hklm != null) return true;
-
-                // Check in ClassesRoot
-                using var hkcr = Registry.ClassesRoot.OpenSubKey($@"{SubTargetKeys[0]}\{KeyName}");
-                return hkcr != null;
+                string expected = CommandFor(GetExePath());
+                foreach (var (key, _) in Targets)
+                {
+                    using var cmd = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{key}\{KeyName}\command");
+                    if (!string.Equals(cmd?.GetValue("") as string, expected, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                }
+                return true;
             }
             catch
             {
@@ -64,88 +65,75 @@ namespace Bakım.Services
             }
         }
 
+        /// <summary>
+        /// Yalnızca HKCU'ya yazar (yönetici gerekmez, kullanıcıya özel). Eskiden hem HKCU hem HKLM'e
+        /// yazılıyordu; eski HKLM kopyaları yazılabiliyorsa temizlenir.
+        /// </summary>
         public bool RegisterContextMenu()
         {
             string exePath = GetExePath();
-            string commandStr = $"\"{exePath}\" --uninstall-target \"%1\"";
+            string commandStr = CommandFor(exePath);
             string iconStr = $"\"{exePath}\",0";
-
             bool allSuccess = true;
 
-            foreach (var subKey in SubTargetKeys)
+            foreach (var (key, extendedOnly) in Targets)
             {
-                bool registered = false;
-
-                // 1. Try HKCU (Doesn't need admin elevation, user-specific)
                 try
                 {
-                    using var baseKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{subKey}\{KeyName}");
-                    if (baseKey != null)
-                    {
-                        baseKey.SetValue("", MenuText);
-                        baseKey.SetValue("Icon", iconStr);
+                    using var baseKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{key}\{KeyName}");
+                    baseKey.SetValue("", MenuText);
+                    baseKey.SetValue("Icon", iconStr);
+                    if (extendedOnly) baseKey.SetValue("Extended", string.Empty);
+                    else baseKey.DeleteValue("Extended", false);
 
-                        using var cmdKey = baseKey.CreateSubKey("command");
-                        cmdKey?.SetValue("", commandStr);
-                        registered = true;
-                    }
+                    using var cmdKey = baseKey.CreateSubKey("command");
+                    cmdKey.SetValue("", commandStr);
                 }
-                catch { }
-
-                // 2. Try HKLM (System-wide if admin)
-                try
+                catch (Exception ex)
                 {
-                    using var hklmBase = Registry.LocalMachine.CreateSubKey($@"Software\Classes\{subKey}\{KeyName}");
-                    if (hklmBase != null)
-                    {
-                        hklmBase.SetValue("", MenuText);
-                        hklmBase.SetValue("Icon", iconStr);
-
-                        using var cmdKey = hklmBase.CreateSubKey("command");
-                        cmdKey?.SetValue("", commandStr);
-                        registered = true;
-                    }
-                }
-                catch { }
-
-                if (!registered)
-                {
+                    AppLog.Warning($"Sağ tık menüsü yazılamadı: {key}", ex, nameof(ShellContextMenuService));
                     allSuccess = false;
                 }
+
+                RemoveLegacyMachineEntry(key);
             }
 
             return allSuccess;
+        }
+
+        private static void RemoveLegacyMachineEntry(string key)
+        {
+            try
+            {
+                using var classes = Registry.LocalMachine.OpenSubKey($@"Software\Classes\{key}", writable: true);
+                classes?.DeleteSubKeyTree(KeyName, throwOnMissingSubKey: false);
+            }
+            catch (UnauthorizedAccessException) { }
+            catch (System.Security.SecurityException) { }
+            catch (IOException) { }
         }
 
         public bool UnregisterContextMenu()
         {
             bool anySuccess = false;
 
-            foreach (var subKey in SubTargetKeys)
+            foreach (var (key, _) in Targets)
             {
-                // Delete from HKCU
                 try
                 {
-                    using var classes = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{subKey}", writable: true);
+                    using var classes = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{key}", writable: true);
                     if (classes != null)
                     {
                         classes.DeleteSubKeyTree(KeyName, throwOnMissingSubKey: false);
                         anySuccess = true;
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    AppLog.Warning($"Sağ tık menüsü kaldırılamadı: {key}", ex, nameof(ShellContextMenuService));
+                }
 
-                // Delete from HKLM
-                try
-                {
-                    using var classes = Registry.LocalMachine.OpenSubKey($@"Software\Classes\{subKey}", writable: true);
-                    if (classes != null)
-                    {
-                        classes.DeleteSubKeyTree(KeyName, throwOnMissingSubKey: false);
-                        anySuccess = true;
-                    }
-                }
-                catch { }
+                RemoveLegacyMachineEntry(key);
             }
 
             return anySuccess;

@@ -46,6 +46,32 @@ namespace Bakım.Services
                 string targetExePath = cleanedPath;
                 string shortcutName = Path.GetFileNameWithoutExtension(cleanedPath);
                 string targetDir = string.Empty;
+                string extension = Path.GetExtension(cleanedPath).ToLowerInvariant();
+
+                // S-6: Yolu olmayan hedefler — MSI "advertised" kısayolu, .msi paketi, Steam .url —
+                // Uninstall anahtar adıyla (ürün kodu / "Steam App N") birebir eşleştirilir.
+                string? exactKeyName = extension switch
+                {
+                    ".lnk" => Helpers.MsiInterop.TryGetShortcutProductCode(cleanedPath),
+                    ".msi" => Helpers.MsiInterop.TryGetPackageProductCode(cleanedPath),
+                    ".url" => Helpers.MsiInterop.SteamUninstallKeyName(Helpers.MsiInterop.TryReadUrlShortcut(cleanedPath)),
+                    _ => null
+                };
+                if (exactKeyName != null || extension is ".msi" or ".url")
+                {
+                    var apps = await _deepUninstaller.GetInstalledAppsAsync();
+                    if (exactKeyName != null)
+                    {
+                        var byKey = apps.FirstOrDefault(a =>
+                            Path.GetFileName(a.RegistryKeyPath.TrimEnd('\\')).Equals(exactKeyName, StringComparison.OrdinalIgnoreCase));
+                        if (byKey != null) return byKey;
+                    }
+
+                    // .msi kurulu değilse ya da .url (Steam dışı) ise: yalnızca ad eşleşmesi; tahmini
+                    // "taşınabilir uygulama" üretilmez (hedef bir dosya klasörü değil).
+                    if (extension is ".msi" or ".url")
+                        return FindMatchingApp(apps, string.Empty, string.Empty, shortcutName);
+                }
 
                 // 1. Resolve .lnk shortcut if needed
                 if (cleanedPath.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
