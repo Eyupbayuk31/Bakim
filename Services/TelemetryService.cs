@@ -79,7 +79,44 @@ namespace Bakım.Services
 
         #endregion
 
-        public async Task<TelemetryMetrics> SampleMetricsAsync()
+        private readonly object _sampleGate = new();
+        private Task<TelemetryMetrics>? _inFlightSample;
+        private TelemetryMetrics? _lastSample;
+        private DateTime _lastSampleUtc = DateTime.MinValue;
+        private static readonly TimeSpan SampleReuseWindow = TimeSpan.FromSeconds(1);
+
+        /// <summary>
+        /// Tek örnekleyici (P-1): pano (1,5 sn), kenar çubuğu (3 sn) ve tepsi aynı anda örnek
+        /// istiyordu; her biri ayrı WMI/performans sayacı turu çalıştırıyordu. Son 1 sn içindeki
+        /// örnek yeniden kullanılır, eşzamanlı çağrılar tek turu paylaşır.
+        /// </summary>
+        public Task<TelemetryMetrics> SampleMetricsAsync()
+        {
+            lock (_sampleGate)
+            {
+                if (_lastSample != null && DateTime.UtcNow - _lastSampleUtc < SampleReuseWindow)
+                    return Task.FromResult(_lastSample);
+                if (_inFlightSample != null) return _inFlightSample;
+
+                var task = SampleMetricsCoreAsync();
+                _inFlightSample = task;
+                _ = task.ContinueWith(completed =>
+                {
+                    lock (_sampleGate)
+                    {
+                        if (completed.Status == TaskStatus.RanToCompletion)
+                        {
+                            _lastSample = completed.Result;
+                            _lastSampleUtc = DateTime.UtcNow;
+                        }
+                        _inFlightSample = null;
+                    }
+                }, TaskScheduler.Default);
+                return task;
+            }
+        }
+
+        private async Task<TelemetryMetrics> SampleMetricsCoreAsync()
         {
             return await Task.Run(() =>
             {

@@ -174,7 +174,8 @@ namespace Bakım.Services
                     $"Otomatik RAM temizliği tamamlandı, kazanılan: {Models.CleanCategory.FormatBytes(freed)}",
                     nameof(BackgroundMaintenanceService));
 
-                if (freed > 0)
+                // 16 MB altı ölçüm gürültüsüdür; "boşaltıldı" bildirimi göstermeye değmez.
+                if (Core.Text.MemoryResultText.IsSignificant(freed))
                 {
                     Raise(() => AutoRamCleanCompleted?.Invoke(freed));
                 }

@@ -60,21 +60,14 @@ namespace Bakım.ViewModels
             {
                 Interval = TimeSpan.FromSeconds(3)
             };
-            _liveTelemetryTimer.Tick += async (_, _) =>
+            _liveTelemetryTimer.Tick += Helpers.AsyncTick.Guarded(async () =>
             {
+                // Donanım sorgusu (WMI) 3 sn'den uzun sürebilir; tur korumalı (P-2).
                 if (!IsBusy && ActiveSubTab == "Hardware")
                 {
-                    try
-                    {
-                        var hw = await _infoService.GetSystemHardwareAsync();
-                        Hardware = hw;
-                    }
-                    catch
-                    {
-                        // Savunmacı arka plan yenileme
-                    }
+                    Hardware = await _infoService.GetSystemHardwareAsync();
                 }
-            };
+            }, nameof(SystemInfoViewModel));
             // Zamanlayıcı OnActivatedAsync() içinde başlar — bkz. IModuleViewModel
         }
 

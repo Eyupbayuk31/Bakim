@@ -75,7 +75,7 @@ namespace Bakım.ViewModels
             {
                 Interval = TimeSpan.FromSeconds(3)
             };
-            _miniTelemetryTimer.Tick += async (_, _) => await UpdateMiniTelemetryAsync();
+            _miniTelemetryTimer.Tick += Helpers.AsyncTick.Guarded(UpdateMiniTelemetryAsync, nameof(MainViewModel));
             _miniTelemetryTimer.Start();
             _ = UpdateMiniTelemetryAsync();
 
@@ -195,6 +195,10 @@ namespace Bakım.ViewModels
 
         private async Task UpdateMiniTelemetryAsync()
         {
+            // Pencere tepside/simge durumundayken kenar çubuğu görünmez; örnekleme boşa gider.
+            var window = System.Windows.Application.Current?.MainWindow;
+            if (window == null || !window.IsVisible || window.WindowState == System.Windows.WindowState.Minimized) return;
+
             try
             {
                 var sample = await _telemetryService.SampleMetricsAsync();

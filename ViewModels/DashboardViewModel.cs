@@ -53,7 +53,7 @@ namespace Bakım.ViewModels
             {
                 Interval = TimeSpan.FromMilliseconds(1500)
             };
-            _telemetryTimer.Tick += async (_, _) => await OnTelemetryTickAsync();
+            _telemetryTimer.Tick += Helpers.AsyncTick.Guarded(OnTelemetryTickAsync, nameof(DashboardViewModel));
             // Zamanlayıcı ve ilk yükleme OnActivatedAsync() içinde başlar — bkz. IModuleViewModel
         }
 

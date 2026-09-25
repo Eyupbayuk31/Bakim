@@ -38,13 +38,13 @@ namespace Bakım.ViewModels
             {
                 Interval = TimeSpan.FromSeconds(3)
             };
-            _timer.Tick += async (s, e) =>
+            _timer.Tick += Helpers.AsyncTick.Guarded(async () =>
             {
                 if (IsAutoRefreshEnabled && !IsBusy && SelectedTab == "Connections")
                 {
                     await LoadConnectionsInternalAsync(false);
                 }
-            };
+            }, nameof(NetworkMonitorViewModel));
         }
 
         #region Sekme & Navigasyon
