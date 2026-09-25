@@ -95,11 +95,8 @@ namespace Bakım.Services
                             sizeBytes = parsedSize * 1024;
                         }
 
-                        // Eğer EstimatedSize 0 ise ve InstallLocation varsa, klasör boyutunu hesaplamaya çalış
-                        if (sizeBytes == 0 && !string.IsNullOrWhiteSpace(installLocation) && Directory.Exists(installLocation))
-                        {
-                            sizeBytes = CalculateFolderSizeSafe(installLocation);
-                        }
+                        // Boyut kayıt defterinde yoksa klasör ölçümü sonraya bırakılır (liste hemen görünür).
+                        bool sizePending = sizeBytes == 0 && !string.IsNullOrWhiteSpace(installLocation);
 
                         // Sistem Bileşeni Kontrolü
                         bool isSystemComponent = false;
@@ -122,7 +119,8 @@ namespace Bakım.Services
                             DisplayVersion = version,
                             InstallDate = formattedDate,
                             EstimatedSizeBytes = sizeBytes,
-                            FormattedSize = Bakım.Core.Text.ByteFormatter.Format(sizeBytes),
+                            FormattedSize = sizePending ? "—" : Bakım.Core.Text.ByteFormatter.Format(sizeBytes),
+                            SizePending = sizePending,
                             UninstallString = uninstallString,
                             QuietUninstallString = quietUninstallString,
                             InstallLocation = installLocation,
@@ -159,6 +157,36 @@ namespace Bakım.Services
 
 
         #region Helpers
+
+        /// <summary>
+        /// Kurulum klasörünün boyutu; bağlantı noktalarına inilmez, erişilemeyen alt klasörler atlanır,
+        /// iptal edilebilir. Klasör yoksa ya da korumalı ise 0.
+        /// </summary>
+        public static long MeasureInstallFolder(string folderPath, System.Threading.CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath)) return 0;
+            if (!Bakım.Core.Safety.PathSafetyGuard.Default.CheckDeletion(folderPath, isDirectory: true, allowOutsideKnownRoots: true).IsAllowed)
+                return 0; // "C:\Program Files" gibi yanlış InstallLocation kökleri sayılmaz
+
+            var options = new EnumerationOptions
+            {
+                RecurseSubdirectories = true,
+                IgnoreInaccessible = true,
+                AttributesToSkip = FileAttributes.ReparsePoint
+            };
+            long total = 0;
+            try
+            {
+                foreach (var file in new DirectoryInfo(folderPath).EnumerateFiles("*", options))
+                {
+                    ct.ThrowIfCancellationRequested();
+                    total += file.Length;
+                }
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+            return total;
+        }
 
         private static long CalculateFolderSizeSafe(string folderPath)
         {

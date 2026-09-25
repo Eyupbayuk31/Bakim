@@ -62,8 +62,7 @@ namespace Bakım.Services
                     var apps = await _deepUninstaller.GetInstalledAppsAsync();
                     if (exactKeyName != null)
                     {
-                        var byKey = apps.FirstOrDefault(a =>
-                            Path.GetFileName(a.RegistryKeyPath.TrimEnd('\\')).Equals(exactKeyName, StringComparison.OrdinalIgnoreCase));
+                        var byKey = apps.FirstOrDefault(a => UninstallKeyName(a).Equals(exactKeyName, StringComparison.OrdinalIgnoreCase));
                         if (byKey != null) return byKey;
                     }
 
@@ -125,6 +124,12 @@ namespace Bakım.Services
                 return SynthesizeHeuristicApp(targetExePath, targetDir, shortcutName);
             });
         }
+
+        /// <summary>Uninstall alt anahtarının adı ("{GUID}", "Steam App 730"); " [32]" görünüm eki hariç.</summary>
+        private static string UninstallKeyName(InstalledAppItem app) =>
+            RegistryPath.TryParse(app.RegistryKeyPath, Microsoft.Win32.RegistryView.Registry64, out var path)
+                ? Path.GetFileName(path.SubKey.TrimEnd('\\'))
+                : Path.GetFileName(app.RegistryKeyPath.TrimEnd('\\'));
 
         private static InstalledAppItem? FindMatchingApp(
             System.Collections.Generic.List<InstalledAppItem> apps,

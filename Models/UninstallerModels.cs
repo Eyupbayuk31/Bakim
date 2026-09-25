@@ -33,8 +33,26 @@ namespace Bakım.Models
         public string Publisher { get; set; } = "Bilinmeyen Yayıncı";
         public string DisplayVersion { get; set; } = string.Empty;
         public string InstallDate { get; set; } = string.Empty;
-        public long EstimatedSizeBytes { get; set; }
-        public string FormattedSize { get; set; } = "0 MB";
+        private long _estimatedSizeBytes;
+        private string _formattedSize = "0 MB";
+
+        public long EstimatedSizeBytes
+        {
+            get => _estimatedSizeBytes;
+            set => SetProperty(ref _estimatedSizeBytes, value);
+        }
+
+        public string FormattedSize
+        {
+            get => _formattedSize;
+            set => SetProperty(ref _formattedSize, value);
+        }
+
+        /// <summary>
+        /// Kayıt defterinde boyut yok; kurulum klasörü liste gösterildikten sonra arka planda ölçülür.
+        /// (Eskiden liste yüklenirken her klasör eşzamanlı sayılıyordu; büyük oyunlarda dakikalar sürüyordu.)
+        /// </summary>
+        public bool SizePending { get; set; }
         public string UninstallString { get; set; } = string.Empty;
         public string QuietUninstallString { get; set; } = string.Empty;
         public string InstallLocation { get; set; } = string.Empty;

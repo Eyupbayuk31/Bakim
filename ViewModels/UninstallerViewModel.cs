@@ -241,6 +241,7 @@ namespace Bakım.ViewModels
                 UpdateStats();
                 UpdateSelectedAppsCount();
                 StatusMessage = $"{Stats.TotalAppsCount} program bulundu. Toplam disk boyutu: {Stats.FormattedTotalFootprint}";
+                _ = MeasurePendingSizesAsync(list);
             }
             catch (Exception ex)
             {
@@ -249,6 +250,35 @@ namespace Bakım.ViewModels
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        private CancellationTokenSource? _sizeCts;
+
+        /// <summary>Kayıt defterinde boyutu olmayan programların klasörlerini arka planda ölçer.</summary>
+        private async Task MeasurePendingSizesAsync(IReadOnlyList<InstalledAppItem> apps)
+        {
+            _sizeCts?.Cancel();
+            var cts = _sizeCts = new CancellationTokenSource();
+            var pending = apps.Where(a => a.SizePending).ToList();
+            if (pending.Count == 0) return;
+
+            try
+            {
+                foreach (var app in pending)
+                {
+                    long size = await Task.Run(() => UninstallerService.MeasureInstallFolder(app.InstallLocation, cts.Token), cts.Token);
+                    app.SizePending = false;
+                    app.EstimatedSizeBytes = size;
+                    app.FormattedSize = size > 0 ? Bakım.Core.Text.ByteFormatter.Format(size) : "—";
+                }
+                ApplySorting(); // boyuta göre sıralama ölçülen değerlerle yenilensin
+                UpdateStats();
+                StatusMessage = $"{Stats.TotalAppsCount} program bulundu. Toplam disk boyutu: {Stats.FormattedTotalFootprint}";
+            }
+            catch (OperationCanceledException)
+            {
+                // Liste yenilendi; yeni ölçüm başladı.
             }
         }
 
