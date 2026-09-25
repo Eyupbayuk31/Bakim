@@ -20,58 +20,19 @@ namespace Bakım.Services
             {
                 var list = new List<SystemTweakItem>
                 {
-                    // 1. Disable Annoyances and Bloat
-                    new()
-                    {
-                        Id = "edge_disable_annoyances_bloat",
-                        Category = "Microsoft Edge",
-                        Title = "Edge Kenar Çubuğunu, Alışveriş ve Reklam Önerilerini Kapat",
-                        Description = "Microsoft Edge'in yan panelini (Hubs Sidebar), alışveriş asistanını ve kişiselleştirilmiş tanıtım tekliflerini devre dışı bırakır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "DismissCircle24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "HubsSidebarEnabled", 0)
-                    },
-
-                    // 2. Disable Desktop Shortcut Creation after updates
-                    new()
-                    {
-                        Id = "edge_disable_desktop_shortcut",
-                        Category = "Microsoft Edge",
-                        Title = "Edge Güncellemeleri Sonrası Masaüstü Kısayolu Eklenmesini Engelle",
-                        Description = "Her Edge tarayıcı güncellemesinden sonra masaüstüne zorla yeniden eklenen Microsoft Edge kısayolunun oluşturulmasını engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "Desktop24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "CreateDesktopShortcutDefault", 0)
-                    },
-
-                    // 3. Disable Updates
-                    new()
-                    {
-                        Id = "edge_disable_updates",
-                        Category = "Microsoft Edge",
-                        Title = "Microsoft Edge Otomatik Güncelleştirmelerini Kapat",
-                        Description = "Edge tarayıcısının arka planda otomatik güncellenmesini ve bant genişliği harcamasını durdurur.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "ArrowDownload24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "UpdateDefault", 0)
-                    }
                 };
 
+                list.InsertRange(0, Bakım.Services.Tweaks.TweakEngine.ItemsFor("Microsoft Edge"));
                 return list;
             });
         }
 
         public async Task<bool> ApplyTweakAsync(SystemTweakItem tweak, bool enable)
         {
+            // Veri tabanlı ayarlar (Assets/tweaks/*.json) tek motordan uygulanır (MASTER_PLAN §5.16).
+            if (Bakım.Services.Tweaks.TweakEngine.Handles(tweak.Id))
+                return await Bakım.Services.Tweaks.TweakEngine.ApplyAsync(tweak, enable);
+
             return await Task.Run(() =>
             {
                 using var writes = WriteScope.Begin();
@@ -79,46 +40,6 @@ namespace Bakım.Services
                 {
                     switch (tweak.Id)
                     {
-                        case "edge_disable_annoyances_bloat":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "HubsSidebarEnabled", 0);
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "ShowRecommendOffers", 0);
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "EdgeShoppingAssistantEnabled", 0);
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "PersonalizationReportingEnabled", 0);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "HubsSidebarEnabled");
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "ShowRecommendOffers");
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "EdgeShoppingAssistantEnabled");
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Edge", "PersonalizationReportingEnabled");
-                            }
-                            break;
-
-                        case "edge_disable_desktop_shortcut":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "CreateDesktopShortcutDefault", 0);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "CreateDesktopShortcutDefault");
-                            }
-                            break;
-
-                        case "edge_disable_updates":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "UpdateDefault", 0);
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "Update{56EB18F4-5E85-450F-A862-0941E302A384}", 0);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "UpdateDefault");
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\EdgeUpdate", "Update{56EB18F4-5E85-450F-A862-0941E302A384}");
-                            }
-                            break;
 
                         default:
                             return false;

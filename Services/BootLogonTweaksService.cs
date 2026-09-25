@@ -94,66 +94,6 @@ namespace Bakım.Services
                         IsEnabled = CheckRegistryStringExists(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "LockScreenImage")
                     },
 
-                    // 5. Disable "Let's finish setting up your device" screen
-                    new()
-                    {
-                        Id = "disable_finish_setup",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "'Cihazınızın Kurulumunu Tamamlayalım' Ekranını Engelle",
-                        Description = "Büyük güncellemelerden sonra açılışta beliren zorunlu Microsoft 365, Edge ve OneDrive tanıtım tam ekranını kalıcı olarak kapatır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "Dismiss24",
-                        IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement", "ScoobeSystemSettingEnabled", 0)
-                    },
-
-                    // 6. Disable Blur on Sign-in Screen
-                    new()
-                    {
-                        Id = "disable_blur_signin",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Giriş Ekranındaki Akrilik Bulanıklığı (Blur) Kapat",
-                        Description = "Kilit ve oturum açma ekranında şifre arkasındaki bulanıklık efektini kaldırıp kilit ekranı arka planını net ve canlı gösterir.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "Eye24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DisableAcrylicBackgroundOnLogon", 1)
-                    },
-
-                    // 7. Disable Lock Screen
-                    new()
-                    {
-                        Id = "disable_lock_screen",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Kilit Ekranını (Saat/Tarih Katmanı) Doğrudan Atla",
-                        Description = "Açılışta veya bilgisayar kilitlendiğinde kilit ekranını pas geçerek doğrudan şifre/PIN girme kutusunu ekrana getirir.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "LockOpen24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreen", 1)
-                    },
-
-                    // 8. Enable CTRL + ALT + DEL
-                    new()
-                    {
-                        Id = "enable_ctrl_alt_del",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Oturum Açmak İçin CTRL + ALT + DEL Tuşunu Zorunlu Kıl",
-                        Description = "Kimlik avı (phishing) ve sahte oturum açma pencerelerine karşı oturum açmadan önce donanımsal güvenli kombinasyon ister.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "ShieldKeyhole24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "DisableCAD", 0)
-                    },
-
                     // 9. Enable NumLock on Logon Screen
                     new()
                     {
@@ -167,21 +107,6 @@ namespace Bakım.Services
                         IsRecommended = true,
                         IconSymbol = "Keyboard24",
                         IsEnabled = CheckNumLockEnabled()
-                    },
-
-                    // 10. Enable User Auto Logon Checkbox
-                    new()
-                    {
-                        Id = "enable_autologon_checkbox",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Netplwiz'de 'Kullanıcı Adı ve Parola Girilmelidir' Kutusunu Göster",
-                        Description = "Windows 10/11'de gizlenen netplwiz otomatik oturum açma kutucuğunu görünür yaparak şifresiz direkt masaüstüne geçişi sağlar.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "PersonKey24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device", "DevicePasswordLessBuildVersion", 0)
                     },
 
                     // 11. Find Lock Screen Images
@@ -199,81 +124,6 @@ namespace Bakım.Services
                         IsEnabled = true
                     },
 
-                    // 12. Hide Last User Name
-                    new()
-                    {
-                        Id = "hide_last_username",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Giriş Ekranında Son Oturum Açan Kullanıcı Adını Gizle",
-                        Description = "Bilgisayar açıldığında son oturum açan kişinin adını göstermez; hem kullanıcı adının hem de parolanın elle yazılmasını zorunlu kılar.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "PersonQuestionMark24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "dontdisplaylastusername", 1)
-                    },
-
-                    // 13. Lock Screen Slideshow Duration
-                    new()
-                    {
-                        Id = "lock_screen_slideshow_duration",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Kilit Ekranı Slayt Gösterisi Kapanma Zaman Aşımını Kaldır",
-                        Description = "Kilit ekranı slayt gösterisinin belirli bir süre sonra ekranı karartmasını engelleyerek kesintisiz slayt oynamasını sağlar.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "SlideMultiple24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "LockScreenUnlocksAfter", 0)
-                    },
-
-                    // 14. Login Screen Image
-                    new()
-                    {
-                        Id = "disable_logon_image",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Oturum Açma Ekranı Arka Plan Resmini Kapat (Düz Renk)",
-                        Description = "Giriş ekranında duvar kağıdı yerine temiz, sade ve Windows tema vurgu renginden oluşan düz bir arka plan gösterir.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "Color24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DisableLogonBackgroundImage", 1)
-                    },
-
-                    // 15. Network Icon on Lock Screen
-                    new()
-                    {
-                        Id = "hide_network_lock_screen",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Kilit Ekranındaki Ağ ve İnternet Simgesini Gizle",
-                        Description = "Oturum açılmadan önce kilit ekranının sağ alt köşesindeki Wi-Fi / Ağ menüsünü gizleyerek yetkisiz ağ değişikliklerini önler.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "WifiOff24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DontDisplayNetworkSelectionUI", 1)
-                    },
-
-                    // 16. Power Button on the Login Screen
-                    new()
-                    {
-                        Id = "hide_power_login_screen",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Giriş Ekranındaki Güç (Kapat / Yeniden Başlat) Düğmesini Gizle",
-                        Description = "Oturum açılmadan önce ekranda beliren Kapat ve Yeniden Başlat butonunu kaldırarak izinsiz sistem kapatmalarını engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "Power24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "shutdownwithoutlogon", 0)
-                    },
-
                     // 17. Sign-in Message
                     new()
                     {
@@ -289,28 +139,19 @@ namespace Bakım.Services
                         IsEnabled = CheckLegalNoticeEnabled()
                     },
 
-                    // 18. Verbose Logon Messages
-                    new()
-                    {
-                        Id = "verbose_logon_messages",
-                        Category = "Açılış & Oturum (Boot & Logon)",
-                        Title = "Açılışta Detaylı Sistem ve Profil Durum Mesajlarını Göster",
-                        Description = "Açılışta sadece 'Hoş Geldiniz' yerine arka planda yüklenen servisleri, grup ilkelerini ve ağ bağlantı aşamalarını ekrana yansıtır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "DocumentBulletList24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "verbosestatus", 1)
-                    }
                 };
 
+                list.InsertRange(0, Bakım.Services.Tweaks.TweakEngine.ItemsFor("Açılış & Oturum (Boot & Logon)"));
                 return list;
             });
         }
 
         public async Task<bool> ApplyTweakAsync(SystemTweakItem tweak, bool enable)
         {
+            // Veri tabanlı ayarlar (Assets/tweaks/*.json) tek motordan uygulanır (MASTER_PLAN §5.16).
+            if (Bakım.Services.Tweaks.TweakEngine.Handles(tweak.Id))
+                return await Bakım.Services.Tweaks.TweakEngine.ApplyAsync(tweak, enable);
+
             return await Task.Run(() =>
             {
                 using var writes = WriteScope.Begin();
@@ -335,41 +176,6 @@ namespace Bakım.Services
                             }
                             break;
 
-                        // 5. Disable "Let's finish setting up your device" screen
-                        case "disable_finish_setup":
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\UserProfileEngagement", "ScoobeSystemSettingEnabled", enable ? 0 : 1);
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SubscribedContent-310093Enabled", enable ? 0 : 1);
-                            break;
-
-                        // 6. Disable Blur on Sign-in Screen
-                        case "disable_blur_signin":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DisableAcrylicBackgroundOnLogon", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DisableAcrylicBackgroundOnLogon");
-                            }
-                            break;
-
-                        // 7. Disable Lock Screen
-                        case "disable_lock_screen":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreen", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "NoLockScreen");
-                            }
-                            break;
-
-                        // 8. Enable CTRL + ALT + DEL
-                        case "enable_ctrl_alt_del":
-                            SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon", "DisableCAD", enable ? 0 : 1);
-                            break;
-
                         // 9. Enable NumLock on Logon Screen
                         case "enable_numlock_logon":
                             string numVal = enable ? "2" : "2147483648";
@@ -377,61 +183,10 @@ namespace Bakım.Services
                             SetRegistryString(Registry.CurrentUser, @"Control Panel\Keyboard", "InitialKeyboardIndicators", numVal);
                             break;
 
-                        // 10. Enable User Auto Logon Checkbox
-                        case "enable_autologon_checkbox":
-                            SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\PasswordLess\Device", "DevicePasswordLessBuildVersion", enable ? 0 : 2);
-                            break;
-
                         // 11. Find Lock Screen Images (Action)
                         case "find_spotlight_images":
                             _ = ExportSpotlightImagesAsync();
                             return true;
-
-                        // 12. Hide Last User Name
-                        case "hide_last_username":
-                            SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "dontdisplaylastusername", enable ? 1 : 0);
-                            break;
-
-                        // 13. Lock Screen Slideshow Duration
-                        case "lock_screen_slideshow_duration":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "LockScreenUnlocksAfter", 0);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Personalization", "LockScreenUnlocksAfter");
-                            }
-                            break;
-
-                        // 14. Login Screen Image
-                        case "disable_logon_image":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DisableLogonBackgroundImage", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DisableLogonBackgroundImage");
-                            }
-                            break;
-
-                        // 15. Network Icon on Lock Screen
-                        case "hide_network_lock_screen":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DontDisplayNetworkSelectionUI", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "DontDisplayNetworkSelectionUI");
-                            }
-                            break;
-
-                        // 16. Power Button on the Login Screen
-                        case "hide_power_login_screen":
-                            SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "shutdownwithoutlogon", enable ? 0 : 1);
-                            break;
 
                         // 17. Sign-in Message
                         case "legal_notice_message":
@@ -444,18 +199,6 @@ namespace Bakım.Services
                             {
                                 DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "legalnoticecaption");
                                 DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "legalnoticetext");
-                            }
-                            break;
-
-                        // 18. Verbose Logon Messages
-                        case "verbose_logon_messages":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "verbosestatus", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "verbosestatus");
                             }
                             break;
 

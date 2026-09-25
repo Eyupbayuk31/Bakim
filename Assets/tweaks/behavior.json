@@ -1,0 +1,532 @@
+[
+  {
+    "id": "ads_unwanted",
+    "category": "Davranışlar (Behavior)",
+    "title": "Otomatik İstenmeyen Uygulama İndirmelerini Kapat",
+    "description": "Windows'un arka planda sessizce oyun ve reklam uygulamaları (Candy Crush, TikTok vb.) indirmesini ve Başlat önerilerini engeller.",
+    "icon": "DismissCircle24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SilentInstalledAppsEnabled",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SystemPaneSuggestionsEnabled",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338388Enabled",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338389Enabled",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SilentInstalledAppsEnabled",
+        "dword": 1
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SystemPaneSuggestionsEnabled",
+        "dword": 1
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338388Enabled",
+        "dword": 1
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-338389Enabled",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "auto_reg_backup",
+    "category": "Davranışlar (Behavior)",
+    "title": "Otomatik Kayıt Defteri (RegBack) Yedeklemesini Aktif Et",
+    "description": "Windows 10/11'de kapatılan otomatik sistem kovanı (Registry) yedeklemesini System32\\config\\RegBack altında yeniden başlatır.",
+    "icon": "Save24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Configuration Manager",
+        "name": "EnableDirBackup",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Configuration Manager",
+        "name": "EnableDirBackup"
+      }
+    ]
+  },
+  {
+    "id": "disable_aero_shake",
+    "category": "Davranışlar (Behavior)",
+    "title": "Aero Shake (Pencere Sallayarak Küçültme) Özelliğini Kapat",
+    "description": "Bir pencerenin başlığından tutup sallandığında diğer tüm açık pencerelerin simge durumuna küçülmesini engeller.",
+    "icon": "Window24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "DisallowShaking",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "DisallowShaking",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "disable_aero_snap",
+    "category": "Davranışlar (Behavior)",
+    "title": "Aero Snap (Pencere Kenara Yaslama) Özelliğini Kapat",
+    "description": "Pencereleri ekranın kenarlarına sürükleyerek yarım veya çeyrek ekrana otomatik boyutlandırma davranışını devre dışı bırakır.",
+    "icon": "SplitHorizontal24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetString",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "WindowArrangementActive",
+        "text": "0"
+      }
+    ],
+    "off": [
+      {
+        "op": "SetString",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "WindowArrangementActive",
+        "text": "1"
+      }
+    ]
+  },
+  {
+    "id": "disable_store_lookup",
+    "category": "Davranışlar (Behavior)",
+    "title": "Birlikte Aç Menüsünde 'Store'da Uygulama Ara'yı Kapat",
+    "description": "Bilinmeyen bir dosya türü açıldığında 'Microsoft Store üzerinde bir uygulama arayın' önerisini kapatıp yerel program listesini gösterir.",
+    "icon": "Apps24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "NoUseStoreOpenWith",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "NoUseStoreOpenWith"
+      }
+    ]
+  },
+  {
+    "id": "disable_auto_maintenance",
+    "category": "Davranışlar (Behavior)",
+    "title": "Otomatik Sistem Bakımını (Disk & Güncelleme Taraması) Kapat",
+    "description": "Bilgisayar boştayken Windows'un arka planda ağır bakım ve disk taraması yaparak %100 disk kullanımına sebep olmasını engeller.",
+    "icon": "Timer24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\Maintenance",
+        "name": "MaintenanceDisabled",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\Maintenance",
+        "name": "MaintenanceDisabled"
+      }
+    ]
+  },
+  {
+    "id": "disable_driver_updates",
+    "category": "Davranışlar (Behavior)",
+    "title": "Windows Update Otomatik Sürücü Güncellemelerini Kapat",
+    "description": "Windows Update'in ekran kartı, ses ve yonga seti sürücülerini otomatik indirip mevcut kararlı sürücüleri ezmesini engeller.",
+    "icon": "ArrowDownload24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+        "name": "ExcludeWUIDriverInQualityUpdate",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+        "name": "ExcludeWUIDriverInQualityUpdate"
+      }
+    ]
+  },
+  {
+    "id": "disable_mrt_install",
+    "category": "Davranışlar (Behavior)",
+    "title": "Kötü Amaçlı Yazılım Temizleme Aracı'nın (MRT) İndirilmesini Kapat",
+    "description": "Windows Update üzerinden her ay yüzlerce megabaytlık Microsoft Kötü Amaçlı Yazılımları Temizleme Aracı'nın (MRT) zorla indirilmesini engeller.",
+    "icon": "ShieldDismiss24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\MRT",
+        "name": "DontOfferThroughWUAU",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\MRT",
+        "name": "DontOfferThroughWUAU"
+      }
+    ]
+  },
+  {
+    "id": "onedrive_user_folders",
+    "category": "Davranışlar (Behavior)",
+    "title": "Kullanıcı Klasörlerinin OneDrive'a Zorla Yedeklenmesini Engelle",
+    "description": "Masaüstü, Belgeler ve Resimler klasörlerinin kullanıcı onayı olmadan otomatik OneDrive bulutuna taşınmasını engeller.",
+    "icon": "CloudDismiss24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\OneDrive",
+        "name": "PreventOneDriveFileSync",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\OneDrive",
+        "name": "PreventOneDriveFileSync"
+      }
+    ]
+  },
+  {
+    "id": "crash_ctrl_scroll",
+    "category": "Davranışlar (Behavior)",
+    "title": "Sağ Ctrl + 2x Scroll Lock ile Test BSOD Tetiklemeyi Aç",
+    "description": "Geliştiriciler ve hata ayıklayıcılar için klavye kombinasyonuyla kontrollü sistem çökme dökümü (Memory Dump) üretme kısayolunu açar.",
+    "icon": "DeveloperBoard24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Services\\i8042prt\\Parameters",
+        "name": "CrashOnCtrlScroll",
+        "dword": 1
+      },
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Services\\kbdhid\\Parameters",
+        "name": "CrashOnCtrlScroll",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Services\\i8042prt\\Parameters",
+        "name": "CrashOnCtrlScroll"
+      },
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Services\\kbdhid\\Parameters",
+        "name": "CrashOnCtrlScroll"
+      }
+    ]
+  },
+  {
+    "id": "disable_error_reporting",
+    "category": "Davranışlar (Behavior)",
+    "title": "Windows Hata Raporlama ve Çökme Bildirimlerini (WER) Kapat",
+    "description": "Uygulama veya sistem çöktüğünde Microsoft sunucularına arka planda tanılama dökümü gönderen Windows Hata Raporlama servisini pasife alır.",
+    "icon": "Alert24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting",
+        "name": "Disabled",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting",
+        "name": "Disabled"
+      }
+    ]
+  },
+  {
+    "id": "keep_thumbnail_cache",
+    "category": "Davranışlar (Behavior)",
+    "title": "Küçük Resim (Thumbnail) Önbelleğini Kalıcı Olarak Koru",
+    "description": "Disk Temizleme ve otomatik bakımın resim/video küçük resimlerini silmesini engelleyerek klasörlerin her seferinde hızlı açılmasını sağlar.",
+    "icon": "Image24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache",
+        "name": "Autorun",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VolumeCaches\\Thumbnail Cache",
+        "name": "Autorun",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "menu_show_delay",
+    "category": "Davranışlar (Behavior)",
+    "title": "Başlat ve Menü Açılış Gecikmesini Sıfırla (0 ms Hızlı Menüler)",
+    "description": "Windows'un sağ tık, Başlat ve alt menüleri açarken beklettiği 400 milisaniyelik gecikmeyi 0 ms yaparak arayüzü anında tepki verir hale getirir.",
+    "icon": "TopSpeed24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetString",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "MenuShowDelay",
+        "text": "0"
+      }
+    ],
+    "off": [
+      {
+        "op": "SetString",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "MenuShowDelay",
+        "text": "400"
+      }
+    ]
+  },
+  {
+    "id": "disable_new_app_alert",
+    "category": "Davranışlar (Behavior)",
+    "title": "'Yeni Bir Uygulamanız Var' Bildirim Balonlarını Kapat",
+    "description": "Yeni bir program veya uygulama kurulduğunda ekranda beliren 'Bu dosya türünü açabilecek yeni bir uygulamanız var' uyarısını kapatır.",
+    "icon": "Alert24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "NoNewAppAlert",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "NoNewAppAlert"
+      }
+    ]
+  },
+  {
+    "id": "restore_point_frequency",
+    "category": "Davranışlar (Behavior)",
+    "title": "Sistem Geri Yükleme Noktası Oluşturma Sıklık Sınırını Kaldır",
+    "description": "Windows'un 24 saat içinde tek bir geri yükleme noktası oluşturulmasına izin veren sınırlamasını kaldırarak istendiği an yedek almayı sağlar.",
+    "icon": "ArrowCounterclockwise24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SystemRestore",
+        "name": "SystemRestorePointCreationFrequency",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SystemRestore",
+        "name": "SystemRestorePointCreationFrequency"
+      }
+    ]
+  },
+  {
+    "id": "screensaver_grace_period",
+    "category": "Davranışlar (Behavior)",
+    "title": "Ekran Koruyucu Şifre İsteme Tolerans Süresini Sıfırla (Anında Kilit)",
+    "description": "Ekran koruyucu açıldıktan sonra tanınan 5 saniyelik şifresiz giriş toleransını kaldırarak ekran kararır kararmaz hemen şifre ister.",
+    "icon": "LockClosed24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetString",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "ScreenSaverGracePeriod",
+        "text": "0"
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "ScreenSaverGracePeriod"
+      }
+    ]
+  },
+  {
+    "id": "bsod_parameters",
+    "category": "Davranışlar (Behavior)",
+    "title": "Detaylı Mavi Ekran (BSOD) Hata Kodlarını Göster",
+    "description": "Sistem çöktüğünde sade gülen yüz yerine tam STOP hata kodunu, bellek adresini ve çökmeye neden olan sürücüyü ekrana yansıtır.",
+    "icon": "HeartPulse24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Control\\CrashControl",
+        "name": "DisplayParameters",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Control\\CrashControl",
+        "name": "DisplayParameters",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "usb_write_protect",
+    "category": "Davranışlar (Behavior)",
+    "title": "USB Yazma Korumasını Etkinleştir (Salt-Okunur)",
+    "description": "Bilgisayara takılan tüm USB bellekleri salt-okunur yapar; dosya silinmesini, veri hırsızlığını ve virüs bulaşmasını önler.",
+    "icon": "UsbStick24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Control\\StorageDevicePolicies",
+        "name": "WriteProtect",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SYSTEM\\CurrentControlSet\\Control\\StorageDevicePolicies",
+        "name": "WriteProtect",
+        "dword": 0
+      }
+    ]
+  }
+]

@@ -65,58 +65,19 @@ namespace Bakım.Services
                         IsEnabled = CheckKeyExists(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{36eef7db-88ad-4e81-ad49-0e313f0c35f8}")
                     },
 
-                    // 4. Disable Online & Video Tips in Settings
-                    new()
-                    {
-                        Id = "settings_disable_online_tips",
-                        Category = "Ayarlar & Denetim Masası",
-                        Title = "Ayarlar Uygulamasındaki Çevrimiçi İpuçlarını ve Tanıtımları Kapat",
-                        Description = "Windows Ayarlar uygulamasının sağ sütununda veya altında çıkan öneri, ipucu ve video yönlendirmelerini kaldırır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "Lightbulb24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\CloudContent", "DisableSoftLanding", 1)
-                    },
-
-                    // 5. Hide Pages from Settings
-                    new()
-                    {
-                        Id = "settings_hide_specific_pages",
-                        Category = "Ayarlar & Denetim Masası",
-                        Title = "Ayarlar Uygulamasında Gereksiz Telemetri Sayfalarını Gizle",
-                        Description = "Ayarlar uygulamasında gizlilik tehdidi oluşturan tanılama ve reklam sayfalarını (Feedback, DiagnosticData, WindowsInsider) gizler.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "EyeOff24",
-                        IsEnabled = CheckRegistryString(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", "SettingsPageVisibility", "hide:feedback;diagnostics;windowsinsider")
-                    },
-
-                    // 6. Insider Page
-                    new()
-                    {
-                        Id = "settings_disable_insider_page",
-                        Category = "Ayarlar & Denetim Masası",
-                        Title = "Windows Insider Programı Sayfasını Ayarlar'dan Tamamen Gizle",
-                        Description = "Ayarlar > Güncelleştirme altındaki 'Windows Insider Programı' katılma sekmesini kaldırarak kararsız beta sürümlerine geçilmesini önler.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "ShieldDismiss24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "DisableWindowsInsiderPicker", 1)
-                    }
                 };
 
+                list.InsertRange(0, Bakım.Services.Tweaks.TweakEngine.ItemsFor("Ayarlar & Denetim Masası"));
                 return list;
             });
         }
 
         public async Task<bool> ApplyTweakAsync(SystemTweakItem tweak, bool enable)
         {
+            // Veri tabanlı ayarlar (Assets/tweaks/*.json) tek motordan uygulanır (MASTER_PLAN §5.16).
+            if (Bakım.Services.Tweaks.TweakEngine.Handles(tweak.Id))
+                return await Bakım.Services.Tweaks.TweakEngine.ApplyAsync(tweak, enable);
+
             return await Task.Run(() =>
             {
                 using var writes = WriteScope.Begin();
@@ -163,39 +124,6 @@ namespace Bakım.Services
                             else
                             {
                                 DeleteRegistryKey(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel\NameSpace\{36eef7db-88ad-4e81-ad49-0e313f0c35f8}");
-                            }
-                            break;
-
-                        case "settings_disable_online_tips":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\CloudContent", "DisableSoftLanding", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\CloudContent", "DisableSoftLanding");
-                            }
-                            break;
-
-                        case "settings_hide_specific_pages":
-                            if (enable)
-                            {
-                                SetRegistryString(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", "SettingsPageVisibility", "hide:feedback;diagnostics;windowsinsider");
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", "SettingsPageVisibility");
-                            }
-                            break;
-
-                        case "settings_disable_insider_page":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "DisableWindowsInsiderPicker", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "DisableWindowsInsiderPicker");
                             }
                             break;
 

@@ -502,6 +502,16 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                            TextWrapping="Wrap" 
                                            Margin="0,4,0,0"/>
+
+                                <!-- Neyi değiştirir? (veri tabanlı ayarlar: gerçek kayıt yolları, §5.16 şeffaflık) -->
+                                <Expander Header="Neyi değiştirir?" Margin="0,6,0,0" Padding="0"
+                                          FontSize="{StaticResource Font.Caption}"
+                                          Visibility="{Binding HasChangeList, Converter={StaticResource BoolToVis}}"
+                                          AutomationProperties.Name="Bu ayarın değiştirdiği kayıt defteri değerleri">
+                                    <TextBlock Text="{Binding ChangeListText}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
+                                               FontFamily="Consolas" Margin="0,4,0,0"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </Expander>
                             </StackPanel>
 
                             <!-- Right Controls: ToggleSwitch, Numeric Input, or Action Button -->

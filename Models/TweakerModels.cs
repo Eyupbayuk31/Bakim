@@ -73,6 +73,14 @@ namespace Bakım.Models
         /// <summary>Son uygulama denemesinde başarısız olan yazımların özeti (yoksa null).</summary>
         public string? LastError { get; set; }
 
+        /// <summary>"Neyi değiştirir?" — açınca yazılan gerçek kayıt yolları (veri tabanlı ayarlarda dolu).</summary>
+        public System.Collections.Generic.IReadOnlyList<string> ChangesWhenOn { get; set; } = System.Array.Empty<string>();
+        public System.Collections.Generic.IReadOnlyList<string> ChangesWhenOff { get; set; } = System.Array.Empty<string>();
+        public bool HasChangeList => ChangesWhenOn.Count > 0;
+        public string ChangeListText => HasChangeList
+            ? "Açınca:\n• " + string.Join("\n• ", ChangesWhenOn) + "\n\nKapatınca:\n• " + string.Join("\n• ", ChangesWhenOff)
+            : string.Empty;
+
         [ObservableProperty]
         private int _numericValue;
 

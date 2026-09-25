@@ -36,6 +36,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Veri tabanlı ince ayar kataloğu (MASTER_PLAN §5.16): "tweaks/{dosya}.json" adıyla gömülür. -->
+    <EmbeddedResource Include="Assets\tweaks\*.json" LogicalName="tweaks/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!--
       Test projeleri depo içinde yaşar. SDK varsayılan olarak **/*.cs dosyalarını
       toplar; bu dışlama olmadan ana uygulama test kaynaklarını da derlemeye

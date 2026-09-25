@@ -22,35 +22,6 @@ namespace Bakım.Services
             {
                 var list = new List<SystemTweakItem>
                 {
-                    // 1. Action Center Always Open / Disable Notification Center
-                    new()
-                    {
-                        Id = "disable_action_center",
-                        Category = "Masaüstü & Görev Çubuğu",
-                        Title = "Bildirim Merkezini (Eylem Merkezi) Tamamen Kapat",
-                        Description = "Görev çubuğunun sağındaki bildirim simgesini ve yan paneli kapatarak bildirim pop-up'larının dikkatinizi dağıtmasını engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = true,
-                        IsRecommended = false,
-                        IconSymbol = "DismissCircle24",
-                        IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Software\Policies\Microsoft\Windows\Explorer", "DisableNotificationCenter", 1)
-                    },
-
-                    // 2. Classic Volume Mixer (System-wide MTCUVC Toggle)
-                    new()
-                    {
-                        Id = "classic_volume_mixer",
-                        Category = "Masaüstü & Görev Çubuğu",
-                        Title = "Windows 7 Stili Klasik Ses Karıştırıcıyı (MTCUVC) Varsayılan Yap",
-                        Description = "Ses simgesine tıklandığında açılan modern ses çubuğu yerine her programın sesini bağımsız ayarlayan klasik Windows 7 ses panelini açar.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = true,
-                        IsRecommended = false,
-                        IconSymbol = "Speaker224",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\MTCUVC", "EnableMtcUvc", 0)
-                    },
 
                     // 3. Disable Web Search in Start Menu
                     new()
@@ -65,51 +36,6 @@ namespace Bakım.Services
                         IsRecommended = true,
                         IconSymbol = "Search24",
                         IsEnabled = CheckWebSearchDisabled()
-                    },
-
-                    // 4. Show Seconds on Taskbar Clock
-                    new()
-                    {
-                        Id = "show_seconds_taskbar",
-                        Category = "Masaüstü & Görev Çubuğu",
-                        Title = "Görev Çubuğu Saatinde Saniyeleri Göster",
-                        Description = "Windows 11/10 görev çubuğunun sağ alt köşesindeki dijital saate saniye göstergesini (SS:DD:ss) ekler.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = true,
-                        IsRecommended = true,
-                        IconSymbol = "Timer24",
-                        IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "ShowSecondsInSystemClock", 1)
-                    },
-
-                    // 5. Wallpaper Quality 100%
-                    new()
-                    {
-                        Id = "wallpaper_quality_100",
-                        Category = "Masaüstü & Görev Çubuğu",
-                        Title = "Duvar Kağıdı Kalite Kaybını (JPEG Sıkıştırması) Kapat",
-                        Description = "Windows'un yüksek çözünürlüklü duvar kağıtlarını %85 oranında sıkıştırıp bozmasını engelleyerek %100 orijinal kalitede gösterir.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = true,
-                        IsRecommended = true,
-                        IconSymbol = "Image24",
-                        IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Control Panel\Desktop", "JPEGImportQuality", 100)
-                    },
-
-                    // 6. Windows Version on Desktop
-                    new()
-                    {
-                        Id = "paint_desktop_version",
-                        Category = "Masaüstü & Görev Çubuğu",
-                        Title = "Masaüstünün Sağ Alt Köşesine Windows Sürümünü Bas",
-                        Description = "Masaüstü arka planının sağ alt köşesine işletim sistemi adını, derleme (Build) numarasını ve mimarisini filigran olarak yansıtır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = true,
-                        IsRecommended = false,
-                        IconSymbol = "SlideTextSparkle24",
-                        IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Control Panel\Desktop", "PaintDesktopVersion", 1)
                     },
 
                     // 7. Classic Volume Mixer Launcher (Action Tool)
@@ -128,12 +54,17 @@ namespace Bakım.Services
                     }
                 };
 
+                list.InsertRange(0, Bakım.Services.Tweaks.TweakEngine.ItemsFor("Masaüstü & Görev Çubuğu"));
                 return list;
             });
         }
 
         public async Task<bool> ApplyTweakAsync(SystemTweakItem tweak, bool enable)
         {
+            // Veri tabanlı ayarlar (Assets/tweaks/*.json) tek motordan uygulanır (MASTER_PLAN §5.16).
+            if (Bakım.Services.Tweaks.TweakEngine.Handles(tweak.Id))
+                return await Bakım.Services.Tweaks.TweakEngine.ApplyAsync(tweak, enable);
+
             return await Task.Run(() =>
             {
                 using var writes = WriteScope.Begin();
@@ -141,29 +72,6 @@ namespace Bakım.Services
                 {
                     switch (tweak.Id)
                     {
-                        // 1. Action Center Always Open / Disable Notification Center
-                        case "disable_action_center":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.CurrentUser, @"Software\Policies\Microsoft\Windows\Explorer", "DisableNotificationCenter", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.CurrentUser, @"Software\Policies\Microsoft\Windows\Explorer", "DisableNotificationCenter");
-                            }
-                            break;
-
-                        // 2. Classic Volume Mixer (MTCUVC)
-                        case "classic_volume_mixer":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\MTCUVC", "EnableMtcUvc", 0);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\MTCUVC", "EnableMtcUvc");
-                            }
-                            break;
 
                         // 3. Disable Web Search
                         case "disable_web_search":
@@ -183,28 +91,6 @@ namespace Bakım.Services
                                 DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Windows Search", "DisableWebSearch");
                                 DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Windows Search", "ConnectedSearchUseWeb");
                             }
-                            break;
-
-                        // 4. Show Seconds on Taskbar Clock
-                        case "show_seconds_taskbar":
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "ShowSecondsInSystemClock", enable ? 1 : 0);
-                            break;
-
-                        // 5. Wallpaper Quality 100%
-                        case "wallpaper_quality_100":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.CurrentUser, @"Control Panel\Desktop", "JPEGImportQuality", 100);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.CurrentUser, @"Control Panel\Desktop", "JPEGImportQuality");
-                            }
-                            break;
-
-                        // 6. Windows Version on Desktop
-                        case "paint_desktop_version":
-                            SetRegistryDword(Registry.CurrentUser, @"Control Panel\Desktop", "PaintDesktopVersion", enable ? 1 : 0);
                             break;
 
                         // 7. Classic Volume Mixer Launcher (Action)

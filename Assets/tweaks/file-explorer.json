@@ -1,0 +1,501 @@
+[
+  {
+    "id": "explorer_do_for_all_checkbox",
+    "category": "Dosya Gezgini",
+    "title": "Dosya Çakışmalarında 'Tüm Geçerli Ögeler İçin Bunu Yap'ı Otomatik Seç",
+    "description": "Dosya kopyalama veya silme çakışması pencerelerinde 'tüm ögeler için geçerli kıl' kutucuğunun varsayılan olarak seçili gelmesini sağlar.",
+    "icon": "CheckmarkCircle24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\OperationStatusManager",
+        "name": "ConfirmationCheckBoxDoForAll",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\OperationStatusManager",
+        "name": "ConfirmationCheckBoxDoForAll",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "explorer_disable_folder_type_discovery",
+    "category": "Dosya Gezgini",
+    "title": "Otomatik Klasör Şablonu Değiştirmeyi Kapat (Tüm Klasörleri Genel Yap)",
+    "description": "Windows'un klasör içindeki resim/müzik dosyalarına bakarak klasör görünüm şablonunu otomatik değiştirmesini engelleyip sabit genel liste yapar.",
+    "icon": "Folder24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetString",
+        "root": "HKCU",
+        "key": "Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell\\Bags\\AllFolders\\Shell",
+        "name": "FolderType",
+        "text": "NotSpecified"
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKCU",
+        "key": "Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell\\Bags\\AllFolders\\Shell",
+        "name": "FolderType"
+      }
+    ]
+  },
+  {
+    "id": "explorer_remove_compressed_overlay",
+    "category": "Dosya Gezgini",
+    "title": "Sıkıştırılmış Dosyalardaki Mavi Çift Ok Simgesini Kaldır",
+    "description": "NTFS ile sıkıştırılmış dosya ve klasör simgelerinin sağ üst köşesinde beliren rahatsız edici çift mavi ok simgesini kaldırır.",
+    "icon": "ArrowSync24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetString",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons",
+        "name": "179",
+        "text": "C:\\Windows\\System32\\shell32.dll,50"
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Icons",
+        "name": "179"
+      }
+    ]
+  },
+  {
+    "id": "explorer_customize_drive_icons",
+    "category": "Dosya Gezgini",
+    "title": "Sürücülere Özel Simge ve Etiket Atama Desteğini Aç",
+    "description": "Kayıt defterindeki DriveIcons mekanizmasını etkinleştirerek C:, D: vb. sürücülere özel ikon ve açıklamalar atanabilmesini sağlar.",
+    "icon": "HardDrive24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "CreateKey",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\DriveIcons"
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteKey",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\DriveIcons"
+      }
+    ]
+  },
+  {
+    "id": "explorer_hide_libraries_nav",
+    "category": "Dosya Gezgini",
+    "title": "Sol Gezinti Bölmesinden 'Kitaplıklar' (Libraries) Simgesini Gizle",
+    "description": "Dosya Gezgini sol kenar çubuğundaki Kitaplıklar bölümünü kaldırarak daha temiz bir gezinti ağacı sağlar.",
+    "icon": "Library24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Classes\\CLSID\\{031E4825-7B94-4dc3-B131-E946B7D29595}",
+        "name": "System.IsPinnedToNameSpaceTree",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Classes\\CLSID\\{031E4825-7B94-4dc3-B131-E946B7D29595}",
+        "name": "System.IsPinnedToNameSpaceTree",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "explorer_hide_this_pc_3d_objects",
+    "category": "Dosya Gezgini",
+    "title": "Bu Bilgisayar Altındaki '3D Nesneler' Klasörünü Gizle",
+    "description": "'Bu Bilgisayar' ana görünümünde neredeyse hiç kullanılmayan gereksiz 3D Nesneler klasörünü gizler.",
+    "icon": "Box24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "DeleteKey",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\MyComputer\\NameSpace\\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
+      }
+    ],
+    "off": [
+      {
+        "op": "CreateKey",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\MyComputer\\NameSpace\\{0DB7E03F-FC29-4DC6-9020-FF41B59E513A}"
+      }
+    ]
+  },
+  {
+    "id": "explorer_default_drag_drop_copy",
+    "category": "Dosya Gezgini",
+    "title": "Sürükle-Bırak Varsayılan Eylemini 'Kopyala' Olarak Zorla",
+    "description": "Fareyle dosya sürükleyip bırakırken yanlışlıkla dosyaları taşımak yerine her zaman kopyalama yapılmasını sağlar.",
+    "icon": "Copy24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "DefaultDropEffect",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "DefaultDropEffect"
+      }
+    ]
+  },
+  {
+    "id": "explorer_disable_jump_lists",
+    "category": "Dosya Gezgini",
+    "title": "Görev Çubuğu ve Başlat Menüsü Jump List Geçmişini Kapat",
+    "description": "Görev çubuğundaki uygulamalara sağ tıklandığında son açılan belge ve sayfaların listelenmesini gizlilik için engeller.",
+    "icon": "DismissCircle24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "Start_TrackDocs",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "Start_TrackDocs",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "explorer_disable_search_history",
+    "category": "Dosya Gezgini",
+    "title": "Dosya Gezgini Arama Kutusu Geçmişini Kapat",
+    "description": "Dosya Gezgini arama kutusuna yazılan önceki arama terimlerinin açılır listede görünmesini engeller.",
+    "icon": "History24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "DisableSearchBoxSuggestions",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "DisableSearchBoxSuggestions",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "explorer_disable_thumbnail_previews",
+    "category": "Dosya Gezgini",
+    "title": "Klasör Küçük Resim Önizlemelerini Kapat (Sadece Simge Göster)",
+    "description": "Klasörlerin üzerinde içindeki resim ve belgelerin küçük minyatür önizlemelerini kapatıp sadece temiz sarı klasör ikonu gösterir.",
+    "icon": "Image24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "IconsOnly",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "IconsOnly",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "explorer_show_drive_letters_first",
+    "category": "Dosya Gezgini",
+    "title": "Sürücü Harflerini Etiketten Önce Göster (Örn: (C:) Windows)",
+    "description": "'Windows (C:)' yerine '(C:) Windows' biçiminde sürücü harfini en başa alarak dosya sıralamasını kolaylaştırır.",
+    "icon": "HardDrive24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "ShowDriveLettersFirst",
+        "dword": 4
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "ShowDriveLettersFirst",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "explorer_recycle_bin_removable",
+    "category": "Dosya Gezgini",
+    "title": "Taşınabilir USB Bellekler İçin Geri Dönüşüm Kutusu Desteğini Aç",
+    "description": "USB flash belleklerden silinen dosyaların doğrudan kalıcı silinmesi yerine USB içindeki Geri Dönüşüm Kutusu'na taşınmasını sağlar.",
+    "icon": "Delete24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "RecycleBinDrives",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "RecycleBinDrives"
+      }
+    ]
+  },
+  {
+    "id": "explorer_launch_to_this_pc",
+    "category": "Dosya Gezgini",
+    "title": "Dosya Gezgini Açılışında 'Hızlı Erişim' Yerine 'Bu Bilgisayar'ı Aç",
+    "description": "Win + E kısayoluna basıldığında veya Gezgin açıldığında Hızlı Erişim yerine doğrudan sürücülerin olduğu 'Bu Bilgisayar' penceresini açar.",
+    "icon": "Desktop24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "LaunchTo",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "LaunchTo",
+        "dword": 2
+      }
+    ]
+  },
+  {
+    "id": "explorer_folder_view_number",
+    "category": "Dosya Gezgini",
+    "title": "Windows Klasör Görünümü Hafıza Sınırını 5000'e Yükselt (BagMRU)",
+    "description": "Windows'un klasörler için hatırladığı görünüm (büyük simge, ayrıntılar vb.) sınırını 400'den 5000'e çıkararak görünümün bozulmasını önler.",
+    "icon": "Save24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell",
+        "name": "BagMRU Size",
+        "dword": 5000
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKCU",
+        "key": "Software\\Classes\\Local Settings\\Software\\Microsoft\\Windows\\Shell",
+        "name": "BagMRU Size"
+      }
+    ]
+  },
+  {
+    "id": "explorer_hide_network_nav",
+    "category": "Dosya Gezgini",
+    "title": "Sol Gezinti Bölmesinden 'Ağ' (Network) Simgesini Gizle",
+    "description": "Gezgin sol panelinde yerel ağdaki cihazları tarayan ve yavaşlamaya sebep olan 'Ağ' kısayolunu kaldırır.",
+    "icon": "WifiOff24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Classes\\CLSID\\{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}",
+        "name": "System.IsPinnedToNameSpaceTree",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Classes\\CLSID\\{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}",
+        "name": "System.IsPinnedToNameSpaceTree",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "explorer_icon_cache_size",
+    "category": "Dosya Gezgini",
+    "title": "Simge Önbellek Boyutunu 4096 KB'a Büyüt (Bozuk Simgeleri Önle)",
+    "description": "Windows simge önbelleğini (Icon Cache) 500 KB'dan 4 MB'a genişleterek beyaz veya bozuk çıkan simge sorunlarını çözer.",
+    "icon": "Apps24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetString",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "Max Cached Icons",
+        "text": "4096"
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+        "name": "Max Cached Icons"
+      }
+    ]
+  },
+  {
+    "id": "explorer_nav_pane_show_all_folders",
+    "category": "Dosya Gezgini",
+    "title": "Sol Gezinti Bölmesinde 'Tüm Klasörleri Göster' Modunu Aç",
+    "description": "Sol gezinti ağacında Denetim Masası, Geri Dönüşüm Kutusu ve kullanıcı profil klasörleri dahil tüm hiyerarşiyi görünür kılar.",
+    "icon": "FolderSearch24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "NavPaneShowAllFolders",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "NavPaneShowAllFolders",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "explorer_nav_pane_expand_to_folder",
+    "category": "Dosya Gezgini",
+    "title": "Gezinti Bölmesinde 'Açık Klasöre Otomatik Genişlet'i Etkinleştir",
+    "description": "Sağdaki klasörlerde gezinirken sol gezinti bölmesindeki ağacın otomatik olarak mevcut klasöre kadar açılmasını sağlar.",
+    "icon": "FolderOpen24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "NavPaneExpandToCurrentFolder",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "NavPaneExpandToCurrentFolder",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "explorer_thumbnail_border_shadow",
+    "category": "Dosya Gezgini",
+    "title": "Resim Önizleme Kenarlıklarındaki Gölge Efektini Kapat",
+    "description": "Fotoğraf ve belge küçük resimlerinin etrafındaki 3D gölge katmanını kapatarak küçük resimlerin daha hızlı çizilmesini sağlar.",
+    "icon": "ImageShadow20",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ThumbnailShadow",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ThumbnailShadow",
+        "dword": 1
+      }
+    ]
+  }
+]

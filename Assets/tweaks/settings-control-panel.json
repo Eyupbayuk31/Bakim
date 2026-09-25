@@ -1,0 +1,80 @@
+[
+  {
+    "id": "settings_disable_online_tips",
+    "category": "Ayarlar & Denetim Masası",
+    "title": "Ayarlar Uygulamasındaki Çevrimiçi İpuçlarını ve Tanıtımları Kapat",
+    "description": "Windows Ayarlar uygulamasının sağ sütununda veya altında çıkan öneri, ipucu ve video yönlendirmelerini kaldırır.",
+    "icon": "Lightbulb24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableSoftLanding",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent",
+        "name": "DisableSoftLanding"
+      }
+    ]
+  },
+  {
+    "id": "settings_hide_specific_pages",
+    "category": "Ayarlar & Denetim Masası",
+    "title": "Ayarlar Uygulamasında Gereksiz Telemetri Sayfalarını Gizle",
+    "description": "Ayarlar uygulamasında gizlilik tehdidi oluşturan tanılama ve reklam sayfalarını (Feedback, DiagnosticData, WindowsInsider) gizler.",
+    "icon": "EyeOff24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetString",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+        "name": "SettingsPageVisibility",
+        "text": "hide:feedback;diagnostics;windowsinsider"
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+        "name": "SettingsPageVisibility"
+      }
+    ]
+  },
+  {
+    "id": "settings_disable_insider_page",
+    "category": "Ayarlar & Denetim Masası",
+    "title": "Windows Insider Programı Sayfasını Ayarlar'dan Tamamen Gizle",
+    "description": "Ayarlar > Güncelleştirme altındaki 'Windows Insider Programı' katılma sekmesini kaldırarak kararsız beta sürümlerine geçilmesini önler.",
+    "icon": "ShieldDismiss24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+        "name": "DisableWindowsInsiderPicker",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+        "name": "DisableWindowsInsiderPicker"
+      }
+    ]
+  }
+]

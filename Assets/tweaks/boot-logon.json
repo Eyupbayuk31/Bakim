@@ -1,0 +1,307 @@
+[
+  {
+    "id": "disable_finish_setup",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "'Cihazınızın Kurulumunu Tamamlayalım' Ekranını Engelle",
+    "description": "Büyük güncellemelerden sonra açılışta beliren zorunlu Microsoft 365, Edge ve OneDrive tanıtım tam ekranını kalıcı olarak kapatır.",
+    "icon": "Dismiss24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement",
+        "name": "ScoobeSystemSettingEnabled",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-310093Enabled",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\UserProfileEngagement",
+        "name": "ScoobeSystemSettingEnabled",
+        "dword": 1
+      },
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
+        "name": "SubscribedContent-310093Enabled",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "disable_blur_signin",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Giriş Ekranındaki Akrilik Bulanıklığı (Blur) Kapat",
+    "description": "Kilit ve oturum açma ekranında şifre arkasındaki bulanıklık efektini kaldırıp kilit ekranı arka planını net ve canlı gösterir.",
+    "icon": "Eye24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "DisableAcrylicBackgroundOnLogon",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "DisableAcrylicBackgroundOnLogon"
+      }
+    ]
+  },
+  {
+    "id": "disable_lock_screen",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Kilit Ekranını (Saat/Tarih Katmanı) Doğrudan Atla",
+    "description": "Açılışta veya bilgisayar kilitlendiğinde kilit ekranını pas geçerek doğrudan şifre/PIN girme kutusunu ekrana getirir.",
+    "icon": "LockOpen24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+        "name": "NoLockScreen",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+        "name": "NoLockScreen"
+      }
+    ]
+  },
+  {
+    "id": "enable_ctrl_alt_del",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Oturum Açmak İçin CTRL + ALT + DEL Tuşunu Zorunlu Kıl",
+    "description": "Kimlik avı (phishing) ve sahte oturum açma pencerelerine karşı oturum açmadan önce donanımsal güvenli kombinasyon ister.",
+    "icon": "ShieldKeyhole24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",
+        "name": "DisableCAD",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",
+        "name": "DisableCAD",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "enable_autologon_checkbox",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Netplwiz'de 'Kullanıcı Adı ve Parola Girilmelidir' Kutusunu Göster",
+    "description": "Windows 10/11'de gizlenen netplwiz otomatik oturum açma kutucuğunu görünür yaparak şifresiz direkt masaüstüne geçişi sağlar.",
+    "icon": "PersonKey24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\PasswordLess\\Device",
+        "name": "DevicePasswordLessBuildVersion",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\PasswordLess\\Device",
+        "name": "DevicePasswordLessBuildVersion",
+        "dword": 2
+      }
+    ]
+  },
+  {
+    "id": "hide_last_username",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Giriş Ekranında Son Oturum Açan Kullanıcı Adını Gizle",
+    "description": "Bilgisayar açıldığında son oturum açan kişinin adını göstermez; hem kullanıcı adının hem de parolanın elle yazılmasını zorunlu kılar.",
+    "icon": "PersonQuestionMark24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+        "name": "dontdisplaylastusername",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+        "name": "dontdisplaylastusername",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "lock_screen_slideshow_duration",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Kilit Ekranı Slayt Gösterisi Kapanma Zaman Aşımını Kaldır",
+    "description": "Kilit ekranı slayt gösterisinin belirli bir süre sonra ekranı karartmasını engelleyerek kesintisiz slayt oynamasını sağlar.",
+    "icon": "SlideMultiple24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+        "name": "LockScreenUnlocksAfter",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization",
+        "name": "LockScreenUnlocksAfter"
+      }
+    ]
+  },
+  {
+    "id": "disable_logon_image",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Oturum Açma Ekranı Arka Plan Resmini Kapat (Düz Renk)",
+    "description": "Giriş ekranında duvar kağıdı yerine temiz, sade ve Windows tema vurgu renginden oluşan düz bir arka plan gösterir.",
+    "icon": "Color24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "DisableLogonBackgroundImage",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "DisableLogonBackgroundImage"
+      }
+    ]
+  },
+  {
+    "id": "hide_network_lock_screen",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Kilit Ekranındaki Ağ ve İnternet Simgesini Gizle",
+    "description": "Oturum açılmadan önce kilit ekranının sağ alt köşesindeki Wi-Fi / Ağ menüsünü gizleyerek yetkisiz ağ değişikliklerini önler.",
+    "icon": "WifiOff24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "DontDisplayNetworkSelectionUI",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\System",
+        "name": "DontDisplayNetworkSelectionUI"
+      }
+    ]
+  },
+  {
+    "id": "hide_power_login_screen",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Giriş Ekranındaki Güç (Kapat / Yeniden Başlat) Düğmesini Gizle",
+    "description": "Oturum açılmadan önce ekranda beliren Kapat ve Yeniden Başlat butonunu kaldırarak izinsiz sistem kapatmalarını engeller.",
+    "icon": "Power24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+        "name": "shutdownwithoutlogon",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+        "name": "shutdownwithoutlogon",
+        "dword": 1
+      }
+    ]
+  },
+  {
+    "id": "verbose_logon_messages",
+    "category": "Açılış & Oturum (Boot & Logon)",
+    "title": "Açılışta Detaylı Sistem ve Profil Durum Mesajlarını Göster",
+    "description": "Açılışta sadece 'Hoş Geldiniz' yerine arka planda yüklenen servisleri, grup ilkelerini ve ağ bağlantı aşamalarını ekrana yansıtır.",
+    "icon": "DocumentBulletList24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+        "name": "verbosestatus",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+        "name": "verbosestatus"
+      }
+    ]
+  }
+]

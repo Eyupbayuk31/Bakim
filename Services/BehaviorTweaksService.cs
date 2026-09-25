@@ -31,95 +31,6 @@ namespace Bakım.Services
             {
                 var list = new List<SystemTweakItem>
                 {
-                    // 1. Ads and Unwanted Apps
-                    new()
-                    {
-                        Id = "ads_unwanted",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Otomatik İstenmeyen Uygulama İndirmelerini Kapat",
-                        Description = "Windows'un arka planda sessizce oyun ve reklam uygulamaları (Candy Crush, TikTok vb.) indirmesini ve Başlat önerilerini engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "DismissCircle24",
-                        IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SilentInstalledAppsEnabled", 0)
-                    },
-
-                    // 2. Automatic Registry Backup
-                    new()
-                    {
-                        Id = "auto_reg_backup",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Otomatik Kayıt Defteri (RegBack) Yedeklemesini Aktif Et",
-                        Description = "Windows 10/11'de kapatılan otomatik sistem kovanı (Registry) yedeklemesini System32\\config\\RegBack altında yeniden başlatır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = true,
-                        IsRecommended = true,
-                        IconSymbol = "Save24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager", "EnableDirBackup", 1)
-                    },
-
-                    // 3. Disable Aero Shake
-                    new()
-                    {
-                        Id = "disable_aero_shake",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Aero Shake (Pencere Sallayarak Küçültme) Özelliğini Kapat",
-                        Description = "Bir pencerenin başlığından tutup sallandığında diğer tüm açık pencerelerin simge durumuna küçülmesini engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "Window24",
-                        IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "DisallowShaking", 1)
-                    },
-
-                    // 4. Disable Aero Snap
-                    new()
-                    {
-                        Id = "disable_aero_snap",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Aero Snap (Pencere Kenara Yaslama) Özelliğini Kapat",
-                        Description = "Pencereleri ekranın kenarlarına sürükleyerek yarım veya çeyrek ekrana otomatik boyutlandırma davranışını devre dışı bırakır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = true,
-                        IsRecommended = false,
-                        IconSymbol = "SplitHorizontal24",
-                        IsEnabled = CheckRegistryString(Registry.CurrentUser, @"Control Panel\Desktop", "WindowArrangementActive", "0")
-                    },
-
-                    // 5. Disable App Lookup in Store
-                    new()
-                    {
-                        Id = "disable_store_lookup",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Birlikte Aç Menüsünde 'Store'da Uygulama Ara'yı Kapat",
-                        Description = "Bilinmeyen bir dosya türü açıldığında 'Microsoft Store üzerinde bir uygulama arayın' önerisini kapatıp yerel program listesini gösterir.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "Apps24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Explorer", "NoUseStoreOpenWith", 1)
-                    },
-
-                    // 6. Disable Automatic Maintenance
-                    new()
-                    {
-                        Id = "disable_auto_maintenance",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Otomatik Sistem Bakımını (Disk & Güncelleme Taraması) Kapat",
-                        Description = "Bilgisayar boştayken Windows'un arka planda ağır bakım ve disk taraması yaparak %100 disk kullanımına sebep olmasını engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "Timer24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance", "MaintenanceDisabled", 1)
-                    },
 
                     // 7. Disable Downloads Blocking (SmartScreen Zone Identifier)
                     new()
@@ -134,36 +45,6 @@ namespace Bakım.Services
                         IsRecommended = true,
                         IconSymbol = "CheckmarkCircle24",
                         IsEnabled = CheckRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Policies\Attachments", "SaveZoneInformation", 1)
-                    },
-
-                    // 8. Disable Driver Updates
-                    new()
-                    {
-                        Id = "disable_driver_updates",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Windows Update Otomatik Sürücü Güncellemelerini Kapat",
-                        Description = "Windows Update'in ekran kartı, ses ve yonga seti sürücülerini otomatik indirip mevcut kararlı sürücüleri ezmesini engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "ArrowDownload24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "ExcludeWUIDriverInQualityUpdate", 1)
-                    },
-
-                    // 9. Disable MRT From Installing
-                    new()
-                    {
-                        Id = "disable_mrt_install",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Kötü Amaçlı Yazılım Temizleme Aracı'nın (MRT) İndirilmesini Kapat",
-                        Description = "Windows Update üzerinden her ay yüzlerce megabaytlık Microsoft Kötü Amaçlı Yazılımları Temizleme Aracı'nın (MRT) zorla indirilmesini engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "ShieldDismiss24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\MRT", "DontOfferThroughWUAU", 1)
                     },
 
                     // 10. Disable SmartScreen
@@ -182,21 +63,6 @@ namespace Bakım.Services
                                     CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\System", "EnableSmartScreen", 0)
                     },
 
-                    // 11. Disable User Folder Backup to OneDrive
-                    new()
-                    {
-                        Id = "onedrive_user_folders",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Kullanıcı Klasörlerinin OneDrive'a Zorla Yedeklenmesini Engelle",
-                        Description = "Masaüstü, Belgeler ve Resimler klasörlerinin kullanıcı onayı olmadan otomatik OneDrive bulutuna taşınmasını engeller.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "CloudDismiss24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\OneDrive", "PreventOneDriveFileSync", 1)
-                    },
-
                     // 12. Disable Windows Update
                     new()
                     {
@@ -211,21 +77,6 @@ namespace Bakım.Services
                         IconSymbol = "ClockDismiss24",
                         IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\wuauserv", "Start", 4) ||
                                     CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU", "NoAutoUpdate", 1)
-                    },
-
-                    // 13. Enable Crash on Ctrl+Scroll Lock
-                    new()
-                    {
-                        Id = "crash_ctrl_scroll",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Sağ Ctrl + 2x Scroll Lock ile Test BSOD Tetiklemeyi Aç",
-                        Description = "Geliştiriciler ve hata ayıklayıcılar için klavye kombinasyonuyla kontrollü sistem çökme dökümü (Memory Dump) üretme kısayolunu açar.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = true,
-                        IsRecommended = false,
-                        IconSymbol = "DeveloperBoard24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\kbdhid\Parameters", "CrashOnCtrlScroll", 1)
                     },
 
                     // 14. Enable Emoji Picker
@@ -243,66 +94,6 @@ namespace Bakım.Services
                         IsEnabled = !CheckRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Input\Settings", "EnableExpressiveInputShellHotkey", 0)
                     },
 
-                    // 15. Error Reporting
-                    new()
-                    {
-                        Id = "disable_error_reporting",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Windows Hata Raporlama ve Çökme Bildirimlerini (WER) Kapat",
-                        Description = "Uygulama veya sistem çöktüğünde Microsoft sunucularına arka planda tanılama dökümü gönderen Windows Hata Raporlama servisini pasife alır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "Alert24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting", "Disabled", 1)
-                    },
-
-                    // 16. Keep Thumbnail Cache
-                    new()
-                    {
-                        Id = "keep_thumbnail_cache",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Küçük Resim (Thumbnail) Önbelleğini Kalıcı Olarak Koru",
-                        Description = "Disk Temizleme ve otomatik bakımın resim/video küçük resimlerini silmesini engelleyerek klasörlerin her seferinde hızlı açılmasını sağlar.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "Image24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache", "Autorun", 0)
-                    },
-
-                    // 17. Menu Show Delay
-                    new()
-                    {
-                        Id = "menu_show_delay",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Başlat ve Menü Açılış Gecikmesini Sıfırla (0 ms Hızlı Menüler)",
-                        Description = "Windows'un sağ tık, Başlat ve alt menüleri açarken beklettiği 400 milisaniyelik gecikmeyi 0 ms yaparak arayüzü anında tepki verir hale getirir.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "TopSpeed24",
-                        IsEnabled = CheckRegistryString(Registry.CurrentUser, @"Control Panel\Desktop", "MenuShowDelay", "0")
-                    },
-
-                    // 18. New Apps Notification
-                    new()
-                    {
-                        Id = "disable_new_app_alert",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "'Yeni Bir Uygulamanız Var' Bildirim Balonlarını Kapat",
-                        Description = "Yeni bir program veya uygulama kurulduğunda ekranda beliren 'Bu dosya türünü açabilecek yeni bir uygulamanız var' uyarısını kapatır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "Alert24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Explorer", "NoNewAppAlert", 1)
-                    },
-
                     // 19. Redefine Extra Keys on Keyboard (Disable Caps Lock)
                     new()
                     {
@@ -316,51 +107,6 @@ namespace Bakım.Services
                         IsRecommended = false,
                         IconSymbol = "Keyboard24",
                         IsEnabled = CheckRegistryBinary(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\Keyboard Layout", "Scancode Map")
-                    },
-
-                    // 20. Restore Point Frequency
-                    new()
-                    {
-                        Id = "restore_point_frequency",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Sistem Geri Yükleme Noktası Oluşturma Sıklık Sınırını Kaldır",
-                        Description = "Windows'un 24 saat içinde tek bir geri yükleme noktası oluşturulmasına izin veren sınırlamasını kaldırarak istendiği an yedek almayı sağlar.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "ArrowCounterclockwise24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0)
-                    },
-
-                    // 21. Screen Saver Grace Period
-                    new()
-                    {
-                        Id = "screensaver_grace_period",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Ekran Koruyucu Şifre İsteme Tolerans Süresini Sıfırla (Anında Kilit)",
-                        Description = "Ekran koruyucu açıldıktan sonra tanınan 5 saniyelik şifresiz giriş toleransını kaldırarak ekran kararır kararmaz hemen şifre ister.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = false,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "LockClosed24",
-                        IsEnabled = CheckRegistryString(Registry.CurrentUser, @"Control Panel\Desktop", "ScreenSaverGracePeriod", "0")
-                    },
-
-                    // 22. Show BSOD, Disable Smiley
-                    new()
-                    {
-                        Id = "bsod_parameters",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "Detaylı Mavi Ekran (BSOD) Hata Kodlarını Göster",
-                        Description = "Sistem çöktüğünde sade gülen yüz yerine tam STOP hata kodunu, bellek adresini ve çökmeye neden olan sürücüyü ekrana yansıtır.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = true,
-                        IconSymbol = "HeartPulse24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\CrashControl", "DisplayParameters", 1)
                     },
 
                     // 23. Sound for Print Screen key
@@ -391,21 +137,6 @@ namespace Bakım.Services
                         IsRecommended = true,
                         IconSymbol = "TopSpeed24",
                         IsEnabled = IsSvchostGroupingEnabled()
-                    },
-
-                    // 25. USB Write Protection
-                    new()
-                    {
-                        Id = "usb_write_protect",
-                        Category = "Davranışlar (Behavior)",
-                        Title = "USB Yazma Korumasını Etkinleştir (Salt-Okunur)",
-                        Description = "Bilgisayara takılan tüm USB bellekleri salt-okunur yapar; dosya silinmesini, veri hırsızlığını ve virüs bulaşmasını önler.",
-                        Type = TweakType.Toggle,
-                        RequiresAdmin = true,
-                        RequiresRestart = false,
-                        IsRecommended = false,
-                        IconSymbol = "UsbStick24",
-                        IsEnabled = CheckRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\StorageDevicePolicies", "WriteProtect", 1)
                     },
 
                     // 26. Windows Installer in Safe Mode
@@ -439,12 +170,17 @@ namespace Bakım.Services
                     }
                 };
 
+                list.InsertRange(0, Bakım.Services.Tweaks.TweakEngine.ItemsFor("Davranışlar (Behavior)"));
                 return list;
             });
         }
 
         public async Task<bool> ApplyTweakAsync(SystemTweakItem tweak, bool enable)
         {
+            // Veri tabanlı ayarlar (Assets/tweaks/*.json) tek motordan uygulanır (MASTER_PLAN §5.16).
+            if (Bakım.Services.Tweaks.TweakEngine.Handles(tweak.Id))
+                return await Bakım.Services.Tweaks.TweakEngine.ApplyAsync(tweak, enable);
+
             return await Task.Run(() =>
             {
                 using var writes = WriteScope.Begin();
@@ -452,89 +188,12 @@ namespace Bakım.Services
                 {
                     switch (tweak.Id)
                     {
-                        // 1. Ads and Unwanted Apps
-                        case "ads_unwanted":
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SilentInstalledAppsEnabled", enable ? 0 : 1);
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SystemPaneSuggestionsEnabled", enable ? 0 : 1);
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SubscribedContent-338388Enabled", enable ? 0 : 1);
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager", "SubscribedContent-338389Enabled", enable ? 0 : 1);
-                            break;
-
-                        // 2. Automatic Registry Backup
-                        case "auto_reg_backup":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager", "EnableDirBackup", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\Session Manager\Configuration Manager", "EnableDirBackup");
-                            }
-                            break;
-
-                        // 3. Disable Aero Shake
-                        case "disable_aero_shake":
-                            SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "DisallowShaking", enable ? 1 : 0);
-                            break;
-
-                        // 4. Disable Aero Snap
-                        case "disable_aero_snap":
-                            SetRegistryString(Registry.CurrentUser, @"Control Panel\Desktop", "WindowArrangementActive", enable ? "0" : "1");
-                            break;
-
-                        // 5. Disable App Lookup in Store
-                        case "disable_store_lookup":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Explorer", "NoUseStoreOpenWith", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Explorer", "NoUseStoreOpenWith");
-                            }
-                            break;
-
-                        // 6. Disable Automatic Maintenance
-                        case "disable_auto_maintenance":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance", "MaintenanceDisabled", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\Maintenance", "MaintenanceDisabled");
-                            }
-                            break;
 
                         // 7. Disable Downloads Blocking (SmartScreen Zone Identifier)
                         case "disable_zone_identifier":
                             int zoneVal = enable ? 1 : 2;
                             SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Policies\Attachments", "SaveZoneInformation", zoneVal);
                             SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments", "SaveZoneInformation", zoneVal);
-                            break;
-
-                        // 8. Disable Driver Updates
-                        case "disable_driver_updates":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "ExcludeWUIDriverInQualityUpdate", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate", "ExcludeWUIDriverInQualityUpdate");
-                            }
-                            break;
-
-                        // 9. Disable MRT From Installing
-                        case "disable_mrt_install":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\MRT", "DontOfferThroughWUAU", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\MRT", "DontOfferThroughWUAU");
-                            }
                             break;
 
                         // 10. Disable SmartScreen
@@ -555,74 +214,14 @@ namespace Bakım.Services
                             }
                             break;
 
-                        // 11. Disable User Folder Backup to OneDrive
-                        case "onedrive_user_folders":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\OneDrive", "PreventOneDriveFileSync", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\OneDrive", "PreventOneDriveFileSync");
-                            }
-                            break;
-
                         // 12. Disable Windows Update
                         case "disable_windows_update":
                             SetWindowsUpdateState(enable);
                             break;
 
-                        // 13. Enable Crash on Ctrl+Scroll Lock
-                        case "crash_ctrl_scroll":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "CrashOnCtrlScroll", 1);
-                                SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\kbdhid\Parameters", "CrashOnCtrlScroll", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "CrashOnCtrlScroll");
-                                DeleteRegistryValue(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Services\kbdhid\Parameters", "CrashOnCtrlScroll");
-                            }
-                            break;
-
                         // 14. Enable Emoji Picker
                         case "enable_emoji_picker":
                             SetRegistryDword(Registry.CurrentUser, @"Software\Microsoft\Input\Settings", "EnableExpressiveInputShellHotkey", enable ? 1 : 0);
-                            break;
-
-                        // 15. Error Reporting
-                        case "disable_error_reporting":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting", "Disabled", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting", "Disabled");
-                            }
-                            break;
-
-                        // 16. Keep Thumbnail Cache
-                        case "keep_thumbnail_cache":
-                            SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\Thumbnail Cache", "Autorun", enable ? 0 : 1);
-                            break;
-
-                        // 17. Menu Show Delay
-                        case "menu_show_delay":
-                            SetRegistryString(Registry.CurrentUser, @"Control Panel\Desktop", "MenuShowDelay", enable ? "0" : "400");
-                            break;
-
-                        // 18. New Apps Notification
-                        case "disable_new_app_alert":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Explorer", "NoNewAppAlert", 1);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Policies\Microsoft\Windows\Explorer", "NoNewAppAlert");
-                            }
                             break;
 
                         // 19. Redefine Extra Keys on Keyboard (Disable Caps Lock)
@@ -637,35 +236,6 @@ namespace Bakım.Services
                             }
                             break;
 
-                        // 20. Restore Point Frequency
-                        case "restore_point_frequency":
-                            if (enable)
-                            {
-                                SetRegistryDword(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency", 0);
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.LocalMachine, @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore", "SystemRestorePointCreationFrequency");
-                            }
-                            break;
-
-                        // 21. Screen Saver Grace Period
-                        case "screensaver_grace_period":
-                            if (enable)
-                            {
-                                SetRegistryString(Registry.CurrentUser, @"Control Panel\Desktop", "ScreenSaverGracePeriod", "0");
-                            }
-                            else
-                            {
-                                DeleteRegistryValue(Registry.CurrentUser, @"Control Panel\Desktop", "ScreenSaverGracePeriod");
-                            }
-                            break;
-
-                        // 22. Show BSOD, Disable Smiley
-                        case "bsod_parameters":
-                            SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\CrashControl", "DisplayParameters", enable ? 1 : 0);
-                            break;
-
                         // 23. Sound for Print Screen key
                         case "sound_print_screen":
                             string sound = enable ? @"C:\Windows\Media\Windows Ding.wav" : string.Empty;
@@ -676,11 +246,6 @@ namespace Bakım.Services
                         case "svchost_grouping":
                             int threshold = enable ? int.MaxValue : 3670016;
                             SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control", "SvcHostSplitThresholdInKB", threshold);
-                            break;
-
-                        // 25. USB Write Protection
-                        case "usb_write_protect":
-                            SetRegistryDword(Registry.LocalMachine, @"SYSTEM\CurrentControlSet\Control\StorageDevicePolicies", "WriteProtect", enable ? 1 : 0);
                             break;
 
                         // 26. Windows Installer in Safe Mode

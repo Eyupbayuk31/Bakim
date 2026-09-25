@@ -1,0 +1,132 @@
+[
+  {
+    "id": "edge_disable_annoyances_bloat",
+    "category": "Microsoft Edge",
+    "title": "Edge Kenar Çubuğunu, Alışveriş ve Reklam Önerilerini Kapat",
+    "description": "Microsoft Edge'in yan panelini (Hubs Sidebar), alışveriş asistanını ve kişiselleştirilmiş tanıtım tekliflerini devre dışı bırakır.",
+    "icon": "DismissCircle24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "HubsSidebarEnabled",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "ShowRecommendOffers",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "EdgeShoppingAssistantEnabled",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "PersonalizationReportingEnabled",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "HubsSidebarEnabled"
+      },
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "ShowRecommendOffers"
+      },
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "EdgeShoppingAssistantEnabled"
+      },
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "name": "PersonalizationReportingEnabled"
+      }
+    ]
+  },
+  {
+    "id": "edge_disable_desktop_shortcut",
+    "category": "Microsoft Edge",
+    "title": "Edge Güncellemeleri Sonrası Masaüstü Kısayolu Eklenmesini Engelle",
+    "description": "Her Edge tarayıcı güncellemesinden sonra masaüstüne zorla yeniden eklenen Microsoft Edge kısayolunun oluşturulmasını engeller.",
+    "icon": "Desktop24",
+    "recommended": true,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+        "name": "CreateDesktopShortcutDefault",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+        "name": "CreateDesktopShortcutDefault"
+      }
+    ]
+  },
+  {
+    "id": "edge_disable_updates",
+    "category": "Microsoft Edge",
+    "title": "Microsoft Edge Otomatik Güncelleştirmelerini Kapat",
+    "description": "Edge tarayıcısının arka planda otomatik güncellenmesini ve bant genişliği harcamasını durdurur.",
+    "icon": "ArrowDownload24",
+    "recommended": false,
+    "requiresRestart": false,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+        "name": "UpdateDefault",
+        "dword": 0
+      },
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+        "name": "Update{56EB18F4-5E85-450F-A862-0941E302A384}",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+        "name": "UpdateDefault"
+      },
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Policies\\Microsoft\\EdgeUpdate",
+        "name": "Update{56EB18F4-5E85-450F-A862-0941E302A384}"
+      }
+    ]
+  }
+]

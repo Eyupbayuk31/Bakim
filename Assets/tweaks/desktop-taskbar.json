@@ -1,0 +1,134 @@
+[
+  {
+    "id": "disable_action_center",
+    "category": "Masaüstü & Görev Çubuğu",
+    "title": "Bildirim Merkezini (Eylem Merkezi) Tamamen Kapat",
+    "description": "Görev çubuğunun sağındaki bildirim simgesini ve yan paneli kapatarak bildirim pop-up'larının dikkatinizi dağıtmasını engeller.",
+    "icon": "DismissCircle24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "DisableNotificationCenter",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKCU",
+        "key": "Software\\Policies\\Microsoft\\Windows\\Explorer",
+        "name": "DisableNotificationCenter"
+      }
+    ]
+  },
+  {
+    "id": "classic_volume_mixer",
+    "category": "Masaüstü & Görev Çubuğu",
+    "title": "Windows 7 Stili Klasik Ses Karıştırıcıyı (MTCUVC) Varsayılan Yap",
+    "description": "Ses simgesine tıklandığında açılan modern ses çubuğu yerine her programın sesini bağımsız ayarlayan klasik Windows 7 ses panelini açar.",
+    "icon": "Speaker224",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\MTCUVC",
+        "name": "EnableMtcUvc",
+        "dword": 0
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKLM",
+        "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\MTCUVC",
+        "name": "EnableMtcUvc"
+      }
+    ]
+  },
+  {
+    "id": "show_seconds_taskbar",
+    "category": "Masaüstü & Görev Çubuğu",
+    "title": "Görev Çubuğu Saatinde Saniyeleri Göster",
+    "description": "Windows 11/10 görev çubuğunun sağ alt köşesindeki dijital saate saniye göstergesini (SS:DD:ss) ekler.",
+    "icon": "Timer24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ShowSecondsInSystemClock",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "name": "ShowSecondsInSystemClock",
+        "dword": 0
+      }
+    ]
+  },
+  {
+    "id": "wallpaper_quality_100",
+    "category": "Masaüstü & Görev Çubuğu",
+    "title": "Duvar Kağıdı Kalite Kaybını (JPEG Sıkıştırması) Kapat",
+    "description": "Windows'un yüksek çözünürlüklü duvar kağıtlarını %85 oranında sıkıştırıp bozmasını engelleyerek %100 orijinal kalitede gösterir.",
+    "icon": "Image24",
+    "recommended": true,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "JPEGImportQuality",
+        "dword": 100
+      }
+    ],
+    "off": [
+      {
+        "op": "DeleteValue",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "JPEGImportQuality"
+      }
+    ]
+  },
+  {
+    "id": "paint_desktop_version",
+    "category": "Masaüstü & Görev Çubuğu",
+    "title": "Masaüstünün Sağ Alt Köşesine Windows Sürümünü Bas",
+    "description": "Masaüstü arka planının sağ alt köşesine işletim sistemi adını, derleme (Build) numarasını ve mimarisini filigran olarak yansıtır.",
+    "icon": "SlideTextSparkle24",
+    "recommended": false,
+    "requiresRestart": true,
+    "on": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "PaintDesktopVersion",
+        "dword": 1
+      }
+    ],
+    "off": [
+      {
+        "op": "SetDword",
+        "root": "HKCU",
+        "key": "Control Panel\\Desktop",
+        "name": "PaintDesktopVersion",
+        "dword": 0
+      }
+    ]
+  }
+]
