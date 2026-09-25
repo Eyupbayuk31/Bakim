@@ -60,9 +60,12 @@ namespace Bakım.Services.Sentinel.Detection
         {
             try
             {
-                int pid = Convert.ToInt32(e.NewEvent.Properties["ProcessID"]?.Value ?? 0);
-                int parentPid = Convert.ToInt32(e.NewEvent.Properties["ParentProcessID"]?.Value ?? 0);
-                string name = e.NewEvent.Properties["ProcessName"]?.Value?.ToString() ?? string.Empty;
+                using var evt = e.NewEvent;
+                if (evt == null) return;
+
+                int pid = Convert.ToInt32(evt.Properties["ProcessID"]?.Value ?? 0);
+                int parentPid = Convert.ToInt32(evt.Properties["ParentProcessID"]?.Value ?? 0);
+                string name = evt.Properties["ProcessName"]?.Value?.ToString() ?? string.Empty;
 
                 if (pid > 0)
                 {
@@ -79,8 +82,11 @@ namespace Bakım.Services.Sentinel.Detection
         {
             try
             {
-                int pid = Convert.ToInt32(e.NewEvent.Properties["ProcessID"]?.Value ?? 0);
-                string name = e.NewEvent.Properties["ProcessName"]?.Value?.ToString() ?? string.Empty;
+                using var evt = e.NewEvent;
+                if (evt == null) return;
+
+                int pid = Convert.ToInt32(evt.Properties["ProcessID"]?.Value ?? 0);
+                string name = evt.Properties["ProcessName"]?.Value?.ToString() ?? string.Empty;
 
                 if (pid > 0)
                 {

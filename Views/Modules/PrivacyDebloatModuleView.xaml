@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d" 
@@ -32,91 +33,36 @@
             </Grid.ColumnDefinitions>
 
             <!-- Card 1: Privacy Score -->
-            <Border Grid.Column="0" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.LG}"
-                    Padding="14,12">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Gizlilik Koruma Skoru" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="%" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            <TextBlock Text="{Binding Stats.ProtectionPercentage}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="ShieldCheckmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
+            <c:StatCard Grid.Column="0"
+                        Icon="ShieldCheckmark24"
+                        Label="Gizlilik Koruma Skoru"
+                        Value="{Binding Stats.ProtectionPercentage, StringFormat='%{0}'}"
+                        Caption="Windows telemetri koruması"
+                        Intent="Success"/>
 
             <!-- Card 2: Active Tweaks -->
-            <Border Grid.Column="2" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.LG}"
-                    Padding="14,12">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Aktif Koruma Kuralı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding Stats.ActiveTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                            <TextBlock Text=" / " FontSize="{StaticResource Font.Subtitle}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="{StaticResource Font.Subtitle}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="CheckmarkCircle24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
+            <c:StatCard Grid.Column="2"
+                        Icon="CheckmarkCircle24"
+                        Label="Aktif Koruma Kuralı"
+                        Value="{Binding Stats.ActiveTweaksCount}"
+                        Caption="{Binding Stats.TotalTweaksCount, StringFormat='Toplam {0} kuraldan'}"
+                        Intent="Accent"/>
 
             <!-- Card 3: Recommended Tweaks Active -->
-            <Border Grid.Column="4" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.LG}"
-                    Padding="14,12">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Önerilen Korumalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.RecommendedActiveCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Star24" FontSize="22" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
+            <c:StatCard Grid.Column="4"
+                        Icon="Star24"
+                        Label="Önerilen Korumalar"
+                        Value="{Binding Stats.RecommendedActiveCount}"
+                        Caption="Önerilen aktif korumalar"
+                        Intent="Caution"/>
 
             <!-- Card 4: Installed Bloatware -->
-            <Border Grid.Column="6" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.LG}"
-                    Padding="14,12">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Yüklü Bloatware" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.InstalledBloatwareCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Apps24" FontSize="22" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
+            <c:StatCard Grid.Column="6"
+                        Icon="Apps24"
+                        Label="Yüklü Bloatware"
+                        Value="{Binding Stats.InstalledBloatwareCount}"
+                        Caption="Kaldırılabilir gereksiz uygulama"
+                        Intent="Critical"/>
         </Grid>
 
         <!-- 1. Action Toolbar & Segmented Switcher -->
@@ -129,11 +75,7 @@
 
             <!-- Segmented Sub-Tab Switcher (Left) -->
             <Border Grid.Column="0" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="3">
+                    Style="{StaticResource FluentSegmentedContainer}">
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Appearance="{Binding IsPrivacyTab, Converter={StaticResource BoolToNavAppearance}}"
                                Content="Gizlilik &amp; Telemetri"

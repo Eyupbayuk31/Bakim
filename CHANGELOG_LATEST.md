@@ -1,40 +1,44 @@
-# Bakım v4.0.0 - Sürüm Notları
+# Bakım v4.1.0 - Sürüm Notları
 
-## Bakım 4.0: Tam Koruma Modu, NTFS USN Değişiklik Günlüğü, Kernel Süreç Takibi & Windows Sandbox Önizleme Motoru
+## Bakım 4.1: Yeni Nesil Fluent 2 UI & Slate Dark Tasarım Revizyonu, İnteraktif KPI ve Segmentli Kontroller
 
-Bakım v4.0.0 sürümü, sistem güvenliği ve izleme mimarisinde çığır açan bir dönüm noktasıdır. Düşük seviye Windows çekirdek ve dosya sistemi sensörleri, sıfır UAC sürtünmeli sağ tık yürütücüsü ve izole Windows Sandbox önizleme motoru doğrudan kullanıma sunulmuştur.
-
----
-
-### 1. Kurulum Nöbetçisi: Tam Koruma Modu & Düşük Seviye Sensörler (NÖB Faz 8)
-- **NTFS USN (Update Sequence Number) Değişiklik Günlüğü:** Win32 `FSCTL_QUERY_USN_JOURNAL` ve `FSCTL_READ_USN_JOURNAL` API'leri ile doğrudan disk sürücüsü günlüğünü tarayarak kurulumların oluşturduğu tüm dosyaları donanım seviyesinde sıfır kaçırma garantisiyle yakalar.
-- **Kernel Süreç Başlatma İzleyicisi (WMI Win32_ProcessStartTrace):** Kurulumların arka planda sessizce çatallandırdığı (fork/spawn) geçici alt süreçleri sub-millisecond hızla tespit eder; süreç ağacına ekleyerek atıf doğruluğunu %100'e çıkarır.
-- **Kademeli Koruma Mimarisi:** Yönetici izinleri ve USN/Kernel sensörleri mevcutsa otomatik olarak **"Tam Koruma Modu"** devreye girer. Standart kullanıcı kipi senaryolarında ise 64 KB genişletilmiş FSW tamponu ve Kayıt Defteri Hotspot sensörleriyle **"Temel Mod"** kusursuz çalışır.
-- **Canlı Sensör Telemetrisi:** Kurulum Nöbetçisi başlığında ve inceleme ekranlarında hangi sensörlerin aktif olduğunu gösteren modern durum rozeti ve sensör dökümü yer alır.
+Bakım v4.1.0 sürümü, uygulamanın tüm görsel arayüzünü modern Microsoft Windows 11 Fluent 2 tasarım dili ve Slate Dark (`#0F172A` / `#1E293B`) estetiği ile baştan aşağı yenilemektedir. Dağınık butonlar, uyumsuz başlık çubuğu öğeleri ve eski stil tab anahtarları tek bir tutarlı tasarım sistemi altında toplanmıştır.
 
 ---
 
-### 2. Sıfır UAC Sürtünmeli Sağ Tık: BakimShell (KAL C3)
-- **Hafif `asInvoker` Shell Yürütücüsü:** Masaüstü veya Windows Gezgini'nde bir kısayola, klasöre veya yürütülebilir dosyaya sağ tıklayıp *"Bakım ile Kaldır"* seçildiğinde hiçbir UAC onay penceresi açılmaz.
-- **Yüksek Hızlı Yerel IPC Mailbox:** `BakimShell.exe`, halihazırda çalışan yönetici yetkili Bakım sürecini yerel Mutex ve dosya tabanlı güvenli IPC gelen kutusu (`%LocalAppData%\Bakim\ipc`) üzerinden <200 milisaniye içinde haberdar eder.
-- **Kusursuz Otomatik Başlatma:** Bakım açık değilse `BakimShell`, tek bir UAC adımıyla ana Bakım uygulamasını doğru parametrelerle ayağa kaldırır.
+### 1. Yeni Nesil Başlık Çubuğu & Birleşik Sistem Sağlığı
+- **Spotlight Arama Hapı (Ctrl+K):** Dağınık arama kutusu yerine başlık çubuğunun merkezine oturan, klavye kısayolu etiketli modern Fluent Spotlight arama hapı entegre edildi.
+- **Birleşik Sistem Sağlığı & Yetki Hapı:** CPU yükü, RAM tüketimi ve UAC (Yönetici / Standart Kullanıcı) yetki durumu ayrık 3 dağınık etiket yerine tek bir şık sağlık hapı içinde birleştirildi.
+- **Kompakt Hızlı Aksiyonlar:** Oyun Modu anahtarı, tema değiştirici ve kullanıcı profili kompakt ikon haplarına dönüştürülerek pencere kontrolleri için ferah bir alan açıldı.
 
 ---
 
-### 3. Windows Sandbox Önizleme Motoru (NÖB Faz 10)
-- **İzole Sıfır-Risk Ortamı:** Şüpheli, imzasız veya riskli görünen kurulum paketleri ana işletim sistemine temas etmeden tek tıkla izole Windows Sandbox içerisinde çalıştırılabilir.
-- **Dinamik `.wsb` Profil Üreticisi:** Kurulum dosyasını otomatik olarak salt-okunur (read-only) geçici bir dizine eşleyen ve Sandbox açıldığında kurulumu otomatik başlatan optimize edilmiş XML profil dosyası oluşturulur.
-- **Tehdit Analizi Entegrasyonu:** Tehdit Analiz ekranında ve Kurulum İnceleme diyaloglarında "Sandbox'ta Önizle" eylemi ile tek tıkla güvenli laboratuvar başlatılır.
+### 2. Fluent 2 Kenar Çubuğu Sol Vurgu Göstergesi (Navigation Accent Pill)
+- **Dikey Accent Vurgu Hapı:** Kenar çubuğu menü öğelerine (NavSidebar) Windows 11 Ayarlar uygulamasındaki gibi dikey yuvarlatılmış 3px accent vurgu hapı eklendi.
+- **Akıcı Seçim Hissi:** Aktif sayfa değiştiğinde sol hap yumuşak geçişle belirir, aktif olmayan öğeler sade ve minimalist kalarak göz yormaz.
 
 ---
 
-### 4. Gelişmiş Tehdit Analiz ve İnceleme Diyalogları
-- **Tehdit Analiz Diyaloğu:** Yeni "Sandbox'ta Önizle" butonu ve taşma menüsü eylemleriyle zenginleştirildi; Sandbox desteği sistemde yoksa kullanıcıyı nazikçe bilgilendirir.
-- **Kurulum Fark İnceleme Diyaloğu (Delta Inspection):** Tam Koruma Modu durum rozeti eklendi; oturum verilerini Sandbox üzerinden yeniden simüle etme imkanı sağlandı.
-- **Kurulum Algılandı Bildirim Penceresi (Flyout v2):** Anlık koruma seviyesi durumu ("Tam Koruma Modu" / "Temel Mod") kullanıcıya şeffafça sunuldu.
+### 3. SegmentedControl Tasarım Sistemi (Themes/Tokens/SegmentedControl.xaml)
+- **Yeniden Kullanılabilir Tasarım Bileşeni:** `FluentSegmentedContainer` ve `FluentSegmentedTabItem` stilleri geliştirilerek merkezi tema kütüphanesine eklendi.
+- **Tüm Alt Sekmelerde Tutarlılık:** 
+  - *Sistem Bilgisi* (Donanım / S.M.A.R.T.),
+  - *Ağ & Bağlantı Merkezi* (5 sekmeli anahtarlayıcı),
+  - *Gizlilik & Debloat* (Gizlilik & Telemetri / Bloatware Kaldırıcı),
+  - *Çökme & Mavi Ekran Analizörü* (BSOD / Olaylar / Onarım),
+  - *Sistem Temizliği* (Filtre ve önayar sekmeleri)
+  tümü bu modern kapsayıcıya geçirildi.
+- **Çökme Analizörü Aktif Sekme Onarımı:** Çökme Analizörü'nde aktif sekmenin görsel olarak vurgulanmaması sorunu `StringToNavAppearanceConverter` ile giderildi.
 
 ---
 
-### 5. Inno Setup & CI/CD Pipeline Entegrasyonu
-- **Tek Sürüm Kaynağı (H-15):** Tüm sürüm meta verileri `Directory.Build.props` üzerinden 4.0.0 olarak yönetilir; derleme zinciri ve Inno Setup installer otomatik olarak `BakimShell.exe`'yi paketler.
-- **Eksiksiz Dağıtım:** GitHub Releases ve Inno Setup kurulum paketlerine `Bakim.exe`'nin yanı sıra bağımsız `BakimShell.exe` dahil edilmiştir.
+### 4. İnteraktif KPI Kartları (StatCard Overhaul)
+- **Mikro Yükselme & Kenarlık Işıltısı:** `StatCard` bileşeni fare üzerine gelindiğinde -2px dikey yükselme (`CubicEaseOut`) ve yumuşak accent kenarlık parlamasıyla etkileşimli hale getirildi.
+- **Program Kaldırıcı Akıllı Filtreleme:** Kaldırılabilir Programlar ve Sistem Bileşenleri KPI kartları `IsInteractive="True"` ve `IsSelected` desteğiyle donatılarak tıklanabilir akıllı filtrelere dönüştürüldü.
+- **Sistem Çapında Standartlaşma:** Başlangıç Programları, Bellek Optimizasyonu (RAM mimari kartları), Gizlilik & Debloat ve Temizleyici modüllerindeki ad-hoc kutucuklar `StatCard` ile standartlaştırıldı.
+
+---
+
+### 5. Sıfır AI Hissiyatı & Titiz Tipografi
+- **Kod Tabanı Temizliği:** Ağ İzleyici modülündeki 100 satıra yakın eski buton şablonları tamamen temizlendi.
+- **Sıfır Geçersiz Sembol:** Tüm semboller ve renk token'ları `verify-symbols.py` ve `verify-tokens.py` ile %100 doğrulandı; 725+ birim test ve 19 UI duman testi eksiksiz geçti.

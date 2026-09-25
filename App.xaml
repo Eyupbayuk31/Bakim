@@ -22,6 +22,7 @@
                 <ResourceDictionary Source="Themes/Tokens/Typography.xaml"/>
                 <ResourceDictionary Source="Themes/Tokens/Spacing.xaml"/>
                 <ResourceDictionary Source="Themes/Tokens/Motion.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/SegmentedControl.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->

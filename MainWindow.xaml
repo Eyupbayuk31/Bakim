@@ -108,60 +108,57 @@
         <ui:TitleBar Grid.Row="0" Title="Bakım - Sistem Yönetim Paneli" Icon="{ui:SymbolIcon Shield24}">
             <ui:TitleBar.TrailingContent>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
-                    <!-- Live Mini Telemetry Chip (CPU / RAM) -->
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                            BorderThickness="1" 
-                            CornerRadius="{StaticResource Radius.MD}" 
-                            Padding="8,3" 
-                            Margin="0,0,8,0"
-                            ToolTip="Anlık Sistem Yükü (Canlı CPU &amp; RAM)">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="13" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                            <TextBlock Text="CPU: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="{Binding MiniCpuText}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-
-                            <ui:SymbolIcon Symbol="TopSpeed20" FontSize="13" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
-                            <TextBlock Text="RAM: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="{Binding MiniRamText}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Ultra Game Mode TitleBar Toggle -->
-                    <ui:Button Appearance="{Binding IsGameModeActive, Converter={StaticResource BoolToNavAppearance}}" 
-                               Padding="8,3"
-                               Command="{Binding ToggleGameModeCommand}"
-                               Margin="0,0,8,0"
-                               ToolTip="Oyun Modu: Yüksek Performans güç planına geçer, Bakım'ın arka plan işlerini duraklatır; kapatınca önceki güç planı geri gelir"
-                               Icon="{ui:SymbolIcon TopSpeed20}">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Oyun Modu: " FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
-                            <TextBlock Text="AÇIK" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"
-                                       Visibility="{Binding IsGameModeActive, Converter={StaticResource BoolToVis}}"/>
-                            <TextBlock Text="KAPALI" FontSize="{StaticResource Font.Caption}" FontWeight="Normal" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                       Visibility="{Binding IsGameModeActive, Converter={StaticResource InverseBoolToVis}}"/>
-                        </StackPanel>
-                    </ui:Button>
-
-                    <!-- Command Palette (Ctrl+K) Button -->
-                    <ui:Button Appearance="Secondary" 
-                               Padding="10,3"
+                    <!-- Modern Spotlight Search Pill (Ctrl+K) -->
+                    <ui:Button Appearance="Secondary"
+                               Padding="12,5"
+                               Height="32"
                                Command="{Binding OpenCommandPaletteCommand}"
                                Margin="0,0,8,0"
                                ToolTip="Hızlı Arama &amp; Komut Paleti (Ctrl+K)"
-                               Icon="{ui:SymbolIcon Search20}"
-                               Content="Ara (Ctrl+K)"/>
+                               AutomationProperties.Name="Hızlı Arama">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="Search20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="Hızlı komut veya modül ara..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,12,0"/>
+                            <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="5,1">
+                                <TextBlock Text="Ctrl+K" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            </Border>
+                        </StackPanel>
+                    </ui:Button>
 
-                    <!-- UAC Admin Badge -->
+                    <!-- Consolidated System Health & Authority Pill -->
                     <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                             BorderThickness="1" 
                             CornerRadius="{StaticResource Radius.MD}" 
-                            Padding="8,3" 
-                            Margin="0,0,8,0">
+                            Padding="10,4" 
+                            Height="32"
+                            Margin="0,0,8,0"
+                            ToolTip="Anlık Sistem Yükü ve Windows Yetki Durumu">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="Shield20" FontSize="13" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0"/>
-                            <TextBlock Text="Yetki: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <!-- CPU -->
+                            <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="13" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding MiniCpuText}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+
+                            <!-- RAM -->
+                            <ui:SymbolIcon Symbol="TopSpeed20" FontSize="13" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding MiniRamText}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+
+                            <!-- Separator -->
+                            <Border Width="1" Height="14" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,0,8,0"/>
+
+                            <!-- UAC Shield & Text -->
+                            <ui:SymbolIcon Symbol="Shield20" FontSize="13" Margin="0,0,4,0">
+                                <ui:SymbolIcon.Style>
+                                    <Style TargetType="ui:SymbolIcon">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsAdmin}" Value="False">
+                                                <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ui:SymbolIcon.Style>
+                            </ui:SymbolIcon>
                             <TextBlock Text="Yönetici" 
                                        FontSize="{StaticResource Font.Caption}" 
                                        FontWeight="SemiBold" 
@@ -175,32 +172,63 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Elevate to Admin Button (If not admin) -->
-                    <ui:Button Appearance="Secondary" 
-                               Padding="8,3"
+                    <!-- Elevate to Admin Button (Only when not Admin) -->
+                    <ui:Button Appearance="Caution" 
+                               Padding="10,4"
+                               Height="32"
                                Command="{Binding RestartAsAdminCommand}"
                                Visibility="{Binding IsAdmin, Converter={StaticResource InverseBoolToVis}}"
                                Margin="0,0,8,0"
+                               ToolTip="Uygulamayı Yönetici Olarak Yeniden Başlat"
                                Content="Yönetici Ol"
                                Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
 
+                    <!-- Ultra Game Mode Quick Toggle Pill -->
+                    <ui:Button Appearance="{Binding IsGameModeActive, Converter={StaticResource BoolToNavAppearance}}" 
+                               Padding="10,4"
+                               Height="32"
+                               Command="{Binding ToggleGameModeCommand}"
+                               Margin="0,0,8,0"
+                               ToolTip="Oyun Modu: Yüksek Performans güç planına geçer ve arka plan işlerini duraklatır">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="TopSpeed20" FontSize="14" Margin="0,0,6,0"/>
+                            <Ellipse Width="7" Height="7" Margin="0,0,5,0">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsGameModeActive}" Value="True">
+                                                <Setter Property="Fill" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Text="Oyun Modu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </ui:Button>
+
                     <!-- Theme Switcher -->
                     <ui:Button Appearance="Secondary" 
-                               Padding="8,3"
+                               Padding="8,4"
+                               Width="36"
+                               Height="32"
                                Command="{Binding ToggleThemeCommand}" 
                                Margin="0,0,8,0" 
                                ToolTip="Açık / Koyu Tema"
                                Icon="{ui:SymbolIcon DarkTheme20}" AutomationProperties.Name="Açık / Koyu Tema"/>
 
-                    <!-- Current Windows User Badge -->
+                    <!-- Current Windows User Profile Pill -->
                     <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                             BorderThickness="1" 
                             CornerRadius="{StaticResource Radius.MD}" 
-                            Padding="8,3">
+                            Height="32"
+                            Padding="10,4"
+                            ToolTip="{Binding CurrentUserName, StringFormat='Aktif Windows Kullanıcısı: {0}'}">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="Person20" FontSize="13" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                            <TextBlock Text="{Binding CurrentUserName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <ui:SymbolIcon Symbol="Person20" FontSize="13" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,5,0"/>
+                            <TextBlock Text="{Binding CurrentUserName}" MaxWidth="110" TextTrimming="CharacterEllipsis" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -334,11 +362,30 @@
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
+                                                            <!-- Fluent 2 Left Accent Indicator Bar -->
+                                                            <Border Width="3" Height="16" CornerRadius="1.5"
+                                                                    Background="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                                    Margin="-6,0,0,0"
+                                                                    Visibility="{Binding IsSelected, Converter={StaticResource BoolToVis}}"/>
                                                             <ui:SymbolIcon Grid.Column="0" Symbol="{Binding Icon}" Filled="{Binding IsSelected}" FontSize="20"/>
                                                             <TextBlock Grid.Column="1" Text="{Binding Label}"
                                                                        Margin="10,0,0,0" VerticalAlignment="Center"
                                                                        TextTrimming="CharacterEllipsis"
-                                                                       Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"/>
+                                                                       Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="FontWeight" Value="Normal"/>
+                                                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
                                                             <Border Grid.Column="2"
                                                                     Background="{DynamicResource AccentFillColorDefaultBrush}"
                                                                     CornerRadius="{StaticResource Radius.Pill}"
@@ -380,9 +427,30 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
+
+                                <!-- Fluent 2 Left Accent Indicator Bar -->
+                                <Border Width="3" Height="16" CornerRadius="1.5"
+                                        Background="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        Margin="-6,0,0,0"
+                                        Visibility="{Binding IsSelected, Converter={StaticResource BoolToVis}}"/>
+
                                 <ui:SymbolIcon Symbol="{Binding Icon}" Filled="{Binding IsSelected}" FontSize="20"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Label}" Margin="10,0,0,0" VerticalAlignment="Center"
-                                           Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}"/>
+                                           Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Normal"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </Grid>
                         </ui:Button>
 

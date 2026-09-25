@@ -69,58 +69,31 @@
             </Grid.ColumnDefinitions>
 
             <!-- Card 1: Toplam Başlangıç Ögesi -->
-            <ui:Card Grid.Column="0" Padding="14" Style="{StaticResource InteractiveCard}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Toplam Başlatıcı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.TotalCount, FallbackValue='0'}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
-                        <TextBlock Text="Kayıtlı açılış ögesi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                    <Border Grid.Column="1" Background="{DynamicResource Brush.Accent.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Apps24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                </Grid>
-            </ui:Card>
+            <c:StatCard Grid.Column="0" 
+                        Icon="Apps24" 
+                        Label="Toplam Başlatıcı" 
+                        Value="{Binding Stats.TotalCount, FallbackValue='0'}" 
+                        Caption="Kayıtlı açılış ögesi" 
+                        Intent="Accent" 
+                        IsInteractive="True"/>
 
             <!-- Card 2: Etkin Başlatıcılar -->
-            <ui:Card Grid.Column="2" Padding="14" Style="{StaticResource InteractiveCard}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Etkin Uygulamalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.EnabledCount, FallbackValue='0'}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,2"/>
-                        <TextBlock Text="Açılışta otomatik çalışan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                    <Border Grid.Column="1" Background="{DynamicResource Brush.Success.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                </Grid>
-            </ui:Card>
+            <c:StatCard Grid.Column="2" 
+                        Icon="CheckmarkCircle24" 
+                        Label="Etkin Uygulamalar" 
+                        Value="{Binding Stats.EnabledCount, FallbackValue='0'}" 
+                        Caption="Açılışta otomatik çalışan" 
+                        Intent="Success" 
+                        IsInteractive="True"/>
 
             <!-- Card 3: Devre Dışı Ögeler -->
-            <ui:Card Grid.Column="4" Padding="14" Style="{StaticResource InteractiveCard}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Devre Dışı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.DisabledCount, FallbackValue='0'}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,2"/>
-                        <TextBlock Text="Sistemi yormayan pasif" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                    </StackPanel>
-                    <Border Grid.Column="1" Background="{DynamicResource Brush.Muted.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="DismissCircle24" FontSize="20" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                </Grid>
-            </ui:Card>
+            <c:StatCard Grid.Column="4" 
+                        Icon="DismissCircle24" 
+                        Label="Devre Dışı" 
+                        Value="{Binding Stats.DisabledCount, FallbackValue='0'}" 
+                        Caption="Sistemi yormayan pasif" 
+                        Intent="Neutral" 
+                        IsInteractive="True"/>
 
             <!-- Card 4: Son açılış (Windows ölçümü) -->
             <ui:Card Grid.Column="6" Padding="14" Style="{StaticResource InteractiveCard}">

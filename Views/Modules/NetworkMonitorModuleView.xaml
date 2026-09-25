@@ -24,102 +24,6 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-
-        <!-- Windows 11 Fluent Segmented Tab Base Style -->
-        <Style x:Key="SegmentedTabItemStyle" TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
-            <Setter Property="Padding" Value="14,9"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="TabBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="{StaticResource Radius.SM}"
-                                Padding="{TemplateBinding Padding}"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Tab 1: Connections -->
-        <Style x:Key="ConnectionsTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsConnectionsTab}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Tab 2: Listening -->
-        <Style x:Key="ListeningTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsListeningTab}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Tab 3: Adapters -->
-        <Style x:Key="AdaptersTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsAdaptersTab}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Tab 4: SpeedTest -->
-        <Style x:Key="SpeedTestTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsSpeedTestTab}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Tab 5: Diagnostics -->
-        <Style x:Key="DiagnosticsTabStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource SegmentedTabItemStyle}">
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsDiagnosticsTab}" Value="True">
-                    <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
     </UserControl.Resources>
 
     <Grid Margin="24">
@@ -246,11 +150,7 @@
 
         <!-- 3. Modern Segmented Tab Switcher (Windows 11 Fluent Pill Container) -->
         <Border Grid.Row="2" 
-                Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                BorderThickness="1" 
-                CornerRadius="{StaticResource Radius.MD}" 
-                Padding="4" 
+                Style="{StaticResource FluentSegmentedContainer}"
                 Margin="0,0,0,14">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -262,68 +162,73 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Tab 1: Active Connections -->
-                <Button Grid.Column="0" 
-                        Style="{StaticResource ConnectionsTabStyle}"
-                        Command="{Binding SetTabCommand}" 
-                        CommandParameter="Connections" 
-                        HorizontalAlignment="Stretch" 
-                        Margin="0,0,4,0">
+                <ui:Button Grid.Column="0" 
+                           Appearance="{Binding IsConnectionsTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetTabCommand}" 
+                           CommandParameter="Connections" 
+                           HorizontalAlignment="Stretch" 
+                           Margin="0,0,4,0"
+                           Padding="10,8">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Globe20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="Canlı Bağlantılar"/>
+                        <ui:SymbolIcon Symbol="Globe20" Margin="0,0,8,0" FontSize="16"/>
+                        <TextBlock Text="Canlı Bağlantılar" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
 
                 <!-- Tab 2: Listening Ports -->
-                <Button Grid.Column="1" 
-                        Style="{StaticResource ListeningTabStyle}"
-                        Command="{Binding SetTabCommand}" 
-                        CommandParameter="Listening" 
-                        HorizontalAlignment="Stretch" 
-                        Margin="0,0,4,0">
+                <ui:Button Grid.Column="1" 
+                           Appearance="{Binding IsListeningTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetTabCommand}" 
+                           CommandParameter="Listening" 
+                           HorizontalAlignment="Stretch" 
+                           Margin="0,0,4,0"
+                           Padding="10,8">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Laptop20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="Dinlenen Portlar"/>
+                        <ui:SymbolIcon Symbol="Laptop20" Margin="0,0,8,0" FontSize="16"/>
+                        <TextBlock Text="Dinlenen Portlar" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
 
                 <!-- Tab 3: Adapters -->
-                <Button Grid.Column="2" 
-                        Style="{StaticResource AdaptersTabStyle}"
-                        Command="{Binding SetTabCommand}" 
-                        CommandParameter="Adapters" 
-                        HorizontalAlignment="Stretch" 
-                        Margin="0,0,4,0">
+                <ui:Button Grid.Column="2" 
+                           Appearance="{Binding IsAdaptersTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetTabCommand}" 
+                           CommandParameter="Adapters" 
+                           HorizontalAlignment="Stretch" 
+                           Margin="0,0,4,0"
+                           Padding="10,8">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <ui:SymbolIcon Symbol="DeveloperBoard20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="Ağ Adaptörleri &amp; IP"/>
+                        <ui:SymbolIcon Symbol="DeveloperBoard20" Margin="0,0,8,0" FontSize="16"/>
+                        <TextBlock Text="Ağ Adaptörleri &amp; IP" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
 
                 <!-- Tab 4: Speed Test -->
-                <Button Grid.Column="3" 
-                        Style="{StaticResource SpeedTestTabStyle}"
-                        Command="{Binding SetTabCommand}" 
-                        CommandParameter="SpeedTest" 
-                        HorizontalAlignment="Stretch" 
-                        Margin="0,0,4,0">
+                <ui:Button Grid.Column="3" 
+                           Appearance="{Binding IsSpeedTestTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetTabCommand}" 
+                           CommandParameter="SpeedTest" 
+                           HorizontalAlignment="Stretch" 
+                           Margin="0,0,4,0"
+                           Padding="10,8">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <ui:SymbolIcon Symbol="ArrowDownload20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="1000 Mbps Hız Testi"/>
+                        <ui:SymbolIcon Symbol="ArrowDownload20" Margin="0,0,8,0" FontSize="16"/>
+                        <TextBlock Text="1000 Mbps Hız Testi" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
 
                 <!-- Tab 5: Diagnostics Tools -->
-                <Button Grid.Column="4" 
-                        Style="{StaticResource DiagnosticsTabStyle}"
-                        Command="{Binding SetTabCommand}" 
-                        CommandParameter="Diagnostics" 
-                        HorizontalAlignment="Stretch">
+                <ui:Button Grid.Column="4" 
+                           Appearance="{Binding IsDiagnosticsTab, Converter={StaticResource BoolToNavAppearance}}"
+                           Command="{Binding SetTabCommand}" 
+                           CommandParameter="Diagnostics" 
+                           HorizontalAlignment="Stretch"
+                           Padding="10,8">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Wrench20" Margin="0,0,8,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="Ağ Teşhis Araçları"/>
+                        <ui:SymbolIcon Symbol="Wrench20" Margin="0,0,8,0" FontSize="16"/>
+                        <TextBlock Text="Ağ Teşhis Araçları" VerticalAlignment="Center"/>
                     </StackPanel>
-                </Button>
+                </ui:Button>
             </Grid>
         </Border>
 

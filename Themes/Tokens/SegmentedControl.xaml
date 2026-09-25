@@ -1,0 +1,64 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!--
+        FLUENT 2 SEGMENTED TAB BAR BİLEŞENİ
+        ===================================
+        Windows 11 segmentli sekme değiştirici şablonu.
+        Modüller arasındaki (NetworkMonitor, SystemInfo, CrashAnalyzer, Store, vb.)
+        tutarsız sekme yapılarını standartlaştırır.
+    -->
+
+    <!-- Dış Kapsayıcı Kartı -->
+    <Style x:Key="FluentSegmentedContainer" TargetType="{x:Type Border}">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.MD}"/>
+        <Setter Property="Padding" Value="3"/>
+    </Style>
+
+    <!-- İç Sekme Buton Taban Stili -->
+    <Style x:Key="FluentSegmentedTabItem" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="FontWeight" Value="Medium"/>
+        <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
+        <Setter Property="Padding" Value="14,6"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="TabBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource Radius.SM}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="Active">
+                            <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                            <Setter TargetName="TabBorder" Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

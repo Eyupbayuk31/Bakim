@@ -1056,13 +1056,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v410 = new ReleaseChangelogItem
+            {
+                Version = "v4.1.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Yeni Nesil Fluent 2 UI & Slate Dark Tasarım Revizyonu, İnteraktif KPI ve Segmentli Kontroller",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Yeni Nesil Başlık Çubuğu & Birleşik Sistem Sağlığı: TitleBar 7 dağınık öğeden kurtarılarak Spotlight arama hapı (Ctrl+K), birleşik Sistem Sağlığı hapı (CPU, RAM, UAC durumu) ve kompakt hızlı aksiyon haplarıyla ferahlatıldı.",
+                    "Fluent 2 Sol Gezinti Göstergesi (Navigation Accent Pill): Kenar çubuğu menü öğelerine Windows 11 Fluent 2 standartlarında dikey yuvarlatılmış 3px accent vurgu hapı ve akıcı geçiş animasyonu kazandırıldı.",
+                    "SegmentedControl Tasarım Sistemi: Themes/Tokens/SegmentedControl.xaml altında FluentSegmentedContainer ve FluentSegmentedTabItem tanımlanarak Sistem Bilgisi, Ağ İzleyici, Gizlilik & Debloat, Çökme Analizi ve Temizleyici sekmeleri tek tip modern görünüme kavuşturuldu.",
+                    "İnteraktif KPI Kartları (StatCard Overhaul): StatCard bileşeni fare üzerine gelince -2px mikro yükselme (CubicEaseOut), yumuşak accent kenarlık ışıltısı, IsSelected seçililik ve doğrudan ICommand filtreleme desteğiyle donatıldı.",
+                    "Program Kaldırıcı Akıllı Filtreleme: Kaldırılabilir Programlar ve Sistem Bileşenleri KPI kartları tek tıkla doğrudan ilgili listeyi filtreleyen etkileşimli StatCard bileşenlerine dönüştürüldü.",
+                    "Sıfır AI Hissiyatı & Titiz Tipografi: Eski ve hardcoded XAML stilleri temizlendi, Çökme Analizörü'ndeki aktif sekme vurgu hatası giderildi, semboller ve tokenlar %100 doğrulandı."
+                }
+            };
+
             var v400 = new ReleaseChangelogItem
             {
                 Version = "v4.0.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Bakım 4.0: Tam Koruma Modu, NTFS USN Günlüğü, Kernel Süreç Takibi & Windows Sandbox Önizleme",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Tam Koruma Modu (NÖB Faz 8): Arka plan çekirdek süreç başlatma izleyicisi (Win32_ProcessStartTrace) ve düşük seviye NTFS USN (Update Sequence Number) değişiklik günlüğü ile sıfır kaçırma garantisi.",
@@ -1807,8 +1825,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v400;
+            LatestRelease = v410;
 
+            ReleaseHistory.Add(v410);
             ReleaseHistory.Add(v400);
             ReleaseHistory.Add(v3230);
             ReleaseHistory.Add(v3220);

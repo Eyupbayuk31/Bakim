@@ -82,103 +82,46 @@
             </Grid.ColumnDefinitions>
 
             <!-- Card 1: Kaldırılabilir Programlar (Tıklanabilir Filtre) -->
-            <ui:Card Grid.Column="0" Padding="16,14" Cursor="Hand" ToolTip="Yalnızca kaldırılabilir programları filtrele">
-                <ui:Card.InputBindings>
-                    <MouseBinding MouseAction="LeftClick" Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="UserOnly"/>
-                </ui:Card.InputBindings>
-                <ui:Card.Style>
-                    <Style TargetType="{x:Type ui:Card}">
-                        <Setter Property="BorderThickness" Value="1"/>
-                        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsUserOnlyFilter}" Value="True">
-                                <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                <Setter Property="BorderThickness" Value="1.5"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ui:Card.Style>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Kaldırılabilir Programlar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding UserAppsCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text=" yazılım" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Apps24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
+            <c:StatCard Grid.Column="0"
+                        Label="Kaldırılabilir Programlar"
+                        Value="{Binding UserAppsCount}"
+                        Caption="Kullanıcı yazılımları"
+                        Icon="Apps24"
+                        Intent="Accent"
+                        IsInteractive="True"
+                        IsSelected="{Binding IsUserOnlyFilter}"
+                        ClickCommand="{Binding SetAppFilterCategoryCommand}"
+                        CommandParameter="UserOnly"
+                        ToolTip="Yalnızca kaldırılabilir programları filtrele"/>
 
             <!-- Card 2: Total Footprint -->
-            <ui:Card Grid.Column="2" Padding="16,14">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Toplam Kaplanan Alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.FormattedTotalFootprint}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Desktop24" FontSize="24" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
+            <c:StatCard Grid.Column="2"
+                        Label="Toplam Kaplanan Alan"
+                        Value="{Binding Stats.FormattedTotalFootprint}"
+                        Caption="Diskte kaplanan boyut"
+                        Icon="Desktop24"
+                        Intent="Caution"/>
 
-            <!-- Card 3: System Components (Tıklanabilir Filtre) -->
-            <ui:Card Grid.Column="4" Padding="16,14" Cursor="Hand" ToolTip="Korumalı sistem bileşenlerini ve kütüphaneleri filtrele">
-                <ui:Card.InputBindings>
-                    <MouseBinding MouseAction="LeftClick" Command="{Binding SetAppFilterCategoryCommand}" CommandParameter="SystemOnly"/>
-                </ui:Card.InputBindings>
-                <ui:Card.Style>
-                    <Style TargetType="{x:Type ui:Card}">
-                        <Setter Property="BorderThickness" Value="1"/>
-                        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsSystemOnlyFilter}" Value="True">
-                                <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCautionBrush}"/>
-                                <Setter Property="BorderThickness" Value="1.5"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ui:Card.Style>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Sistem Bileşenleri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding SystemAppsCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                            <TextBlock Text=" korumalı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="ShieldCheckmark24" FontSize="24" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
+            <!-- Card 3: Sistem Bileşenleri (Tıklanabilir Filtre) -->
+            <c:StatCard Grid.Column="4"
+                        Label="Sistem Bileşenleri"
+                        Value="{Binding SystemAppsCount}"
+                        Caption="Korumalı bileşenler"
+                        Icon="ShieldCheckmark24"
+                        Intent="Caution"
+                        IsInteractive="True"
+                        IsSelected="{Binding IsSystemOnlyFilter}"
+                        ClickCommand="{Binding SetAppFilterCategoryCommand}"
+                        CommandParameter="SystemOnly"
+                        ToolTip="Korumalı sistem bileşenlerini ve kütüphaneleri filtrele"/>
 
             <!-- Card 4: Leftovers Found -->
-            <ui:Card Grid.Column="6" Padding="16,14">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Bulunan Kalıntılar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding Stats.LeftoversFoundCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
-                            <TextBlock Text="{Binding Stats.FormattedTotalLeftovers, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Delete24" FontSize="24" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
+            <c:StatCard Grid.Column="6"
+                        Label="Bulunan Kalıntılar"
+                        Value="{Binding Stats.LeftoversFoundCount}"
+                        Caption="{Binding Stats.FormattedTotalLeftovers, StringFormat='Toplam: {0}'}"
+                        Icon="Delete24"
+                        Intent="Critical"/>
         </Grid>
 
         <!-- 2. Modern 2-Katmanlı Toolbar: Segment Filtreleri, Sıralama & Arama -->

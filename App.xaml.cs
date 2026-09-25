@@ -560,6 +560,19 @@ namespace Bakım
             string rootCause = e.Exception.InnerException?.Message ?? e.Exception.Message;
             var now = DateTime.UtcNow;
 
+            // Geçici WPF DWM / HwndTarget pencere ayarı / konumu güncelleme istisnaları (ERROR_NOT_ENOUGH_QUOTA vb.):
+            // e.Handled = true zaten sürecin çökmesini engeller ve WPF sonraki karede toparlar.
+            // Bu geçici iç WPF çizim hataları için kullanıcıya engelleyici modal MessageBox açılmamalıdır.
+            string stackTrace = e.Exception.StackTrace ?? string.Empty;
+            if (e.Exception is System.ComponentModel.Win32Exception ||
+                e.Exception.InnerException is System.ComponentModel.Win32Exception ||
+                stackTrace.Contains("HwndTarget.UpdateWindowSettings") ||
+                stackTrace.Contains("HwndTarget.UpdateWindowPos"))
+            {
+                AppLog.Warning($"Geçici arayüz pencere render uyarısı bastırıldı: {rootCause}", e.Exception, "Dispatcher");
+                return;
+            }
+
             AppLog.Error("Yakalanmamış arayüz istisnası.", e.Exception, "Dispatcher");
 
             // 2 saniye throttling / de-duplication: Aynı hatanın üst üste popup açmasını engelle

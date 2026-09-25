@@ -5,22 +5,26 @@
              x:Name="Root">
 
     <!--
-        KPI kartı: simge + etiket + büyük değer + alt açıklama.
-        Panoda ve Sistem Bilgisi modülünde tekrarlanan telemetri kartlarını standartlaştırır.
-
-        Responsive: sabit genişlik yoktur. Kapsayıcı Grid sütunu ne verirse ona uyar,
-        uzun değerler kırpılır (TextTrimming) — böylece dar pencerede taşma olmaz.
+        KPI kartı (Fluent 2): simge + etiket + büyük değer + alt açıklama + opsiyonel trend rozeti.
+        Responsive: Kapsayıcı Grid sütununa dinamik uyar, metin taşmalarını kırpar (TextTrimming).
     -->
 
-    <Border BorderThickness="{StaticResource Stroke.Thin}"
+    <Border x:Name="CardBorder"
+            BorderThickness="{StaticResource Stroke.Thin}"
             CornerRadius="{StaticResource Radius.MD}"
             Padding="{StaticResource Pad.CardCompact}"
-            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            RenderTransformOrigin="0.5,0.5">
+
+        <Border.RenderTransform>
+            <TranslateTransform Y="0"/>
+        </Border.RenderTransform>
 
         <Border.Style>
             <Style TargetType="Border">
                 <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
                 <Style.Triggers>
+                    <!-- Intent Border Highlights -->
                     <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Accent">
                         <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </DataTrigger>
@@ -33,49 +37,155 @@
                     <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Critical">
                         <Setter Property="BorderBrush" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
                     </DataTrigger>
+
+                    <!-- IsSelected Highlight (For filtering KPI cards) -->
+                    <DataTrigger Binding="{Binding IsSelected, ElementName=Root}" Value="True">
+                        <Setter Property="BorderBrush" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <Setter Property="BorderThickness" Value="1.5"/>
+                    </DataTrigger>
+
+                    <!-- IsInteractive Cursor & Hover -->
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsInteractive, ElementName=Root}" Value="True"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="Cursor" Value="Hand"/>
+                    </MultiDataTrigger>
+
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsInteractive, ElementName=Root}" Value="True"/>
+                            <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                        <MultiDataTrigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                     To="-2" Duration="0:0:0.15">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </MultiDataTrigger.EnterActions>
+                        <MultiDataTrigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                     To="0" Duration="0:0:0.15">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </MultiDataTrigger.ExitActions>
+                    </MultiDataTrigger>
                 </Style.Triggers>
             </Style>
         </Border.Style>
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/> <!-- Simge + etiket -->
+                <RowDefinition Height="Auto"/> <!-- Simge + etiket + trend -->
                 <RowDefinition Height="Auto"/> <!-- Değer -->
                 <RowDefinition Height="Auto"/> <!-- Alt açıklama -->
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:SymbolIcon FontSize="{StaticResource Icon.SM}"
-                               Margin="{StaticResource Gap.IconText}"
+            <!-- Row 0: Simge + Başlık + Trend Pill -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ui:SymbolIcon FontSize="{StaticResource Icon.SM}"
+                                   Margin="{StaticResource Gap.IconText}"
+                                   VerticalAlignment="Center"
+                                   Symbol="{Binding Icon, ElementName=Root, Converter={StaticResource SafeSymbol}}"
+                                   Visibility="{Binding Icon, ElementName=Root, Converter={StaticResource StringToVis}}">
+                        <ui:SymbolIcon.Style>
+                            <Style TargetType="ui:SymbolIcon">
+                                <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Success">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Caution">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Critical">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ui:SymbolIcon.Style>
+                    </ui:SymbolIcon>
+
+                    <TextBlock Text="{Binding Label, ElementName=Root}"
+                               FontSize="{StaticResource Font.Caption}"
+                               FontWeight="Medium"
                                VerticalAlignment="Center"
-                               Symbol="{Binding Icon, ElementName=Root, Converter={StaticResource SafeSymbol}}"
-                               Visibility="{Binding Icon, ElementName=Root, Converter={StaticResource StringToVis}}">
-                    <ui:SymbolIcon.Style>
-                        <Style TargetType="ui:SymbolIcon">
-                            <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                </StackPanel>
+
+                <!-- Trend / Badge Pill -->
+                <Border Grid.Column="1" 
+                        CornerRadius="{StaticResource Radius.Pill}"
+                        Padding="6,1"
+                        VerticalAlignment="Center"
+                        Margin="6,0,0,0"
+                        Visibility="{Binding TrendText, ElementName=Root, Converter={StaticResource StringToVis}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Success">
-                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Success">
+                                    <Setter Property="Background" Value="{DynamicResource Brush.Success.Subtle}"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Caution">
-                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Caution">
+                                    <Setter Property="Background" Value="{DynamicResource Brush.Caution.Subtle}"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Critical">
-                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Critical">
+                                    <Setter Property="Background" Value="{DynamicResource Brush.Critical.Subtle}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Accent">
+                                    <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </ui:SymbolIcon.Style>
-                </ui:SymbolIcon>
+                    </Border.Style>
+                    <TextBlock Text="{Binding TrendText, ElementName=Root}" 
+                               FontSize="{StaticResource Font.Micro}" 
+                               FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Success">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Caution">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Critical">
+                                        <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding TrendIntent, ElementName=Root}" Value="Accent">
+                                        <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Border>
+            </Grid>
 
-                <TextBlock Text="{Binding Label, ElementName=Root}"
-                           FontSize="{StaticResource Font.Caption}"
-                           FontWeight="Medium"
-                           VerticalAlignment="Center"
-                           TextTrimming="CharacterEllipsis"
-                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-            </StackPanel>
-
+            <!-- Row 1: Değer -->
             <TextBlock Grid.Row="1"
                        Text="{Binding Value, ElementName=Root}"
                        FontSize="{StaticResource Font.Title}"
@@ -84,6 +194,7 @@
                        TextTrimming="CharacterEllipsis"
                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
+            <!-- Row 2: Alt Açıklama -->
             <TextBlock Grid.Row="2"
                        Text="{Binding Caption, ElementName=Root}"
                        FontSize="{StaticResource Font.Caption}"

@@ -157,46 +157,49 @@
                 <Grid Grid.Row="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <!-- KPI 1: Speed & Slots -->
-                    <Border Grid.Column="0" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
-                        <StackPanel>
-                            <TextBlock Text="HIZ &amp; YUVALAR" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="{Binding Hardware.RamSpeedMhz, FallbackValue='3200 MT/s'}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
-                            <TextBlock Text="{Binding Composition.SlotsText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
+                    <c:StatCard Grid.Column="0" 
+                                Icon="TopSpeed20" 
+                                Label="HIZ &amp; YUVALAR" 
+                                Value="{Binding Hardware.RamSpeedMhz, FallbackValue='3200 MT/s'}" 
+                                Caption="{Binding Composition.SlotsText}" 
+                                Intent="Accent" 
+                                IsInteractive="True"/>
 
                     <!-- KPI 2: Commit Charge / Pagefile -->
-                    <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
-                        <StackPanel>
-                            <TextBlock Text="SANAL BELLEK (PAGEFILE)" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="{Binding Composition.CommitTotalGb, StringFormat='{}{0:F1} GB İşlendi'}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
-                            <TextBlock Text="{Binding Composition.CommitLimitGb, StringFormat='Limit: {0:F1} GB'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
+                    <c:StatCard Grid.Column="2" 
+                                Icon="HardDrive20" 
+                                Label="SANAL BELLEK (PAGEFILE)" 
+                                Value="{Binding Composition.CommitTotalGb, StringFormat='{}{0:F1} GB İşlendi'}" 
+                                Caption="{Binding Composition.CommitLimitGb, StringFormat='Limit: {0:F1} GB'}" 
+                                Intent="Neutral" 
+                                IsInteractive="True"/>
 
                     <!-- KPI 3: Kernel Pools -->
-                    <Border Grid.Column="2" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
-                        <StackPanel>
-                            <TextBlock Text="ÇEKİRDEK HAVUZLARI" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="{Binding Composition.PagedPoolMb, StringFormat='Sayfalı: {0:F0} MB'}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
-                            <TextBlock Text="{Binding Composition.NonPagedPoolMb, StringFormat='Sayfasız: {0:F0} MB'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
+                    <c:StatCard Grid.Column="4" 
+                                Icon="DeveloperBoard20" 
+                                Label="ÇEKİRDEK HAVUZLARI" 
+                                Value="{Binding Composition.PagedPoolMb, StringFormat='Sayfalı: {0:F0} MB'}" 
+                                Caption="{Binding Composition.NonPagedPoolMb, StringFormat='Sayfasız: {0:F0} MB'}" 
+                                Intent="Neutral" 
+                                IsInteractive="True"/>
 
                     <!-- KPI 4: Hardware Reserved -->
-                    <Border Grid.Column="3" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="12,10">
-                        <StackPanel>
-                            <TextBlock Text="DONANIMA AYRILMIŞ" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <TextBlock Text="{Binding Composition.HardwareReservedText}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
-                            <TextBlock Text="BIOS / Entegre GPU" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
-                        </StackPanel>
-                    </Border>
+                    <c:StatCard Grid.Column="6" 
+                                Icon="ShieldCheckmark20" 
+                                Label="DONANIMA AYRILMIŞ" 
+                                Value="{Binding Composition.HardwareReservedText}" 
+                                Caption="BIOS / Entegre GPU" 
+                                Intent="Neutral" 
+                                IsInteractive="True"/>
                 </Grid>
 
                 <!-- Optimization Progress Bar (Only during optimization) -->

@@ -27,11 +27,7 @@
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Modern Fluent Segmented Sub-Tab Switcher -->
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="{StaticResource Radius.MD}"
-                            Padding="4"
+                    <Border Style="{StaticResource FluentSegmentedContainer}"
                             Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
                             <!-- Tab 1: Hardware -->
@@ -50,8 +46,7 @@
                             <ui:Button Appearance="{Binding IsSmartTab, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SwitchSubTabCommand}"
                                        CommandParameter="Smart"
-                                       Padding="12,6"
-                                       Margin="0,0,4,0">
+                                       Padding="12,6">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="16" Margin="0,0,6,0"/>
                                     <TextBlock Text="S.M.A.R.T." VerticalAlignment="Center"/>
