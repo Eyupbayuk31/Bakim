@@ -160,6 +160,32 @@ namespace Bakım.Services.Activity
         /// Hizmetin şu anki başlangıç türü (Services\{ad}\Start ve DelayedAutostart). Yönetici izni
         /// gerekmez. Okunamazsa null: kayıt yine yazılır ama geri alınamaz.
         /// </summary>
+        /// <summary>Toplu hizmet değişikliği (profil): tek kayıt, tek tıkla hepsi geri alınır.</summary>
+        public static ActivityEntry? RecordServiceBatch(this IActivityService activity, string title, string summary,
+            ActivityOutcome outcome, IReadOnlyList<ServiceUndoPayload> originals, IEnumerable<ActivityItem> items)
+        {
+            return Safe(() =>
+            {
+                var entry = new ActivityEntry
+                {
+                    Kind = ActivityKind.ServiceChange,
+                    Module = "Hizmetler",
+                    Title = title,
+                    Summary = summary,
+                    Outcome = outcome,
+                    DeepLink = "ServiceManager",
+                    Items = items.ToList()
+                };
+                if (originals.Count > 0 && outcome != ActivityOutcome.Failed)
+                {
+                    string dir = activity.CreateJournal(entry.Id);
+                    ActivityPayload.Write(dir, ActivityPayload.ServicesFile, originals.ToList());
+                    entry = entry with { Undo = UndoState.Undoable, UndoHandler = UndoHandlers.ServiceConfig, PayloadPath = dir };
+                }
+                return activity.Record(entry);
+            });
+        }
+
         public static ServiceUndoPayload? ReadServiceState(string serviceName, string displayName, bool? restoreRunning, bool includeStartType)
         {
             try

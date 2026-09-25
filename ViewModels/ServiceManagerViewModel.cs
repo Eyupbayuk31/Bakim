@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Bakım.Core.ServiceControl;
 using Bakım.Models;
 using Bakım.Core.Activity;
 using Bakım.Services;
@@ -40,6 +41,9 @@ namespace Bakım.ViewModels
         public ICollectionView FilteredDrivers => _filteredDrivers;
 
         public ObservableCollection<ServiceItem> Services { get; }
+
+        /// <summary>Güvenli önerilen profiller (§5.7); önizleme mevcut başlangıç türlerinden hesaplanır.</summary>
+        public ObservableCollection<ServiceProfileCard> Profiles { get; } = new();
         public ObservableCollection<DriverItem> Drivers { get; }
 
         [ObservableProperty]
@@ -173,6 +177,7 @@ namespace Bakım.ViewModels
 
                     _filteredServices.Refresh();
                     _filteredDrivers.Refresh();
+                    RebuildProfiles();
                 });
 
                 Stats = new ServiceDriverStats
@@ -293,14 +298,68 @@ namespace Bakım.ViewModels
             }
         }
 
+        private void RebuildProfiles()
+        {
+            var modes = Services.GroupBy(s => s.ServiceName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().StartupType, StringComparer.OrdinalIgnoreCase);
+            Profiles.Clear();
+            foreach (var profile in ServiceProfiles.All)
+                Profiles.Add(new ServiceProfileCard(profile, ServiceProfiles.Preview(profile, modes)));
+        }
+
+        /// <summary>Profili önizler, tek onayla uygular ve tek Etkinlik kaydıyla geri alınabilir kılar.</summary>
+        [RelayCommand]
+        public async Task ApplyProfileAsync(ServiceProfileCard? card)
+        {
+            if (card == null || !card.CanApply) return;
+            var confirm = MessageBox.Show(
+                $"{card.Title}\n\nDeğişecek hizmetler:\n{card.PreviewText}\n\nTek yönetici onayıyla uygulanır; Etkinlik Merkezi'nden tek tıkla geri alınabilir.",
+                "Hizmet profili", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            IsBusy = true;
+            try
+            {
+                var originals = card.Steps
+                    .Select(s => ActivityRecording.ReadServiceState(s.ServiceName, DisplayNameOf(s.ServiceName), restoreRunning: null, includeStartType: true))
+                    .Where(p => p != null).Select(p => p!).ToList();
+                var result = await _serviceManager.SetStartupTypesAsync(card.Steps.Select(s => (s.ServiceName, s.TargetMode)).ToList());
+                var outcome = result.Cancelled ? ActivityOutcome.Cancelled : ActivityQuery.OutcomeFromCounts(result.Succeeded, result.Failed);
+                _activity.RecordServiceBatch($"Hizmet profili: {card.Title}",
+                    $"{result.Succeeded} hizmet değişti" + (result.Failed > 0 ? $" · {result.Failed} başarısız" : ""),
+                    outcome, result.Succeeded > 0 ? originals : Array.Empty<ServiceUndoPayload>(),
+                    card.Steps.Select(s => new ActivityItem(s.ServiceName, "Başlangıç türü",
+                        $"{ServiceProfiles.ModeLabel(s.CurrentMode)} → {ServiceProfiles.ModeLabel(s.TargetMode)}")));
+                StatusMessage = result.Cancelled
+                    ? "Yönetici izni verilmedi; profil uygulanmadı."
+                    : $"{card.Title}: {result.Succeeded} hizmet değişti" + (result.Failed > 0 ? $", {result.Failed} başarısız ({_serviceManager.LastError})." : ".");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+            await RefreshAllAsync();
+        }
+
+        private string DisplayNameOf(string serviceName) =>
+            Services.FirstOrDefault(s => s.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase))?.DisplayName ?? serviceName;
+
         [RelayCommand]
         public async Task SetStartupTypeAsync((ServiceItem Item, string Type) param)
         {
             if (param.Item == null || string.IsNullOrWhiteSpace(param.Type)) return;
 
-            if (param.Item.IsCritical && param.Type.Equals("disabled", StringComparison.OrdinalIgnoreCase))
+            // Kritik hizmetin başlangıç türü hiç değiştirilmez (tek kaynak: CriticalServicePolicy).
+            if (param.Item.IsCritical)
             {
-                MessageBox.Show("Kritik sistem hizmetleri devre dışı bırakılamaz!", "Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Kritik sistem hizmetlerinin başlangıç türü değiştirilemez.", "Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (param.Type.Equals("disabled", StringComparison.OrdinalIgnoreCase) &&
+                CriticalServicePolicy.ReducesSecurityWhenDisabled(param.Item.ServiceName) &&
+                MessageBox.Show($"{param.Item.DisplayName} güvenlik ya da güncellemeyle ilgili bir hizmettir. Devre dışı bırakmak bilgisayarı daha az korunaklı yapar.\n\nYine de devam edilsin mi?",
+                    "Güvenliği azaltır", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
+            {
                 return;
             }
 
@@ -340,5 +399,28 @@ namespace Bakım.ViewModels
             if (item == null || string.IsNullOrWhiteSpace(item.DeviceID)) return;
             Clipboard.SetText(item.DeviceID);
         }
+    }
+
+    /// <summary>Önerilen hizmet profili kartı.</summary>
+    public sealed class ServiceProfileCard
+    {
+        public ServiceProfileCard(ServiceProfile profile, IReadOnlyList<ServiceProfileStep> steps)
+        {
+            Profile = profile;
+            Steps = steps;
+            Icon = Enum.TryParse<Wpf.Ui.Controls.SymbolRegular>(profile.Icon, out var icon) ? icon : Wpf.Ui.Controls.SymbolRegular.Settings24;
+        }
+
+        public ServiceProfile Profile { get; }
+        public IReadOnlyList<ServiceProfileStep> Steps { get; }
+        public string Title => Profile.Title;
+        public string Description => Profile.Description;
+        public Wpf.Ui.Controls.SymbolRegular Icon { get; }
+        public bool CanApply => Steps.Count > 0;
+        public string StepText => Steps.Count > 0
+            ? $"{Steps.Count} hizmet değişecek"
+            : "Uygulanmış ya da bu bilgisayarda ilgili hizmet yok";
+        public string PreviewText => string.Join("\n", Steps.Select(s =>
+            $"• {s.ServiceName}: {ServiceProfiles.ModeLabel(s.CurrentMode)} → {ServiceProfiles.ModeLabel(s.TargetMode)}"));
     }
 }

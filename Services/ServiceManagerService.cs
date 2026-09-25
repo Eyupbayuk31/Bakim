@@ -19,6 +19,7 @@ namespace Bakım.Services
         string LastError { get; }
 
         Task<List<DriverItem>> GetDriversAsync();
+        Task<(int Succeeded, int Failed, bool Cancelled)> SetStartupTypesAsync(IReadOnlyList<(string ServiceName, string StartupType)> changes);
         void OpenFileLocation(string rawPath);
     }
 
@@ -26,13 +27,7 @@ namespace Bakım.Services
     {
         #region Known Service Classifications
 
-        private static readonly HashSet<string> CriticalServices = new(StringComparer.OrdinalIgnoreCase)
-        {
-            "RpcSs", "DcomLaunch", "EventLog", "PlugPlay", "SamSs", "LSM",
-            "RpcEptMapper", "BrokerInfrastructure", "SystemEventsBroker",
-            "KeyIso", "VaultSvc", "CryptSvc", "ProfSvc", "Winmgmt", "Power",
-            "CoreMessagingRegistrar", "Schedule", "UserManager", "StateRepository"
-        };
+        // Kritik hizmet listesi tek kaynaktır: Core/ServiceControl/CriticalServicePolicy.
 
         private static readonly HashSet<string> SafeToOptimizeServices = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -69,7 +64,7 @@ namespace Bakım.Services
                         bool isCritical = false;
                         bool isOptimizable = false;
 
-                        if (CriticalServices.Contains(name))
+                        if (Bakım.Core.ServiceControl.CriticalServicePolicy.IsCritical(name))
                         {
                             classification = "Sistem Kritik";
                             isCritical = true;
@@ -135,6 +130,27 @@ namespace Bakım.Services
             return await RunServiceScriptAsync($"Set-Service -Name {ElevatedPowerShell.Quote(serviceName)} -StartupType {type}");
         }
 
+        /// <summary>
+        /// Birden çok hizmetin başlangıç türünü tek yönetici onayıyla değiştirir (profiller). Çıkış kodu
+        /// başarısız hizmet sayısıdır.
+        /// </summary>
+        public async Task<(int Succeeded, int Failed, bool Cancelled)> SetStartupTypesAsync(IReadOnlyList<(string ServiceName, string StartupType)> changes)
+        {
+            if (changes.Count == 0) return (0, 0, false);
+            var script = new System.Text.StringBuilder("$ErrorActionPreference = 'Continue'; $failed = 0; ");
+            foreach (var (name, type) in changes)
+            {
+                string mode = type.ToLowerInvariant() switch { "auto" or "automatic" => "Automatic", "disabled" => "Disabled", _ => "Manual" };
+                script.Append($"try {{ Set-Service -Name {ElevatedPowerShell.Quote(name)} -StartupType {mode} -ErrorAction Stop }} catch {{ $failed++ }}; ");
+            }
+            script.Append("exit $failed");
+            var result = await ElevatedPowerShell.RunAsync(script.ToString(), TimeSpan.FromSeconds(90));
+            if (result.Cancelled) { LastError = result.Message; return (0, changes.Count, true); }
+            int failedCount = result.Succeeded ? 0 : (result.ExitCode > 0 && result.ExitCode <= changes.Count ? result.ExitCode : changes.Count);
+            LastError = failedCount == 0 ? string.Empty : result.Message;
+            return (changes.Count - failedCount, failedCount, false);
+        }
+
         /// <summary>Son hizmet işleminin başarısızlık nedeni (kullanıcıya gösterilir).</summary>
         public string LastError { get; private set; } = string.Empty;
 
@@ -179,7 +195,8 @@ namespace Bakım.Services
                             IsSigned = isSigned,
                             Signer = signer,
                             DeviceID = devId,
-                            IsProblematic = isProblematic
+                            IsProblematic = isProblematic,
+                            IsOld = Bakım.Core.ServiceControl.DriverAge.IsOldThirdParty(rawDate, mfg, DateTime.Now)
                         });
                     }
                 }

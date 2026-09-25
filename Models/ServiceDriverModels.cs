@@ -40,6 +40,10 @@ namespace Bakım.Models
         public string DeviceID { get; set; } = string.Empty;
         public string DriverPath { get; set; } = string.Empty;
         public bool IsProblematic { get; set; }
+
+        /// <summary>5 yıldan eski üçüncü taraf sürücü (§5.7): üreticinin güncel sürümü önerilir.</summary>
+        public bool IsOld { get; set; }
+        public string OldDriverText => IsOld ? "Eski sürücü · üreticinin sitesinden güncelleyin" : string.Empty;
     }
 
     public class ServiceDriverStats

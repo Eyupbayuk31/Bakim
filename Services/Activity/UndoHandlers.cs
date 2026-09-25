@@ -18,6 +18,8 @@ namespace Bakım.Services.Activity
     {
         public const string RegistryValuesFile = "registry.json";
         public const string ServiceFile = "service.json";
+        /// <summary>Birden çok hizmet (profil) — her biri <see cref="ServiceUndoPayload"/>.</summary>
+        public const string ServicesFile = "services.json";
         public const string FirewallFile = "firewall.json";
         /// <summary>Kaldırıcının sildiği hizmet/görev/güvenlik duvarı kuralı yedekleri.</summary>
         public const string FootprintFile = "footprint.json";
@@ -257,10 +259,14 @@ namespace Bakım.Services.Activity
     {
         public string Key => UndoHandlers.ServiceConfig;
 
-        public bool HasPayload(ActivityEntry entry) => ActivityPayload.Exists(entry.PayloadPath, ActivityPayload.ServiceFile);
+        public bool HasPayload(ActivityEntry entry) =>
+            ActivityPayload.Exists(entry.PayloadPath, ActivityPayload.ServiceFile) || ActivityPayload.Exists(entry.PayloadPath, ActivityPayload.ServicesFile);
 
         public async Task<UndoResult> UndoAsync(ActivityEntry entry, CancellationToken ct)
         {
+            if (ActivityPayload.Read<List<ServiceUndoPayload>>(entry.PayloadPath, ActivityPayload.ServicesFile) is { Count: > 0 } batch)
+                return await UndoBatchAsync(batch, ct).ConfigureAwait(false);
+
             var p = ActivityPayload.Read<ServiceUndoPayload>(entry.PayloadPath, ActivityPayload.ServiceFile);
             if (p == null) return UndoResult.Fail("Hizmet yedeği bulunamadı.");
 
@@ -298,6 +304,35 @@ namespace Bakım.Services.Activity
                 ? new UndoResult(true, 1, 0, $"{p.DisplayName}: {what}.", new[] { new ActivityItem(p.ServiceName, "Hizmet", "Tamam", what) })
                 : new UndoResult(false, 0, 1, $"{p.DisplayName} geri alınamadı: {(run.Cancelled ? "yönetici izni verilmedi" : run.Message)}",
                     new[] { new ActivityItem(p.ServiceName, "Hizmet", "Başarısız", run.Message) });
+        }
+    
+        /// <summary>Profil gibi toplu değişiklik: tüm hizmetler tek yönetici onayıyla eski türlerine döner.</summary>
+        private static async Task<UndoResult> UndoBatchAsync(List<ServiceUndoPayload> batch, CancellationToken ct)
+        {
+            var script = new StringBuilder("$ErrorActionPreference = 'Continue'; $failed = 0; ");
+            int count = 0;
+            foreach (var p in batch)
+            {
+                string? mode = p.Start switch
+                {
+                    2 => p.DelayedAutoStart ? "delayed-auto" : "auto",
+                    3 => "demand",
+                    4 => "disabled",
+                    _ => null
+                };
+                if (mode == null) continue;
+                count++;
+                script.Append($"& sc.exe config {ElevatedPowerShell.Quote(p.ServiceName)} start= {mode} | Out-Null; if ($LASTEXITCODE -ne 0) {{ $failed++ }}; ");
+            }
+            if (count == 0) return UndoResult.Fail("Geri alınacak hizmet değişikliği yok.");
+            script.Append("exit $failed");
+
+            var run = await ElevatedPowerShell.RunAsync(script.ToString(), TimeSpan.FromSeconds(90), ct).ConfigureAwait(false);
+            if (run.Cancelled) return UndoResult.Fail("Yönetici izni verilmedi.");
+            int failed = run.Succeeded ? 0 : (run.ExitCode > 0 && run.ExitCode <= count ? run.ExitCode : count);
+            var items = batch.Select(p => new ActivityItem(p.ServiceName, "Başlangıç türü", failed == 0 ? "Geri alındı" : "-")).ToList();
+            return new UndoResult(failed == 0, count - failed, failed,
+                failed == 0 ? $"{count} hizmet eski başlangıç türüne döndü." : $"{count - failed} hizmet geri alındı, {failed} hizmet geri alınamadı.", items);
         }
     }
 
