@@ -611,6 +611,48 @@
                                                  AutomationProperties.Name="Windows Gezgini Sağ Tık Menüsü Entegrasyonu"
                                                  VerticalAlignment="Center"/>
                             </Grid>
+
+                            <!-- Bakım'ın sistemde bıraktıkları (§5.18) -->
+                            <Separator Margin="0,16"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="Bakım'ın sistemde bıraktıkları" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding ArtifactsStatus}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,5" Content="Yenile" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                           Command="{Binding RefreshArtifactsCommand}" VerticalAlignment="Center"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Artifacts}" Margin="0,8,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="0,6">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis">
+                                                        <Run Text="{Binding KindText, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                        <Run Text=" · "/>
+                                                        <Run Text="{Binding Name, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding Detail}" FontSize="{StaticResource Font.Caption}" TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" ToolTip="{Binding Detail}"/>
+                                                </StackPanel>
+                                                <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,4" Content="Kaldır" VerticalAlignment="Center"
+                                                           Command="{Binding DataContext.RemoveArtifactCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                           CommandParameter="{Binding}" AutomationProperties.Name="Bakım öğesini kaldır"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </ui:Card>
 

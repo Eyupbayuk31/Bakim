@@ -81,6 +81,12 @@ namespace Bakım.ViewModels
             }
         }
 
+        /// <summary>Windows sürümünün destek durumu (§5.8).</summary>
+        public Bakım.Core.Health.WindowsSupportInfo WindowsSupport { get; } =
+            Bakım.Core.Health.WindowsLifecycle.Describe(Environment.OSVersion.Version.Build, DateTime.Today);
+
+        public bool IsWindowsSupportWarning => WindowsSupport.State is Bakım.Core.Health.SupportState.EndingSoon or Bakım.Core.Health.SupportState.Ended;
+
         [RelayCommand]
         public async Task RefreshAsync()
         {
@@ -185,6 +191,7 @@ namespace Bakım.ViewModels
                 sb.AppendLine($"Anakart & BIOS: {Hardware.MotherboardModel} - {Hardware.BiosVersion}");
                 sb.AppendLine($"Ağ Kartı: {Hardware.NetworkAdapterName} ({Hardware.NetworkLinkSpeed}) - IP: {Hardware.NetworkIpAddress}");
                 sb.AppendLine($"İşletim Sistemi: {Hardware.OsVersion} (Uptime: {Hardware.SystemUptimeText})");
+                sb.AppendLine($"Destek: {WindowsSupport.Text}");
                 sb.AppendLine($"Güvenlik & Bellenim: Secure Boot: {Hardware.SecureBootStatus} | TPM: {Hardware.TpmStatus} | Sanallaştırma: {Hardware.VirtualizationStatus}");
                 sb.AppendLine("--- Sabit Sürücüler ---");
                 foreach (var d in Drives)

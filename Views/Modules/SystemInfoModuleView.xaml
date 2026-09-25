@@ -331,6 +331,19 @@
 
                             <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,6">
                                 <TextBlock Text="{Binding Hardware.OsVersion}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.OsVersion}"/>
+                                <!-- Windows destek durumu (§5.8) -->
+                                <TextBlock Text="{Binding WindowsSupport.Text}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,3,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsWindowsSupportWarning}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                                 <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                                     <TextBlock Text="{Binding Hardware.MachineName, StringFormat='{}Cihaz: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                                     <TextBlock Text="{Binding Hardware.UserName, StringFormat='{}Kullanıcı: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>

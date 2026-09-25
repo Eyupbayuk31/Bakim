@@ -236,6 +236,52 @@ namespace Bakım.ViewModels
 
         #endregion
 
+        #region Bakım'ın sistemde bıraktıkları (§5.18)
+
+        public ObservableCollection<BakimArtifact> Artifacts { get; } = new();
+
+        [ObservableProperty] private string _artifactsStatus = "Listelemek için Yenile'ye basın.";
+
+        [RelayCommand]
+        private async Task RefreshArtifactsAsync()
+        {
+            ArtifactsStatus = "Taranıyor…";
+            var list = await BakimArtifactsService.ListAsync();
+            Artifacts.Clear();
+            foreach (var a in list) Artifacts.Add(a);
+            ArtifactsStatus = list.Count == 0
+                ? "Bakım'ın oluşturduğu görev, sağ tık kaydı ya da güvenlik duvarı kuralı yok."
+                : $"{list.Count} öğe. Bakım'ı kaldırmadan önce buradan temizleyebilirsiniz.";
+        }
+
+        [RelayCommand]
+        private async Task RemoveArtifactAsync(BakimArtifact? artifact)
+        {
+            if (artifact == null) return;
+            if (MessageBox.Show($"{artifact.KindText}: {artifact.Name}\n\nKaldırılsın mı?", "Bakım'ın bıraktıkları",
+                    MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+
+            // Ayara bağlı öğeler ayar üzerinden kapatılır: aksi halde bir sonraki açılışta yeniden oluşur.
+            if (artifact.Kind == BakimArtifactKind.ContextMenu)
+            {
+                IsShellContextMenuEnabled = false;
+                ArtifactsStatus = "Sağ tık menüsü kaldırıldı (ayar kapatıldı).";
+            }
+            else if (artifact.Kind == BakimArtifactKind.ScheduledTask && artifact.Name.Contains("AutoStart", StringComparison.OrdinalIgnoreCase))
+            {
+                StartWithWindows = false;
+                ArtifactsStatus = "Otomatik başlatma kapatıldı.";
+            }
+            else
+            {
+                var (_, message) = await BakimArtifactsService.RemoveAsync(artifact);
+                ArtifactsStatus = message;
+            }
+            await RefreshArtifactsAsync();
+        }
+
+        #endregion
+
         #region Change Handlers & Persistence
 
         partial void OnIsShellContextMenuEnabledChanged(bool value)
