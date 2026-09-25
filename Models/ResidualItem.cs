@@ -8,7 +8,10 @@ namespace Bakım.Models
         Folder,
         File,
         RegistryKey,
-        RegistryValue
+        RegistryValue,
+        Service,
+        ScheduledTask,
+        FirewallRule
     }
 
     public partial class ResidualItem : ObservableObject
@@ -33,6 +36,9 @@ namespace Bakım.Models
         /// <summary>Neden kalıntı sayıldığı.</summary>
         public string EvidenceText { get; set; } = string.Empty;
 
+        /// <summary>Hizmet, görev ve güvenlik duvarı kuralı silmek yönetici onayı ister.</summary>
+        public bool NeedsAdmin => Type is ResidualType.Service or ResidualType.ScheduledTask or ResidualType.FirewallRule;
+
         /// <summary>Kesin kanıtlı, bilinen köklerin dışındaki kurulum klasörü.</summary>
         public bool AllowOutsideKnownRoots { get; set; }
 
@@ -45,6 +51,9 @@ namespace Bakım.Models
             {
                 ResidualType.RegistryKey => "Kayıt Anahtarı",
                 ResidualType.RegistryValue => "Kayıt Değeri",
+                ResidualType.Service => "Hizmet",
+                ResidualType.ScheduledTask => "Görev",
+                ResidualType.FirewallRule => "Kural",
                 _ => "0 B"
             };
 
@@ -54,6 +63,9 @@ namespace Bakım.Models
             ResidualType.File => "Dosya",
             ResidualType.RegistryKey => "Kayıt Defteri",
             ResidualType.RegistryValue => "Kayıt Değeri",
+            ResidualType.Service => "Hizmet",
+            ResidualType.ScheduledTask => "Zamanlanmış Görev",
+            ResidualType.FirewallRule => "Güvenlik Duvarı",
             _ => "Kalıntı"
         };
 
@@ -63,6 +75,9 @@ namespace Bakım.Models
             ResidualType.File => "Document20",
             ResidualType.RegistryKey => "Tag20",
             ResidualType.RegistryValue => "Tag20",
+            ResidualType.Service => "Settings20",
+            ResidualType.ScheduledTask => "CalendarClock20",
+            ResidualType.FirewallRule => "Shield20",
             _ => "Apps20"
         };
 

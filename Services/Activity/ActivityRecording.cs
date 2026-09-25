@@ -71,8 +71,7 @@ namespace Bakım.Services.Activity
         {
             return Safe(() =>
             {
-                bool hasBackup = !string.IsNullOrEmpty(backupDirectory) && System.IO.Directory.Exists(backupDirectory) &&
-                                 System.IO.Directory.EnumerateFiles(backupDirectory, "*.reg").Any();
+                bool hasBackup = RegImportUndoHandler.HasRestorableBackup(backupDirectory);
                 return activity.Record(new ActivityEntry
                 {
                     Kind = kind,

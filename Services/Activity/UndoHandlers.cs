@@ -19,6 +19,8 @@ namespace Bakım.Services.Activity
         public const string RegistryValuesFile = "registry.json";
         public const string ServiceFile = "service.json";
         public const string FirewallFile = "firewall.json";
+        /// <summary>Kaldırıcının sildiği hizmet/görev/güvenlik duvarı kuralı yedekleri.</summary>
+        public const string FootprintFile = "footprint.json";
 
         private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
@@ -55,6 +57,23 @@ namespace Bakım.Services.Activity
     /// <param name="DelayedAutoStart">Otomatik (Gecikmeli).</param>
     /// <param name="RestoreRunning">true → başlat, false → durdur, null → çalışma durumuna dokunma.</param>
     public sealed record ServiceUndoPayload(string ServiceName, string DisplayName, int? Start, bool DelayedAutoStart, bool? RestoreRunning);
+
+    /// <param name="File">Günlükteki "tasks" klasörüne göre XML dosya adı.</param>
+    public sealed record TaskBackup(string Path, string File);
+
+    /// <param name="Data">FirewallRules altındaki ham kural verisi ("v2.30|Action=…|").</param>
+    public sealed record FirewallRuleBackup(string Id, string Data);
+
+    /// <summary>Kaldırıcının yedekleyerek sildiği sistem öğeleri (hizmet .reg yedekleri ayrıca *.reg olarak durur).</summary>
+    public sealed class FootprintBackup
+    {
+        public List<string> Services { get; set; } = new();
+        public List<TaskBackup> Tasks { get; set; } = new();
+        public List<FirewallRuleBackup> FirewallRules { get; set; } = new();
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        public bool IsEmpty => Services.Count == 0 && Tasks.Count == 0 && FirewallRules.Count == 0;
+    }
 
     /// <param name="Added">true → Bakım kuralı ekledi (geri alma: sil); false → kuralı sildi (geri alma: yeniden ekle).</param>
     public sealed record FirewallUndoPayload(string RuleName, string ProgramPath, bool Added);
@@ -131,20 +150,30 @@ namespace Bakım.Services.Activity
         private static string DisplayName(string? valueName) => string.IsNullOrEmpty(valueName) ? "(Varsayılan)" : valueName;
     }
 
-    /// <summary>"registry-reg-import": silinmeden önce alınan .reg yedeklerini ters sırayla içe aktarır.</summary>
+    /// <summary>
+    /// "registry-reg-import": silinmeden önce alınan .reg yedeklerini ters sırayla içe aktarır;
+    /// kaldırıcının sildiği zamanlanmış görevleri XML'den, güvenlik duvarı kurallarını ham veriden
+    /// yeniden oluşturur. Yönetici gereken her şey tek UAC onayıyla yapılır.
+    /// </summary>
     public sealed class RegImportUndoHandler : IUndoHandler
     {
         public string Key => UndoHandlers.RegistryRegImport;
 
-        public bool HasPayload(ActivityEntry entry) =>
-            !string.IsNullOrEmpty(entry.PayloadPath) && Directory.Exists(entry.PayloadPath) &&
-            Directory.EnumerateFiles(entry.PayloadPath, "*.reg").Any();
+        internal const string FirewallRulesPath = @"Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\FirewallRules";
+
+        public bool HasPayload(ActivityEntry entry) => HasRestorableBackup(entry.PayloadPath);
+
+        /// <summary>Klasörde geri yüklenebilir bir yedek (.reg ya da iz yedeği) var mı?</summary>
+        public static bool HasRestorableBackup(string? directory) =>
+            !string.IsNullOrEmpty(directory) && Directory.Exists(directory) &&
+            (Directory.EnumerateFiles(directory, "*.reg").Any() || ActivityPayload.Exists(directory, ActivityPayload.FootprintFile));
 
         public async Task<UndoResult> UndoAsync(ActivityEntry entry, CancellationToken ct)
         {
             if (!HasPayload(entry)) return UndoResult.Fail("Kayıt defteri yedeği (.reg) bulunamadı.");
 
             var files = Directory.GetFiles(entry.PayloadPath!, "*.reg").OrderByDescending(f => f, StringComparer.Ordinal).ToList();
+            var footprint = ActivityPayload.Read<FootprintBackup>(entry.PayloadPath, ActivityPayload.FootprintFile);
             bool admin = UacHelper.IsAdministrator();
             var items = new List<ActivityItem>();
             var elevate = new List<string>();
@@ -160,28 +189,51 @@ namespace Bakım.Services.Activity
                 items.Add(new ActivityItem(Path.GetFileName(file), "reg import", ok ? "Tamam" : "Başarısız"));
             }
 
-            if (elevate.Count > 0)
+            // Görevler ve kurallar: yöneticiyken de ElevatedPowerShell doğrudan çalışır.
+            var tasks = footprint?.Tasks.Where(t => File.Exists(Path.Combine(entry.PayloadPath!, "tasks", t.File))).ToList() ?? new List<TaskBackup>();
+            var rules = footprint?.FirewallRules ?? new List<FirewallRuleBackup>();
+            int elevatedCount = elevate.Count + tasks.Count + rules.Count;
+
+            if (elevatedCount > 0)
             {
-                // Tek UAC onayı; çıkış kodu başarısız dosya sayısıdır.
+                // Tek UAC onayı; çıkış kodu başarısız öğe sayısıdır.
                 string reg = Path.Combine(Environment.SystemDirectory, "reg.exe");
                 // reg.exe başarı iletisini bile stderr'e yazar: 'Stop' ile PowerShell bunu hata sanar.
                 var script = new StringBuilder("$ErrorActionPreference = 'Continue'; $failed = 0; ");
                 foreach (var f in elevate)
                     script.Append($"& {ElevatedPowerShell.Quote(reg)} import {ElevatedPowerShell.Quote(f)} 2>$null; if ($LASTEXITCODE -ne 0) {{ $failed++ }}; ");
+                foreach (var t in tasks)
+                {
+                    string xml = Path.Combine(entry.PayloadPath!, "tasks", t.File);
+                    script.Append($"& schtasks.exe /Create /TN {ElevatedPowerShell.Quote(t.Path)} /XML {ElevatedPowerShell.Quote(xml)} /F 2>$null | Out-Null; if ($LASTEXITCODE -ne 0) {{ $failed++ }}; ");
+                }
+                foreach (var r in rules)
+                {
+                    script.Append($"try {{ New-ItemProperty -LiteralPath {ElevatedPowerShell.Quote(FirewallRulesPath)} -Name {ElevatedPowerShell.Quote(r.Id)} " +
+                                  $"-Value {ElevatedPowerShell.Quote(r.Data)} -PropertyType String -Force -ErrorAction Stop | Out-Null }} catch {{ $failed++ }}; ");
+                }
                 script.Append("exit $failed");
 
                 var run = await ElevatedPowerShell.RunAsync(script.ToString(), TimeSpan.FromMinutes(2), ct).ConfigureAwait(false);
-                int elevatedFailed = run.Succeeded ? 0 : (run.ExitCode > 0 && run.ExitCode <= elevate.Count ? run.ExitCode : elevate.Count);
-                restored += elevate.Count - elevatedFailed;
+                int elevatedFailed = run.Succeeded ? 0 : (run.ExitCode > 0 && run.ExitCode <= elevatedCount ? run.ExitCode : elevatedCount);
+                restored += elevatedCount - elevatedFailed;
                 failed += elevatedFailed;
-                items.Add(new ActivityItem($"{elevate.Count} HKLM yedeği", "reg import (yönetici)",
+                string what = string.Join(", ", new[]
+                {
+                    elevate.Count > 0 ? $"{elevate.Count} HKLM yedeği" : null,
+                    tasks.Count > 0 ? $"{tasks.Count} görev" : null,
+                    rules.Count > 0 ? $"{rules.Count} güvenlik duvarı kuralı" : null
+                }.Where(x => x != null));
+                items.Add(new ActivityItem(what, "Geri yükleme (yönetici)",
                     elevatedFailed == 0 ? "Tamam" : $"{elevatedFailed} başarısız",
                     run.Cancelled ? "Yönetici izni verilmedi" : null));
             }
 
             string message = failed == 0
-                ? $"{restored} kayıt defteri yedeği geri yüklendi."
+                ? $"{restored} yedek geri yüklendi."
                 : $"{restored} yedek geri yüklendi, {failed} yedek geri yüklenemedi.";
+            if (restored > 0 && footprint != null && (footprint.Services.Count > 0 || rules.Count > 0))
+                message += " Geri yüklenen hizmet ve güvenlik duvarı kayıtları Windows yeniden başlatıldığında etkin olur.";
             return new UndoResult(failed == 0, restored, failed, message, items);
         }
 

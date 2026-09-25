@@ -5,7 +5,10 @@ using System.Text;
 
 namespace Bakım.Helpers
 {
-    /// <summary>IShellLinkW ile .lnk kısayolu oluşturur (betik dosyası gerektirmez).</summary>
+    /// <summary>
+    /// IShellLinkW ile .lnk kısayolu oluşturur ve hedefini çözer (betik dosyası ya da WScript
+    /// gerektirmez). Kalıcılık taraması, sağ tık kaldırma ve kaldırıcı iz toplama aynı çözücüyü kullanır.
+    /// </summary>
     public static class ShellLink
     {
         public const int ShowMinimizedNoActive = 7;
@@ -26,6 +29,31 @@ namespace Bakım.Helpers
             finally
             {
                 Marshal.FinalReleaseComObject(link);
+            }
+        }
+
+        /// <summary>Kısayolun hedef yolu; çözülemezse (bozuk, reklam/MSI kısayolu) null.</summary>
+        public static string? ResolveTarget(string shortcutPath)
+        {
+            if (string.IsNullOrWhiteSpace(shortcutPath)) return null;
+            IShellLinkW? link = null;
+            try
+            {
+                link = (IShellLinkW)new CShellLink();
+                ((IPersistFile)link).Load(shortcutPath, 0); // STGM_READ
+                var buffer = new StringBuilder(1024);
+                link.GetPath(buffer, buffer.Capacity, IntPtr.Zero, 0);
+                string target = buffer.ToString();
+                return string.IsNullOrWhiteSpace(target) ? null : target;
+            }
+            catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or System.IO.IOException or ArgumentException or InvalidCastException)
+            {
+                Services.AppLog.Debug($"Kısayol çözülemedi: {shortcutPath} — {ex.Message}", nameof(ShellLink));
+                return null;
+            }
+            finally
+            {
+                if (link != null) Marshal.FinalReleaseComObject(link);
             }
         }
 

@@ -26,6 +26,12 @@ namespace Bakım.Services
 
         /// <summary>Kaldırma doğrulandı: kurulum klasörü ve Uninstall kaydı kesin kalıntıdır.</summary>
         public static ResidualScanOptions Confirmed { get; } = new(true);
+
+        /// <summary>
+        /// Kaldırmadan önce toplanan izlerden hâlâ duranlar (hizmet, görev, başlangıç girdisi,
+        /// kısayol, güvenlik duvarı kuralı, App Paths). Yalnızca kaldırma doğrulandıysa eklenir.
+        /// </summary>
+        public IReadOnlyList<LeftoverItem> FootprintLeftovers { get; init; } = Array.Empty<LeftoverItem>();
     }
 
     /// <summary>Temizlik sonucu: geri alma günlüğü ve öğe bazında sonuçlar.</summary>
@@ -37,8 +43,8 @@ namespace Bakım.Services
         public int SucceededCount => Results.Count(r => r.Succeeded);
         public int FailedCount => Results.Count(r => !r.Succeeded && r.Outcome != DeleteOutcome.NotFound);
         public long BytesFreed => Results.Where(r => r.Succeeded).Sum(r => r.BytesFreed);
-        public bool HasRegistryBackup => Directory.Exists(UndoJournal.GetDirectory(JournalId)) &&
-                                         Directory.EnumerateFiles(UndoJournal.GetDirectory(JournalId), "*.reg").Any();
+        /// <summary>Geri yüklenebilir yedek (.reg ya da hizmet/görev/kural yedeği) var mı?</summary>
+        public bool HasRegistryBackup => Activity.RegImportUndoHandler.HasRestorableBackup(UndoJournal.GetDirectory(JournalId));
     }
 
     public interface IResidualScannerEngine
@@ -133,6 +139,7 @@ namespace Bakım.Services
                     ScanFileAssociationValues(matcher, results);
                 }
                 AddUninstallKey(app, options, results);
+                if (options.UninstallConfirmed) results.AddRange(options.FootprintLeftovers);
 
                 return results
                     .GroupBy(r => r.Path, StringComparer.OrdinalIgnoreCase)
@@ -517,8 +524,22 @@ namespace Bakım.Services
             string journal = UndoJournal.Create(title);
             var results = new List<OperationResult>();
 
-            // Önce kayıt defteri (yedek alınır), sonra dosyalar, en son klasörler (derinden sığa).
+            // Önce sistem öğeleri (hizmet/görev/kural: tek UAC ile, yedeklenerek), sonra kayıt
+            // defteri (yedek alınır), sonra dosyalar, en son klasörler (derinden sığa).
+            var system = list.Where(l => Uninstall.FootprintRemoval.Handles(l.ItemType)).ToList();
+            if (system.Count > 0)
+            {
+                var systemResults = await Uninstall.FootprintRemoval.RemoveAsync(system, journal, progress);
+                foreach (var item in system)
+                {
+                    var match = systemResults.FirstOrDefault(r => string.Equals(r.Target, item.Path, StringComparison.OrdinalIgnoreCase));
+                    item.IsDeleted = match != null && (match.Succeeded || match.Outcome == DeleteOutcome.NotFound);
+                }
+                results.AddRange(systemResults);
+            }
+
             var ordered = list
+                .Where(l => !Uninstall.FootprintRemoval.Handles(l.ItemType))
                 .OrderBy(l => l.ItemType switch
                 {
                     LeftoverType.RegistryValue => 0,
@@ -609,16 +630,32 @@ namespace Bakım.Services
             return report;
         }
 
-        private static ResidualItem ToResidual(LeftoverItem l) => new()
+        public static ResidualType MapType(LeftoverType type) => type switch
+        {
+            LeftoverType.File => ResidualType.File,
+            LeftoverType.RegistryKey => ResidualType.RegistryKey,
+            LeftoverType.RegistryValue => ResidualType.RegistryValue,
+            LeftoverType.Service => ResidualType.Service,
+            LeftoverType.ScheduledTask => ResidualType.ScheduledTask,
+            LeftoverType.FirewallRule => ResidualType.FirewallRule,
+            _ => ResidualType.Folder
+        };
+
+        public static LeftoverType MapType(ResidualType type) => type switch
+        {
+            ResidualType.File => LeftoverType.File,
+            ResidualType.RegistryKey => LeftoverType.RegistryKey,
+            ResidualType.RegistryValue => LeftoverType.RegistryValue,
+            ResidualType.Service => LeftoverType.Service,
+            ResidualType.ScheduledTask => LeftoverType.ScheduledTask,
+            ResidualType.FirewallRule => LeftoverType.FirewallRule,
+            _ => LeftoverType.Folder
+        };
+
+        public static ResidualItem ToResidual(LeftoverItem l) => new()
         {
             Path = l.Path,
-            Type = l.ItemType switch
-            {
-                LeftoverType.File => ResidualType.File,
-                LeftoverType.RegistryKey => ResidualType.RegistryKey,
-                LeftoverType.RegistryValue => ResidualType.RegistryValue,
-                _ => ResidualType.Folder
-            },
+            Type = MapType(l.ItemType),
             SizeInBytes = l.SizeBytes,
             Description = l.Description,
             EvidenceText = l.EvidenceText,
@@ -630,13 +667,7 @@ namespace Bakım.Services
         private static LeftoverItem ToLeftover(ResidualItem r) => new()
         {
             Path = r.Path,
-            ItemType = r.Type switch
-            {
-                ResidualType.File => LeftoverType.File,
-                ResidualType.RegistryKey => LeftoverType.RegistryKey,
-                ResidualType.RegistryValue => LeftoverType.RegistryValue,
-                _ => LeftoverType.Folder
-            },
+            ItemType = MapType(r.Type),
             SizeBytes = r.SizeInBytes,
             Description = r.Description,
             EvidenceText = r.EvidenceText,

@@ -387,6 +387,7 @@ namespace Bakım
             services.AddSingleton<ICrashAnalyzerService, CrashAnalyzerService>();
             services.AddSingleton<IUninstallerService, UninstallerService>();
             services.AddSingleton<IResidualScannerEngine, ResidualScannerEngine>();
+            services.AddSingleton<Services.Uninstall.IFootprintCollector, Services.Uninstall.FootprintCollector>();
             services.AddSingleton<IInstallerMonitorService, InstallerMonitorService>();
             services.AddSingleton<IHunterService, HunterService>();
             services.AddSingleton<IDeepUninstallerService, DeepUninstallerService>();

@@ -334,6 +334,17 @@ namespace Bakım.ViewModels
                 return;
             }
 
+            if (app.NoRemove)
+            {
+                var answer = MessageBox.Show(
+                    $"{app.DisplayName} için yayıncı kaldırmayı kapatmış (NoRemove). Bu girdi genellikle başka bir ürünün parçasıdır ve o ürünle birlikte kaldırılır; Windows da bu program için \"Kaldır\" düğmesi göstermez.\n\nYine de kayıtlı kaldırıcıyı çalıştırmak istiyor musunuz?",
+                    "Kaldırma Kapatılmış",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning,
+                    MessageBoxResult.No);
+                if (answer != MessageBoxResult.Yes) return;
+            }
+
             SelectedApp = app;
 
             try
@@ -474,7 +485,7 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public async Task BatchUninstallAsync()
         {
-            var selectedApps = Apps.Where(a => a.IsSelected && !a.IsSystemComponent).ToList();
+            var selectedApps = Apps.Where(a => a.IsSelected && !a.IsSystemComponent && !a.NoRemove).ToList();
             if (selectedApps.Count == 0)
             {
                 MessageBox.Show("Lütfen toplu kaldırmak için en az bir program seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);

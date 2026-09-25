@@ -314,21 +314,7 @@ namespace Bakım.Services
             }
         }
 
-        private static string? ResolveShortcutTarget(string shortcutPath)
-        {
-            try
-            {
-                Type? shellType = Type.GetTypeFromProgID("WScript.Shell");
-                if (shellType != null)
-                {
-                    dynamic shell = Activator.CreateInstance(shellType)!;
-                    dynamic shortcut = shell.CreateShortcut(shortcutPath);
-                    return shortcut.TargetPath;
-                }
-            }
-            catch { }
-            return null;
-        }
+        private static string? ResolveShortcutTarget(string shortcutPath) => Bakım.Helpers.ShellLink.ResolveTarget(shortcutPath);
 
         private static ImageSource? ExtractIconSafe(string filePath)
         {

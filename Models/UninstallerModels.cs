@@ -11,7 +11,13 @@ namespace Bakım.Models
         File,
         RegistryKey,
         /// <summary>Tek bir kayıt defteri değeri ("HKCU\...\OpenWithProgids → VLC.mp4").</summary>
-        RegistryValue
+        RegistryValue,
+        /// <summary>Windows hizmeti ya da sürücüsü; Path hizmet adıdır.</summary>
+        Service,
+        /// <summary>Zamanlanmış görev; Path görev yoludur ("\Klasör\Görev").</summary>
+        ScheduledTask,
+        /// <summary>Güvenlik duvarı kuralı; Path kural kimliğidir.</summary>
+        FirewallRule
     }
 
     public enum InstallerType
@@ -60,6 +66,9 @@ namespace Bakım.Models
         public string RegistryKeyPath { get; set; } = string.Empty;
         public bool Is64Bit { get; set; } = true;
         public bool IsSystemComponent { get; set; } // VC++ redist, .NET, drivers
+
+        /// <summary>Uninstall kaydında NoRemove=1: yayıncı bu girdinin tek başına kaldırılmasını kapatmış.</summary>
+        public bool NoRemove { get; set; }
         public ImageSource? IconSource { get; set; }
 
         public InstallerType InstallerKind { get; set; } = InstallerType.GenericExe;

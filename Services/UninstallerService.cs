@@ -112,6 +112,9 @@ namespace Bakım.Services
                             isSystemComponent = true;
                         }
 
+                        // Yayıncı kaldırmayı kapatmış (NoRemove=1): Windows da "Kaldır" düğmesini gizler.
+                        bool noRemove = appKey.GetValue("NoRemove") is int nr && nr == 1;
+
                         list.Add(new InstalledAppItem
                         {
                             DisplayName = displayName,
@@ -132,7 +135,8 @@ namespace Bakım.Services
                                 hive, hive == RegistryHive.CurrentUser ? RegistryView.Registry64 : view,
                                 $@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{subKeyName}").ToDisplay(),
                             Is64Bit = is64Bit,
-                            IsSystemComponent = isSystemComponent
+                            IsSystemComponent = isSystemComponent,
+                            NoRemove = noRemove
                         });
                     }
                     catch { }

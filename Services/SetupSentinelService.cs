@@ -206,6 +206,13 @@ namespace Bakım.Services
 
                         if (_handledProcesses.ContainsKey(key)) continue;
 
+                        // Bakım'ın başlattığı kaldırıcı ağacı: kurulum oturumu açılmaz.
+                        if (Sentinel.Detection.SentinelSuppression.IsSuppressed(proc.Id, parentPid))
+                        {
+                            _handledProcesses[key] = true;
+                            continue;
+                        }
+
                         string? title = null;
                         try { title = proc.MainWindowTitle; } catch { }
 

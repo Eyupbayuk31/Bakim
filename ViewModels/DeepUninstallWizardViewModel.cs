@@ -43,6 +43,8 @@ namespace Bakım.ViewModels
         private readonly IDeepUninstallerService _deepUninstaller;
         private readonly IResidualScannerEngine _residualScanner;
         private readonly ISafeProcessService? _safeProcess;
+        private readonly IFootprintCollector? _footprintCollector;
+        private Core.Uninstall.UninstallFootprint _footprint = Core.Uninstall.UninstallFootprint.Empty;
         private readonly ICollectionView _filteredView;
         private IReadOnlyList<ProcessCandidate> _processesToClose = Array.Empty<ProcessCandidate>();
         private CancellationTokenSource? _waitCts;
@@ -187,7 +189,7 @@ namespace Bakım.ViewModels
             InstalledAppItem targetApp,
             IDeepUninstallerService deepUninstaller,
             IResidualScannerEngine residualScanner)
-            : this(targetApp, deepUninstaller, residualScanner, App.TryGetService<ISafeProcessService>())
+            : this(targetApp, deepUninstaller, residualScanner, App.TryGetService<ISafeProcessService>(), App.TryGetService<IFootprintCollector>())
         {
         }
 
@@ -195,12 +197,14 @@ namespace Bakım.ViewModels
             InstalledAppItem targetApp,
             IDeepUninstallerService deepUninstaller,
             IResidualScannerEngine residualScanner,
-            ISafeProcessService? safeProcess)
+            ISafeProcessService? safeProcess,
+            IFootprintCollector? footprintCollector = null)
         {
             TargetApp = targetApp;
             _deepUninstaller = deepUninstaller;
             _residualScanner = residualScanner;
             _safeProcess = safeProcess;
+            _footprintCollector = footprintCollector;
 
             _filteredView = CollectionViewSource.GetDefaultView(Residuals);
             _filteredView.Filter = FilterResidualItem;
@@ -261,6 +265,7 @@ namespace Bakım.ViewModels
                 "Registry" => item.Type is ResidualType.RegistryKey or ResidualType.RegistryValue,
                 "Folders" => item.Type == ResidualType.Folder,
                 "Files" => item.Type == ResidualType.File,
+                "System" => item.NeedsAdmin,
                 _ => true
             };
 
@@ -330,6 +335,17 @@ namespace Bakım.ViewModels
                     return;
                 }
 
+                // İzler kaldırmadan ÖNCE toplanır: kaldırıcı kurulum klasörünü sildikten sonra
+                // bir hizmetin ya da görevin bu programa ait olduğu kanıtlanamaz.
+                if (_footprintCollector != null)
+                {
+                    StatusMessage = "Programın sistemdeki izleri kaydediliyor...";
+                    LiveProcessStatus = "Hizmetler, zamanlanmış görevler, başlangıç girdileri ve kısayollar taranıyor...";
+                    _footprint = await _footprintCollector.CollectAsync(TargetApp);
+                    if (_footprint.Items.Count > 0)
+                        LiveProcessStatus = $"{_footprint.Items.Count} iz kaydedildi (hizmet, görev, kısayol …).";
+                }
+
                 _waitCts = new CancellationTokenSource();
                 CanStopWaiting = true;
 
@@ -356,7 +372,14 @@ namespace Bakım.ViewModels
                         ? $"{AppName} kaldırıldı (yeniden başlatma gerekiyor)"
                         : $"{AppName} kaldırıldı";
                     UninstallBannerDetail = "Kaldırma doğrulandı. Aşağıda geride kalan öğeler listeleniyor; yalnızca yüksek güvenli olanlar seçili gelir.";
-                    await ScanResidualsInternalAsync(ResidualScanOptions.Confirmed);
+                    IReadOnlyList<LeftoverItem> footprintLeftovers = Array.Empty<LeftoverItem>();
+                    if (_footprintCollector != null && _footprint.Items.Count > 0)
+                    {
+                        var collector = _footprintCollector;
+                        var footprint = _footprint;
+                        footprintLeftovers = await Task.Run(() => collector.StillPresentLeftovers(footprint));
+                    }
+                    await ScanResidualsInternalAsync(ResidualScanOptions.Confirmed with { FootprintLeftovers = footprintLeftovers });
                 }
                 else
                 {
@@ -440,13 +463,7 @@ namespace Bakım.ViewModels
                 var items = leftovers.Select(l => new ResidualItem
                 {
                     Path = l.Path,
-                    Type = l.ItemType switch
-                    {
-                        LeftoverType.File => ResidualType.File,
-                        LeftoverType.RegistryKey => ResidualType.RegistryKey,
-                        LeftoverType.RegistryValue => ResidualType.RegistryValue,
-                        _ => ResidualType.Folder
-                    },
+                    Type = ResidualScannerEngine.MapType(l.ItemType),
                     SizeInBytes = l.SizeBytes,
                     Description = l.Description,
                     EvidenceText = l.EvidenceText,
@@ -467,9 +484,11 @@ namespace Bakım.ViewModels
             if (Application.Current == null) AddResiduals(items);
 
             CurrentStep = WizardStep.Review;
+            int systemCount = items.Count(i => i.NeedsAdmin);
             StatusMessage = TotalCount == 0
                 ? "Geride kalan öğe bulunamadı."
-                : $"{TotalCount} öğe bulundu. Silinmesini istemediklerinizin işaretini kaldırın.";
+                : $"{TotalCount} öğe bulundu. Silinmesini istemediklerinizin işaretini kaldırın." +
+                  (systemCount > 0 ? $" {systemCount} hizmet/görev/güvenlik duvarı kuralı yönetici onayıyla ve yedeklenerek silinir." : "");
         }
 
         private void AddResiduals(IReadOnlyList<ResidualItem> items)

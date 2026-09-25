@@ -144,6 +144,8 @@ namespace Bakım.Services.Uninstall
                 return new UninstallRunResult(UninstallOutcome.Failed, null, sw.Elapsed, "Kaldırıcı başlatılamadı: " + ex.Message);
             }
 
+            // Nöbetçi bu kaldırıcıyı ve alt süreçlerini "yeni kurulum" saymasın (KAL D5).
+            using var suppression = root != null ? Sentinel.Detection.SentinelSuppression.SuppressProcessTree(root.Id) : null;
             using (job)
             using (root)
             {
