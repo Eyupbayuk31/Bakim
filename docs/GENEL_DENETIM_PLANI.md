@@ -18,7 +18,6 @@
 
 Uygulama çok geniş bir özellik yelpazesine sahip ve arayüz tarafı olgun (Fluent 2, token dosyaları, DI, bazı testler). Asıl sorun **güven**. Birçok modül kullanıcıya olduğundan daha güvenli, daha başarılı ya da daha gerçek görünüyor:
 
-- Güncelleyici, indirdiği dosyayı **imza kontrolü yapmadan yönetici olarak sessizce** çalıştırıyor.
 - Kaldırıcı, isim benzerliğiyle **başka programların verisini** silebiliyor.
 - Kontrol Paneli'ndeki CPU ve GPU **sıcaklıkları ölçülmüyor**; CPU yükünden bir formülle üretiliyor.
 - İnce ayarlar (tweak) yazma başarısız olsa bile "uygulandı" diyor.
@@ -37,7 +36,7 @@ Uygulama çok geniş bir özellik yelpazesine sahip ve arayüz tarafı olgun (Fl
 
 | # | Bulgu | Modül | Tür |
 |---|---|---|---|
-| 1 | Güncelleme paketi imza ya da hash doğrulaması olmadan `runas` + `/VERYSILENT` ile çalıştırılıyor; ayrıca MOTW bilerek siliniyor | Güncelleyici | Güvenlik |
+| 1 | Güncelleyicide ölü ve riskli ikinci motor (`GitHubUpdateService`); asset seçimi "herhangi bir .exe"ye düşebiliyor. İmza kontrolü **ürün kararıyla yok** (bkz. G-1) | Güncelleyici | Temizlik |
 | 2 | Kaldırıcı isim benzerliğiyle başka uygulamaların klasör ve registry anahtarlarını "%100 güvenli" siliyor; sağ tıkla İndirilenler/Masaüstü klasörünün tamamı silinecekler listesine giriyor | Kaldırıcı | Veri kaybı |
 | 3 | Kaldırıcı `C:\Windows` altındaki süreçleri öldürebiliyor (sağ tık → explorer.exe) | Kaldırıcı | Sistem hasarı |
 | 4 | Kurulum Nöbetçisi'nin geri alma fonksiyonu, kurulumdan önce var olan dosyaları da siliyor (şu an UI'a bağlı değil) | Nöbetçi | Veri kaybı (gizli) |
@@ -54,17 +53,15 @@ Uygulama çok geniş bir özellik yelpazesine sahip ve arayüz tarafı olgun (Fl
 
 ## 1. Güvenlik bulguları
 
-### G-1 Güncelleyici: doğrulanmamış kod yönetici olarak çalışıyor (Kesin, Kritik)
+### G-1 Güncelleyici (ürün kararı: imza kontrolü YOK)
 
-- **Yer:** `Services/AutoUpdateService.cs:312` (`RemoveMarkOfTheWeb`), `:333-342` (`/VERYSILENT … Verb = "runas"`), `:166-185` (asset seçimi: `-Setup.exe` bulunamazsa **herhangi bir `.exe`**).
-- **Sorun:** Tek kontrol, indirme adresinin github.com alan adında olması. Commit `fd52c94` ("remove certificate verification") ile imza kontrolü bilerek kaldırılmış. Sonuç olarak GitHub hesabı, bir release asset'i ya da CI ele geçirilirse **bütün kullanıcılarda sessiz yönetici kodu çalışır.** Kullanıcı yalnızca bir UAC istemi görür ve o da Bakım'dan geliyormuş gibi görünür.
-- **Çözüm:**
-  1. İndirilen paketin Authenticode imzası `WinVerifyTrust` ile doğrulansın (`Helpers/SignatureInspector` hazır). Ardından **imzalayan sertifikanın parmak izi (thumbprint)** koddaki sabit bir listeyle karşılaştırılsın. Eşleşmezse paket çalıştırılmasın ve UI'da gerekçesi gösterilsin.
-  2. Ek katman: Release'e `SHA256SUMS.txt` eklensin (CI üretir). Güncelleyici hash'i karşılaştırsın.
-  3. "Herhangi bir .exe" yedek seçimi kaldırılsın. Yalnızca `Bakim-v{X}-Setup.exe` deseni kabul edilsin.
-  4. `RemoveMarkOfTheWeb` kaldırılsın. İmza doğrulandıktan sonra SmartScreen sorun çıkarmaz; imzasız paketin SmartScreen'e takılması zaten istenen davranıştır.
-  5. Sessiz kurulum öncesinde kullanıcıya sürüm notlarıyla birlikte "Şimdi kur / Sonra" seçeneği sunulsun.
-- **Ölü ve riskli kod:** `Services/GitHubUpdateService.cs` içindeki `DownloadAndApplyUpdateAsync` hiçbir yerden çağrılmıyor. Alan adı kontrolü de yapmıyor ve PowerShell komutuna yolu doğrudan gömüyor (`Move-Item '{tempFile}' …`). Servis ya tamamen silinsin ya da `AutoUpdateService` ile birleştirilip tek güncelleyici kalsın.
+- **Karar:** Güncelleme paketinde imza ya da sertifika doğrulaması **yapılmayacak.** Bu, v3.17.2'deki "sürtünmesiz güncelleme" kararının devamıdır. Uygulayıcı bu maddeyi imza kontrolü eklemek için **kullanmamalı.**
+- **Kabul edilen risk:** GitHub hesabı ya da bir release asset'i ele geçirilirse güncelleme kanalından gelen dosya doğrulanmadan yönetici olarak çalışır. Tek koruma alan adı kontrolü (`AutoUpdateService.IsTrustedDownloadUrl`). Bu nedenle GitHub hesabında 2FA açık olmalı, release yayınlama yetkisi yalnızca CI'da olmalı.
+- **Kararla çelişmeyen, yapılacak küçük işler:**
+  1. `Services/GitHubUpdateService.cs` içindeki `DownloadAndApplyUpdateAsync` hiçbir yerden çağrılmıyor. Alan adı kontrolü yok ve PowerShell komutuna yolu doğrudan gömüyor. Metot silinsin, servis yalnızca sürüm sorgusu için kalsın ya da `AutoUpdateService` ile birleştirilsin.
+  2. Asset seçimindeki "herhangi bir .exe" yedeği (`AutoUpdateService.cs:176-185`) kaldırılsın. Yalnızca `Bakim-v{X}-Setup.exe` deseni kabul edilsin; release'e yanlışlıkla eklenen başka bir exe çalıştırılmasın.
+  3. İndirme boyutu API'deki `size` alanıyla karşılaştırılsın; eksik ya da yarım indirilen dosya çalıştırılmasın. Bu bir güvenlik kontrolü değil, bozuk indirme kontrolüdür.
+- **İsteğe bağlı (sürtünme eklemez):** CI her release'e `SHA256SUMS.txt` ekleyebilir; güncelleyici indirilen dosyanın hash'ini bununla karşılaştırır. Sertifika gerektirmez ve kullanıcıya hiçbir şey sormaz. **Kullanıcı onayı olmadan uygulanmasın.**
 
 ### G-2 Mağaza: üçüncü taraf ikililer doğrulanmadan yönetici olarak çalışıyor (Kesin, Yüksek)
 
@@ -251,7 +248,7 @@ Her sprint yaklaşık 1–2 hafta. "Nöbetçi" ve "Kaldırıcı" kodları kendi 
 
 ### Sprint 1: Güvenlik
 
-- G-1: Güncelleyici imza, parmak izi ve SHA-256 doğrulaması; `GitHubUpdateService`'in silinmesi.
+- G-1: Yalnızca ölü `GitHubUpdateService.DownloadAndApplyUpdateAsync`'in silinmesi, asset deseni sıkılaştırması, boyut kontrolü. (İmza kontrolü yok: ürün kararı.)
 - G-2: Mağaza staging klasörü, imza/hash kontrolü, çıkış kodu.
 - G-3: Yönetici kısayolu ACL kontrolü ve `.lnk`.
 - G-4: Tam eşleşmeli güvenilir yayıncı listesi.
@@ -313,7 +310,7 @@ Her sprint yaklaşık 1–2 hafta. "Nöbetçi" ve "Kaldırıcı" kodları kendi 
    - Firefox `cache2` kapsamı
    - `IsSafeTarget` kategori köküne bağlı davranış
    - Güvenilir yayıncı tam eşleşmesi
-   - Güncelleyici imza/parmak izi reddi (imzasız test exe'si ile)
+   - Güncelleyici asset seçimi (yalnızca `Bakim-v{X}-Setup.exe`) ve boyut uyuşmazlığında reddetme
    - Tweak yaz-oku doğrulaması (HKCU test anahtarıyla)
    - Oyun Modu güç planı geri yükleme (`powercfg` çağrısı `IProcessRunner` sahtesiyle)
    - `CriticalProcessPolicy` tablosu
@@ -329,6 +326,7 @@ Her sprint yaklaşık 1–2 hafta. "Nöbetçi" ve "Kaldırıcı" kodları kendi 
 
 | Konu | Seçenekler | Öneri |
 |---|---|---|
+| Güncelleme imza kontrolü (G-1) | Yok / SHA256SUMS / Authenticode | **Karar verildi: yok** |
 | Yönetici modeli (G-7) | RUNASADMIN katmanı / `requireAdministrator` / asInvoker + görev + broker | asInvoker + otomatik başlatma görevi + `IElevationBroker` |
 | Giriş ekranı (H-14) | Kaldır / yeniden tasarla | Kaldır |
 | Sıcaklık kaynağı (D-1) | LibreHardwareMonitorLib (sürücü içerir; AV uyarısı riski) / yalnızca GPU vendor API / göstermeme | Kısa vadede göstermeme; orta vadede GPU vendor API |
