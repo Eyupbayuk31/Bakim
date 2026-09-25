@@ -41,6 +41,10 @@ namespace Bakım.ViewModels
             (Report.AddedStartupEntries.Count > 0 ? $" · {Report.AddedStartupEntries.Count} başlangıç" : "") +
             (Report.AddedServices.Count > 0 ? $" · {Report.AddedServices.Count} hizmet" : "");
         public string RiskText => string.IsNullOrWhiteSpace(Report.QuickRiskSummary) ? "" : Report.QuickRiskSummary;
+        public bool HasVerdict => Report.RiskEvaluated;
+        public RiskLevel VerdictLevel => SetupRiskPresentation.ToLevel(Report.RiskVerdict);
+        public bool IsRisky => Report.RiskEvaluated && Report.RiskVerdict >= Core.Sentinel.RiskVerdict.Caution;
+        public string SourceText => Report.Installer?.SourceSite is { } site ? $"Kaynak: {site}" : string.Empty;
         public bool HasRisk => RiskText.Length > 0;
         public bool HasPersistence => Report.AddedStartupEntries.Count > 0 || Report.AddedServices.Count > 0;
         public bool IsIncomplete => Report.IsPossiblyIncomplete;
@@ -63,6 +67,7 @@ namespace Bakım.ViewModels
             _sentinel = sentinel;
             _settings = settings;
             _isEnabled = sentinel.IsEnabled;
+            _notifyLevel = settings.Current.SentinelNotifyLevel;
 
             _sentinel.SetupFinished += _ => OnUi(() => { if (_isActive) Refresh(); });
             _sentinel.SetupDetected += _ => OnUi(UpdateStatus);
@@ -76,9 +81,24 @@ namespace Bakım.ViewModels
         [ObservableProperty] private bool _isMonitoring;
         [ObservableProperty] private int _totalCount;
         [ObservableProperty] private int _persistenceCount;
+        [ObservableProperty] private int _riskyCount;
         [ObservableProperty] private int _last30Count;
         [ObservableProperty] private bool _isEmpty = true;
         [ObservableProperty] private string _searchText = string.Empty;
+
+        /// <summary>0 hepsi, 1 yalnızca dikkat gerektirenler, 2 hiçbiri.</summary>
+        [ObservableProperty] private int _notifyLevel;
+
+        public IReadOnlyList<string> NotifyLevelOptions { get; } = new[]
+        {
+            "Her kurulumda bildir", "Yalnızca dikkat gerektirenlerde bildir", "Bildirim gösterme"
+        };
+
+        partial void OnNotifyLevelChanged(int value)
+        {
+            if (value < 0 || value > 2 || _settings.Current.SentinelNotifyLevel == value) return;
+            _settings.Update(d => d.SentinelNotifyLevel = value);
+        }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasSelection))]
@@ -165,6 +185,7 @@ namespace Bakım.ViewModels
 
             TotalCount = merged.Count;
             PersistenceCount = merged.Count(r => r.AddedStartupEntries.Count > 0 || r.AddedServices.Count > 0);
+            RiskyCount = merged.Count(r => r.RiskEvaluated && r.RiskVerdict >= Core.Sentinel.RiskVerdict.Caution);
             Last30Count = merged.Count(r => r.InstallTime >= DateTime.UtcNow.AddDays(-30));
             IsEmpty = Rows.Count == 0;
         }

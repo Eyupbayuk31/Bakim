@@ -7,6 +7,9 @@ namespace Bakım.Models
     /// </summary>
     public class AppSettingsData
     {
+        /// <summary>Kurulum bitince bildirim: 0 hepsi, 1 yalnızca dikkat gerektirenler, 2 hiçbiri (NÖB 6.2).</summary>
+        public int SentinelNotifyLevel { get; set; }
+
         /// <summary>Geriye dönük göç (migration) kararları için şema sürümü.</summary>
         public int SchemaVersion { get; set; } = 1;
 

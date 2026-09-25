@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:c="clr-namespace:Bakım.Controls"
         mc:Ignorable="d"
         Title="Kurulum Değişiklikleri Raporu"
         Width="900" Height="640"
@@ -128,6 +129,50 @@
 
             <!-- 3. Tabs & Content Lists -->
             <TabControl Grid.Row="3" Background="Transparent" BorderThickness="0" Margin="0,0,0,16">
+                <!-- Tab 0: Özet (Nöbetçi v2: karar, bulgular, kurulum dosyası) -->
+                <TabItem Header="Özet" IsSelected="True">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="0,4,0,0">
+                            <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="14,12" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <c:RiskBadge x:Name="VerdictBadge" Level="Clean" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="VerdictText" Text="Değerlendirilmedi" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock x:Name="VerdictDetailText" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <ItemsControl x:Name="FindingsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="8,8">
+                                            <StackPanel>
+                                                <TextBlock FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                                    <Run Text="{Binding Severity, Mode=OneWay}" FontWeight="Bold"/>
+                                                    <Run Text=" · "/>
+                                                    <Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                    <Run Text="{Binding Technique, Mode=OneWay}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Detail}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <TextBlock Text="KURULUM DOSYASI" Style="{StaticResource Text.Label}" Margin="0,14,0,6"/>
+                            <TextBlock x:Name="InstallerInfoText" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
                 <!-- Tab 1: Added Files -->
                 <TabItem Header="Eklenen Dosyalar">
                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
@@ -248,6 +293,34 @@
                                         <StackPanel>
                                             <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             <TextBlock Text="{Binding PathOrKey}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Border>
+                </TabItem>
+
+                <!-- Tab 4: Sistem alanları (NÖB 2.3/2.5) -->
+                <TabItem Header="Sistem">
+                    <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource Radius.MD}"
+                            ClipToBounds="True">
+                        <ListView x:Name="SystemListView"
+                                  Background="Transparent"
+                                  BorderThickness="0">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="8,8">
+                                        <StackPanel>
+                                            <TextBlock FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                                <Run Text="{Binding Area, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                <Run Text="{Binding Kind, Mode=OneWay, StringFormat=' · {0}'}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Key}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" ToolTip="{Binding Key}"/>
+                                            <TextBlock Text="{Binding Value}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Value}"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>

@@ -191,55 +191,14 @@ namespace Bakım.Services.Uninstall
 
         private static void CollectScheduledTasks(string dir, List<FootprintItem> items)
         {
-            object? service = CreateTaskService();
-            if (service == null) return;
-            try
+            foreach (var task in TaskSchedulerReader.ReadAll())
             {
-                dynamic ts = service;
-                WalkTaskFolder(ts.GetFolder("\\"), dir, items, depth: 0);
-            }
-            finally
-            {
-                Marshal.ReleaseComObject(service);
-            }
-        }
-
-        private static void WalkTaskFolder(dynamic folder, string dir, List<FootprintItem> items, int depth)
-        {
-            if (depth > 8) return;
-            // 1 = TASK_ENUM_HIDDEN: gizli görevler de listelenir.
-            foreach (dynamic task in folder.GetTasks(1))
-            {
-                try
+                foreach (string command in task.ExecActions)
                 {
-                    string path = task.Path;
-                    foreach (dynamic action in task.Definition.Actions)
-                    {
-                        // 0 = TASK_ACTION_EXEC
-                        if ((int)action.Type != 0) continue;
-                        string exe = action.Path ?? string.Empty;
-                        if (!Into(exe, dir)) continue;
-                        items.Add(new FootprintItem(FootprintKind.ScheduledTask, path, (string)task.Name,
-                            $"Görevin çalıştırdığı dosya kurulum klasöründe: {Environment.ExpandEnvironmentVariables(exe.Trim('"'))}"));
-                        break;
-                    }
-                }
-                catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
-                {
-                    // Erişilemeyen tek görev taramayı durdurmaz (korumalı sistem görevleri).
-                    AppLog.Debug($"Görev okunamadı: {ex.Message}", nameof(FootprintCollector));
-                }
-            }
-
-            foreach (dynamic sub in folder.GetFolders(0))
-            {
-                try
-                {
-                    WalkTaskFolder(sub, dir, items, depth + 1);
-                }
-                catch (Exception ex) when (ex is COMException or UnauthorizedAccessException)
-                {
-                    AppLog.Debug($"Görev klasörü okunamadı: {ex.Message}", nameof(FootprintCollector));
+                    if (!Into(command, dir)) continue;
+                    items.Add(new FootprintItem(FootprintKind.ScheduledTask, task.Path, task.Name,
+                        $"Görevin çalıştırdığı dosya kurulum klasöründe: {Environment.ExpandEnvironmentVariables(command)}"));
+                    break;
                 }
             }
         }
@@ -477,22 +436,7 @@ namespace Bakım.Services.Uninstall
             return rules?.GetValue(id) as string;
         }
 
-        internal static object? CreateTaskService()
-        {
-            try
-            {
-                Type? type = Type.GetTypeFromProgID("Schedule.Service");
-                if (type == null) return null;
-                object service = Activator.CreateInstance(type)!;
-                ((dynamic)service).Connect();
-                return service;
-            }
-            catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
-            {
-                AppLog.Warning("Görev Zamanlayıcı'ya bağlanılamadı.", ex, nameof(FootprintCollector));
-                return null;
-            }
-        }
+        internal static object? CreateTaskService() => TaskSchedulerReader.Connect();
 
         internal static bool TaskExists(object taskService, string taskPath) => GetTaskXml(taskService, taskPath) != null;
 

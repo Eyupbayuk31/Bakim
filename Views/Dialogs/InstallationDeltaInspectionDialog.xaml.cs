@@ -24,6 +24,10 @@ namespace Bakım.Views.Dialogs
         public record FileItemDisplay(string FileName, string FullPath, string Extension);
         public record RegistryItemDisplay(string Hive, string KeyPath, string Details);
         public record ServiceItemDisplay(string Name, string PathOrKey);
+        public record FindingDisplay(string Severity, string Title, string Detail, string Technique);
+        public record SystemChangeDisplay(string Area, string Kind, string Key, string Value);
+
+        private readonly List<SystemChangeDisplay> _allSystem = new();
 
         public InstallationDeltaInspectionDialog(SetupDeltaReport report)
         {
@@ -70,7 +74,54 @@ namespace Bakım.Views.Dialogs
                 _allServices.Add(new ServiceItemDisplay("Başlangıç Kaydı (Run)", st));
             }
 
+            PopulateSummary();
             ApplyFilter(string.Empty);
+        }
+
+        /// <summary>Nöbetçi v2 özeti: karar, bulgular, kurulum dosyası, sistem alanları.</summary>
+        private void PopulateSummary()
+        {
+            VerdictBadge.Level = SetupRiskPresentation.ToLevel(_report.RiskVerdict);
+            VerdictBadge.Visibility = _report.RiskEvaluated ? Visibility.Visible : Visibility.Collapsed;
+            VerdictText.Text = SetupRiskPresentation.VerdictText(_report);
+            VerdictDetailText.Text = SetupRiskPresentation.VerdictDetail(_report);
+
+            FindingsList.ItemsSource = _report.RiskFindings
+                .Select(f => new FindingDisplay(Core.Sentinel.SetupRiskEngine.SeverityLabel(f.Severity), f.Title, f.Detail,
+                    string.IsNullOrEmpty(f.Technique) ? string.Empty : $"  ({f.Technique})"))
+                .ToList();
+
+            var lines = new List<string>();
+            var installer = _report.Installer;
+            lines.Add($"Dosya: {(_report.InstallerPath.Length > 0 ? _report.InstallerPath : "bilinmiyor")}");
+            if (installer != null)
+            {
+                lines.Add($"İmza: {(installer.SignatureText.Length > 0 ? installer.SignatureText : "denetlenemedi")}");
+                lines.Add($"Kurulum çatısı: {installer.FrameworkText}");
+                if (installer.SourceSite != null || installer.HostUrl != null)
+                    lines.Add($"İndirildiği yer: {installer.SourceSite ?? installer.HostUrl}" +
+                              (installer.ReferrerUrl != null ? $" (sayfa: {installer.ReferrerUrl})" : string.Empty));
+                else if (!installer.FromInternet)
+                    lines.Add("İndirme kaynağı: kayıt yok (yerel dosya ya da kaynak bilgisi silinmiş)");
+                if (installer.Sha256 != null) lines.Add($"SHA-256: {installer.Sha256}");
+            }
+            if (_report.NewPrograms.Count > 0)
+                lines.Add($"Yeni programlar: {string.Join(", ", _report.NewPrograms)}");
+            if (_report.IsPossiblyIncomplete)
+                lines.Add("Not: dosya izleyici taştı; dosya listesi eksik olabilir.");
+            InstallerInfoText.Text = string.Join(Environment.NewLine, lines);
+
+            foreach (var c in _report.SystemChanges)
+            {
+                string kind = c.Kind switch
+                {
+                    Core.Sentinel.ChangeKind.Added => "Eklendi",
+                    Core.Sentinel.ChangeKind.Removed => "Kaldırıldı",
+                    _ => "Değişti"
+                };
+                string value = c.Kind == Core.Sentinel.ChangeKind.Modified ? $"{c.Before} → {c.After}" : (c.After ?? c.Before ?? string.Empty);
+                _allSystem.Add(new SystemChangeDisplay(Core.Sentinel.SystemStateSnapshot.AreaLabel(c.Area), kind, c.Key, value));
+            }
         }
 
         private void OnHeaderMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -100,6 +151,7 @@ namespace Bakım.Views.Dialogs
                 FilesListView.ItemsSource = _allFiles;
                 RegistryListView.ItemsSource = _allRegistry;
                 ServicesListView.ItemsSource = _allServices;
+                SystemListView.ItemsSource = _allSystem;
                 FilteredCountText.Text = $"Toplam {_allFiles.Count} dosya, {_allRegistry.Count} kayıt";
                 return;
             }
@@ -116,6 +168,10 @@ namespace Bakım.Views.Dialogs
                 s.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
                 s.PathOrKey.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
 
+            SystemListView.ItemsSource = _allSystem.Where(c =>
+                c.Key.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                c.Area.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                c.Value.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
             FilesListView.ItemsSource = filteredFiles;
             RegistryListView.ItemsSource = filteredReg;
             ServicesListView.ItemsSource = filteredServices;

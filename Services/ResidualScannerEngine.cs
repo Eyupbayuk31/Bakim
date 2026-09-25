@@ -32,6 +32,12 @@ namespace Bakım.Services
         /// kısayol, güvenlik duvarı kuralı, App Paths). Yalnızca kaldırma doğrulandıysa eklenir.
         /// </summary>
         public IReadOnlyList<LeftoverItem> FootprintLeftovers { get; init; } = Array.Empty<LeftoverItem>();
+
+        /// <summary>
+        /// Kurulum Nöbetçisi raporunda bu programın kurulumu sırasında oluşturulan en üst klasörler
+        /// (NÖB 5.5). Zaman penceresine dayalı olduğu için "İnceleyin" güveniyle ve seçilmeden gösterilir.
+        /// </summary>
+        public IReadOnlyList<string> TraceFolders { get; init; } = Array.Empty<string>();
     }
 
     /// <summary>Temizlik sonucu: geri alma günlüğü ve öğe bazında sonuçlar.</summary>
@@ -139,7 +145,11 @@ namespace Bakım.Services
                     ScanFileAssociationValues(matcher, results);
                 }
                 AddUninstallKey(app, options, results);
-                if (options.UninstallConfirmed) results.AddRange(options.FootprintLeftovers);
+                if (options.UninstallConfirmed)
+                {
+                    results.AddRange(options.FootprintLeftovers);
+                    AddTraceFolders(app, options.TraceFolders, otherLocations, results);
+                }
 
                 return results
                     .GroupBy(r => r.Path, StringComparer.OrdinalIgnoreCase)
@@ -214,6 +224,33 @@ namespace Bakım.Services
                 AllowOutsideKnownRoots = true,
                 IsSelected = true
             });
+        }
+
+        private void AddTraceFolders(InstalledAppItem app, IReadOnlyList<string> folders, IReadOnlyList<string> otherLocations, List<LeftoverItem> results)
+        {
+            string? install = WindowsPath.Normalize(app.InstallLocation);
+            foreach (string folder in folders)
+            {
+                if (!Directory.Exists(folder)) continue;
+                var check = _guard.CheckDeletion(folder, isDirectory: true);
+                if (!check.IsAllowed || OverlapsOtherApp(folder, otherLocations)) continue;
+                // Kurulum klasörünün kendisi/altı ayrıca (kesin) önerilir.
+                if (install != null && WindowsPath.IsUnderOrEqual(check.NormalizedPath, install)) continue;
+
+                long size = SafeFolderSize(folder);
+                results.Add(new LeftoverItem
+                {
+                    Path = check.NormalizedPath,
+                    ItemType = LeftoverType.Folder,
+                    SizeBytes = size,
+                    FormattedSize = ByteFormatter.Format(size),
+                    Description = "Kurulum raporundaki klasör",
+                    EvidenceText = "Kurulum Nöbetçisi raporuna göre bu klasör programın kurulumu sırasında oluşturuldu. " +
+                                   "Aynı anda başka bir programın yazmış olma ihtimaline karşı inceleyin.",
+                    ConfidenceScore = (int)MatchConfidence.Medium,
+                    IsSelected = false
+                });
+            }
         }
 
         private void AddUninstallKey(InstalledAppItem app, ResidualScanOptions options, List<LeftoverItem> results)

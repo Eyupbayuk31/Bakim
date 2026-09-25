@@ -242,6 +242,7 @@ namespace Bakım.ViewModels
                 UpdateSelectedAppsCount();
                 StatusMessage = $"{Stats.TotalAppsCount} program bulundu. Toplam disk boyutu: {Stats.FormattedTotalFootprint}";
                 _ = MeasurePendingSizesAsync(list);
+                _ = ApplySetupTracesAsync(list);
             }
             catch (Exception ex)
             {
@@ -250,6 +251,40 @@ namespace Bakım.ViewModels
             finally
             {
                 IsBusy = false;
+            }
+        }
+
+        /// <summary>Nöbetçi raporlarındaki yeni Uninstall kayıtlarını listedeki programlarla eşler (NÖB 5.5).</summary>
+        private static async Task ApplySetupTracesAsync(IReadOnlyList<InstalledAppItem> apps)
+        {
+            var sentinel = App.TryGetService<ISetupSentinelService>();
+            if (sentinel == null) return;
+            try
+            {
+                var index = await Task.Run(() =>
+                {
+                    var map = new Dictionary<string, SetupDeltaReport>();
+                    foreach (var report in sentinel.LoadSavedReports().Where(r => r.Kind == SessionKind.Install))
+                    {
+                        foreach (var record in report.AddedRegistryRecords)
+                        {
+                            string? id = Core.Sentinel.SetupTrace.UninstallIdentity(record.KeyPath);
+                            if (id == null) continue;
+                            if (!map.TryGetValue(id, out var existing) || existing.InstallTime < report.InstallTime) map[id] = report;
+                        }
+                    }
+                    return map;
+                });
+
+                foreach (var app in apps)
+                {
+                    string? id = Core.Sentinel.SetupTrace.UninstallIdentity(app.RegistryKeyPath);
+                    if (id != null && index.TryGetValue(id, out var report)) app.SetupTraceReport = report;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Kurulum izleri Kaldırıcı listesine eşlenemedi.", ex, nameof(UninstallerViewModel));
             }
         }
 

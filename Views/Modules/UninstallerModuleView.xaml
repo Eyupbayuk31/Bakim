@@ -496,6 +496,15 @@
 
                                             <!-- Rozetler (Boşsa Otomatik Gizlenir, Boş Gri Kutucuk Oluşmaz) -->
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <!-- Kurulum izi (Nöbetçi raporu) -->
+                                                <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,6,0"
+                                                        Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                                        BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
+                                                        BorderThickness="1"
+                                                        ToolTip="{Binding SetupTraceText}"
+                                                        Visibility="{Binding HasSetupTrace, Converter={StaticResource BoolToVis}}">
+                                                    <TextBlock Text="Kurulum izi var" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                </Border>
                                                 <!-- Sürüm Rozeti -->
                                                 <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,6,0"
                                                         Background="{DynamicResource SubtleFillColorSecondaryBrush}" 

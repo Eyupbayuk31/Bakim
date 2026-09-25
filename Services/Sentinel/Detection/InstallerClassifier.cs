@@ -45,7 +45,8 @@ namespace Bakım.Services.Sentinel.Detection
             string? commandLine,
             out SessionKind kind,
             out string detectedAppName,
-            out int confidenceScore)
+            out int confidenceScore,
+            int extraScore = 0)
         {
             kind = SessionKind.Unknown;
             detectedAppName = string.Empty;
@@ -154,6 +155,8 @@ namespace Bakım.Services.Sentinel.Detection
                 score += 15;
             }
 
+            // Dış sinyaller (NÖB 1.2): kurulum çatısı izi (+50), İnternet'ten indirilmiş (+10).
+            score += extraScore;
             confidenceScore = Math.Min(score, 100);
 
             if (confidenceScore >= 50)

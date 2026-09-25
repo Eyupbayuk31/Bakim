@@ -379,7 +379,14 @@ namespace Bakım.ViewModels
                         var footprint = _footprint;
                         footprintLeftovers = await Task.Run(() => collector.StillPresentLeftovers(footprint));
                     }
-                    await ScanResidualsInternalAsync(ResidualScanOptions.Confirmed with { FootprintLeftovers = footprintLeftovers });
+                    var traceFolders = TargetApp.SetupTraceReport is { } trace
+                        ? Core.Sentinel.SetupTrace.TopLevelCreatedFolders(trace.AddedFolders.Where(f => !Core.Sentinel.SentinelNoise.IsNoisePath(f + "\\")))
+                        : Array.Empty<string>();
+                    await ScanResidualsInternalAsync(ResidualScanOptions.Confirmed with
+                    {
+                        FootprintLeftovers = footprintLeftovers,
+                        TraceFolders = traceFolders
+                    });
                 }
                 else
                 {

@@ -69,7 +69,15 @@ namespace Bakım.Views.Dialogs
             RegistryBadgeText.Text = $"+{report.AddedRegistryRecords.Count} Kayıt";
             SizeBadgeText.Text = report.FormattedSize;
 
-            if (!string.IsNullOrWhiteSpace(report.QuickRiskSummary))
+            if (report.RiskEvaluated)
+            {
+                // En önemli üç bulgu (NÖB 6.1); temiz kurulumda kısa açıklama.
+                var top = report.RiskFindings.Where(f => f.Severity > Core.Sentinel.RiskSeverity.Info).Take(3).Select(f => "• " + f.Title).ToList();
+                QuickRiskSummaryText.Text = $"{SetupRiskPresentation.VerdictText(report)} (puan {report.RiskScore}/100)" +
+                    (top.Count > 0 ? Environment.NewLine + string.Join(Environment.NewLine, top) : " · kalıcılık ya da sistem değişikliği yok");
+                RiskSummaryCard.Visibility = Visibility.Visible;
+            }
+            else if (!string.IsNullOrWhiteSpace(report.QuickRiskSummary))
             {
                 QuickRiskSummaryText.Text = report.QuickRiskSummary;
                 RiskSummaryCard.Visibility = Visibility.Visible;

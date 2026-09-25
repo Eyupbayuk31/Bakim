@@ -71,17 +71,24 @@
                                Margin="{StaticResource Gap.Top.XS}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
-                <ui:ToggleSwitch Grid.Column="2" IsChecked="{Binding IsEnabled}" VerticalAlignment="Center"
-                                 OnContent="Açık" OffContent="Kapalı"
-                                 AutomationProperties.Name="Kurulum Nöbetçisini aç veya kapat"/>
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <ui:ToggleSwitch IsChecked="{Binding IsEnabled}" HorizontalAlignment="Right"
+                                     OnContent="Açık" OffContent="Kapalı"
+                                     AutomationProperties.Name="Kurulum Nöbetçisini aç veya kapat"/>
+                    <ComboBox ItemsSource="{Binding NotifyLevelOptions}" SelectedIndex="{Binding NotifyLevel}"
+                              MinWidth="240" Margin="{StaticResource Gap.Top.XS}"
+                              ToolTip="Kurulum bitince bildirim gösterilsin mi? Raporlar her durumda burada saklanır."
+                              AutomationProperties.Name="Kurulum bildirimi seviyesi"/>
+                </StackPanel>
             </Grid>
         </Border>
 
         <!-- 2. Özet -->
-        <UniformGrid Grid.Row="2" Rows="1" Columns="3" Margin="{StaticResource Gap.Bottom.MD}">
+        <UniformGrid Grid.Row="2" Rows="1" Columns="4" Margin="{StaticResource Gap.Bottom.MD}">
             <c:StatCard Icon="BoxCheckmark24" Label="Kayıtlı oturum" Value="{Binding TotalCount}" Intent="Neutral" Margin="{StaticResource Gap.Right.SM}"/>
             <c:StatCard Icon="CalendarLtr24" Label="Son 30 gün" Value="{Binding Last30Count}" Intent="Accent" Margin="{StaticResource Gap.Right.SM}"/>
-            <c:StatCard Icon="Rocket24" Label="Başlangıca/hizmete ekleyen" Value="{Binding PersistenceCount}" Intent="Caution"/>
+            <c:StatCard Icon="Rocket24" Label="Başlangıca/hizmete ekleyen" Value="{Binding PersistenceCount}" Intent="Neutral" Margin="{StaticResource Gap.Right.SM}"/>
+            <c:StatCard Icon="ShieldError24" Label="Dikkat gerektiren" Value="{Binding RiskyCount}" Intent="Caution"/>
         </UniformGrid>
 
         <!-- 3. Arama -->
@@ -143,6 +150,8 @@
                                                Visibility="{Binding HasRisk, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <c:RiskBadge Level="{Binding VerdictLevel}" Margin="{StaticResource Gap.Right.XS}"
+                                                 Visibility="{Binding HasVerdict, Converter={StaticResource BoolToVis}}"/>
                                     <c:StatusBadge Text="Eksik olabilir" Intent="Caution" Margin="{StaticResource Gap.Right.XS}"
                                                    Visibility="{Binding IsIncomplete, Converter={StaticResource BoolToVis}}"/>
                                     <c:StatusBadge Text="{Binding PersistenceText}" Intent="{Binding Intent}" Margin="{StaticResource Gap.Right.SM}"/>

@@ -51,11 +51,31 @@ namespace Bakım.Models
         public HashSet<int> TrackedProcessIds { get; } = new(); // Backward compatibility helper
         public ConcurrentBag<SetupFileEvent> CapturedFileEvents { get; } = new();
         public InstallationSnapshot? PreSnapshot { get; set; }
+
+        /// <summary>Kurulum dosyasının imza, özet, çatı ve indirme kaynağı (arka planda doldurulur).</summary>
+        public System.Threading.Tasks.Task<InstallerInfo>? InstallerInfoTask { get; set; }
+    }
+
+    /// <summary>Kurulum dosyası hakkında bilinenler (NÖB 1.3, 1.4).</summary>
+    public class InstallerInfo
+    {
+        public string? Sha256 { get; set; }
+        /// <summary>Geçerli imza: true/false; denetlenemediyse null.</summary>
+        public bool? Signed { get; set; }
+        public string? Signer { get; set; }
+        public string SignatureText { get; set; } = string.Empty;
+        public Bakım.Core.Sentinel.InstallerFramework Framework { get; set; }
+        public string? HostUrl { get; set; }
+        public string? ReferrerUrl { get; set; }
+        public string? SourceSite { get; set; }
+        public bool FromInternet { get; set; }
+
+        public string FrameworkText => Bakım.Core.Sentinel.InstallerFingerprint.DisplayName(Framework);
     }
 
     public class SetupDeltaReport
     {
-        public int SchemaVersion { get; set; } = 2;
+        public int SchemaVersion { get; set; } = 3;
         public string SessionId { get; set; } = Guid.NewGuid().ToString("N");
         public SessionKind Kind { get; set; } = SessionKind.Install;
         public string AppName { get; set; } = string.Empty;
@@ -85,5 +105,49 @@ namespace Bakım.Models
         public bool IsPossiblyIncomplete { get; set; }
         public string QuickRiskSummary { get; set; } = string.Empty;
         public string RiskBadgeBrush { get; set; } = "AccentTextFillColorPrimaryBrush";
+
+        // Nöbetçi v2 (şema 3)
+        public InstallerInfo? Installer { get; set; }
+        /// <summary>IFEO, Winlogon, PATH, proxy, sertifika, hosts, güvenlik duvarı, görev, sağ tık … değişiklikleri.</summary>
+        public List<Bakım.Core.Sentinel.SystemChange> SystemChanges { get; set; } = new();
+        /// <summary>Oturumda yeni oluşan Uninstall kayıtları (paket yazılım tespiti).</summary>
+        public List<string> NewPrograms { get; set; } = new();
+        public bool RiskEvaluated { get; set; }
+        public int RiskScore { get; set; }
+        public Bakım.Core.Sentinel.RiskVerdict RiskVerdict { get; set; }
+        public List<Bakım.Core.Sentinel.RiskFinding> RiskFindings { get; set; } = new();
+    }
+
+    /// <summary>Kurulum kararının arayüz karşılıkları (RiskBadge seviyesi, açıklama).</summary>
+    public static class SetupRiskPresentation
+    {
+        public static RiskLevel ToLevel(Bakım.Core.Sentinel.RiskVerdict verdict) => verdict switch
+        {
+            Bakım.Core.Sentinel.RiskVerdict.Info => RiskLevel.Low,
+            Bakım.Core.Sentinel.RiskVerdict.Caution => RiskLevel.Medium,
+            Bakım.Core.Sentinel.RiskVerdict.Suspicious => RiskLevel.High,
+            Bakım.Core.Sentinel.RiskVerdict.Dangerous => RiskLevel.Critical,
+            _ => RiskLevel.Clean
+        };
+
+        public static string VerdictText(SetupDeltaReport report) =>
+            report.RiskEvaluated ? Bakım.Core.Sentinel.SetupRiskEngine.VerdictLabel(report.RiskVerdict) : "Değerlendirilmedi";
+
+        public static string VerdictDetail(SetupDeltaReport report)
+        {
+            if (!report.RiskEvaluated)
+                return "Bu rapor risk değerlendirmesinden önceki bir sürümle oluşturuldu.";
+            int shown = report.RiskFindings.Count(f => f.Severity > Bakım.Core.Sentinel.RiskSeverity.Info);
+            string basis = report.RiskVerdict switch
+            {
+                Bakım.Core.Sentinel.RiskVerdict.Clean => "Kalıcılık, hizmet ya da sistem ayarı değişikliği saptanmadı.",
+                Bakım.Core.Sentinel.RiskVerdict.Info => "Olağan kurulum izleri (başlangıç girdisi, hizmet …) var; tek başına tehlike işareti değil.",
+                Bakım.Core.Sentinel.RiskVerdict.Caution => "Gözden geçirilmesi gereken değişiklikler var.",
+                Bakım.Core.Sentinel.RiskVerdict.Suspicious => "Kötü amaçlı yazılımlarda sık görülen değişiklikler var; ayrıntıları inceleyin.",
+                _ => "Birden çok ciddi sistem değişikliği var; kurulumu Analizör'de taramanız önerilir."
+            };
+            return $"{basis} Puan {report.RiskScore}/100 · {shown} bulgu. Karar, kurulum sırasında gözlenen değişikliklere dayanır; dosya içeriği taranmadı.";
+        }
     }
 }
+

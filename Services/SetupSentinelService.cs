@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bakım.Core.Sentinel;
+using Bakım.Helpers;
 using Bakım.Models;
 using Bakım.Services.Sentinel.Actions;
 using Bakım.Services.Sentinel.Detection;
@@ -57,6 +59,29 @@ namespace Bakım.Services
         /// </summary>
         private Dictionary<string, string>? _baselineHotspot;
         private DateTime _baselineTakenUtc = DateTime.MinValue;
+
+        /// <summary>
+        /// Sistem durumu tabanı (NÖB 2.1): IFEO, sertifikalar, güvenlik duvarı, görevler …
+        /// Kayıt defteri tabanından pahalı olduğu için daha seyrek alınır.
+        /// </summary>
+        private SystemStateCapture? _baselineSystem;
+        private SystemStateCapture? _preSystem;
+        private static readonly TimeSpan SystemBaselineInterval = TimeSpan.FromMinutes(3);
+
+        /// <summary>Tanınan süreçler (yalnız nöbetçi döngüsü erişir): tur başına tek süreç görüntüsü.</summary>
+        private readonly Dictionary<int, SeenProcess> _seenProcesses = new();
+        private readonly Dictionary<string, (string? Description, string? Product)> _versionCache = new(StringComparer.OrdinalIgnoreCase);
+        /// <summary>Yeni bir süreç bu süre boyunca yeniden değerlendirilir (pencere başlığı geç gelebilir).</summary>
+        private static readonly TimeSpan CandidateWindow = TimeSpan.FromSeconds(15);
+
+        private sealed class SeenProcess
+        {
+            public string ExeName = string.Empty;
+            public int ParentPid;
+            public long CreationTicks;
+            public DateTime FirstSeenUtc;
+            public bool Final;
+        }
         private static readonly TimeSpan BaselineInterval = TimeSpan.FromSeconds(60);
         private bool _isDisposed;
         private bool _isEnabled;
@@ -182,108 +207,197 @@ namespace Bakım.Services
             }
         }
 
+        /// <summary>
+        /// Yeni süreçleri tarar. Tur başına TEK süreç görüntüsü alınır (eskiden her süreç için ayrı
+        /// Toolhelp görüntüsü ve FileVersionInfo okunuyordu: 1,5 sn'de bir yüzlerce çağrı).
+        /// Bir süreç yalnızca ilk <see cref="CandidateWindow"/> boyunca değerlendirilir.
+        /// </summary>
         private async Task ScanNewProcessesAsync()
         {
-            int currentPid = Environment.ProcessId;
-            var processes = Process.GetProcesses();
-
+            IReadOnlyList<NativeProcess.ProcessEntry> snapshot;
             try
             {
-                foreach (var proc in processes)
+                snapshot = NativeProcess.Snapshot();
+            }
+            catch (System.ComponentModel.Win32Exception ex)
+            {
+                _log.Debug($"Süreç görüntüsü alınamadı: {ex.Message}", nameof(SetupSentinelService));
+                return;
+            }
+
+            int currentPid = Environment.ProcessId;
+            var now = DateTime.UtcNow;
+            var alive = new HashSet<int>();
+
+            foreach (var entry in snapshot)
+            {
+                int pid = entry.ProcessId;
+                if (pid == currentPid || pid <= 4) continue;
+                alive.Add(pid);
+
+                // PID yeniden kullanımı: aynı PID'de başka bir exe ya da ebeveyn → yeni süreç.
+                if (_seenProcesses.TryGetValue(pid, out var seen) &&
+                    (!string.Equals(seen.ExeName, entry.ExeName, StringComparison.OrdinalIgnoreCase) || seen.ParentPid != entry.ParentProcessId))
+                {
+                    seen = null;
+                }
+                if (seen == null)
+                {
+                    seen = new SeenProcess
+                    {
+                        ExeName = entry.ExeName,
+                        ParentPid = entry.ParentProcessId,
+                        CreationTicks = ProcessInfoReader.GetProcessCreationTimeUtc(pid)?.Ticks ?? 0,
+                        FirstSeenUtc = now
+                    };
+                    _seenProcesses[pid] = seen;
+                }
+                if (seen.Final) continue;
+
+                var key = (pid, seen.CreationTicks);
+                if (_handledProcesses.ContainsKey(key)) { seen.Final = true; continue; }
+
+                // Bakım'ın başlattığı kaldırıcı ağacı: kurulum oturumu açılmaz.
+                if (Sentinel.Detection.SentinelSuppression.IsSuppressed(pid, entry.ParentProcessId))
+                {
+                    _handledProcesses[key] = true;
+                    seen.Final = true;
+                    continue;
+                }
+
+                try
+                {
+                    if (await EvaluateCandidateAsync(pid, entry, seen)) break;
+                }
+                catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException)
+                {
+                    // Süreç bu arada kapandı ya da erişilemiyor.
+                    seen.Final = true;
+                }
+
+                if (now - seen.FirstSeenUtc > CandidateWindow) seen.Final = true;
+            }
+
+            foreach (int gone in _seenProcesses.Keys.Where(p => !alive.Contains(p)).ToList())
+                _seenProcesses.Remove(gone);
+            if (_versionCache.Count > 1024) _versionCache.Clear();
+            if (_handledProcesses.Count > 4096) _handledProcesses.Clear();
+        }
+
+        private static readonly string[] InstalledRoots = new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+            }
+            .Where(p => !string.IsNullOrEmpty(p))
+            .Select(p => p.TrimEnd('\\') + "\\")
+            .ToArray();
+
+        private static bool IsInstalledLocation(string exePath) =>
+            InstalledRoots.Any(root => exePath.StartsWith(root, StringComparison.OrdinalIgnoreCase));
+
+        /// <summary>Süreci sınıflandırır; kurulumsa oturum açar ve true döner.</summary>
+        private async Task<bool> EvaluateCandidateAsync(int pid, NativeProcess.ProcessEntry entry, SeenProcess seen)
+        {
+            string processName = Path.GetFileNameWithoutExtension(entry.ExeName);
+            string? exePath = ProcessInfoReader.GetProcessExecutablePath(pid);
+
+            // Zaten kurulu konumdan çalışan süreç kurulum değildir (msiexec hariç): pencere başlığı ve
+            // sürüm bilgisi hiç okunmaz. Sistemdeki süreçlerin çoğu burada elenir.
+            if (exePath != null && IsInstalledLocation(exePath) && !processName.Equals("msiexec", StringComparison.OrdinalIgnoreCase))
+            {
+                seen.Final = true;
+                return false;
+            }
+
+            string? title = null;
+            try
+            {
+                using var proc = Process.GetProcessById(pid);
+                title = proc.MainWindowTitle;
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                seen.Final = true; // kapandı
+                return false;
+            }
+
+            string? desc = null, prod = null;
+            if (!string.IsNullOrWhiteSpace(exePath))
+            {
+                if (!_versionCache.TryGetValue(exePath, out var version) && File.Exists(exePath))
                 {
                     try
                     {
-                        if (proc.Id == currentPid || proc.Id <= 4) continue;
-
-                        ProcessInfoReader.TryGetProcessDetails(
-                            proc.Id,
-                            out string? exePath,
-                            out int? parentPid,
-                            out DateTime? creationTime);
-
-                        long creationTicks = creationTime?.Ticks ?? 0;
-                        var key = (proc.Id, creationTicks);
-
-                        if (_handledProcesses.ContainsKey(key)) continue;
-
-                        // Bakım'ın başlattığı kaldırıcı ağacı: kurulum oturumu açılmaz.
-                        if (Sentinel.Detection.SentinelSuppression.IsSuppressed(proc.Id, parentPid))
-                        {
-                            _handledProcesses[key] = true;
-                            continue;
-                        }
-
-                        string? title = null;
-                        try { title = proc.MainWindowTitle; } catch { }
-
-                        string? desc = null;
-                        string? prod = null;
-                        if (!string.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
-                        {
-                            try
-                            {
-                                var fvi = FileVersionInfo.GetVersionInfo(exePath);
-                                desc = fvi.FileDescription;
-                                prod = fvi.ProductName;
-                            }
-                            catch { }
-                        }
-
-                        bool isTarget = InstallerClassifier.ClassifyProcess(
-                            proc.ProcessName,
-                            exePath,
-                            title,
-                            desc,
-                            prod,
-                            proc.ProcessName.Equals("msiexec", StringComparison.OrdinalIgnoreCase)
-                                ? ProcessInfoReader.TryGetCommandLine(proc.Id)
-                                : null,
-                            out SessionKind kind,
-                            out string detectedAppName,
-                            out int confidenceScore);
-
-                        if (isTarget)
-                        {
-                            _handledProcesses[key] = true;
-
-                            if (kind == SessionKind.Uninstall)
-                            {
-                                _log.Info($"Kaldırma süreci saptandı (oturum açılmadı): {detectedAppName} (PID: {proc.Id})", nameof(SetupSentinelService));
-                                continue;
-                            }
-
-                            if (kind == SessionKind.Install && confidenceScore >= 50)
-                            {
-                                await StartSessionAsync(proc.Id, creationTicks, proc.ProcessName, detectedAppName, exePath ?? proc.ProcessName);
-                                break;
-                            }
-                        }
+                        var fvi = FileVersionInfo.GetVersionInfo(exePath);
+                        version = (fvi.FileDescription, fvi.ProductName);
                     }
-                    catch { }
-                    finally
+                    catch (Exception ex) when (ex is FileNotFoundException or IOException or UnauthorizedAccessException)
                     {
-                        proc.Dispose();
+                        version = (null, null);
                     }
+                    _versionCache[exePath] = version;
+                }
+                (desc, prod) = version;
+            }
+
+            string? commandLine = processName.Equals("msiexec", StringComparison.OrdinalIgnoreCase)
+                ? ProcessInfoReader.TryGetCommandLine(pid)
+                : null;
+
+            bool isTarget = InstallerClassifier.ClassifyProcess(processName, exePath, title, desc, prod, commandLine,
+                out SessionKind kind, out string detectedAppName, out int confidenceScore);
+
+            // Sınırdaki aday: kurulum çatısı izi ve indirme kaynağı puana eklenir (NÖB 1.2, 1.3).
+            if (!isTarget && kind == SessionKind.Unknown && confidenceScore >= 20 && !string.IsNullOrWhiteSpace(exePath))
+            {
+                int extra = InstallerInspector.ExtraScore(exePath);
+                if (extra > 0)
+                {
+                    isTarget = InstallerClassifier.ClassifyProcess(processName, exePath, title, desc, prod, commandLine,
+                        out kind, out detectedAppName, out confidenceScore, extra);
                 }
             }
-            finally
+
+            if (!isTarget) return false;
+
+            var key = (pid, seen.CreationTicks);
+            _handledProcesses[key] = true;
+            seen.Final = true;
+
+            if (kind == SessionKind.Uninstall)
             {
-                // Her turda (≈2 sn) tüm süreçler için tanıtıcı açılır; serbest bırakılmazsa birikir.
-                foreach (var disposable in processes) disposable.Dispose();
+                _log.Info($"Kaldırma süreci saptandı (oturum açılmadı): {detectedAppName} (PID: {pid})", nameof(SetupSentinelService));
+                return false;
             }
+
+            if (kind == SessionKind.Install && confidenceScore >= 50)
+            {
+                await StartSessionAsync(pid, seen.CreationTicks, processName, detectedAppName, exePath ?? processName);
+                return true;
+            }
+            return false;
         }
 
         private void RefreshBaselineIfDue()
         {
-            if (IsMonitoringActiveSession || DateTime.UtcNow - _baselineTakenUtc < BaselineInterval) return;
-            try
+            if (IsMonitoringActiveSession) return;
+            if (DateTime.UtcNow - _baselineTakenUtc >= BaselineInterval)
             {
-                _baselineHotspot = RegistryHotspotSensor.CaptureHotspotSnapshot();
-                _baselineTakenUtc = DateTime.UtcNow;
+                try
+                {
+                    _baselineHotspot = RegistryHotspotSensor.CaptureHotspotSnapshot();
+                    _baselineTakenUtc = DateTime.UtcNow;
+                }
+                catch (Exception ex)
+                {
+                    _log.Debug($"Nöbetçi taban görüntüsü alınamadı: {ex.Message}", nameof(SetupSentinelService));
+                }
             }
-            catch (Exception ex)
+            if (_baselineSystem == null || DateTime.UtcNow - _baselineSystem.TakenUtc >= SystemBaselineInterval)
             {
-                _log.Debug($"Nöbetçi taban görüntüsü alınamadı: {ex.Message}", nameof(SetupSentinelService));
+                _baselineSystem = SystemStateSensor.Capture();
             }
         }
 
@@ -319,6 +433,10 @@ namespace Bakım.Services
                 _preInstallHotspot = baselineIsBefore ? _baselineHotspot : RegistryHotspotSensor.CaptureHotspotSnapshot();
                 if (baselineIsBefore)
                     _log.Debug($"Kurulum öncesi taban görüntüsü kullanıldı ({(processStartUtc - _baselineTakenUtc).TotalSeconds:F0} sn önce).", nameof(SetupSentinelService));
+                _preSystem = _baselineSystem != null && _baselineSystem.TakenUtc <= processStartUtc
+                    ? _baselineSystem
+                    : SystemStateSensor.Capture();
+                session.InstallerInfoTask = Task.Run(() => InstallerInspector.Inspect(exePath));
                 session.PreSnapshot = await _installerMonitorService.TakePreInstallSnapshotAsync(appName);
             }
             catch (Exception ex)
@@ -420,107 +538,71 @@ namespace Bakım.Services
             catch { }
         }
 
-        private static bool IsNoisePath(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path)) return true;
-            string lower = path.ToLowerInvariant();
-
-            return lower.Contains(@"\appdata\local\google\chrome\user data\") ||
-                   lower.Contains(@"\appdata\local\microsoft\edge\user data\") ||
-                   lower.Contains(@"\appdata\local\mozilla\firefox\") ||
-                   lower.Contains(@"\appdata\roaming\bakım\") ||
-                   lower.Contains(@"\appdata\local\bakım\") ||
-                   lower.Contains(@"\thumbcache_") ||
-                   lower.Contains(@"\windows\prefetch\") ||
-                   lower.Contains(@"\$recycle.bin\");
-        }
+        private static bool IsNoisePath(string path) => SentinelNoise.IsNoisePath(path);
 
         private async Task CheckActiveSessionProcessesAsync()
         {
-            if (_activeSession == null || !_activeSession.IsActive) return;
+            var session = _activeSession;
+            if (session == null || !session.IsActive) return;
 
-            // 1. Yeni alt süreçleri (Child Processes) ebeveyn ağacı ile tespit et (P0-8)
+            IReadOnlyList<NativeProcess.ProcessEntry> snapshot;
             try
             {
-                var processes = Process.GetProcesses();
-                try
-                {
-                    foreach (var p in processes)
-                    {
-                        try
-                        {
-                            ProcessInfoReader.TryGetProcessDetails(p.Id, out string? path, out int? parentPid, out DateTime? creationTime);
-                            long creationTicks = creationTime?.Ticks ?? 0;
-                            var pKey = (p.Id, creationTicks);
-
-                            if (!_activeSession.TrackedProcesses.ContainsKey(pKey))
-                            {
-                                string pName = p.ProcessName.ToLowerInvariant();
-
-                                // Ebeveyn PID bizim ağacımızda mı?
-                                bool isChildOfTracked = parentPid.HasValue &&
-                                    (_activeSession.TrackedProcessIds.Contains(parentPid.Value) ||
-                                     _activeSession.TrackedProcesses.Keys.Any(k => k.Pid == parentPid.Value));
-
-                                // msiexec özel durumu (P0-8): yalnızca ebeveyn ağaçtaysa ekle (msiexec /V arka plan servisini hariç tut)
-                                if (pName == "msiexec")
-                                {
-                                    if (isChildOfTracked)
-                                    {
-                                        _activeSession.TrackedProcesses[pKey] = true;
-                                        _activeSession.TrackedProcessIds.Add(p.Id);
-                                    }
-                                }
-                                else if (isChildOfTracked || pName.Contains(_activeSession.ProcessName.ToLowerInvariant()))
-                                {
-                                    if (!InstallerClassifier.ExcludedProcessNames.Contains(pName))
-                                    {
-                                        _activeSession.TrackedProcesses[pKey] = true;
-                                        _activeSession.TrackedProcessIds.Add(p.Id);
-                                    }
-                                }
-                            }
-                        }
-                        catch { }
-                        finally { p.Dispose(); }
-                    }
-                }
-                finally
-                {
-                    // Her turda (≈2 sn) tüm süreçler için tanıtıcı açılır; serbest bırakılmazsa birikir.
-                    foreach (var disposable in processes) disposable.Dispose();
-                }
+                snapshot = NativeProcess.Snapshot();
             }
-            catch { }
-
-            // 2. Takip edilen süreçlerden hayatta olan var mı?
-            bool anyAlive = false;
-            foreach (var key in _activeSession.TrackedProcesses.Keys.ToList())
+            catch (System.ComponentModel.Win32Exception ex)
             {
-                try
+                _log.Debug($"Süreç görüntüsü alınamadı: {ex.Message}", nameof(SetupSentinelService));
+                return;
+            }
+
+            // 1. Yeni alt süreçler: ebeveyni ağaçta olanlar (P0-8). Tek görüntü, ebeveyn zinciri
+            //    birkaç geçişte kapanır (torunlar aynı turda eklenir).
+            string rootName = session.ProcessName.ToLowerInvariant();
+            bool added;
+            do
+            {
+                added = false;
+                foreach (var entry in snapshot)
                 {
-                    using var p = Process.GetProcessById(key.Pid);
-                    if (!p.HasExited)
-                    {
-                        var created = ProcessInfoReader.GetProcessCreationTimeUtc(key.Pid);
-                        if (created.HasValue && Math.Abs((created.Value.Ticks - key.CreationTimeTicks)) < TimeSpan.FromSeconds(5).Ticks)
-                        {
-                            anyAlive = true;
-                            break;
-                        }
-                    }
+                    if (session.TrackedProcessIds.Contains(entry.ProcessId)) continue;
+                    string name = Path.GetFileNameWithoutExtension(entry.ExeName).ToLowerInvariant();
+                    bool childOfTracked = session.TrackedProcessIds.Contains(entry.ParentProcessId);
+
+                    // msiexec: yalnızca ebeveyni ağaçtaysa (arka plandaki "msiexec /V" hizmeti eklenmez).
+                    bool include = name == "msiexec"
+                        ? childOfTracked
+                        : (childOfTracked || (rootName.Length > 0 && name.Contains(rootName))) && !InstallerClassifier.ExcludedProcessNames.Contains(name);
+                    if (!include) continue;
+
+                    long ticks = ProcessInfoReader.GetProcessCreationTimeUtc(entry.ProcessId)?.Ticks ?? 0;
+                    session.TrackedProcesses[(entry.ProcessId, ticks)] = true;
+                    session.TrackedProcessIds.Add(entry.ProcessId);
+                    added = true;
                 }
-                catch
+            }
+            while (added);
+
+            // 2. İzlenen süreçlerden hayatta olan var mı? (PID yeniden kullanımına karşı oluşturma zamanı)
+            var alivePids = new HashSet<int>(snapshot.Select(e => e.ProcessId));
+            bool anyAlive = false;
+            foreach (var (pid, ticks) in session.TrackedProcesses.Keys)
+            {
+                if (!alivePids.Contains(pid)) continue;
+                var created = ProcessInfoReader.GetProcessCreationTimeUtc(pid);
+                if (ticks == 0 || (created.HasValue && Math.Abs(created.Value.Ticks - ticks) < TimeSpan.FromSeconds(5).Ticks))
                 {
-                    // Süreç kapandı
+                    anyAlive = true;
+                    break;
                 }
             }
 
-            // 3. Eğer süreçler kapandıysa ve aktif bir MSI işlemi yoksa oturumu sonlandır
+            // 3. Süreçler kapandıysa ve süren bir MSI işlemi yoksa oturumu sonlandır.
             if (!anyAlive)
             {
-                var (hasMsi, isCompleted, _) = MsiEventLogWatcher.QueryLatestMsiStatus(_activeSession.StartTime);
-                if (hasMsi && !isCompleted)
+                var (hasMsi, isCompleted, _) = MsiEventLogWatcher.QueryLatestMsiStatus(session.StartTime);
+                // MSI bitişi olay günlüğüne hiç yazılmazsa oturum sonsuza dek açık kalmasın.
+                if (hasMsi && !isCompleted && DateTime.UtcNow - session.StartTime < TimeSpan.FromHours(2))
                 {
                     // MSI işlemi henüz olay günlüğünde bitiş bildirmedi, kısa süre daha bekle
                     return;
@@ -628,8 +710,8 @@ namespace Bakım.Services
                 report.TotalSizeBytes = totalBytes;
                 report.FormattedSize = FormatBytes(totalBytes);
 
-                // Hızlı Risk Özeti (Faz 0 Hızlı Kazanım)
-                GenerateQuickRiskSummary(report);
+                // Nöbetçi v2: kurulum dosyası, sistem alanları ve risk kararı (NÖB 2–4).
+                await EvaluateRiskAsync(session, report);
 
                 // Raporu Tekil SessionStore'a Kaydet (P0-6)
                 await _sessionStore.SaveReportAsync(report);
@@ -653,36 +735,122 @@ namespace Bakım.Services
             {
                 _activeSession = null;
                 _preInstallHotspot = null;
+                _preSystem = null;
                 _baselineTakenUtc = DateTime.MinValue; // kurulum bitti: taban hemen yenilensin
                 _finalizeLock.Release();
             }
         }
 
-        private static void GenerateQuickRiskSummary(SetupDeltaReport report)
+        private static readonly HashSet<string> MasqueradeExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
-            int exeCount = report.AddedExecutables.Count;
-            int startupCount = report.AddedStartupEntries.Count;
-            int svcCount = report.AddedServices.Count;
+            ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".txt", ".dat", ".log", ".pdf", ".doc", ".docx",
+            ".xls", ".xlsx", ".mp3", ".mp4", ".ini", ".cfg", ".json", ".xml", ".db"
+        };
 
-            if (startupCount > 0 || svcCount > 0)
+        /// <summary>
+        /// Kurulum dosyası bilgisi, sistem alanı farkı, yeni programlar ve risk kararı. Hiçbir adım
+        /// raporu bozmaz: okunamayan parça rapora girmez, karar eldeki kanıtla verilir.
+        /// </summary>
+        private async Task EvaluateRiskAsync(WatchedSetupSession session, SetupDeltaReport report)
+        {
+            try
             {
-                var parts = new List<string>();
-                if (exeCount > 0) parts.Add($"{exeCount} yürütülebilir");
-                if (startupCount > 0) parts.Add($"{startupCount} başlangıç kaydı");
-                if (svcCount > 0) parts.Add($"{svcCount} yeni servis");
+                if (session.InstallerInfoTask != null &&
+                    await Task.WhenAny(session.InstallerInfoTask, Task.Delay(TimeSpan.FromSeconds(10))) == session.InstallerInfoTask)
+                    report.Installer = await session.InstallerInfoTask;
+            }
+            catch (Exception ex)
+            {
+                _log.Debug($"Kurulum dosyası incelenemedi: {ex.Message}", nameof(SetupSentinelService));
+            }
 
-                report.QuickRiskSummary = string.Join(" • ", parts);
-                report.RiskBadgeBrush = "SystemFillColorCautionBrush";
-            }
-            else if (exeCount > 0)
+            try
             {
-                report.QuickRiskSummary = $"{exeCount} yürütülebilir dosya • Başlangıç kaydı saptanmadı";
-                report.RiskBadgeBrush = "AccentTextFillColorPrimaryBrush";
+                var pre = _preSystem;
+                if (pre != null)
+                {
+                    var post = SystemStateSensor.Capture();
+                    report.SystemChanges = SystemStateSnapshot.Diff(pre.Values, post.Values, pre.ReadableAreas, post.ReadableAreas)
+                        .Where(c => !SentinelNoise.IsNoiseRegistryKey(c.Key) && !SystemStateSnapshot.IsLikelyWindowsNoise(c))
+                        .Take(500)
+                        .ToList();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                report.QuickRiskSummary = "Temiz kurulum • Yürütülebilir tehdit saptanmadı";
-                report.RiskBadgeBrush = "AccentTextFillColorPrimaryBrush";
+                _log.Warning("Sistem alanı farkı hesaplanamadı.", ex, nameof(SetupSentinelService));
+            }
+
+            // Yeni Uninstall kayıtları (görüntüdeki değer DisplayName'dir).
+            report.NewPrograms = report.AddedRegistryRecords
+                .Where(r => r.ChangeKind is "KeyAdded" or "ValueAdded" &&
+                            r.KeyPath.Contains(@"\Uninstall\", StringComparison.OrdinalIgnoreCase) &&
+                            !string.IsNullOrWhiteSpace(r.ValueData))
+                .Select(r => r.ValueData.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var input = new SetupRiskInput
+            {
+                InstallerSigned = report.Installer?.Signed,
+                InstallerFromInternet = report.Installer?.FromInternet == true,
+                WindowsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows)
+            };
+            input.SystemChanges.AddRange(report.SystemChanges);
+            input.NewPrograms.AddRange(report.NewPrograms);
+
+            foreach (var record in report.AddedRegistryRecords.Where(r => r.ChangeKind == "ValueAdded" && r.IsAutorunOrService &&
+                                                                           !r.KeyPath.Contains(@"\Services\", StringComparison.OrdinalIgnoreCase)))
+            {
+                string name = record.KeyPath[(record.KeyPath.LastIndexOf('\\') + 1)..];
+                string? target = Core.Uninstall.UninstallCommandParser.Parse(record.ValueData, File.Exists)?.FileName;
+                input.Startup.Add(new StartupAddition(name, record.ValueData, target, InstallerInspector.IsSigned(target)));
+            }
+
+            foreach (string serviceKey in report.AddedServices)
+            {
+                string name = serviceKey[(serviceKey.LastIndexOf('\\') + 1)..];
+                var (imagePath, isDriver, autoStart) = ReadServiceFacts(name);
+                string normalized = Core.Uninstall.FootprintText.NormalizeServiceImagePath(imagePath);
+                string? target = Core.Uninstall.UninstallCommandParser.Parse(normalized, File.Exists)?.FileName;
+                input.Services.Add(new ServiceAddition(name, imagePath, isDriver, autoStart, InstallerInspector.IsSigned(target)));
+            }
+
+            string windows = input.WindowsDirectory.TrimEnd('\\') + "\\";
+            foreach (string exe in report.AddedExecutables.Where(e => e.StartsWith(windows, StringComparison.OrdinalIgnoreCase)).Take(50))
+                input.Executables.Add(new ExecutableDrop(exe, InstallerInspector.IsSigned(exe), false));
+            foreach (string file in report.CreatedFiles.Where(f => MasqueradeExtensions.Contains(Path.GetExtension(f))).Take(500))
+            {
+                if (InstallerInspector.LooksLikeHiddenPe(file)) input.Executables.Add(new ExecutableDrop(file, null, true));
+            }
+
+            var risk = SetupRiskEngine.Evaluate(input);
+            report.RiskEvaluated = true;
+            report.RiskScore = risk.Score;
+            report.RiskVerdict = risk.Verdict;
+            report.RiskFindings = risk.Findings.ToList();
+
+            var top = risk.Top(1).FirstOrDefault();
+            report.QuickRiskSummary = SetupRiskEngine.VerdictLabel(risk.Verdict) +
+                                      (top != null ? $" · {top.Title}" : risk.Verdict == RiskVerdict.Clean ? " · kalıcılık ya da sistem değişikliği yok" : "");
+            report.RiskBadgeBrush = risk.Verdict >= RiskVerdict.Caution ? "SystemFillColorCautionBrush" : "AccentTextFillColorPrimaryBrush";
+        }
+
+        private static (string ImagePath, bool IsDriver, bool AutoStart) ReadServiceFacts(string name)
+        {
+            try
+            {
+                using var root = Microsoft.Win32.RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, Microsoft.Win32.RegistryView.Registry64);
+                using var key = root.OpenSubKey($@"{RegistryHotspotSensor.ServicesSubKeyPath}\{name}");
+                if (key == null) return (string.Empty, false, false);
+                string image = key.GetValue("ImagePath", string.Empty, Microsoft.Win32.RegistryValueOptions.DoNotExpandEnvironmentNames)?.ToString() ?? string.Empty;
+                bool driver = key.GetValue("Type") is int type && (type & 0x3) != 0;
+                bool auto = key.GetValue("Start") is int start && start <= 2;
+                return (image, driver, auto);
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                return (string.Empty, false, false);
             }
         }
 
@@ -709,7 +877,7 @@ namespace Bakım.Services
             Activity.ActivityRecording.RecordSimple(activity, Core.Activity.ActivityKind.SetupSession, "Kurulum Nöbetçisi",
                 $"\"{report.AppName}\" {verb}", summary,
                 report.IsPossiblyIncomplete ? Core.Activity.ActivityOutcome.PartiallySucceeded : Core.Activity.ActivityOutcome.Succeeded,
-                items, deepLink: "Uninstaller");
+                items, deepLink: "Sentinel");
         }
 
         public async Task<bool> SaveReportProfileAsync(SetupDeltaReport report)

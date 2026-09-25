@@ -70,6 +70,19 @@ namespace Bakım.Models
         /// <summary>Uninstall kaydında NoRemove=1: yayıncı bu girdinin tek başına kaldırılmasını kapatmış.</summary>
         public bool NoRemove { get; set; }
 
+        /// <summary>Kurulumu Kurulum Nöbetçisi tarafından izlenmişse o rapor (NÖB 5.5).</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasSetupTrace))]
+        [NotifyPropertyChangedFor(nameof(SetupTraceText))]
+        private SetupDeltaReport? _setupTraceReport;
+
+        public bool HasSetupTrace => SetupTraceReport != null;
+
+        public string SetupTraceText => SetupTraceReport is not { } r
+            ? string.Empty
+            : $"Kurulumu Nöbetçi tarafından izlendi ({r.InstallTime.ToLocalTime():d MMMM yyyy}); kaldırınca kurulum raporundaki klasörler de kalıntı adayı olarak gösterilir." +
+              (r.RiskEvaluated ? $" Karar: {SetupRiskPresentation.VerdictText(r)}." : string.Empty);
+
         public string UninstallHint => NoRemove
             ? "Yayıncı bu girdinin tek başına kaldırılmasını kapatmış (NoRemove); yine de denenebilir"
             : "Resmi kaldırıcıyla kaldır, ardından kalıntıları göster";

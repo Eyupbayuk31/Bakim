@@ -385,6 +385,20 @@ namespace Bakım
                 return;
             }
 
+            // Bildirim seviyesi (NÖB 6.2) ve Oyun Modu sırasında sessizlik (NÖB 6.1): rapor yine kaydedilir.
+            int level = TryGetService<IAppSettingsService>()?.Current.SentinelNotifyLevel ?? 0;
+            bool risky = report.RiskEvaluated && report.RiskVerdict >= Core.Sentinel.RiskVerdict.Caution;
+            if (level >= 2 || (level == 1 && !risky))
+            {
+                AppLog.Info($"Sentinel: {report.AppName} raporu kaydedildi; bildirim ayarı gereği gösterilmedi.", "SetupSentinel");
+                return;
+            }
+            if (TryGetService<IGameModeService>()?.IsGameModeActive == true && !risky)
+            {
+                AppLog.Info($"Sentinel: Oyun Modu açık; {report.AppName} bildirimi gösterilmedi (rapor Kurulum Nöbetçisi sayfasında).", "SetupSentinel");
+                return;
+            }
+
             Dispatcher.BeginInvoke(() =>
             {
                 try
