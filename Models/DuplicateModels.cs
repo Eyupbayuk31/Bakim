@@ -84,6 +84,9 @@ namespace Bakım.Models
         public string CurrentFilePath { get; set; } = string.Empty;
         public string CurrentStage { get; set; } = "Dosyalar taranıyor...";
         public int ProgressPercentage { get; set; }
+
+        /// <summary>İndirilmemek için atlanan bulut (OneDrive "yalnızca çevrimiçi") dosya sayısı.</summary>
+        public int SkippedCloudFiles { get; set; }
     }
 
     /// <summary>

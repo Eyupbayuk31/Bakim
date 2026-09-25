@@ -1294,15 +1294,37 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public async Task DeleteSelectedDuplicatesAsync()
         {
-            var selectedFiles = DuplicateGroups
-                .SelectMany(g => g.Files)
-                .Where(f => f.IsSelected)
-                .ToList();
+            // Her grupta en az bir kopya KALIR: kullanıcı grubun tamamını seçmişse asıl (ya da ilk)
+            // dosya listeden çıkarılır. Eskiden tüm kopyalar silinip dosya tamamen kaybolabiliyordu.
+            var selectedFiles = new List<DuplicateFileItem>();
+            int keptGroups = 0;
+            foreach (var group in DuplicateGroups)
+            {
+                var selected = group.Files.Where(f => f.IsSelected).ToList();
+                if (selected.Count > 0 && selected.Count == group.Files.Count)
+                {
+                    var keep = group.Files.FirstOrDefault(f => f.IsOriginal) ?? group.Files[0];
+                    selected.Remove(keep);
+                    keep.IsSelected = false;
+                    keptGroups++;
+                }
+                selectedFiles.AddRange(selected);
+            }
 
             if (selectedFiles.Count == 0) return;
 
+            if (DeletePermanently)
+            {
+                var confirm = System.Windows.MessageBox.Show(
+                    $"{selectedFiles.Count} kopya kalıcı olarak silinecek (Geri Dönüşüm Kutusu atlanır). Her gruptan en az bir dosya korunur.\n\nDevam edilsin mi?",
+                    "Kopyaları Kalıcı Sil", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+                if (confirm != System.Windows.MessageBoxResult.Yes) return;
+            }
+
             IsDuplicatesScanning = true;
-            DuplicateProgressText = $"{selectedFiles.Count} dosya temizleniyor...";
+            DuplicateProgressText = keptGroups > 0
+                ? $"{selectedFiles.Count} dosya temizleniyor ({keptGroups} grubun tamamı seçiliydi; birer kopyası korunuyor)..."
+                : $"{selectedFiles.Count} dosya temizleniyor...";
 
             try
             {

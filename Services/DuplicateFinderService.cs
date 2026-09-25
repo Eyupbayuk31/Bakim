@@ -82,6 +82,20 @@ namespace Bakım.Services
             @"\program files\windowsapps"
         };
 
+        // Bulut yer tutucuları (OneDrive "yalnızca çevrimiçi"): içeriği okumak dosyayı İNDİRİR (H-10).
+        private const int FileAttributeRecallOnOpen = 0x0004_0000;
+        private const int FileAttributeRecallOnDataAccess = 0x0040_0000;
+
+        private static bool IsCloudPlaceholder(FileSystemInfo info) =>
+            ((int)info.Attributes & ((int)FileAttributes.Offline | FileAttributeRecallOnOpen | FileAttributeRecallOnDataAccess)) != 0;
+
+        /// <summary>Bağlantı noktalarına (junction/symlink) inilmez: "Application Data" gibi döngüler ve hedef dışına taşma.</summary>
+        private static bool IsReparsePoint(string dirPath)
+        {
+            try { return File.GetAttributes(dirPath).HasFlag(FileAttributes.ReparsePoint); }
+            catch { return true; }
+        }
+
         private static bool IsDirectoryProtected(string dirPath)
         {
             string lower = dirPath.ToLowerInvariant();
@@ -183,7 +197,7 @@ namespace Bakım.Services
                         {
                             foreach (var subDir in Directory.GetDirectories(currentDir))
                             {
-                                stack.Push(subDir);
+                                if (!IsReparsePoint(subDir)) stack.Push(subDir);
                             }
                         }
                         catch { }
@@ -206,6 +220,12 @@ namespace Bakım.Services
 
                                 if (file.Length < options.MinSizeBytes)
                                     continue;
+
+                                if (IsCloudPlaceholder(file))
+                                {
+                                    progressState.SkippedCloudFiles++;
+                                    continue;
+                                }
 
                                 string ext = file.Extension;
                                 if (!MatchesTypeFilter(ext, options.FileTypeFilter))
@@ -367,7 +387,9 @@ namespace Bakım.Services
 
                 progressState.ProgressPercentage = 100;
                 progressState.ConfirmedDuplicates = resultGroups.Sum(g => g.GroupCount - 1);
-                progressState.CurrentStage = "Tarama tamamlandı!";
+                progressState.CurrentStage = progressState.SkippedCloudFiles > 0
+                    ? $"Tarama tamamlandı. {progressState.SkippedCloudFiles:N0} bulut dosyası (yalnızca çevrimiçi) indirilmemek için atlandı."
+                    : "Tarama tamamlandı!";
                 progress?.Report(progressState);
 
                 return resultGroups.OrderByDescending(g => g.TotalWastedBytes).ToList();
@@ -384,6 +406,12 @@ namespace Bakım.Services
                 var emptyFolders = new List<EmptyFolderItem>();
                 if (!Directory.Exists(targetPath)) return emptyFolders;
 
+                // Hedef AppData'nın içinde değilse AppData taranmaz: uygulamalar boş klasörlerini
+                // (önbellek, ayar, eklenti yerleri) bilerek tutar ve silinince bozulabilir (H-9).
+                bool targetInsideAppData = targetPath.Contains(@"\AppData\", StringComparison.OrdinalIgnoreCase)
+                                           || targetPath.EndsWith(@"\AppData", StringComparison.OrdinalIgnoreCase);
+                string rootFull = Path.GetFullPath(targetPath).TrimEnd('\\');
+
                 try
                 {
                     var stack = new Stack<string>();
@@ -395,6 +423,8 @@ namespace Bakım.Services
                         string currentDir = stack.Pop();
 
                         if (IsDirectoryProtected(currentDir)) continue;
+                        if (!string.Equals(currentDir.TrimEnd('\\'), rootFull, StringComparison.OrdinalIgnoreCase) && IsReparsePoint(currentDir)) continue;
+                        if (!targetInsideAppData && Path.GetFileName(currentDir).Equals("AppData", StringComparison.OrdinalIgnoreCase)) continue;
 
                         progress?.Report(currentDir);
 
@@ -417,7 +447,9 @@ namespace Bakım.Services
                         // Eğer klasörde dosya ve alt klasör yoksa boş klasördür
                         try
                         {
-                            if (subDirs.Length == 0 && Directory.GetFiles(currentDir).Length == 0)
+                            // Taranan kökün kendisi asla listelenmez (eskiden boşsa kök silinebiliyordu).
+                            bool isRoot = string.Equals(currentDir.TrimEnd('\\'), rootFull, StringComparison.OrdinalIgnoreCase);
+                            if (!isRoot && subDirs.Length == 0 && Directory.GetFiles(currentDir).Length == 0)
                             {
                                 var dirInfo = new DirectoryInfo(currentDir);
                                 emptyFolders.Add(new EmptyFolderItem
@@ -426,7 +458,8 @@ namespace Bakım.Services
                                     FolderName = dirInfo.Name,
                                     ParentPath = dirInfo.Parent?.FullName ?? string.Empty,
                                     CreationTime = dirInfo.CreationTime,
-                                    IsSelected = true
+                                    // Varsayılan seçili değil: kullanıcı neyi sileceğini kendisi seçer (H-9).
+                                    IsSelected = false
                                 });
                             }
                         }
@@ -443,61 +476,53 @@ namespace Bakım.Services
             }, ct);
         }
 
+        /// <summary>
+        /// Kopyaları siler. Her dosya PathSafetyGuard'dan geçer (Windows ve korumalı klasörler
+        /// reddedilir); kalıcı silme yalnızca kullanıcı açıkça seçtiyse.
+        /// </summary>
         public async Task<(int SuccessCount, long FreedBytes)> DeleteDuplicatesAsync(List<DuplicateFileItem> files, bool moveToRecycleBin)
         {
-            return await Task.Run(() =>
+            var safeDelete = App.TryGetService<Safety.ISafeDeleteService>() ?? new Safety.SafeDeleteService(AppLog.Current);
+            var policy = new Safety.DeletePolicy(Permanent: !moveToRecycleBin, AllowOutsideKnownRoots: true);
+            int success = 0;
+            long freed = 0;
+
+            foreach (var file in files)
             {
-                int success = 0;
-                long freed = 0;
-
-                foreach (var file in files)
+                var result = await safeDelete.DeletePathAsync(file.FilePath, isDirectory: false, policy);
+                if (result.Succeeded)
                 {
-                    try
-                    {
-                        if (!File.Exists(file.FilePath)) continue;
-
-                        if (moveToRecycleBin)
-                        {
-                            if (SendToRecycleBin(file.FilePath))
-                            {
-                                success++;
-                                freed += file.SizeBytes;
-                            }
-                        }
-                        else
-                        {
-                            File.Delete(file.FilePath);
-                            success++;
-                            freed += file.SizeBytes;
-                        }
-                    }
-                    catch { }
+                    success++;
+                    freed += file.SizeBytes;
                 }
-
-                return (success, freed);
-            });
+            }
+            return (success, freed);
         }
 
         public async Task<int> DeleteEmptyFoldersAsync(List<EmptyFolderItem> folders)
         {
             return await Task.Run(() =>
             {
+                var guard = Bakım.Core.Safety.PathSafetyGuard.Default;
                 int success = 0;
                 foreach (var folder in folders)
                 {
                     try
                     {
-                        if (Directory.Exists(folder.FolderPath) && !IsDirectoryProtected(folder.FolderPath))
+                        if (!Directory.Exists(folder.FolderPath) || IsDirectoryProtected(folder.FolderPath) || IsReparsePoint(folder.FolderPath))
+                            continue;
+                        if (!guard.CheckDeletion(folder.FolderPath, isDirectory: true, allowOutsideKnownRoots: true).IsAllowed)
+                            continue;
+
+                        // Güvenlik: gerçekten boş mu teyit et (tarama ile silme arasında dolmuş olabilir).
+                        if (Directory.GetFileSystemEntries(folder.FolderPath).Length == 0)
                         {
-                            // Güvenlik: gerçekten boş mu teyit et
-                            if (Directory.GetFileSystemEntries(folder.FolderPath).Length == 0)
-                            {
-                                Directory.Delete(folder.FolderPath, false);
-                                success++;
-                            }
+                            Directory.Delete(folder.FolderPath, false);
+                            success++;
                         }
                     }
-                    catch { }
+                    catch (IOException) { }
+                    catch (UnauthorizedAccessException) { }
                 }
                 return success;
             });
