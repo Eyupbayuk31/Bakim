@@ -381,7 +381,6 @@ namespace Bakım
             services.AddSingleton<IEdgeTweaksService, EdgeTweaksService>();
             services.AddSingleton<ISettingsControlPanelTweaksService, SettingsControlPanelTweaksService>();
             services.AddSingleton<IFileExplorerTweaksService, FileExplorerTweaksService>();
-            services.AddSingleton<IGitHubUpdateService, GitHubUpdateService>();
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IVirusTotalCheckService, VirusTotalCheckService>();
             services.AddSingleton<IAutorunsScannerEngine, AutorunsScannerEngine>();

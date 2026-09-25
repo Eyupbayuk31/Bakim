@@ -200,13 +200,14 @@
                         Padding="12,8"
                         Margin="0,0,10,0" AutomationProperties.Name="Kaynak, olay ID veya mesaj ara..."/>
 
-            <!-- Clear Event Logs Button -->
+            <!-- Olay Görüntüleyici (günlük silme özelliği kaldırıldı: S-15) -->
             <ui:Button Grid.Row="1" Grid.Column="1" 
-                       Appearance="Danger" 
-                       Command="{Binding ClearEventLogsCommand}"
+                       Appearance="Secondary" 
+                       Command="{Binding OpenEventViewerCommand}"
                        Padding="14,8"
-                       Content="Günlükleri Temizle"
-                       Icon="{ui:SymbolIcon Delete20}"/>
+                       Content="Olay Görüntüleyici"
+                       Icon="{ui:SymbolIcon Open20}"
+                       AutomationProperties.Name="Windows Olay Görüntüleyici'yi aç"/>
         </Grid>
 
         <!-- 3. Active Viewport Content -->

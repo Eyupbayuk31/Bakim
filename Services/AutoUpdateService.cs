@@ -159,30 +159,16 @@ namespace Bakım.Services
 
                 if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
                 {
-                    // 1. Tercih: -Setup.exe kurulum paketi (Sessiz tam kurulum güncellemesi için)
+                    // Yalnızca "Bakim-vX.Y.Z-Setup.exe" (S-14). Eskiden kurulum paketi yoksa
+                    // sürüme eklenmiş İLK .exe indirilip sessizce çalıştırılıyordu.
                     foreach (var asset in assets.EnumerateArray())
                     {
                         string name = asset.GetProperty("name").GetString() ?? "";
-                        if (name.EndsWith("-Setup.exe", StringComparison.OrdinalIgnoreCase))
+                        if (Bakım.Core.Update.UpdateAssetPolicy.IsInstallerAssetName(name))
                         {
                             downloadUrl = asset.GetProperty("browser_download_url").GetString() ?? "";
                             if (asset.TryGetProperty("size", out var s)) assetSize = s.GetInt64();
                             break;
-                        }
-                    }
-
-                    // 2. Tercih: Herhangi bir .exe dosyası
-                    if (string.IsNullOrEmpty(downloadUrl))
-                    {
-                        foreach (var asset in assets.EnumerateArray())
-                        {
-                            string name = asset.GetProperty("name").GetString() ?? "";
-                            if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
-                            {
-                                downloadUrl = asset.GetProperty("browser_download_url").GetString() ?? "";
-                                if (asset.TryGetProperty("size", out var s)) assetSize = s.GetInt64();
-                                break;
-                            }
                         }
                     }
                 }
@@ -223,33 +209,15 @@ namespace Bakım.Services
         }
 
         /// <summary>
-        /// Güncelleme paketinin indirilmesine izin verilen kaynaklar.
-        /// Bu liste dışındaki bir adres (ör. ele geçirilmiş sürüm notundan gelen bağlantı)
-        /// asla indirilip çalıştırılmaz.
+        /// İndirme adresi bu deponun resmî kurulum paketi mi? (HTTPS, github.com,
+        /// /Eyupbayuk31/Bakim/releases/download/…/Bakim-vX.Y.Z-Setup.exe). Ürün kararı gereği
+        /// imza kontrolü yapılmaz; kaynak, ad ve boyut denetlenir.
         /// </summary>
-        private static readonly string[] AllowedDownloadHosts =
-        {
-            "github.com",
-            "objects.githubusercontent.com",
-            "release-assets.githubusercontent.com",
-            "api.github.com"
-        };
+        public static bool IsTrustedDownloadUrl(string downloadUrl) =>
+            Bakım.Core.Update.UpdateAssetPolicy.IsOfficialDownloadUrl(downloadUrl);
 
-        /// <summary>İndirme adresinin HTTPS ve beklenen GitHub kaynağından olduğunu doğrular.</summary>
-        public static bool IsTrustedDownloadUrl(string downloadUrl)
-        {
-            if (!Uri.TryCreate(downloadUrl, UriKind.Absolute, out var uri)) return false;
-            if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)) return false;
-
-            foreach (string host in AllowedDownloadHosts)
-            {
-                if (string.Equals(uri.Host, host, StringComparison.OrdinalIgnoreCase)) return true;
-            }
-
-            return false;
-        }
-
-        public static async Task DownloadAndExecuteInstallerAsync(string downloadUrl, Action<int>? onProgressChanged = null)
+        /// <param name="expectedSizeBytes">GitHub'ın bildirdiği paket boyutu; biliniyorsa indirilen dosya birebir aynı olmalı.</param>
+        public static async Task DownloadAndExecuteInstallerAsync(string downloadUrl, Action<int>? onProgressChanged = null, long expectedSizeBytes = 0)
         {
             // 1) KAYNAK DENETİMİ — yabancı bir adresten indirilen paket çalıştırılmaz.
             if (!IsTrustedDownloadUrl(downloadUrl))
@@ -284,7 +252,19 @@ namespace Bakım.Services
             using (var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead))
             {
                 response.EnsureSuccessStatusCode();
+
+                // Yönlendirme yalnızca GitHub'ın indirme sunucularına olabilir.
+                if (!Bakım.Core.Update.UpdateAssetPolicy.IsAllowedFinalHost(response.RequestMessage?.RequestUri))
+                {
+                    AppLog.Error($"Güncelleme beklenmeyen bir sunucuya yönlendirildi: {response.RequestMessage?.RequestUri}", null, nameof(AutoUpdateService));
+                    throw new InvalidOperationException("Güncelleme paketi beklenmeyen bir sunucuya yönlendirildi; indirme durduruldu.");
+                }
+
                 long totalBytes = response.Content.Headers.ContentLength ?? -1;
+                if (expectedSizeBytes > 0 && totalBytes > 0 && totalBytes != expectedSizeBytes)
+                {
+                    throw new InvalidOperationException($"Paket boyutu beklenenden farklı ({totalBytes:N0} / {expectedSizeBytes:N0} bayt); indirme durduruldu.");
+                }
 
                 using (var contentStream = await response.Content.ReadAsStreamAsync())
                 using (var fileStream = new FileStream(installerPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
@@ -313,11 +293,12 @@ namespace Bakım.Services
 
             // 2) BÜTÜNLÜK DENETİMİ — paket boyutu doğrulanır ve doğrudan sessiz kuruluma geçilir.
             var fileInfo = new FileInfo(installerPath);
-            if (!fileInfo.Exists || fileInfo.Length == 0)
+            if (!fileInfo.Exists || !Bakım.Core.Update.UpdateAssetPolicy.IsSizeAcceptable(fileInfo.Length, expectedSizeBytes))
             {
-                AppLog.Error("Güncelleme paketi indirilemedi veya dosya boş.", null, nameof(AutoUpdateService));
+                long actual = fileInfo.Exists ? fileInfo.Length : 0;
+                AppLog.Error($"Güncelleme paketi eksik ya da bozuk ({actual:N0} / {expectedSizeBytes:N0} bayt).", null, nameof(AutoUpdateService));
                 TryDelete(installerPath);
-                return;
+                throw new InvalidOperationException("İndirilen güncelleme paketi eksik ya da bozuk; kurulum başlatılmadı.");
             }
 
             AppLog.Info(

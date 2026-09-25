@@ -25,20 +25,17 @@ namespace Bakım.ViewModels
         private readonly IAppSettingsService _settingsService;
         private readonly IThemeService _themeService;
         private readonly ILogService _log;
-        private readonly IGitHubUpdateService _updateService;
         private readonly IVirusTotalCheckService _virusTotalService;
         private readonly IShellContextMenuService _shellContextMenuService;
         private bool _isInitializing = true;
 
         public SettingsViewModel(
-            IGitHubUpdateService updateService,
             IAppSettingsService settingsService,
             IThemeService themeService,
             ILogService log,
             IVirusTotalCheckService virusTotalService,
             IShellContextMenuService shellContextMenuService)
         {
-            _updateService = updateService;
             _settingsService = settingsService;
             _themeService = themeService;
             _log = log;

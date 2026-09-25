@@ -82,7 +82,7 @@ namespace Bakım.Views.Dialogs
                         DownloadProgressBar.Value = progress;
                         PercentageLabel.Text = $"%{progress}";
                     });
-                });
+                }, _updateInfo.FileSizeBytes);
             }
             catch (Exception ex)
             {
