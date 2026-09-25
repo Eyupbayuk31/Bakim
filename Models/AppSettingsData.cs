@@ -37,6 +37,22 @@ namespace Bakım.Models
 
         /// <summary>Son zamanlanmış temizliğin zamanı.</summary>
         public DateTime? LastScheduledCleanupUtc { get; set; }
+
+        // --- Oyun Modu profili (§5.5) ---
+        /// <summary>"HighPerformance", "Ultimate" (yoksa Yüksek Performans) ya da "Keep" (dokunma).</summary>
+        public string GameModePowerPlan { get; set; } = "HighPerformance";
+
+        /// <summary>Açılırken arka plan süreçlerinin çalışma kümelerini kırp.</summary>
+        public bool GameModeTrimMemory { get; set; } = true;
+
+        /// <summary>Oyun Modu boyunca askıya alınacak uygulamalar (süreç adları, virgülle). Kapanınca devam ettirilir.</summary>
+        public string GameModeSuspendApps { get; set; } = string.Empty;
+
+        /// <summary>Bu oyunlardan biri başlayınca Oyun Modu otomatik açılır, hepsi kapanınca kapanır.</summary>
+        public bool GameModeAutoStart { get; set; } = false;
+
+        /// <summary>Otomatik tetikleyen oyun süreç adları (virgülle, ".exe" olmadan da olur).</summary>
+        public string GameModeAutoStartExes { get; set; } = string.Empty;
         public bool AlwaysRunAsAdmin { get; set; } = false;
         public bool TaskSchedulerAutoStart { get; set; } = false;
 

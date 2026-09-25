@@ -372,4 +372,32 @@ namespace Bakım.Converters
             => throw new NotSupportedException();
     }
 
+
+    /// <summary>
+    /// Süreç grubu başlığı (§5.4): grubun öğelerinden toplam belleği ve süreç sayısını yazar.
+    /// Girdi: CollectionViewGroup.Items.
+    /// </summary>
+    public class ProcessGroupSummaryConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is not System.Collections.IEnumerable items) return string.Empty;
+            long bytes = 0;
+            double cpu = 0;
+            int count = 0;
+            foreach (var item in items)
+            {
+                if (item is Bakım.Models.ProcessMemoryItem p)
+                {
+                    bytes += p.WorkingSetBytes;
+                    cpu += p.CpuPercent;
+                    count++;
+                }
+            }
+            return $"{count} süreç · {Bakım.Core.Text.ByteFormatter.Format(bytes)} · CPU %{cpu:F1}";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+            throw new NotImplementedException();
+    }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -21,11 +22,15 @@ namespace Bakım.ViewModels
         private static readonly CultureInfo Tr = CultureInfo.GetCultureInfo("tr-TR");
         private readonly IGameModeService _gameMode;
         private readonly IActivityService _activity;
+        private readonly IAppSettingsService _settings;
+        private bool _loadingProfile;
 
-        public GameModeViewModel(IGameModeService gameMode, IActivityService activity)
+        public GameModeViewModel(IGameModeService gameMode, IActivityService activity, IAppSettingsService settings)
         {
             _gameMode = gameMode;
             _activity = activity;
+            _settings = settings;
+            LoadProfile();
             _isActive = gameMode.IsGameModeActive;
             _gameMode.GameModeChanged += active => OnUi(() =>
             {
@@ -53,6 +58,70 @@ namespace Bakım.ViewModels
             ? "Kapatınca önceki güç planı birebir geri yüklenir ve Bakım'ın arka plan işleri devam eder."
             : "Açtığınızda aşağıdaki adımlar uygulanır; kapatınca her şey önceki haline döner.";
         public string ButtonText => IsActive ? "Oyun Modunu kapat" : "Oyun Modunu aç";
+
+        #region Profil (§5.5)
+
+        /// <summary>Güç planı seçenekleri: anahtar → görünen ad.</summary>
+        public IReadOnlyList<KeyValuePair<string, string>> PowerPlanOptions { get; } = new List<KeyValuePair<string, string>>
+        {
+            new("HighPerformance", "Yüksek Performans"),
+            new("Ultimate", "Nihai Performans (yoksa Yüksek Performans)"),
+            new("Keep", "Değiştirme")
+        };
+
+        [ObservableProperty] private string _powerPlan = "HighPerformance";
+        [ObservableProperty] private bool _trimMemory = true;
+        [ObservableProperty] private string _suspendApps = string.Empty;
+        [ObservableProperty] private bool _autoStart;
+        [ObservableProperty] private string _autoStartExes = string.Empty;
+
+        public string SuspendAppsPreview => Preview(SuspendApps, "Hiçbir uygulama askıya alınmaz.");
+        public string AutoStartPreview => Preview(AutoStartExes, "Liste boş: otomatik açılmaz.");
+
+        private static string Preview(string text, string empty)
+        {
+            var names = GameModeService.ParseProcessList(text);
+            return names.Count == 0 ? empty : string.Join(" · ", names);
+        }
+
+        private void LoadProfile()
+        {
+            _loadingProfile = true;
+            try
+            {
+                var d = _settings.Current;
+                PowerPlan = d.GameModePowerPlan;
+                TrimMemory = d.GameModeTrimMemory;
+                SuspendApps = d.GameModeSuspendApps;
+                AutoStart = d.GameModeAutoStart;
+                AutoStartExes = d.GameModeAutoStartExes;
+            }
+            finally
+            {
+                _loadingProfile = false;
+            }
+        }
+
+        private void SaveProfile()
+        {
+            if (_loadingProfile) return;
+            _settings.Update(d =>
+            {
+                d.GameModePowerPlan = PowerPlan;
+                d.GameModeTrimMemory = TrimMemory;
+                d.GameModeSuspendApps = SuspendApps ?? string.Empty;
+                d.GameModeAutoStart = AutoStart;
+                d.GameModeAutoStartExes = AutoStartExes ?? string.Empty;
+            });
+        }
+
+        partial void OnPowerPlanChanged(string value) => SaveProfile();
+        partial void OnTrimMemoryChanged(bool value) => SaveProfile();
+        partial void OnSuspendAppsChanged(string value) { OnPropertyChanged(nameof(SuspendAppsPreview)); SaveProfile(); }
+        partial void OnAutoStartChanged(bool value) => SaveProfile();
+        partial void OnAutoStartExesChanged(string value) { OnPropertyChanged(nameof(AutoStartPreview)); SaveProfile(); }
+
+        #endregion
 
         public Task OnActivatedAsync()
         {

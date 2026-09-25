@@ -19,5 +19,8 @@ namespace Bakım.Services
         /// Uygulama açılışında bir kez çağrılır.
         /// </summary>
         void RecoverInterruptedSession();
+
+        /// <summary>Ayarlardaki oyun listesini izlemeye başlar (otomatik tetikleme, §5.5).</summary>
+        void StartAutoTrigger();
     }
 }

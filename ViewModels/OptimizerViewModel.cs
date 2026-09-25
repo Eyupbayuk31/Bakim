@@ -40,6 +40,7 @@ namespace Bakım.ViewModels
 
             TopProcesses = new ObservableCollection<ProcessMemoryItem>();
             DisplayedProcesses = new ObservableCollection<ProcessMemoryItem>();
+            ProcessesView = System.Windows.Data.CollectionViewSource.GetDefaultView(DisplayedProcesses);
             RamHistoryPoints = new ObservableCollection<double>();
 
             _autoRefreshTimer = new DispatcherTimer
@@ -65,6 +66,20 @@ namespace Bakım.ViewModels
 
         public ObservableCollection<ProcessMemoryItem> TopProcesses { get; }
         public ObservableCollection<ProcessMemoryItem> DisplayedProcesses { get; }
+
+        /// <summary>Liste görünümü: "Uygulamaya göre grupla" açıkken süreç adına göre gruplanır (§5.4).</summary>
+        public System.ComponentModel.ICollectionView ProcessesView { get; }
+
+        /// <summary>Chrome gibi çok süreçli uygulamalar tek başlık altında, toplam bellekle.</summary>
+        [ObservableProperty]
+        private bool _groupByApp;
+
+        partial void OnGroupByAppChanged(bool value)
+        {
+            ProcessesView.GroupDescriptions.Clear();
+            if (value)
+                ProcessesView.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription(nameof(ProcessMemoryItem.ProcessName)));
+        }
         public ObservableCollection<double> RamHistoryPoints { get; }
 
         [ObservableProperty]
@@ -359,6 +374,11 @@ namespace Bakım.ViewModels
         #endregion
 
         #region RAMMap & Optimization Commands
+
+        /// <summary>Bekleme listesi yalnızca yöneticiyle boşaltılabilir; değilse düğme devre dışı.</summary>
+        public bool CanClearStandby => !IsBusy && Bakım.Helpers.UacHelper.IsAdministrator();
+
+        partial void OnIsBusyChanged(bool value) => OnPropertyChanged(nameof(CanClearStandby));
 
         [RelayCommand]
         public async Task OptimizeRamAsync()

@@ -39,31 +39,15 @@
                                Icon="{ui:SymbolIcon ArrowClockwise24}"
                                Margin="0,0,8,0"/>
 
+                    <!-- §5.4: tek, dürüst bellek eylemi. Otomatik çalışmaz; yalnızca yöneticiyken etkin. -->
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ClearStandbyListCommand}"
-                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                               IsEnabled="{Binding CanClearStandby}"
                                Padding="12,8"
-                               Content="Bekleme Listesi (Standby)"
-                               ToolTip="Windows önbelleğindeki eski sayfaları temizler (Oyunlarda takılma/drop önler)"
-                               Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
-                               Margin="0,0,8,0"/>
-
-                    <ui:Button Appearance="Secondary"
-                               Command="{Binding FlushModifiedPagesCommand}"
-                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                               Padding="12,8"
-                               Content="Sayfaları Diske Yaz"
-                               ToolTip="Değiştirilmiş sayfaları anında diske flush ederek RAM'i boşaltır"
-                               Icon="{ui:SymbolIcon Save24}"
-                               Margin="0,0,8,0"/>
-
-                    <ui:Button Appearance="Primary"
-                               Command="{Binding PurgeAllMemoryCommand}"
-                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                               Padding="14,8"
-                               Content="Derin Boşalt (Purge All)"
-                               ToolTip="Tüm RAMMap motorlarını sırayla çalıştırıp maksimum boş bellek sağlar"
-                               Icon="{ui:SymbolIcon Flash24}"/>
+                               Content="Bekleme belleğini boşalt"
+                               ToolTip="Windows önbelleğe aldığı (bekleme listesindeki) belleği zaten gerektiğinde kendisi boşaltır. Yalnızca bir sorun yaşıyorsanız kullanın; etkisi geçicidir. Yönetici izni gerekir."
+                               AutomationProperties.Name="Bekleme belleğini boşalt"
+                               Icon="{ui:SymbolIcon Shield20}"/>
                 </StackPanel>
             </c:SectionHeader.Actions>
         </c:SectionHeader>
@@ -273,6 +257,10 @@
                                        Appearance="{Binding IsFilterHighRam, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetFilterCommand}" CommandParameter="HighRam"
                                        Padding="10,6" Margin="0,0,12,0"/>
+
+                            <CheckBox Content="Uygulamaya göre grupla" IsChecked="{Binding GroupByApp}"
+                                      VerticalAlignment="Center" Margin="0,0,12,0"
+                                      ToolTip="Aynı uygulamanın süreçlerini (ör. tarayıcı sekmeleri) tek başlık altında, toplam bellekle gösterir."/>
                         </StackPanel>
 
                         <!-- Search Box -->
@@ -372,7 +360,8 @@
 
                     <!-- Process List -->
                     <ListView Grid.Row="2" 
-                              ItemsSource="{Binding DisplayedProcesses}"
+                              ItemsSource="{Binding ProcessesView}"
+                              VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                               SelectedItem="{Binding SelectedProcess, Mode=TwoWay}"
                               Background="Transparent"
                               BorderThickness="0"
@@ -381,6 +370,22 @@
                               ScrollViewer.VerticalScrollBarVisibility="Auto"
                               VirtualizingStackPanel.IsVirtualizing="True"
                               VirtualizingStackPanel.VirtualizationMode="Recycling">
+
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="4,10,0,4">
+                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Items, Converter={StaticResource ProcessGroupSummary}}"
+                                                       FontSize="{StaticResource Font.Caption}" Margin="10,0,0,0" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
 
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">

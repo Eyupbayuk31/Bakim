@@ -865,61 +865,79 @@ namespace Bakım.Services
         {
             return await Task.Run(() =>
             {
-                var protectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    "system", "smss", "csrss", "wininit", "services", "lsass", "svchost", "dwm", "explorer"
-                };
-
                 try
                 {
                     using var proc = System.Diagnostics.Process.GetProcessById(processId);
-                    if (protectedNames.Contains(proc.ProcessName)) return false;
+                    string? image = null;
+                    try { image = proc.MainModule?.FileName; } catch (Exception) { /* erişim yoksa yalnızca ad denetlenir */ }
 
+                    // Tek koruma politikası (Core/Safety): kritik adlar, Windows klasörü, Bakım'ın kendisi.
+                    if (Core.Safety.CriticalProcessPolicy.IsProtected(processId, proc.ProcessName, image,
+                            Environment.GetFolderPath(Environment.SpecialFolder.Windows), Environment.ProcessId))
+                        return false;
+
+                    long startTicks = proc.StartTime.ToUniversalTime().Ticks;
                     IntPtr handle = OpenProcess(PROCESS_SUSPEND_RESUME, false, processId);
-                    if (handle != IntPtr.Zero)
+                    if (handle == IntPtr.Zero) return false;
+                    try
                     {
-                        try
-                        {
-                            uint status = NtSuspendProcess(handle);
-                            return status == 0;
-                        }
-                        finally
-                        {
-                            CloseHandle(handle);
-                        }
+                        if (NtSuspendProcess(handle) != 0) return false;
+                        // Bakım kapanınca / çökerse devam ettirilsin diye deftere yazılır.
+                        SuspendedProcessLedger.Add(processId, startTicks, proc.ProcessName);
+                        return true;
+                    }
+                    finally
+                    {
+                        CloseHandle(handle);
                     }
                 }
-                catch { }
-
-                return false;
-            });
-        }
-
-        public async Task<bool> ResumeProcessAsync(int processId)
-        {
-            return await Task.Run(() =>
-            {
-                try
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
                 {
-                    IntPtr handle = OpenProcess(PROCESS_SUSPEND_RESUME, false, processId);
-                    if (handle != IntPtr.Zero)
-                    {
-                        try
-                        {
-                            uint status = NtResumeProcess(handle);
-                            return status == 0;
-                        }
-                        finally
-                        {
-                            CloseHandle(handle);
-                        }
-                    }
+                    AppLog.Debug($"Süreç askıya alınamadı ({processId}): {ex.Message}", nameof(SystemCleanService));
+                    return false;
                 }
-                catch { }
-
-                return false;
             });
         }
+
+        public async Task<bool> ResumeProcessAsync(int processId) =>
+            await Task.Run(() =>
+            {
+                bool ok = ResumeProcessCore(processId);
+                if (ok) SuspendedProcessLedger.Remove(processId);
+                return ok;
+            });
+
+        /// <summary>NtResumeProcess; defteri değiştirmez (ResumeAll kendi temizler).</summary>
+        public static bool ResumeProcessCore(int processId)
+        {
+            IntPtr handle = OpenProcess(PROCESS_SUSPEND_RESUME, false, processId);
+            if (handle == IntPtr.Zero) return false;
+            try
+            {
+                return NtResumeProcess(handle) == 0;
+            }
+            finally
+            {
+                CloseHandle(handle);
+            }
+        }
+
+        /// <summary>Sürecin başlama zamanı (UTC tick); süreç yoksa null.</summary>
+        public static long? ProcessStartTicks(int processId)
+        {
+            try
+            {
+                using var p = System.Diagnostics.Process.GetProcessById(processId);
+                return p.StartTime.ToUniversalTime().Ticks;
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or System.ComponentModel.Win32Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>Defterdeki (askıda kalmış) tüm süreçleri devam ettirir: çıkışta ve açılışta çağrılır.</summary>
+        public static int ResumeAllSuspended() => SuspendedProcessLedger.ResumeAll(ResumeProcessCore, ProcessStartTicks);
 
         public async Task<DetailedMemoryComposition> GetDetailedMemoryCompositionAsync()
         {

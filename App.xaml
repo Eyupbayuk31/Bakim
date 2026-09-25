@@ -32,6 +32,7 @@
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
             <conv:NullToVisibilityConverter x:Key="InverseNullToVisibilityConverter" Invert="True"/>
             <conv:InverseBoolConverter x:Key="InverseBool"/>
+            <conv:ProcessGroupSummaryConverter x:Key="ProcessGroupSummary"/>
             <conv:IntToVisConverter x:Key="IntToVis"/>
             <conv:PercentageToBrushConverter x:Key="PercentageToBrush"/>
             <conv:ImpactLevelToBrushConverter x:Key="ImpactLevelToBrush"/>

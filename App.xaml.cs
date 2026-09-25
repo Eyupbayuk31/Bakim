@@ -171,6 +171,9 @@ namespace Bakım
 
             // Önceki oturum Oyun Modu açıkken çöktüyse güç planını geri yükle.
             GetService<IGameModeService>().RecoverInterruptedSession();
+            GetService<IGameModeService>().StartAutoTrigger();
+            // Önceki oturum çöktüyse askıda kalmış süreçleri devam ettir (§5.4).
+            SystemCleanService.ResumeAllSuspended();
 
             // Sentinel Kurulum Nöbetçisi (otomatik kurulum yakalama & analizör taraması)
             var sentinelService = GetService<ISetupSentinelService>();
@@ -288,6 +291,9 @@ namespace Bakım
 
                 TryGetService<IBackgroundMaintenanceService>()?.Stop();
                 TryGetService<ISetupSentinelService>()?.Stop();
+
+                // Askıya alınmış süreç bırakılmaz (§5.4).
+                SystemCleanService.ResumeAllSuspended();
                 TryGetService<ITrayIconService>()?.Detach();
 
                 // Çıkışta otomatik temizlik tercihi

@@ -63,6 +63,77 @@
                         Severity="Informational"
                         Margin="{StaticResource Gap.Bottom.MD}"/>
 
+            <!-- Profil (§5.5) -->
+            <TextBlock Text="Profil" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Bottom.SM}"/>
+            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource Radius.MD}"
+                    Padding="{StaticResource Pad.Card}"
+                    Margin="{StaticResource Gap.Bottom.MD}">
+                <StackPanel>
+                    <Grid Margin="{StaticResource Gap.Bottom.MD}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Güç planı" Style="{StaticResource Text.BodyStrong}"/>
+                            <TextBlock Text="Kapatınca her zaman önceki plan geri yüklenir." Style="{StaticResource Text.BodySecondary}"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" MinWidth="260" VerticalAlignment="Center"
+                                  ItemsSource="{Binding PowerPlanOptions}"
+                                  DisplayMemberPath="Value" SelectedValuePath="Key"
+                                  SelectedValue="{Binding PowerPlan}"
+                                  AutomationProperties.Name="Oyun Modu güç planı"/>
+                    </Grid>
+
+                    <Grid Margin="{StaticResource Gap.Bottom.MD}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Çalışma kümelerini kırp" Style="{StaticResource Text.BodyStrong}"/>
+                            <TextBlock Text="Arka plandaki süreçlerin kullanmadığı belleği Windows'a geri verir. Etkisi geçicidir." Style="{StaticResource Text.BodySecondary}"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding TrimMemory}" VerticalAlignment="Center"
+                                         AutomationProperties.Name="Çalışma kümelerini kırp"/>
+                    </Grid>
+
+                    <TextBlock Text="Askıya alınacak arka plan uygulamaları" Style="{StaticResource Text.BodyStrong}"/>
+                    <TextBlock Text="Süreç adları, virgülle (ör. OneDrive, Teams). Oyun Modu kapanınca, Bakım kapanınca ya da çökse bile bir sonraki açılışta devam ettirilir. Windows'un kritik süreçleri askıya alınmaz."
+                               Style="{StaticResource Text.BodySecondary}" Margin="{StaticResource Gap.Bottom.XS}"/>
+                    <ui:TextBox Text="{Binding SuspendApps, UpdateSourceTrigger=LostFocus}"
+                                PlaceholderText="OneDrive, Teams"
+                                AutomationProperties.Name="Askıya alınacak uygulamalar"/>
+                    <TextBlock Text="{Binding SuspendAppsPreview}" FontSize="{StaticResource Font.Caption}"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="{StaticResource Gap.Top.XS}"/>
+
+                    <Border Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,14"/>
+
+                    <Grid Margin="{StaticResource Gap.Bottom.SM}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="Oyun başlayınca otomatik aç" Style="{StaticResource Text.BodyStrong}"/>
+                            <TextBlock Text="Listedeki bir oyun çalışınca Oyun Modu açılır; hepsi kapanınca kapanır. Elle açtıysanız otomatik kapatılmaz."
+                                       Style="{StaticResource Text.BodySecondary}"/>
+                        </StackPanel>
+                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoStart}" VerticalAlignment="Center"
+                                         AutomationProperties.Name="Oyun başlayınca Oyun Modunu otomatik aç"/>
+                    </Grid>
+                    <ui:TextBox Text="{Binding AutoStartExes, UpdateSourceTrigger=LostFocus}"
+                                PlaceholderText="cs2, valorant, eldenring"
+                                IsEnabled="{Binding AutoStart}"
+                                AutomationProperties.Name="Otomatik tetikleyen oyunlar"/>
+                    <TextBlock Text="{Binding AutoStartPreview}" FontSize="{StaticResource Font.Caption}"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="{StaticResource Gap.Top.XS}"/>
+                </StackPanel>
+            </Border>
+
             <!-- Ne yapılır -->
             <TextBlock Text="Açıldığında" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Bottom.SM}"/>
             <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
@@ -76,7 +147,7 @@
                         <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Margin="{StaticResource Gap.Right.SM}" VerticalAlignment="Top"
                                        Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         <StackPanel>
-                            <TextBlock Text="Yüksek Performans güç planı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
+                            <TextBlock Text="Seçili güç planı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="O anki plan kaydedilir; kapatınca birebir geri gelir. Bakım kapanır ya da çökerse bir sonraki açılışta onarılır."
                                        FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
