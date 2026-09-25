@@ -1,39 +1,36 @@
-# Bakım v3.20.0 - Sürüm Notları
+# Bakım v3.21.0 - Sürüm Notları
 
-## Kurulum Nöbetçisi v2 (Faz 0): Stabilizasyon, Derin Sensörler, Güvenli Geri Alma & EDR Entegrasyonu
+## Güvenlik ve Dürüstlük Sürümü: Veri Kaybı Riskleri Kapatıldı, Uydurma Değerler Kaldırıldı & Analizör Geçmişi
 
-### 1. Güvenli Geri Alma ve Veri Kaybı Önleme (P0-1 Kökten Çözüldü)
-- **Net Dosya Ayrımı:** Sistem olayları artık `CreatedFiles`, `ModifiedFiles`, `DeletedFiles` ve `RenamedFiles` olarak kesin kategorilere ayrıştırılmaktadır.
-- **Değiştirilen Dosyalar Koruma Altında:** Önceden var olan veya kurulum sürecinde değiştirilen (`ModifiedFiles`) dosyalar geri alma (revert) işleminde **asla silinmez**.
-- **Geri Dönüşüm Kutusu (Recycle Bin) Güvencesi:** Kalıcı silme yerine yeni üretilen dosyalar güvenle Geri Dönüşüm Kutusu'na gönderilir; kazara dosya kaybı riski sıfıra indirilmiştir.
+### 1. Güvenli Kaldırıcı (Uninstaller v2 Temelleri)
+- **PathSafetyGuard & RegistrySafetyGuard:** Yayıncı klasörü veya kurulu başka bir programın klasörü artık kalıntı sayılmaz; sistem kökleri ve kullanıcı dizinleri tavizsiz koruma altındadır.
+- **Kanıt Tabanlı Temizlik:** Yalnızca kesin kalıntılar (`Certain`) otomatik temizlenir. Her dosya silme işlemi Geri Dönüşüm Kutusu'na gider (`FOF_ALLOWUNDO`).
+- **Kayıt Defteri Geri Alma Günlüğü (UndoJournal):** Silinen kayıt defteri anahtarları ve değerleri silinmeden önce otomatik `.reg` yedeğine alınır ve tek tıkla geri yüklenebilir.
+- **İzlenen Kaldırma & Doğrulama (UninstallRunner):** Kaldırıcı ve alt süreçleri Job Object ve süreç ağacıyla sonuna kadar izlenir. Sonuç Uninstall kaydından doğrulanır; iptal, yeniden başlatma gereksinimi ve başarısızlıklar dürüstçe raporlanır.
+- **Tek Seferlik Geri Yükleme Noktası (RestorePointService):** Kaldırma öncesi WMI ile tek seferlik sistem geri yükleme noktası oluşturulur; 24 saat kısıtlaması dürüstçe raporlanır.
 
-### 2. Standart Haklarla UAC Yönetici Süreçlerini Yakalama (ProcessInfoReader, P0-2)
-- **PROCESS_QUERY_LIMITED_INFORMATION:** UAC ile yetki yükselten kurulumlarda `Process.MainModule` erişim reddi (Error 5) hatası P/Invoke katmanıyla aşıldı. Standart kullanıcı haklarında dahi tam yürütülebilir dosya yolu hatasız okunur.
-- **ToolHelp32 ile Ebeveyn PID Analizi:** Süreçlerin ebeveyn kimlikleri (Parent PID) yetki istemeden tespit edilerek gerçek kurulum ağaçları oluşturulur.
-- **PID Yeniden Kullanım (Reuse) Koruması:** `GetProcessTimes` ile süreç oluşturma zamanı (Creation Time) milisaniye hassasiyetinde takip edilerek sistemdeki PID geri dönüşüm çakışmaları engellenir.
+### 2. Temizleyici ve Güvenli Dosya Hedefleri
+- **Kapsam Tabanlı Temizlik:** Temizleyici yalnızca her kategorinin kendi klasörlerinde silme yapar (`CleanupScope`). Yolunda rastgele "temp" ya da "cache" geçen dosyalar artık hedef alınmaz.
+- **24 Saat Koruması:** Temp dizinlerinde son 24 saate ait dosyalar korunur.
+- **Spotify & Çevrimdışı İndirmeler:** Spotify çevrimdışı indirilen şarkılar varsayılan seçimden çıkarıldı.
 
-### 3. Derin Registry Hotspot Sensörü (P0-4, P0-5)
-- **Değer Düzeyinde Run & RunOnce Takibi:** Başlangıç girdilerinin anahtar değil *değer* olduğu gerçeğiyle; HKLM ve HKCU altındaki `Run`, `RunOnce` ve WOW6432Node değerleri anlık fark (delta) analiziyle tam olarak yakalanır.
-- **Windows Servisleri (`SYSTEM\CurrentControlSet\Services`):** Kurulumların arkada bıraktığı yeni Windows servisleri, sürücüler ve servis ikili yolları anında tespit edilir.
-- **Hive Biçim Normalizasyonu:** `HKLM` ve `HKCU` etiketleme hataları giderildi; 64-bit ve 32-bit kayıt defteri görünümleri bir arada taranır.
+### 3. Dürüstlük: Gerçek Metrikler ve Ölçümler
+- **Sensör Doğruluğu:** CPU ve GPU sıcaklığı uydurulmaz; donanım sensörü okunamıyorsa "—" gösterilir.
+- **Dürüst RAM & Performans:** RAM boşaltma fonksiyonları sabit değerler yerine gerçekte boşaltılan bellek farkını söyler.
+- **Oyun Modu Güç Planı:** Oyun Modu kapatıldığında sistemin önceki güç planı eksiksiz geri yüklenir.
 
-### 4. Tekil ve Standart Depolama Motoru (SessionStore, P0-6)
-- **Şema Versiyonlu Raporlama (`SchemaVersion: 2`):** Eski parçalı JSON dosyaları yerine oturum başına standartlaştırılmış ve indekslenebilir rapor yapısına geçildi.
-- **Geriye Dönük Tam Uyumluluk:** Eski v1 raporları ve anlık durum dosyaları sessiz ve hatasız biçimde yeni depolama yapısına uyarlanır.
+### 4. Güvenlik İnce Ayarları ve Doğrulama
+- **Yaz-Oku-Karşılaştır Doğrulaması:** İnce ayarlar yazıldıktan sonra geri okunarak doğrulanır; yazılamayan ayarlar asla "uygulandı" görünmez, gerçek hata nedeni bildirilir.
+- **Güvenlik Etki Rozetleri:** Güvenliği azaltabilecek ayarlar (SmartScreen, Windows Update vb.) kırmızı "Güvenliği Azaltır" rozeti ve ayrı onay diyaloğu alır.
 
-### 5. Kararlı Eşzamanlılık ve msiexec Servis Koruması (P0-7, P0-8)
-- **PeriodicTimer & Asenkron Kilitler:** `async void` zamanlayıcılar kaldırılarak `PeriodicTimer`, iptal jetonu (`CancellationToken`) ve `SemaphoreSlim` ile tek seferlik güvenli tamamlama (finalize) garantisi sağlandı.
-- **msiexec /V Servis Ayrıştırması:** Kurulum bittikten sonra 10 dakika boyunca arka planda yaşayan `msiexec /V` servis sürecinin raporu asılı bırakması engellendi.
-- **MsiInstaller Olay Günlüğü Takibi:** Windows Application günlüğündeki 1040, 1042, 11707 ve 11708 numaralı olaylar dinlenerek MSI kurulumlarının gerçek bitiş anı tespit edilir.
+### 5. Güvenli Mağaza ve Yönetici Kısayolları
+- **Resmî Paketler & İmza Denetimi:** Üçüncü taraf VC++ paketleri yerine resmî winget paketleri kullanılır. DirectX kurulumunun Microsoft dijital imzası doğrulanır.
+- **UAC Görev Kısayolları Güvenliği:** Yönetici kısayolu oluşturma özelliği yalnızca standart kullanıcıların değiştiremeyeceği güvenli konumlardaki programlar için `.lnk` olarak oluşturulur.
 
-### 6. Kaldırıcı Tespiti & Gürültü Filtresi (P0-9, P0-10)
-- **`SessionKind.Uninstall` Ayrımı:** `unins000.exe`, `uninstall.exe` ve `msiexec /x` gibi kaldırıcı süreçleri kurulum sayılmaz; gereksiz bildirim açılmaz.
-- **64 KB FSW Arabelleği & Taşma Koruması:** `FileSystemWatcher` arabelleği 8 KB'den 64 KB'ye çıkarıldı; taşma durumunda `IsPossiblyIncomplete` bayrağı ile yeniden tarama tetiklenir.
-- **Akıllı Gürültü Filtresi:** Chrome, Edge, Firefox önbellekleri, `thumbcache_*`, `Prefetch` ve Bakım'ın kendi günlük dosyaları kurulum raporundan elenir.
+### 6. Analizör Geçmişi ve Değişiklik Panelleri
+- **Tam Analiz Geçmişi:** Yapılan tüm tehdit analizleri, hash, imza durumu ve risk puanları kalıcı olarak indekslenir ve listelenir.
+- **Dosya Değişiklikleri Paneli:** Taranan dosyaların önceki analizlerle karşılaştırmalı değişimleri incelenebilir.
 
-### 7. Flyout v2 Hızlı Risk Özeti (Hızlı Kazanım)
-- **Anlık Durum Kartı:** Kurulum bittiğinde eklenen yürütülebilir (.exe/.dll), başlangıç girdisi ve yeni servis sayılarını gösteren modern Fluent 2 risk rozeti sunulur; kullanıcı "Analizör ile Tara" butonuna neden basması gerektiğini tek bakışta anlar.
-
-### 8. Kalite Güvencesi ve CI Test Hattı
-- **194/194 Birim Testi:** Kopya testler kaldırıldı; gerçek `InstallerClassifier`, `RollbackPlanner` değişmezleri, `RegistryHotspotSensor` ve `SessionStore` sınıfları doğrudan test edildi.
-- **GitHub Actions CI:** Her `push` ve `pull_request` için Windows üzerinde `dotnet test`, sembol ve token doğrulamasını otomatik koşan `.github/workflows/ci.yml` hattı devreye alındı.
+### 7. Tek Sürüm Kaynağı (Directory.Build.props) ve CI Kalitesi
+- **H-15 Çözümü:** Sürüm numarası tek bir merkezden (`Directory.Build.props`) yönetilir.
+- **456 Test & Sıfır Hata:** 249 Core testi ve 207 sistem testi %100 başarılı; Fluent 2 token ve sembol doğrulamaları tam onaylı.
