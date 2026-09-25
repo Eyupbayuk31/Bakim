@@ -365,46 +365,12 @@ namespace Bakım.Services
             return "Bilinmeyen Yayıncı";
         }
 
-        private static (int level, string text, string brush, string delay) CalculateImpact(string name, string filePath)
-        {
-            string combined = $"{name} {filePath}".ToLowerInvariant();
-
-            // Yüksek Etki: Ağır istemciler, oyun başlatıcıları, tarayıcılar, bulut senkronizasyonları
-            string[] highImpactKeywords =
-            {
-                "discord", "spotify", "steam", "epic", "teams", "slack", "chrome",
-                "firefox", "edge", "onedrive", "adobe", "creative cloud", "dropbox",
-                "zoom", "torrent", "skype", "viber", "riot", "battle.net", "origin",
-                "overwolf", "blitz", "medal", "curseforge"
-            };
-
-            foreach (var kw in highImpactKeywords)
-            {
-                if (combined.Contains(kw))
-                {
-                    return (3, "Yüksek Etki (>1000ms)", "SystemFillColorCriticalBrush", "~1.5 sn");
-                }
-            }
-
-            // Orta Etki: Donanım yardımcı araçları, ses/grafik panelleri, koruma servisleri
-            string[] mediumImpactKeywords =
-            {
-                "realtek", "nvidia", "amd", "intel", "logitech", "razer", "corsair",
-                "security", "defender", "antivirus", "service", "host", "audio", "sound",
-                "rtkaud", "noisesuppression"
-            };
-
-            foreach (var kw in mediumImpactKeywords)
-            {
-                if (combined.Contains(kw))
-                {
-                    return (2, "Orta Etki (300-1000ms)", "SystemFillColorCautionBrush", "~0.6 sn");
-                }
-            }
-
-            // Düşük Etki
-            return (1, "Düşük Etki (<300ms)", "SystemFillColorSuccessBrush", "~0.2 sn");
-        }
+        /// <summary>
+        /// Etki TAHMİN EDİLMEZ (eskiden adında "discord" geçen her şey "Yüksek Etki (>1000ms)" sayılıyordu).
+        /// Başlangıç sayfası Windows'un ölçümünü (<see cref="BootPerformanceReader"/>) sonradan uygular.
+        /// </summary>
+        private static (int level, string text, string brush, string delay) CalculateImpact(string name, string filePath) =>
+            (0, "Ölçüm yok", "TextFillColorTertiaryBrush", "Windows bu uygulama için yavaşlama kaydetmedi");
 
         private static string CleanExecutablePath(string raw)
         {

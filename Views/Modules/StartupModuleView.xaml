@@ -122,7 +122,7 @@
                 </Grid>
             </ui:Card>
 
-            <!-- Card 4: Tahmini Açılış Yükü -->
+            <!-- Card 4: Son açılış (Windows ölçümü) -->
             <ui:Card Grid.Column="6" Padding="14" Style="{StaticResource InteractiveCard}">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -130,9 +130,27 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Tahmini Boot Yükü" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.FormattedBootDelay, FallbackValue='~0.0 sn'}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,2"/>
-                        <TextBlock Text="{Binding Stats.HighImpactCount, StringFormat='{}{0} Yüksek Etkili Öge'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                        <TextBlock Text="{Binding Stats.BootDetail, FallbackValue='Son açılış'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding Stats.FormattedBootDelay, FallbackValue='Ölçüm yok'}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
+                        <TextBlock Text="{Binding Stats.HighImpactCount, StringFormat='{}{0} uygulama açılışı yavaşlatıyor'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                        <!-- Son açılışlar (Windows ölçümü) -->
+                        <ItemsControl ItemsSource="{Binding BootHistory}" Height="64" Margin="0,8,0,0"
+                                      Visibility="{Binding HasBootHistory, Converter={StaticResource BoolToVis}}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="10" Height="{Binding Height}" Margin="0,0,3,0" VerticalAlignment="Bottom"
+                                            CornerRadius="{StaticResource Radius.XS}" Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                            ToolTip="{Binding Tooltip}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding BootMeasurementNote}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     </StackPanel>
                     <Border Grid.Column="1" Background="{DynamicResource Brush.Caution.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource SystemFillColorCautionBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -167,7 +185,7 @@
 
                     <ui:Button Appearance="{Binding IsHighImpactFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="HighImpact"
-                               Content="Yüksek Etki" Padding="12,6" Margin="0,0,6,4"/>
+                               Content="Açılışı yavaşlatanlar" ToolTip="Windows'un ölçümüne göre açılışı 1 saniyeden fazla geciktirenler" Padding="12,6" Margin="0,0,6,4"/>
 
                     <ui:Button Appearance="{Binding IsRegistryFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="Registry"
@@ -329,7 +347,7 @@
                                                        Foreground="{Binding ImpactLevel, Converter={StaticResource ImpactLevelToBrush}}"
                                                        TextTrimming="CharacterEllipsis"/>
                                         </Border>
-                                        <TextBlock Text="{Binding EstimatedDelayText, StringFormat='Gecikme: {0}'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="2,2,0,0"/>
+                                        <TextBlock Text="{Binding EstimatedDelayText}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="2,2,0,0" TextWrapping="Wrap" MaxWidth="220"/>
                                     </StackPanel>
 
                                     <!-- Col 2: Location Badge -->

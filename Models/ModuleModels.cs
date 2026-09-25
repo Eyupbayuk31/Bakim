@@ -15,7 +15,9 @@ namespace Bakım.Models
         public bool IsCurrentUser { get; set; }
         public bool FileExists { get; set; } = true;
         public ImageSource? IconSource { get; set; }
-        public string EstimatedDelayText { get; set; } = "~0.3 sn";
+        /// <summary>Ölçüm ayrıntısı ("Windows ölçümü · 3 açılış"); ölçüm yoksa açıklama.</summary>
+        [ObservableProperty]
+        private string _estimatedDelayText = string.Empty;
 
         [ObservableProperty]
         private bool _isEnabled = true;
@@ -24,10 +26,10 @@ namespace Bakım.Models
         private string _statusText = "Etkin";
 
         [ObservableProperty]
-        private int _impactLevel = 1; // 3: Yüksek, 2: Orta, 1: Düşük
+        private int _impactLevel; // Windows ölçümü: 3 ≥1 sn, 2 ≥300 ms, 1 daha az, 0 ölçüm yok
 
         [ObservableProperty]
-        private string _impactText = "Düşük Etki";
+        private string _impactText = "Ölçüm yok";
 
         [ObservableProperty]
         private string _impactBadgeBrush = "SystemFillColorSuccessBrush";
@@ -41,9 +43,12 @@ namespace Bakım.Models
         public int TotalCount { get; set; }
         public int EnabledCount { get; set; }
         public int DisabledCount { get; set; }
+        /// <summary>Windows'un ölçümüne göre açılışı ≥1 sn yavaşlatan etkin uygulamalar.</summary>
         public int HighImpactCount { get; set; }
-        public double EstimatedBootDelaySeconds { get; set; }
-        public string FormattedBootDelay => $"~{EstimatedBootDelaySeconds:F1} sn";
+        /// <summary>Son açılış (Windows ölçümü); yoksa null.</summary>
+        public int? LastBootMs { get; set; }
+        public string FormattedBootDelay => LastBootMs is int ms ? Bakım.Core.Startup.BootEventParser.FormatSeconds(ms) : "Ölçüm yok";
+        public string BootDetail { get; set; } = string.Empty;
     }
 
     public class DriveInfoItem

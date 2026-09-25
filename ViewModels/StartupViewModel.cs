@@ -8,6 +8,7 @@ using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using Bakım.Core.Startup;
 using Bakım.Models;
 using Bakım.Core.Activity;
 using Bakım.Helpers;
@@ -32,6 +33,14 @@ namespace Bakım.ViewModels
         }
 
         public ObservableCollection<StartupProgramItem> StartupPrograms { get; }
+
+        /// <summary>Son açılışların süresi (Windows ölçümü; soldan sağa eskiden yeniye).</summary>
+        public ObservableCollection<BootHistoryBar> BootHistory { get; } = new();
+
+        private BootPerformanceData _bootData = BootPerformanceData.Unavailable("Yükleniyor");
+
+        [ObservableProperty] private string _bootMeasurementNote = string.Empty;
+        [ObservableProperty] private bool _hasBootHistory;
 
         [ObservableProperty]
         private StartupSummaryStats _stats = new();
@@ -95,6 +104,43 @@ namespace Bakım.ViewModels
             ApplyFilter();
         }
 
+        /// <summary>Windows'un ölçtüğü yavaşlamayı satırlara ve açılış geçmişine uygular (tahmin yok).</summary>
+        private void ApplyMeasurements()
+        {
+            foreach (var item in _allPrograms)
+            {
+                string key = BootEventParser.KeyOf(item.CleanExePath);
+                if (_bootData.Available && key.Length > 0 && _bootData.AppImpacts.TryGetValue(key, out var impact))
+                {
+                    item.ImpactLevel = impact.Level;
+                    item.ImpactText = $"Açılışı {BootEventParser.FormatSeconds(impact.AvgDegradationMs)} yavaşlattı";
+                    item.EstimatedDelayText = $"Windows ölçümü · {impact.Count} açılış · en fazla {BootEventParser.FormatSeconds(impact.MaxDegradationMs)}";
+                }
+                else
+                {
+                    item.ImpactLevel = 0;
+                    item.ImpactText = "Ölçüm yok";
+                    item.EstimatedDelayText = _bootData.Available
+                        ? "Windows bu uygulama için yavaşlama kaydetmedi"
+                        : _bootData.Reason ?? string.Empty;
+                }
+            }
+
+            BootHistory.Clear();
+            var boots = _bootData.BootsNewestFirst;
+            int max = boots.Count == 0 ? 1 : boots.Max(b => b.BootMs);
+            foreach (var boot in boots.Reverse())
+                BootHistory.Add(new BootHistoryBar(boot, max));
+            HasBootHistory = BootHistory.Count > 0;
+
+            int? trend = BootEventParser.TrendMs(boots);
+            BootMeasurementNote = !_bootData.Available
+                ? _bootData.Reason ?? string.Empty
+                : trend is int t && Math.Abs(t) >= 1000
+                    ? $"Son açılış, önceki açılışların ortalamasından {BootEventParser.FormatSeconds(Math.Abs(t))} {(t < 0 ? "kısa" : "uzun")}."
+                    : boots.Count > 0 ? "Son açılışlar benzer sürede." : string.Empty;
+        }
+
         [RelayCommand]
         public void SetFilter(string filter)
         {
@@ -110,11 +156,17 @@ namespace Bakım.ViewModels
 
             try
             {
-                _allPrograms = await _startupService.GetStartupProgramsAsync();
+                var programsTask = _startupService.GetStartupProgramsAsync();
+                var bootTask = Task.Run(() => BootPerformanceReader.Read());
+                _allPrograms = await programsTask;
+                _bootData = await bootTask;
+                ApplyMeasurements();
                 TotalProgramsCount = _allPrograms.Count;
                 CalculateStats();
                 ApplyFilter();
-                StatusText = $"{TotalProgramsCount} başlangıç ögesi açılış etkisine göre listelendi.";
+                StatusText = _bootData.Available
+                    ? $"{TotalProgramsCount} başlangıç öğesi; etki Windows'un açılış ölçümlerinden."
+                    : $"{TotalProgramsCount} başlangıç öğesi. {_bootData.Reason}";
             }
             catch (Exception ex)
             {
@@ -288,7 +340,9 @@ namespace Bakım.ViewModels
             if (highImpacts.Count == 0)
             {
                 MessageBox.Show(
-                    "Sistem açılışını yavaşlatan yüksek etkili aktif bir başlatıcı bulunamadı. Açılış süreniz zaten oldukça optimize!",
+                    _bootData.Available
+                        ? "Windows'un açılış ölçümlerinde açılışı 1 saniyeden fazla yavaşlatan etkin bir uygulama yok."
+                        : $"Açılışı yavaşlatan uygulamalar Windows'un ölçümlerinden belirlenir. {_bootData.Reason}",
                     "Açılış Optimizasyonu",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -297,7 +351,7 @@ namespace Bakım.ViewModels
 
             string appList = string.Join("\n• ", highImpacts.Select(p => p.Name));
             var result = MessageBox.Show(
-                $"Aşağıdaki {highImpacts.Count} yüksek etkili uygulamanın Windows açılışını geciktirdiği tespit edildi:\n\n• {appList}\n\nBu uygulamaları başlangıçta devre dışı bırakarak açılış sürenizi hızlandırmak ister misiniz?\n(Programlar silinmez, sadece açılışta otomatik çalışmaz.)",
+                $"Windows'un ölçümüne göre şu {highImpacts.Count} uygulama açılışı 1 saniyeden fazla yavaşlattı:\n\n• {appList}\n\nBunlar açılışta devre dışı bırakılsın mı?\n(Programlar silinmez, yalnızca açılışta otomatik çalışmaz; Etkinlik Merkezi'nden geri alınabilir.)",
                 "Akıllı Açılış Hızlandırma",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
@@ -326,9 +380,9 @@ namespace Bakım.ViewModels
 
                 CalculateStats();
                 ApplyFilter();
-                StatusText = $"{disabledCount} adet yüksek etkili uygulama devre dışı bırakıldı, açılış hızlandırıldı!";
+                StatusText = $"{disabledCount} uygulama açılışta devre dışı bırakıldı.";
                 MessageBox.Show(
-                    $"{disabledCount} adet uygulama başarıyla devre dışı bırakıldı!\nTahmini açılış kazancı: ~{disabledCount * 1.5:F1} saniye.",
+                    $"{disabledCount} uygulama açılışta devre dışı bırakıldı.\nEtkisini bir sonraki açılıştan sonra bu sayfadaki açılış geçmişinde görebilirsiniz.",
                     "Hızlandırma Tamamlandı",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -366,23 +420,15 @@ namespace Bakım.ViewModels
             int total = _allPrograms.Count;
             int enabled = _allPrograms.Count(p => p.IsEnabled);
             int disabled = _allPrograms.Count(p => !p.IsEnabled);
-            int high = _allPrograms.Count(p => p.ImpactLevel == 3);
-
-            // Tahmini açılış gecikmesi: Yüksek etki ~1.5s, Orta etki ~0.6s, Düşük etki ~0.2s (yalnızca etkin olanlar için)
-            double delaySec = _allPrograms.Where(p => p.IsEnabled).Sum(p => p.ImpactLevel switch
-            {
-                3 => 1.5,
-                2 => 0.6,
-                _ => 0.2
-            });
 
             Stats = new StartupSummaryStats
             {
                 TotalCount = total,
                 EnabledCount = enabled,
                 DisabledCount = disabled,
-                HighImpactCount = high,
-                EstimatedBootDelaySeconds = Math.Round(delaySec, 1)
+                HighImpactCount = _allPrograms.Count(p => p.IsEnabled && p.ImpactLevel == 3),
+                LastBootMs = _bootData.BootsNewestFirst.FirstOrDefault()?.BootMs,
+                BootDetail = _bootData.Available ? "Son açılış · Windows ölçümü" : "Açılış ölçümü yok"
             };
         }
 
@@ -417,5 +463,20 @@ namespace Bakım.ViewModels
                 StartupPrograms.Add(prog);
             }
         }
+    }
+
+    /// <summary>Açılış geçmişi çubuğu (yükseklik en uzun açılışa göre 8–64 px).</summary>
+    public sealed class BootHistoryBar
+    {
+        private static readonly System.Globalization.CultureInfo Tr = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+
+        public BootHistoryBar(BootRecord boot, int maxMs)
+        {
+            Height = 8 + 56.0 * boot.BootMs / Math.Max(1, maxMs);
+            Tooltip = $"{boot.TimeUtc.ToLocalTime().ToString("d MMM HH:mm", Tr)} · {BootEventParser.FormatSeconds(boot.BootMs)}";
+        }
+
+        public double Height { get; }
+        public string Tooltip { get; }
     }
 }
