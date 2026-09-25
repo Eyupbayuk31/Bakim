@@ -122,6 +122,18 @@ namespace Bakım.Views.Dialogs
 
         private void KillProcess_Click(object sender, RoutedEventArgs e)
         {
+            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            if (Bakım.Core.Safety.CriticalProcessPolicy.IsProtected(
+                TargetInfo.ProcessId,
+                TargetInfo.ProcessName,
+                TargetInfo.ExecutablePath,
+                winDir,
+                Environment.ProcessId))
+            {
+                MessageBox.Show($"'{TargetInfo.ProcessName}' kritik bir Windows sistem bileşenidir. Sistem kararlılığı ve güvenliği nedeniyle sonlandırılamaz.", "Kritik Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             try
             {
                 var proc = Process.GetProcessById(TargetInfo.ProcessId);
@@ -172,12 +184,14 @@ namespace Bakım.Views.Dialogs
             try
             {
                 var analyzer = App.GetService<Services.IFileThreatAnalyzerService>();
+                var autoruns = App.GetService<Services.IAutorunsScannerEngine>();
+                var vtService = App.GetService<Services.IVirusTotalCheckService>();
                 ThreatAnalysisResult result;
                 using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.Processes, $"{TargetInfo.ProcessName}.exe (PID {TargetInfo.ProcessId})"))
                 {
                     result = await analyzer.AnalyzeFileAsync(exe);
                 }
-                var dialog = new ThreatAnalysisDialog(result, analyzer);
+                var dialog = new ThreatAnalysisDialog(result, analyzer, autoruns, vtService);
                 dialog.Owner = this;
                 dialog.ShowDialog();
             }

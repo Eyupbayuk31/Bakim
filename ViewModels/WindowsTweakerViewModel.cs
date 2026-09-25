@@ -827,19 +827,12 @@ namespace Bakım.ViewModels
             }
 
             string target = string.IsNullOrWhiteSpace(TrustedInstallerCommandInput) ? "cmd.exe" : TrustedInstallerCommandInput.Trim();
-            bool ok = await _toolsService.LaunchAsTrustedInstallerAsync(target);
-            if (ok)
-            {
-                OperationResultBanner = $"'{target}' başarıyla NT AUTHORITY\\TrustedInstaller yetkisiyle başlatıldı!";
-                ResultBannerSeverity = InfoBarSeverity.Success;
-                HasResultBanner = true;
-            }
-            else
-            {
-                OperationResultBanner = "TrustedInstaller süreci başlatılamadı. Servis izinlerini kontrol edin.";
-                ResultBannerSeverity = InfoBarSeverity.Error;
-                HasResultBanner = true;
-            }
+            var outcome = await _toolsService.LaunchAsTrustedInstallerAsync(target);
+            OperationResultBanner = outcome.Message;
+            ResultBannerSeverity = outcome.IsTrustedInstaller
+                ? InfoBarSeverity.Success
+                : (outcome.Succeeded ? InfoBarSeverity.Warning : InfoBarSeverity.Error);
+            HasResultBanner = true;
         }
 
         [RelayCommand]

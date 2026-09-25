@@ -1056,13 +1056,32 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3230 = new ReleaseChangelogItem
+            {
+                Version = "v3.23.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Ağ Teşhis Paketi, DNS Karşılaştırma, Güvenli Avcı Modu & TrustedInstaller Dürüstlüğü",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Ağ Teşhisleri (Traceroute): TTL tabanlı sekme sekme paket rotalama, ters DNS çözümleme ve canlı gecikme ölçümü.",
+                    "DNS Benchmark & Hız Kıyaslama: Global güvenilir anycast sunucular (Cloudflare, Google, Quad9, OpenDNS, AdGuard, Comodo) ile gerçek DNS çözümleme testi ve en hızlısını otomatik etiketleme.",
+                    "Tarifeli Ağ Koruması: INetworkCostManager, hücresel WWAN ve kayıt defteri kontrolleriyle kotalı bağlantılarda hız testi öncesi veri tasarrufu uyarısı.",
+                    "Ağ Güvenlik Duvarı Yönetimi: Bakım tarafından oluşturulan engelleme kurallarını listeleme ve tek tıkla kuralları geri alma desteği.",
+                    "Ağ Çekmecesi & Analizör Entegrasyonu: Aktif soket bağlantılarındaki şüpheli süreçleri doğrudan derin Analizör penceresinde inceleme imkanı.",
+                    "Avcı Modu (Hunter) Güvenliği: Kritik Windows sistem süreçlerini sonlandırmaya karşı CriticalProcessPolicy muhafızı ve tam DI Analizör entegrasyonu.",
+                    "TrustedInstaller Dürüstlüğü: Token/süreç temin edilemediğinde Administrator seviyesine düşüşü kullanıcıya şeffaf ve dürüstçe bildiren yeni mekanizma."
+                }
+            };
+
             var v3220 = new ReleaseChangelogItem
             {
                 Version = "v3.22.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Etkinlik Merkezi, Yeni Depolama & Disk Haritası, Kurulum Nöbetçisi v2 & Gelişmiş Sistem Denetimi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Etkinlik Merkezi: Sistemde yapılan tüm bakım, temizlik, ayar ve kurulum işlemlerinin tek merkezden izlenmesi ve güvenli geri alma desteği.",
@@ -1770,8 +1789,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3220;
+            LatestRelease = v3230;
 
+            ReleaseHistory.Add(v3230);
             ReleaseHistory.Add(v3220);
             ReleaseHistory.Add(v3210);
             ReleaseHistory.Add(v3200);

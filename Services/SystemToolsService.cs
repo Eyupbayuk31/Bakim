@@ -6,10 +6,12 @@ using Bakım.Models;
 
 namespace Bakım.Services
 {
+    public sealed record TrustedInstallerLaunchOutcome(bool Succeeded, bool IsTrustedInstaller, string Message);
+
     public interface ISystemToolsService
     {
         Task<bool> ResetCachesAndRestartExplorerAsync();
-        Task<bool> LaunchAsTrustedInstallerAsync(string programPath, string arguments = "");
+        Task<TrustedInstallerLaunchOutcome> LaunchAsTrustedInstallerAsync(string programPath, string arguments = "");
         Task<OemInfoData> GetOemInfoAsync();
         Task<bool> SaveOemInfoAsync(OemInfoData data);
         Task<bool> ResetLocalGroupPolicyAsync();
@@ -161,15 +163,15 @@ namespace Bakım.Services
             });
         }
 
-        public async Task<bool> LaunchAsTrustedInstallerAsync(string programPath, string arguments = "")
+        public async Task<TrustedInstallerLaunchOutcome> LaunchAsTrustedInstallerAsync(string programPath, string arguments = "")
         {
             return await Task.Run(() =>
             {
+                string target = string.IsNullOrWhiteSpace(programPath) ? "cmd.exe" : programPath;
+                string cmdLine = string.IsNullOrWhiteSpace(arguments) ? $"\"{target}\"" : $"\"{target}\" {arguments}";
+
                 try
                 {
-                    string target = string.IsNullOrWhiteSpace(programPath) ? "cmd.exe" : programPath;
-                    string cmdLine = string.IsNullOrWhiteSpace(arguments) ? $"\"{target}\"" : $"\"{target}\" {arguments}";
-
                     // 1. TrustedInstaller servisini başlat
                     try
                     {
@@ -184,42 +186,54 @@ namespace Bakım.Services
                         procSc?.WaitForExit(3000);
                         Thread.Sleep(500);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        AppLog.Debug($"TrustedInstaller servisini başlatma çağrısı: {ex.Message}", nameof(SystemToolsService));
+                    }
 
                     // 2. TrustedInstaller.exe sürecini bul
                     var tiProcesses = Process.GetProcessesByName("TrustedInstaller");
                     if (tiProcesses.Length == 0)
                     {
-                        // Fallback: Standart yönetici olarak başlat
-                        Process.Start(new ProcessStartInfo
+                        // Fallback: Standart yönetici olarak başlat ve açıkça bildir (DEN G-6 / S-17)
+                        try
                         {
-                            FileName = target,
-                            Arguments = arguments,
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        });
-                        return true;
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = target,
+                                Arguments = arguments,
+                                UseShellExecute = true,
+                                Verb = "runas"
+                            });
+                            return new TrustedInstallerLaunchOutcome(true, false,
+                                $"TrustedInstaller servisine ulaşılamadı; '{target}' standart Yönetici (Administrator) yetkisiyle başlatıldı.");
+                        }
+                        catch (Exception ex)
+                        {
+                            return new TrustedInstallerLaunchOutcome(false, false,
+                                $"TrustedInstaller ve yönetici çalıştırma başarısız oldu: {ex.Message}");
+                        }
                     }
 
                     int tiPid = tiProcesses[0].Id;
                     IntPtr hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, false, tiPid);
                     if (hProcess == IntPtr.Zero)
                     {
-                        return false;
+                        return FallbackToAdmin(target, arguments, "TrustedInstaller sürecine erişilemedi");
                     }
 
                     try
                     {
                         if (!OpenProcessToken(hProcess, MAXIMUM_ALLOWED, out IntPtr hToken))
                         {
-                            return false;
+                            return FallbackToAdmin(target, arguments, "TrustedInstaller belirteci açılamadı");
                         }
 
                         try
                         {
                             if (!DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, IntPtr.Zero, SecurityImpersonation, TokenPrimary, out IntPtr hNewToken))
                             {
-                                return false;
+                                return FallbackToAdmin(target, arguments, "TrustedInstaller belirteci kopyalanamadı");
                             }
 
                             try
@@ -243,10 +257,11 @@ namespace Bakım.Services
                                 {
                                     CloseHandle(pi.hProcess);
                                     CloseHandle(pi.hThread);
-                                    return true;
+                                    return new TrustedInstallerLaunchOutcome(true, true,
+                                        $"'{target}' başarıyla NT AUTHORITY\\TrustedInstaller yetkisiyle başlatıldı!");
                                 }
 
-                                return false;
+                                return FallbackToAdmin(target, arguments, "CreateProcessWithTokenW başarısız oldu");
                             }
                             finally
                             {
@@ -263,11 +278,31 @@ namespace Bakım.Services
                         CloseHandle(hProcess);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    return false;
+                    return new TrustedInstallerLaunchOutcome(false, false, $"Hata: {ex.Message}");
                 }
             });
+        }
+
+        private static TrustedInstallerLaunchOutcome FallbackToAdmin(string target, string arguments, string reason)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = target,
+                    Arguments = arguments,
+                    UseShellExecute = true,
+                    Verb = "runas"
+                });
+                return new TrustedInstallerLaunchOutcome(true, false,
+                    $"{reason}; '{target}' standart Yönetici (Administrator) yetkisiyle başlatıldı.");
+            }
+            catch (Exception ex)
+            {
+                return new TrustedInstallerLaunchOutcome(false, false, $"{reason} ve yönetici çalıştırma da başarısız oldu: {ex.Message}");
+            }
         }
 
         public async Task<OemInfoData> GetOemInfoAsync()

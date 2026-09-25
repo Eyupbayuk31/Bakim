@@ -679,6 +679,15 @@
                                                Content="Süreci ve Soketi Sonlandır" 
                                                Icon="{ui:SymbolIcon Dismiss20}"/>
 
+                                    <ui:Button Appearance="Secondary" 
+                                               HorizontalAlignment="Stretch" 
+                                               Padding="12,8" 
+                                               Margin="0,0,0,6"
+                                               Command="{Binding DataContext.AnalyzeProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding}"
+                                               Content="Analizör ile Tara" 
+                                               Icon="{ui:SymbolIcon ShieldTask20}"/>
+
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -1006,6 +1015,27 @@
             <Grid Visibility="{Binding SelectedTab, Converter={StaticResource StringToVis}, ConverterParameter=SpeedTest}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel HorizontalAlignment="Stretch">
+                        <!-- Metered Connection Warning Banner -->
+                        <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                                BorderBrush="{DynamicResource SystemFillColorCautionBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource Radius.MD}"
+                                Padding="16,12"
+                                Margin="0,0,0,16"
+                                Visibility="{Binding IsMeteredConnection, Converter={StaticResource BoolToVis}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0" Symbol="Warning24" FontSize="24" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Tarifeli / Kotalı Ağ Bağlantısı Algılandı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Mevcut ağ bağlantınız tarifeli / kotalı olarak belirlenmiş. Hız testi ~50-100 MB veri transferi gerçekleştirecektir. Test başlatılırken onayınız istenecektir." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
                         <!-- Main Speed Gauge Card -->
                         <ui:Card Padding="24" Margin="0,0,0,16">
                             <Grid>
@@ -1120,6 +1150,12 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="14"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="14"/>
                             <RowDefinition Height="Auto"/>
@@ -1243,6 +1279,208 @@
 
                                 <Border Grid.Row="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12">
                                     <TextBlock Text="{Binding PortCheckResultText}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                </Border>
+                            </Grid>
+                        </ui:Card>
+
+                        <!-- Tool 4: Traceroute (Rota İzleme) -->
+                        <ui:Card Grid.Row="6" Padding="18">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Gelişmiş Ağ Rota İzleme (Traceroute)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Veri paketlerinin hedefe ulaşana kadar geçtiği tüm ağ yönlendiricilerini (hop), gecikme sürelerini ve ters DNS kayıtlarını adım adım analiz edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+
+                                <Grid Grid.Row="1" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <ui:TextBox Grid.Column="0" 
+                                                PlaceholderText="Hedef IP veya Alan Adı (Örn: 1.1.1.1 veya google.com)" 
+                                                Text="{Binding TracerouteTarget, UpdateSourceTrigger=PropertyChanged}" 
+                                                ClearButtonEnabled="True" 
+                                                Padding="12,9" 
+                                                VerticalContentAlignment="Center" 
+                                                Icon="{ui:SymbolIcon Globe20}"/>
+
+                                    <ui:Button Grid.Column="2" 
+                                               Appearance="Primary" 
+                                               Command="{Binding RunTracerouteCommand}" 
+                                               IsEnabled="{Binding IsTracerouteRunning, Converter={StaticResource InverseBool}}"
+                                               Padding="16,8" 
+                                               Content="İzlemeyi Başlat" 
+                                               Icon="{ui:SymbolIcon ArrowRouting20}"/>
+
+                                    <ui:Button Grid.Column="4" 
+                                               Appearance="Danger" 
+                                               Command="{Binding CancelTracerouteCommand}" 
+                                               IsEnabled="{Binding IsTracerouteRunning}"
+                                               Padding="14,8" 
+                                               Content="Durdur" 
+                                               Icon="{ui:SymbolIcon Dismiss20}"/>
+                                </Grid>
+
+                                <Border Grid.Row="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding TracerouteStatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,0,8" FontWeight="SemiBold"/>
+                                        <ItemsControl ItemsSource="{Binding TracerouteHops}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,3">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="36"/>
+                                                            <ColumnDefinition Width="160"/>
+                                                            <ColumnDefinition Width="80"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{Binding HopNumber, StringFormat='{}{0}.'}" FontFamily="Consolas" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding Address}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding RoundtripTimeMs, StringFormat='{}{0} ms'}" FontFamily="Consolas" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                        <TextBlock Grid.Column="3" Text="{Binding Hostname}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </ui:Card>
+
+                        <!-- Tool 5: DNS Benchmark (Hız Karşılaştırma) -->
+                        <ui:Card Grid.Row="8" Padding="18">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="DNS Sunucu Yanıt Süresi &amp; Benchmark" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Dünyanın önde gelen DNS sağlayıcılarını (Cloudflare, Google, Quad9, AdGuard vb.) sorgulayarak en düşük gecikmeli sunucuyu tespit edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <ui:Button Grid.Column="1" 
+                                               Appearance="Primary" 
+                                               Command="{Binding RunDnsBenchmarkCommand}" 
+                                               IsEnabled="{Binding IsDnsBenchmarking, Converter={StaticResource InverseBool}}"
+                                               Padding="16,8" 
+                                               Content="Karşılaştırmayı Başlat" 
+                                               Icon="{ui:SymbolIcon Play20}"/>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1" Text="{Binding DnsBenchmarkStatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,0,10" FontWeight="SemiBold"/>
+
+                                <Border Grid.Row="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12">
+                                    <ItemsControl ItemsSource="{Binding DnsBenchmarkResults}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,8" Margin="0,3">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="140"/>
+                                                            <ColumnDefinition Width="120"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Provider}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                            <TextBlock Text="{Binding PrimaryIp}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                        </StackPanel>
+
+                                                        <TextBlock Grid.Column="1" Text="{Binding DisplayLatency}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+
+                                                        <TextBlock Grid.Column="2" Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+
+                                                        <Border Grid.Column="3" 
+                                                                Background="{DynamicResource SystemFillColorSuccessBrush}" 
+                                                                CornerRadius="{StaticResource Radius.SM}" 
+                                                                Padding="8,4" 
+                                                                VerticalAlignment="Center"
+                                                                Visibility="{Binding IsFastest, Converter={StaticResource BoolToVis}}">
+                                                            <TextBlock Text="EN HIZLI" FontSize="{StaticResource Font.Micro}" FontWeight="Bold" Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                            </Grid>
+                        </ui:Card>
+
+                        <!-- Tool 6: Bakım Güvenlik Duvarı Kuralları -->
+                        <ui:Card Grid.Row="10" Padding="18">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" Margin="0,0,0,12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Bakım Tarafından Eklenen Güvenlik Duvarı Kuralları" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Bakım üzerinden engellenen programların güvenlik duvarı kurallarını inceleyin ve dilediğiniz engeli tek tıkla kaldırın." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <ui:Button Grid.Column="1" 
+                                               Appearance="Secondary" 
+                                               Command="{Binding LoadBakimFirewallRulesCommand}" 
+                                               Padding="14,8" 
+                                               Content="Kuralları Yenile" 
+                                               Icon="{ui:SymbolIcon ArrowClockwise20}"/>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1" Text="{Binding FirewallRulesStatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
+
+                                <Border Grid.Row="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12">
+                                    <ItemsControl ItemsSource="{Binding BakimFirewallRules}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,8" Margin="0,3">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <ui:SymbolIcon Grid.Column="0" Symbol="ShieldDismiss20" FontSize="20" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                            <TextBlock Text="{Binding Detail}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                        </StackPanel>
+                                                        <ui:Button Grid.Column="2" 
+                                                                   Appearance="Secondary" 
+                                                                   Padding="10,6" 
+                                                                   Command="{Binding DataContext.RemoveBakimFirewallRuleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                   CommandParameter="{Binding}"
+                                                                   Content="Engeli Kaldır" 
+                                                                   Icon="{ui:SymbolIcon Dismiss20}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </Border>
                             </Grid>
                         </ui:Card>

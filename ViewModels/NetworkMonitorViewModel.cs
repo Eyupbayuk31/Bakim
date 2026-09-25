@@ -7,8 +7,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Bakım.Models;
 using Bakım.Core.Activity;
+using Bakım.Core.Network;
+using Bakım.Core.Safety;
 using Bakım.Services;
 using Bakım.Services.Activity;
+using System.IO;
 
 namespace Bakım.ViewModels
 {
@@ -79,6 +82,28 @@ namespace Bakım.ViewModels
             else if (tab == "Adapters" && Adapters.Count == 0)
             {
                 await LoadAdaptersAsync();
+            }
+            else if (tab == "SpeedTest")
+            {
+                RefreshMeteredStatus();
+            }
+            else if (tab == "Diagnostics" && BakimFirewallRules.Count == 0)
+            {
+                await LoadBakimFirewallRulesAsync();
+            }
+        }
+
+        public void RefreshMeteredStatus()
+        {
+            try
+            {
+                IsMeteredConnection = _networkService.IsMeteredConnection();
+                NetworkCostDescription = MeteredNetworkPolicy.DescribeCost(IsMeteredConnection, false);
+            }
+            catch
+            {
+                IsMeteredConnection = false;
+                NetworkCostDescription = MeteredNetworkPolicy.DescribeCost(false, false);
             }
         }
 
@@ -323,7 +348,8 @@ namespace Bakım.ViewModels
         {
             if (item == null) return;
 
-            if (item.ProcessId <= 4)
+            string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            if (CriticalProcessPolicy.IsProtected(item.ProcessId, item.ProcessName, item.ProcessPath, winDir, Environment.ProcessId))
             {
                 MessageBox.Show("Kritik Windows sistem süreçleri sonlandırılamaz!", "Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
@@ -347,6 +373,38 @@ namespace Bakım.ViewModels
                 {
                     MessageBox.Show("Süreç sonlandırılamadı. Yönetici yetkisi gerekiyor olabilir.", "Yetki Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+
+        [RelayCommand]
+        public async Task AnalyzeProcessAsync(NetworkConnectionItem? item)
+        {
+            var target = item ?? SelectedConnection;
+            if (target == null || string.IsNullOrWhiteSpace(target.ProcessPath) || !File.Exists(target.ProcessPath))
+            {
+                MessageBox.Show("Bu bağlantının çalıştırılabilir dosya yolu bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var analyzer = App.GetService<IFileThreatAnalyzerService>();
+                var autoruns = App.GetService<IAutorunsScannerEngine>();
+                var vtService = App.GetService<IVirusTotalCheckService>();
+
+                ThreatAnalysisResult result;
+                using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.Processes, $"{target.ProcessName} (PID {target.ProcessId})"))
+                {
+                    result = await analyzer.AnalyzeFileAsync(target.ProcessPath);
+                }
+
+                var dialog = new Views.Dialogs.ThreatAnalysisDialog(result, analyzer, autoruns, vtService);
+                dialog.Owner = Application.Current.MainWindow;
+                dialog.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Tehdit analizi başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -520,10 +578,27 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isSpeedTestRunning;
 
+        [ObservableProperty]
+        private bool _isMeteredConnection;
+
+        [ObservableProperty]
+        private string _networkCostDescription = "Standart Bağlantı";
+
         [RelayCommand]
         public async Task StartSpeedTestAsync()
         {
             if (IsSpeedTestRunning) return;
+
+            RefreshMeteredStatus();
+            if (IsMeteredConnection)
+            {
+                var confirm = MessageBox.Show(
+                    MeteredNetworkPolicy.SpeedTestWarningText,
+                    "Tarifeli Ağ Uyarısı",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+                if (confirm != MessageBoxResult.Yes) return;
+            }
 
             IsSpeedTestRunning = true;
             CurrentSpeedMbps = 0;
@@ -577,7 +652,7 @@ namespace Bakım.ViewModels
 
         #endregion
 
-        #region 5. Ağ Teşhis Araçları (Ping, DNS Flush, Port Check)
+        #region 5. Ağ Teşhis Araçları (Ping, DNS Flush, Port Check, Traceroute, DNS Benchmark)
 
         [ObservableProperty]
         private string _pingTarget = "1.1.1.1";
@@ -674,6 +749,188 @@ namespace Bakım.ViewModels
             }
         }
 
+        #region Traceroute (Rota İzleme)
+
+        [ObservableProperty]
+        private string _tracerouteTarget = "1.1.1.1";
+
+        [ObservableProperty]
+        private int _tracerouteMaxHops = 30;
+
+        [ObservableProperty]
+        private bool _isTracerouteRunning;
+
+        [ObservableProperty]
+        private string _tracerouteStatusText = "Hedef IP veya alan adı girip 'İzlemeyi Başlat' butonuna tıklayın.";
+
+        public ObservableCollection<TracerouteHop> TracerouteHops { get; } = new();
+
+        private CancellationTokenSource? _tracerouteCts;
+
+        [RelayCommand]
+        public async Task RunTracerouteAsync()
+        {
+            if (string.IsNullOrWhiteSpace(TracerouteTarget) || IsTracerouteRunning) return;
+
+            IsTracerouteRunning = true;
+            TracerouteHops.Clear();
+            TracerouteStatusText = $"{TracerouteTarget} için rota izleme başlatılıyor...";
+
+            _tracerouteCts?.Dispose();
+            _tracerouteCts = new CancellationTokenSource();
+
+            var progress = new Progress<TracerouteHop>(hop =>
+            {
+                TracerouteHops.Add(hop);
+            });
+
+            try
+            {
+                await _networkService.RunTracerouteAsync(TracerouteTarget, TracerouteMaxHops, 2000, progress, _tracerouteCts.Token);
+                TracerouteStatusText = $"Rota izleme tamamlandı. Toplam {TracerouteHops.Count} atlama kaydedildi.";
+            }
+            catch (OperationCanceledException)
+            {
+                TracerouteStatusText = "Rota izleme kullanıcı tarafından iptal edildi.";
+            }
+            catch (Exception ex)
+            {
+                TracerouteStatusText = $"Hata: {ex.Message}";
+            }
+            finally
+            {
+                IsTracerouteRunning = false;
+                _tracerouteCts?.Dispose();
+                _tracerouteCts = null;
+            }
+        }
+
+        [RelayCommand]
+        public void CancelTraceroute()
+        {
+            if (_tracerouteCts != null && !_tracerouteCts.IsCancellationRequested)
+            {
+                _tracerouteCts.Cancel();
+                TracerouteStatusText = "İptal ediliyor...";
+            }
+        }
+
+        #endregion
+
+        #region DNS Benchmark (Sunucu Hız Karşılaştırma)
+
+        public ObservableCollection<DnsBenchmarkResult> DnsBenchmarkResults { get; } = new();
+
+        [ObservableProperty]
+        private bool _isDnsBenchmarking;
+
+        [ObservableProperty]
+        private string _dnsBenchmarkStatusText = "Popüler DNS sunucularını test etmek için 'Karşılaştırmayı Başlat' butonuna tıklayın.";
+
+        [ObservableProperty]
+        private DnsBenchmarkResult? _fastestDns;
+
+        [RelayCommand]
+        public async Task RunDnsBenchmarkAsync()
+        {
+            if (IsDnsBenchmarking) return;
+
+            IsDnsBenchmarking = true;
+            DnsBenchmarkResults.Clear();
+            FastestDns = null;
+            DnsBenchmarkStatusText = "Popüler DNS sunucuları (Cloudflare, Google, Quad9, OpenDNS vb.) test ediliyor...";
+
+            try
+            {
+                var list = await _networkService.CompareDnsServersAsync(CancellationToken.None);
+                foreach (var item in list)
+                {
+                    DnsBenchmarkResults.Add(item);
+                }
+                FastestDns = list.FirstOrDefault(r => r.IsFastest);
+                DnsBenchmarkStatusText = FastestDns != null
+                    ? $"Test tamamlandı! En hızlı DNS: {FastestDns.Provider} ({FastestDns.DisplayLatency})"
+                    : "Test tamamlandı.";
+            }
+            catch (Exception ex)
+            {
+                DnsBenchmarkStatusText = $"Hata: {ex.Message}";
+            }
+            finally
+            {
+                IsDnsBenchmarking = false;
+            }
+        }
+
+        #endregion
+
+        #region Bakım Güvenlik Duvarı Kuralları
+
+        public ObservableCollection<BakimArtifact> BakimFirewallRules { get; } = new();
+
+        [ObservableProperty]
+        private bool _isLoadingFirewallRules;
+
+        [ObservableProperty]
+        private string _firewallRulesStatusText = "Bakım engelleme kuralları yükleniyor...";
+
+        [RelayCommand]
+        public async Task LoadBakimFirewallRulesAsync()
+        {
+            IsLoadingFirewallRules = true;
+            try
+            {
+                var artifacts = await BakimArtifactsService.ListAsync();
+                var fwRules = artifacts.Where(a => a.Kind == BakimArtifactKind.FirewallRule).ToList();
+
+                BakimFirewallRules.Clear();
+                foreach (var r in fwRules)
+                {
+                    BakimFirewallRules.Add(r);
+                }
+
+                FirewallRulesStatusText = fwRules.Count > 0
+                    ? $"{fwRules.Count} adet Bakım engelleme kuralı aktif."
+                    : "Bakım tarafından eklenmiş aktif bir kural bulunamadı.";
+            }
+            catch (Exception ex)
+            {
+                FirewallRulesStatusText = $"Kurallar okunamadı: {ex.Message}";
+            }
+            finally
+            {
+                IsLoadingFirewallRules = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task RemoveBakimFirewallRuleAsync(BakimArtifact? rule)
+        {
+            if (rule == null) return;
+
+            var confirm = MessageBox.Show(
+                $"'{rule.Name}' güvenlik duvarı engelleme kuralını kaldırmak istiyor musunuz?",
+                "Kuralı Kaldır",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (confirm != MessageBoxResult.Yes) return;
+
+            var res = await BakimArtifactsService.RemoveAsync(rule);
+            if (res.Success)
+            {
+                BakimFirewallRules.Remove(rule);
+                FirewallRulesStatusText = $"{rule.Name} kuralı başarıyla kaldırıldı.";
+                _ = RefreshAsync();
+            }
+            else
+            {
+                MessageBox.Show(res.Message, "Kural Kaldırılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Modül Yaşam Döngüsü
@@ -686,6 +943,7 @@ namespace Bakım.ViewModels
             _isActive = true;
 
             ApplyRefreshInterval();
+            RefreshMeteredStatus();
             _timer.Start();
 
             try
@@ -705,6 +963,7 @@ namespace Bakım.ViewModels
 
             _timer.Stop();
             CancelSpeedTest();
+            CancelTraceroute();
             return Task.CompletedTask;
         }
 

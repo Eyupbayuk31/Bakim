@@ -8,6 +8,8 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using Bakım.Models;
+using Bakım.Core.Network;
+using Bakım.Core.Safety;
 
 namespace Bakım.Services
 {
@@ -21,6 +23,9 @@ namespace Bakım.Services
         Task<bool> RenewIpAddressAsync();
         Task<PortCheckResult> CheckPortAsync(string host, int port, int timeoutMs = 2500);
         Task RunSpeedTestAsync(IProgress<SpeedTestProgress> progress, CancellationToken ct);
+        Task RunTracerouteAsync(string host, int maxHops, int timeoutMs, IProgress<TracerouteHop> progress, CancellationToken ct);
+        Task<List<DnsBenchmarkResult>> CompareDnsServersAsync(CancellationToken ct);
+        bool IsMeteredConnection();
         Task<bool> BlockProcessInFirewallAsync(NetworkConnectionItem item);
         Task<bool> UnblockProcessInFirewallAsync(NetworkConnectionItem item);
         string LastFirewallError { get; }
@@ -103,6 +108,19 @@ namespace Bakım.Services
 
         [DllImport("dnsapi.dll", EntryPoint = "DnsFlushResolverCache")]
         private static extern int DnsFlushResolverCache();
+
+        [ComImport]
+        [Guid("DCB00008-570F-4A9B-8D69-199FDBA5723B")]
+        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        private interface INetworkCostManager
+        {
+            [PreserveSig]
+            int GetCost(out uint pCost, IntPtr pDestIPAddr);
+            [PreserveSig]
+            int GetDataPlanStatus(IntPtr pDataPlanStatus, IntPtr pDestIPAddr);
+            [PreserveSig]
+            int SetDestinationAddresses(uint length, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] IntPtr[] pDestIPAddrs, [MarshalAs(UnmanagedType.Bool)] bool bUseAsWildcard);
+        }
 
         #endregion
 
@@ -1117,6 +1135,278 @@ namespace Bakım.Services
             });
         }
 
+        public bool IsMeteredConnection()
+        {
+            try
+            {
+                var nlmType = Type.GetTypeFromCLSID(new Guid("DCB00C01-570F-4A9B-8D69-199FDBA5723B"));
+                if (nlmType != null)
+                {
+                    object? nlmObj = Activator.CreateInstance(nlmType);
+                    if (nlmObj is INetworkCostManager costManager)
+                    {
+                        int hr = costManager.GetCost(out uint cost, IntPtr.Zero);
+                        if (hr == 0 && (cost & ~1u) != 0)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Debug($"CostManager kontrol hatası: {ex.Message}", nameof(NetworkMonitorService));
+            }
+
+            try
+            {
+                var activeWwan = NetworkInterface.GetAllNetworkInterfaces()
+                    .Any(ni => ni.OperationalStatus == OperationalStatus.Up &&
+                               (ni.NetworkInterfaceType == NetworkInterfaceType.Wwanpp ||
+                                ni.NetworkInterfaceType == NetworkInterfaceType.Wwanpp2));
+                if (activeWwan) return true;
+            }
+            catch (Exception ex)
+            {
+                AppLog.Debug($"WWAN kontrol hatası: {ex.Message}", nameof(NetworkMonitorService));
+            }
+
+            try
+            {
+                using var costKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\DefaultMediaCost");
+                if (costKey != null)
+                {
+                    foreach (var valName in costKey.GetValueNames())
+                    {
+                        var val = costKey.GetValue(valName);
+                        if (val is int intVal && intVal > 1)
+                        {
+                            if (valName.Equals("WiFi", StringComparison.OrdinalIgnoreCase))
+                            {
+                                bool activeWifi = NetworkInterface.GetAllNetworkInterfaces().Any(ni =>
+                                    ni.OperationalStatus == OperationalStatus.Up &&
+                                    ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211);
+                                if (activeWifi) return true;
+                            }
+                            else if (valName.Equals("3G", StringComparison.OrdinalIgnoreCase) ||
+                                     valName.Equals("4G", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Debug($"DefaultMediaCost okuma hatası: {ex.Message}", nameof(NetworkMonitorService));
+            }
+
+            return false;
+        }
+
+        public async Task RunTracerouteAsync(string host, int maxHops, int timeoutMs, IProgress<TracerouteHop> progress, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(host)) return;
+            string cleanHost = host.Trim().Replace("http://", "").Replace("https://", "").Split('/')[0];
+            if (maxHops < 1) maxHops = 30;
+            if (maxHops > 64) maxHops = 64;
+            if (timeoutMs < 200) timeoutMs = 2000;
+
+            IPAddress targetIp;
+            try
+            {
+                if (!IPAddress.TryParse(cleanHost, out targetIp!))
+                {
+                    var hostEntry = await Dns.GetHostEntryAsync(cleanHost, ct);
+                    targetIp = hostEntry.AddressList.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
+                               ?? hostEntry.AddressList[0];
+                }
+            }
+            catch (Exception ex)
+            {
+                progress.Report(new TracerouteHop(1, "*", "*", -1, false, $"Hedef IP çözümlenemedi: {ex.Message}"));
+                return;
+            }
+
+            byte[] buffer = new byte[32];
+            new Random().NextBytes(buffer);
+
+            for (int ttl = 1; ttl <= maxHops; ttl++)
+            {
+                if (ct.IsCancellationRequested) break;
+
+                using var ping = new Ping();
+                var options = new PingOptions(ttl, dontFragment: true);
+
+                try
+                {
+                    var reply = await ping.SendPingAsync(targetIp, timeoutMs, buffer, options);
+
+                    if (reply.Status == IPStatus.Success)
+                    {
+                        string hostName = await TryResolveReverseDnsAsync(reply.Address, ct);
+                        progress.Report(new TracerouteHop(ttl, reply.Address.ToString(), hostName, reply.RoundtripTime, true, "Hedefe Ulaşıldı (OK)"));
+                        break;
+                    }
+                    else if (reply.Status == IPStatus.TtlExpired || reply.Status == IPStatus.TimeExceeded)
+                    {
+                        string ipStr = reply.Address?.ToString() ?? "*";
+                        string hostName = reply.Address != null ? await TryResolveReverseDnsAsync(reply.Address, ct) : "*";
+                        progress.Report(new TracerouteHop(ttl, ipStr, hostName, reply.RoundtripTime, true, "Yönlendirici"));
+                    }
+                    else if (reply.Status == IPStatus.TimedOut)
+                    {
+                        progress.Report(new TracerouteHop(ttl, "*", "*", -1, false, "Zaman Aşımı"));
+                    }
+                    else
+                    {
+                        string ipStr = reply.Address?.ToString() ?? "*";
+                        progress.Report(new TracerouteHop(ttl, ipStr, "*", reply.RoundtripTime, false, reply.Status.ToString()));
+                    }
+                }
+                catch (PingException)
+                {
+                    progress.Report(new TracerouteHop(ttl, "*", "*", -1, false, "Zaman Aşımı"));
+                }
+                catch (Exception ex)
+                {
+                    progress.Report(new TracerouteHop(ttl, "*", "*", -1, false, ex.Message));
+                }
+            }
+        }
+
+        private static async Task<string> TryResolveReverseDnsAsync(IPAddress ip, CancellationToken ct)
+        {
+            try
+            {
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                cts.CancelAfter(800);
+                var entry = await Dns.GetHostEntryAsync(ip.ToString(), cts.Token);
+                return string.IsNullOrWhiteSpace(entry.HostName) ? ip.ToString() : entry.HostName;
+            }
+            catch (Exception ex)
+            {
+                AppLog.Debug($"Ters DNS çözümleme hatası ({ip}): {ex.Message}", nameof(NetworkMonitorService));
+                return ip.ToString();
+            }
+        }
+
+        public async Task<List<DnsBenchmarkResult>> CompareDnsServersAsync(CancellationToken ct)
+        {
+            var servers = DnsBenchmarkServer.DefaultServers;
+            var tasks = servers.Select(async server =>
+            {
+                bool success = false;
+                long latencyMs = -1;
+                string statusMsg = "";
+
+                try
+                {
+                    latencyMs = await MeasureDnsQueryLatencyAsync(server.PrimaryIp, 2000, ct);
+                    if (latencyMs >= 0)
+                    {
+                        success = true;
+                        statusMsg = $"{server.Description} (Sorgu OK)";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Debug($"DNS sorgu testi başarısız ({server.PrimaryIp}): {ex.Message}", nameof(NetworkMonitorService));
+                }
+
+                if (!success)
+                {
+                    try
+                    {
+                        using var ping = new Ping();
+                        var reply = await ping.SendPingAsync(server.PrimaryIp, 2000);
+                        if (reply.Status == IPStatus.Success)
+                        {
+                            success = true;
+                            latencyMs = reply.RoundtripTime;
+                            statusMsg = $"{server.Description} (Ping OK)";
+                        }
+                        else
+                        {
+                            statusMsg = reply.Status.ToString();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        statusMsg = ex.Message;
+                    }
+                }
+
+                return new DnsBenchmarkResult(
+                    server.Provider,
+                    server.PrimaryIp,
+                    latencyMs >= 0 ? latencyMs : 9999,
+                    success,
+                    statusMsg);
+            });
+
+            var benchmarked = (await Task.WhenAll(tasks)).ToList();
+
+            var sorted = benchmarked
+                .OrderBy(r => !r.Success)
+                .ThenBy(r => r.LatencyMs)
+                .ToList();
+
+            if (sorted.Count > 0 && sorted[0].Success)
+            {
+                sorted[0] = sorted[0] with { IsFastest = true };
+            }
+
+            return sorted;
+        }
+
+        private static async Task<long> MeasureDnsQueryLatencyAsync(string dnsIp, int timeoutMs, CancellationToken ct)
+        {
+            if (!IPAddress.TryParse(dnsIp, out var serverIp)) return -1;
+
+            byte[] query = new byte[]
+            {
+                0xAB, 0xCD,
+                0x01, 0x00,
+                0x00, 0x01,
+                0x00, 0x00,
+                0x00, 0x00,
+                0x00, 0x00,
+                0x03, 0x77, 0x77, 0x77,
+                0x06, 0x67, 0x6F, 0x6F, 0x67, 0x6C, 0x65,
+                0x03, 0x63, 0x6F, 0x6D,
+                0x00,
+                0x00, 0x01,
+                0x00, 0x01
+            };
+
+            using var udp = new UdpClient();
+            udp.Client.ReceiveTimeout = timeoutMs;
+            udp.Client.SendTimeout = timeoutMs;
+
+            var sw = Stopwatch.StartNew();
+            var sendTask = udp.SendAsync(query, query.Length, new IPEndPoint(serverIp, 53));
+            var completedSend = await Task.WhenAny(sendTask, Task.Delay(timeoutMs, ct));
+            if (completedSend != sendTask) return -1;
+
+            var receiveTask = udp.ReceiveAsync(ct).AsTask();
+            var completedRecv = await Task.WhenAny(receiveTask, Task.Delay(timeoutMs, ct));
+            sw.Stop();
+
+            if (completedRecv == receiveTask)
+            {
+                var recvResult = await receiveTask;
+                if (recvResult.Buffer.Length > 12 && recvResult.Buffer[0] == 0xAB && recvResult.Buffer[1] == 0xCD)
+                {
+                    return Math.Max(1, sw.ElapsedMilliseconds);
+                }
+            }
+
+            return -1;
+        }
+
         #endregion
 
         #region 6. Güvenlik Duvarı ve Süreç Kontrolü
@@ -1156,8 +1446,15 @@ namespace Bakım.Services
         {
             try
             {
-                if (pid <= 4) return false; // Kernel & System guard
+                if (pid <= 4 || pid == Environment.ProcessId) return false; // Kernel & Self guard
                 var proc = Process.GetProcessById(pid);
+                string? imgPath = null;
+                try { imgPath = proc.MainModule?.FileName; } catch { }
+                string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                if (CriticalProcessPolicy.IsProtected(pid, proc.ProcessName, imgPath, winDir, Environment.ProcessId))
+                {
+                    return false;
+                }
                 proc.Kill(true);
                 return true;
             }

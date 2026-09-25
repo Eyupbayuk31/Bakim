@@ -1,45 +1,29 @@
-# Bakım v3.22.0 - Sürüm Notları
+# Bakım v3.23.0 - Sürüm Notları
 
-## Etkinlik Merkezi, Yeni Depolama & Disk Haritası, Kurulum Nöbetçisi v2 & Gelişmiş Sistem Denetimi
+## Ağ Teşhis Paketi, DNS Karşılaştırma, Güvenli Avcı Modu & Dürüst Sistem Araçları
 
-### 1. Etkinlik Merkezi (Activity Center)
-- **Tüm Değişikliklerin Tek Kaydı:** Sistemde gerçekleştirilen tüm bakım, temizlik, ince ayar, süreç askıya alma ve kaldırma eylemleri tek bir zaman çizelgesinde kayıt altına alınır.
-- **Tek Tıkla Geri Alma (Undo Support):** Yapılan değişiklikler ve uygulanan ayarlar doğrudan Etkinlik Merkezi üzerinden güvenle geri alınabilir.
-- **Arama ve Filtreleme:** Modül, önem düzeyi ve tarih aralığına göre anlık filtreleme ve JSON/metin dışa aktarma yeteneği.
+### 1. Ağ Teşhisleri & Canlı Traceroute (İzleme)
+- **TTL Tabanlı Paket Rotalama:** Ağ hedeflerine doğru giden her bir sekmedeki (hop) yönlendiriciyi ICMP TTL paketleriyle adım adım tespit eder.
+- **Ters DNS Çözümleme:** Her sekmenin IP adresi için arka planda asenkron ters alan adı çözümlemesi gerçekleştirilir.
+- **Canlı İlerleme & İptal Desteği:** Sekme sekme gerçek gecikme süreleri hesaplanır; istenildiğinde tanılama işlemi anında iptal edilebilir.
 
-### 2. Yeni Depolama Modülü & Disk Haritası (Treemap)
-- **Etkileşimli Disk Haritası (Treemap):** Sürücülerdeki alan kullanımını görselleştiren, klasör ve dosya blokları arasında derinlemesine gezinme imkanı sunan yüksek performanslı görsel harita.
-- **Büyük Dosya ve Alan Avcısı:** Disk alanını tüketen devasa dosyaların hızlı tespiti ve güvenli temizliği.
-- **Akıllı Yinelenen Dosyalar (Hardlink Farkındalığı):** Sabit bağlantı (NTFS hard link) içeren dosyaları tekilleştirerek diski yıpratmadan ve çift sayım yapmadan gerçek yinelenenleri tespit eder.
-- **Boş Klasör Temizleyici:** Güvenli kök kontrolleriyle sistem bütünlüğünü bozmadan gereksiz boş dizinleri ayıklar.
+### 2. DNS Benchmark & Hız Kıyaslama Aracı
+- **Global Güvenilir Sunucular:** Cloudflare (1.1.1.1, 1.0.0.1), Google (8.8.8.8, 8.8.4.4), Quad9 (9.9.9.9), OpenDNS (208.67.222.222), AdGuard (94.140.14.14) ve Comodo Secure (8.26.56.26) anycast sunucuları dahil edilmiştir.
+- **Gerçek DNS Sorgu Gecikmesi:** Standart ICMP ping yerine gerçek 53. port UDP DNS sorguları üzerinden yanıt süreleri ölçülür (fallback olarak ping desteklenir).
+- **En Hızlı Sunucu Etiketi:** En düşük ortalama gecikmeye sahip DNS sunucusu otomatik olarak tespit edilir ve "En Hızlı" rozetiyle vurgulanır.
 
-### 3. Kurulum Nöbetçisi v2 (Sensörler & Risk Motoru)
-- **Derin Sensörler ve Sistem Durumu:** Dosya sistemi (64 KB FSW tamponu), kayıt defteri hotspot'ları, Windows servisleri, zamanlanmış görevler ve güvenlik duvarı kuralları gerçek zamanlı izlenir.
-- **Risk Motoru ve Triage:** Kurulum paketinin oluşturduğu değişiklikler MITRE ATT&CK teknikleriyle puanlanır; şüpheli kalıcılık yöntemleri anında işaretlenir.
-- **Tek Tıkla Zararlı Müdahalesi:** Şüpheli kurulumların eklediği Run girdileri, servisler veya görevler doğrudan bulgu kartından tek tıkla devre dışı bırakılabilir.
-- **Kurulum Kaynağı Doğrulaması:** İndirilen sitenin MOTW kaynağı, dijital imza durumu ve PE başlık kontrolleri rapora işlenir.
+### 3. Tarifeli Ağ (Metered Connection) Tespiti ve Koruması
+- **Üç Katmanlı Denetim:** Windows COM `INetworkCostManager`, hücresel WWAN arayüz tespiti ve kayıt defteri `DefaultMediaCost` politikaları birlikte sorgulanır.
+- **Kota Tüketim Uyarısı:** Kotalı/mobil ağlarda gigabit hız testi çalıştırılmadan önce kullanıcıya veri harcama uyarısı gösterilir ve gereksiz kota tüketimi engellenir.
 
-### 4. Kaldırıcı v2 & Kanıt Tabanlı Kalıntı Analizi
-- **Ön Ayak İzi (Footprint) Toplama:** Kaldırma işlemi başlamadan önce programa ait kayıt defteri, servis, görev, kısayol ve dosya izleri eksiksiz haritalanır.
-- **Kanıt Tabanlı Temizlik:** Yalnızca kesin (`Certain`) ve yüksek güvenli kalıntılar önerilir; başka uygulamaların veya ortak yayıncıların dosyaları asla silinmez.
-- **Tek Örnek & IPC (Single Instance):** Sağ tıkla kaldırma çağrıları çalışan Bakım örneğine adlandırılmış kanal (Named Pipe) üzerinden hafif ve UAC istemi olmaksızın iletilir.
-- **Kaldırma Geçmişi:** Yapılan tüm kaldırma işlemleri, temizlenen alanlar ve kayıt defteri geri alma noktaları saklanır.
+### 4. Ağ Güvenlik Duvarı Yönetimi & Analizör Entegrasyonu
+- **Bakım Güvenlik Duvarı Kuralları:** Bakım tarafından oluşturulan `Bakim_Block_*` güvenlik duvarı engelleme kuralları ayrı bir kartta listelenir; kullanıcı tek tıkla engelleri kaldırabilir.
+- **Ağ Çekmecesinden Derin Analiz:** Aktif soket ve bağlantı listesindeki şüpheli süreçler için çekmeceden tek tıkla `Analizör ile Tara` eylemi tetiklenebilir.
 
-### 5. TweakEngine & Veri Tabanlı İnce Ayar Kataloğu
-- **JSON Tabanlı Ayar Motoru:** İnce ayarlar hardcoded mantıktan çıkarılarak şema versiyonlu JSON kataloglarına (`Assets/tweaks/*.json`) taşındı.
-- **Yaz-Oku Doğrulaması:** Her ayar uygulandıktan sonra sistemden doğrulanır; uygulanamayan ayarlar dürüstçe raporlanır.
-- **Güvenlik Rozetleri:** Güvenlik etkisi olan ayarlar belirgin rozetlerle işaretlenir.
+### 5. Avcı Modu (Hunter) Sistem Koruması
+- **Kritik Süreç Koruması:** `CriticalProcessPolicy` muhafızı Avcı Modu'na entegre edildi. Windows işletim sisteminin kritik süreçleri (csrss, lsass, smss, winlogon, services vb.) yanlışlıkla sonlandırılamaz; koruma uyarısı gösterilir.
+- **Analizör Entegrasyonu:** Avcı Modu tehdit analiz diyalogu tam DI (`IAutorunsScannerEngine`, `IVirusTotalCheckService`) bileşenleriyle güçlendirildi.
 
-### 6. Performans, Başlangıç ve Hizmet Yönetimi
-- **Windows Açılış Ölçümleri:** Tahmini süreler yerine Windows Olay Günlüğü'nden (Event 100) okunan gerçek önyükleme ve masaüstü hazır olma süreleri sunulur.
-- **Güvenli Hizmet Profilleri:** Windows servisleri için güvenli, hafif ve oyuncu profilleri; kritik sistem servislerini kapatmaya karşı tekil koruma politikası.
-- **Askıya Alınan Süreç Defteri & Oyun Modu:** Oyun modu profiliyle arka plan kaynakları dondurulur, çıkışta önceki güç planı ve süreç durumları eksiksiz geri yüklenir.
-- **Olaylar & Güvenilirlik Zaman Çizelgesi:** Windows çökme ve güvenilirlik olayları (Reliability Index) entegre zaman çizelgesinde incelenebilir.
-
-### 7. Mağaza & Winget Güncellemeleri
-- **Yazılım Güncellemeleri Sekmesi:** Sistemde kurulu tüm yazılımların winget üzerinden güncel sürümleri listelenir ve tek tıkla toplu güncellenebilir.
-- **Resmî Paket Sağlayıcıları:** Üçüncü taraf riskli betikler yerine resmî winget ve doğrulanmış Microsoft kaynakları kullanılır.
-
-### 8. Bilgi Mimarisi v2 & Fluent 2 Tasarım Sistemi
-- **Gruplandırılmış Kenar Çubuğu:** Genel Bakış, Temizlik & Depolama, Performans, Güvenlik, Yazılım ve Sistem kategorileriyle sade ve modern navigasyon.
-- **Tasarım Token'ları & Tipografi Ölçeği:** Semantik renk fırçaları, standart yazı boyutları ve yumuşak kavislerle kusursuz Windows 11 Fluent 2 deneyimi.
+### 6. TrustedInstaller ve Sistem Araçları Dürüstlüğü (S-17 / DEN G-6)
+- **Şeffaf Geri Düşüş Raporlaması:** TrustedInstaller belirteci veya süreci temin edilemediğinde ve Standart Yönetici (Administrator) seviyesinde çalıştırma yapıldığında, kullanıcıya sahte TI başarısı yerine durum dürüstçe (`TrustedInstallerLaunchOutcome`) bildirilir.
+- **Net Durum Bildirimi:** Arayüz banner'ında komutun gerçekten TrustedInstaller olarak mı yoksa Yönetici haklarıyla mı çalıştığı açıkça ayrıştırılır.
