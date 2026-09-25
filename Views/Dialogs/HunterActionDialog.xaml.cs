@@ -172,7 +172,11 @@ namespace Bakım.Views.Dialogs
             try
             {
                 var analyzer = App.GetService<Services.IFileThreatAnalyzerService>();
-                var result = await analyzer.AnalyzeFileAsync(exe);
+                ThreatAnalysisResult result;
+                using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.Processes, $"{TargetInfo.ProcessName}.exe (PID {TargetInfo.ProcessId})"))
+                {
+                    result = await analyzer.AnalyzeFileAsync(exe);
+                }
                 var dialog = new ThreatAnalysisDialog(result, analyzer);
                 dialog.Owner = this;
                 dialog.ShowDialog();

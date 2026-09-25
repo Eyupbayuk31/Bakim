@@ -135,7 +135,10 @@ namespace Bakım.Views.Dialogs
                 var analyzerVm = App.TryGetService<AnalyzerViewModel>();
                 if (analyzerVm != null && _report.AddedExecutables.Count > 0)
                 {
-                    await analyzerVm.AnalyzeSpecificFilesAsync(_report.AddedExecutables);
+                    using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.SetupSentinel, $"Kurulum: {_report.AppName}"))
+                    {
+                        await analyzerVm.AnalyzeSpecificFilesAsync(_report.AddedExecutables);
+                    }
                 }
 
                 Close();

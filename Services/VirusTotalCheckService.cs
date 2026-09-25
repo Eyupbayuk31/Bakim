@@ -141,6 +141,14 @@ namespace Bakım.Services
             if (_cache.TryGetValue(sha256Hash, out var cachedResult))
                 return cachedResult;
 
+            // Hash itibar önbelleği (§6.5): aynı hash son 7 günde sorgulandıysa API kotası harcanmaz.
+            var fromHistory = TryFromHistory(sha256Hash);
+            if (fromHistory.HasValue)
+            {
+                _cache[sha256Hash] = fromHistory.Value;
+                return fromHistory.Value;
+            }
+
             string key = !string.IsNullOrWhiteSpace(apiKey) ? apiKey : ApiKey;
             if (string.IsNullOrWhiteSpace(key))
             {
@@ -195,6 +203,31 @@ namespace Bakım.Services
             }
 
             return (-1, -1, "Bilinmiyor");
+        }
+
+        private static readonly TimeSpan HistoryCacheAge = TimeSpan.FromDays(7);
+
+        private static (int malicious, int total, string message)? TryFromHistory(string sha256Hash)
+        {
+            try
+            {
+                var history = App.TryGetService<History.IAnalysisHistoryService>();
+                var hit = history?.GetByHash(sha256Hash).FirstOrDefault(r =>
+                    r.VirusTotalMalicious.HasValue && r.VirusTotalTotal is > 0 &&
+                    r.VirusTotalCheckedAtUtc is { } at && DateTime.UtcNow - at <= HistoryCacheAge);
+                if (hit == null) return null;
+
+                int malicious = hit.VirusTotalMalicious!.Value;
+                int total = hit.VirusTotalTotal!.Value;
+                int days = (int)(DateTime.UtcNow - hit.VirusTotalCheckedAtUtc!.Value).TotalDays;
+                string age = days == 0 ? "bugün" : $"{days} gün önce";
+                string msg = malicious > 0 ? $"{malicious}/{total} Zararlı! ({age})" : $"{total - malicious}/{total} Temiz ({age})";
+                return (malicious, total, msg);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public void OpenInBrowser(string sha256OrUrl)

@@ -111,6 +111,7 @@ public class DependencyInjectionTests
     [InlineData(typeof(ITelemetryService))]
     [InlineData(typeof(ICommandPaletteService))]
     [InlineData(typeof(IFileThreatAnalyzerService))]
+    [InlineData(typeof(Bakım.Services.History.IAnalysisHistoryService))]
     [InlineData(typeof(INavigationService))]
     [InlineData(typeof(ITrayIconService))]
     [InlineData(typeof(IBackgroundMaintenanceService))]

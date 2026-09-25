@@ -312,6 +312,17 @@
                                TextWrapping="Wrap"
                                Margin="{StaticResource Gap.Top.XS}"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+
+                    <!-- Analizör Geçmişi: aynı dosyanın önceki analizleri -->
+                    <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.XS}"
+                                Visibility="{Binding HasPreviousAnalyses, Converter={StaticResource BoolToVis}}">
+                        <ui:SymbolIcon Symbol="History20" FontSize="{StaticResource Icon.SM}" Margin="{StaticResource Gap.IconText}"
+                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="{Binding PreviousAnalysesText}"
+                                   FontSize="{StaticResource Font.Body}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>

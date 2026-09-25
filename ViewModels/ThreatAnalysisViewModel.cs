@@ -105,6 +105,39 @@ namespace Bakım.ViewModels
             _virusTotalService = virusTotalService ?? new VirusTotalCheckService();
 
             StatusText = $"Analiz tamamlandı. Risk Skoru: %{result.RiskScore} ({result.RiskLevelText})";
+            PreviousAnalysesText = BuildPreviousAnalysesText(result);
+        }
+
+        /// <summary>
+        /// "Bu dosya daha önce 2 kez analiz edildi (son: 12 Eyl, Risk 58, Nöbetçi)" — Analizör Geçmişi'nden.
+        /// Güvenilen dosyalar için bu da belirtilir.
+        /// </summary>
+        public string PreviousAnalysesText { get; }
+        public bool HasPreviousAnalyses => PreviousAnalysesText.Length > 0;
+
+        private static string BuildPreviousAnalysesText(ThreatAnalysisResult result)
+        {
+            try
+            {
+                var history = App.TryGetService<Services.History.IAnalysisHistoryService>();
+                if (history == null || string.IsNullOrEmpty(result.Sha256)) return string.Empty;
+
+                // Az önce kaydedilen bu analiz (son dakika içindeki en yeni kayıt) sayılmaz.
+                var records = history.GetByHash(result.Sha256).ToList();
+                if (records.Count > 0 && DateTime.UtcNow - records[0].AnalyzedAtUtc < TimeSpan.FromMinutes(1)) records.RemoveAt(0);
+
+                bool trusted = history.IsTrustedHash(result.Sha256);
+                if (records.Count == 0) return trusted ? "Bu dosyaya daha önce güvendiniz." : string.Empty;
+
+                var last = records[0];
+                string text = $"Bu dosya daha önce {records.Count} kez analiz edildi (son: {last.AnalyzedAtUtc.ToLocalTime():d MMM HH:mm}, " +
+                              $"Risk {last.RiskScore}, {Core.History.AnalysisVerdicts.Display(last.Source)}).";
+                return trusted ? text + " Güvendiğiniz bir dosya." : text;
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
         [RelayCommand]

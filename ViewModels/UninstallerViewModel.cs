@@ -782,7 +782,11 @@ namespace Bakım.ViewModels
             try
             {
                 var analyzer = App.GetService<IFileThreatAnalyzerService>();
-                var analysisResult = await analyzer.AnalyzeFileAsync(targetFile);
+                ThreatAnalysisResult analysisResult;
+                using (Bakım.Core.History.AnalysisContext.Begin(Bakım.Core.History.AnalysisSource.Uninstaller, app.DisplayName))
+                {
+                    analysisResult = await analyzer.AnalyzeFileAsync(targetFile);
+                }
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {

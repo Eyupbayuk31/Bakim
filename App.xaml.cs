@@ -391,7 +391,14 @@ namespace Bakım
             // bu yüzden ViewModel'ler onları elle `new` ile üretmek zorunda kalıyordu.
             services.AddSingleton<ITelemetryService, TelemetryService>();
             services.AddSingleton<ICommandPaletteService, CommandPaletteService>();
-            services.AddSingleton<IFileThreatAnalyzerService, FileThreatAnalyzerService>();
+            // Analizör Geçmişi (§6): analiz servisi kaydeden bir dekoratörle sarılır; hangi modül
+            // analiz ederse etsin sonuç geçmişe yazılır.
+            services.AddSingleton<Bakım.Services.History.IAnalysisHistoryService, Bakım.Services.History.AnalysisHistoryService>();
+            services.AddSingleton<FileThreatAnalyzerService>();
+            services.AddSingleton<IFileThreatAnalyzerService>(sp => new Bakım.Services.History.RecordingFileThreatAnalyzer(
+                sp.GetRequiredService<FileThreatAnalyzerService>(),
+                sp.GetRequiredService<Bakım.Services.History.IAnalysisHistoryService>(),
+                sp.GetRequiredService<ILogService>()));
             services.AddSingleton<IStoreService, StoreService>();
             services.AddSingleton<IDuplicateFinderService, DuplicateFinderService>();
             services.AddSingleton<INavigationService>(_ => NavigationService.Instance);
@@ -414,7 +421,9 @@ namespace Bakım
             services.AddTransient<PrivacyDebloatViewModel>();
             services.AddTransient<CrashAnalyzerViewModel>();
             services.AddTransient<UninstallerViewModel>();
-            services.AddTransient<AnalyzerViewModel>();
+            // Tekil: Kurulum Nöbetçisi "Analizörle tara" dediğinde ekrandaki örneğe dosya eklemeli.
+            // Transient iken her çağrı görünmeyen yeni bir örnek (ve yeni bir tam tarama) üretiyordu.
+            services.AddSingleton<AnalyzerViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();
