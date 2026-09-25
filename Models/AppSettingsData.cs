@@ -1,3 +1,4 @@
+using System;
 namespace Bakım.Models
 {
     /// <summary>
@@ -50,6 +51,19 @@ namespace Bakım.Models
         // --- Kurulum Nöbetçisi (Sentinel Setup Guard) ---
         /// <summary>Yeni kurulum başlatıldığında arka planda otomatik algılayıp izleme.</summary>
         public bool IsSentinelSetupGuardEnabled { get; set; } = true;
+
+        // --- Gezinme (Faz 4, §2.3) ---
+        /// <summary>Açılışta son açık sayfayı yükle (kapalıysa her zaman Kontrol Paneli).</summary>
+        public bool OpenLastModuleOnStartup { get; set; } = true;
+
+        /// <summary>Son açık sayfanın gezinme anahtarı.</summary>
+        public string LastModule { get; set; } = "Dashboard";
+
+        /// <summary>Etkinlik Merkezi'nin en son görüldüğü an (okunmamış rozeti için).</summary>
+        public DateTime? ActivitySeenUtc { get; set; }
+
+        /// <summary>Kurulum Nöbetçisi sayfasının en son görüldüğü an.</summary>
+        public DateTime? SentinelSeenUtc { get; set; }
 
         public AppSettingsData Clone() => (AppSettingsData)MemberwiseClone();
     }

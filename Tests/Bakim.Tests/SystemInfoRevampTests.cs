@@ -122,30 +122,36 @@ public class SystemInfoRevampTests
         }
     }
 
+    private static StorageViewModel NewStorage() =>
+        new(new DuplicateFinderService(), new MockSystemInfoService());
+
+    private static SystemInfoViewModel NewSystemInfo() =>
+        new(new MockSystemInfoService(), new MockSettingsService(), NavigationService.Instance, NewStorage());
+
     [Fact]
     public async Task SystemInfoViewModel_SubTabSwitching_UpdatesActiveTabProperties()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
-        
+        var vm = NewSystemInfo();
+
         Assert.True(vm.IsHardwareTab);
         Assert.False(vm.IsSmartTab);
-        Assert.False(vm.IsLargeFilesTab);
 
         vm.SwitchSubTab("Smart");
         Assert.False(vm.IsHardwareTab);
         Assert.True(vm.IsSmartTab);
-        Assert.False(vm.IsLargeFilesTab);
 
-        vm.SwitchSubTab("LargeFiles");
-        Assert.False(vm.IsHardwareTab);
-        Assert.False(vm.IsSmartTab);
-        Assert.True(vm.IsLargeFilesTab);
+        // Büyük dosyalar ve yinelenenler Faz 4'te Depolama sayfasına taşındı.
+        var storage = NewStorage();
+        Assert.True(storage.IsLargeFilesTab);
+        storage.SwitchSubTab("Duplicates");
+        Assert.False(storage.IsLargeFilesTab);
+        Assert.True(storage.IsDuplicatesTab);
     }
 
     [Fact]
     public async Task SystemInfoViewModel_LargeFilesCategoryFilter_FiltersCorrectly()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewStorage();
         
         await vm.ScanLargeFilesAsync();
         Assert.Equal(3, vm.LargeFiles.Count);
@@ -166,7 +172,7 @@ public class SystemInfoRevampTests
     [Fact]
     public async Task SystemInfoViewModel_TelemetryAndSpecs_PopulatedCorrectly()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewSystemInfo();
         await vm.RefreshAsync();
 
         Assert.Equal("AMD Ryzen 5 5600 6-Core", vm.Hardware.CpuName);
@@ -196,7 +202,7 @@ public class SystemInfoRevampTests
     [Fact]
     public async Task SystemInfoViewModel_SetThreshold_AcceptsStringOrNumberWithoutException()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewStorage();
 
         // 1. String parametre ("500") geçildiğinde hata vermemeli ve 500 MB eşiğini seçmeli
         vm.SetThresholdCommand.Execute("500");
@@ -224,7 +230,7 @@ public class SystemInfoRevampTests
     [Fact]
     public void SystemInfoViewModel_CategoryFilterChips_UpdateComputedSelectionBooleans()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewStorage();
 
         Assert.True(vm.IsCategoryAll);
         Assert.False(vm.IsCategoryVideo);
@@ -250,7 +256,7 @@ public class SystemInfoRevampTests
     [Fact]
     public async Task SystemInfoViewModel_LiveSearch_FiltersByNameAndExtension()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewStorage();
         await vm.ScanLargeFilesAsync();
 
         Assert.Equal(3, vm.FilteredLargeFiles.Count);
@@ -273,7 +279,7 @@ public class SystemInfoRevampTests
     [Fact]
     public async Task SystemInfoViewModel_Sorting_OrdersCorrectly()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewStorage();
         await vm.ScanLargeFilesAsync();
 
         // Default: SizeDesc (4GB, 2GB, 1.46GB)
@@ -296,7 +302,7 @@ public class SystemInfoRevampTests
     [Fact]
     public async Task SystemInfoViewModel_MultiSelectAndBatchActions_WorkCorrectly()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewStorage();
         await vm.ScanLargeFilesAsync();
 
         Assert.Equal(3, vm.FilteredLargeFiles.Count);
@@ -325,7 +331,7 @@ public class SystemInfoRevampTests
     [Fact]
     public async Task SystemInfoViewModel_CategoryStats_CalculatesProportions()
     {
-        var vm = new SystemInfoViewModel(new MockSystemInfoService(), new MockSettingsService());
+        var vm = NewStorage();
         await vm.ScanLargeFilesAsync();
 
         Assert.NotNull(vm.CategoryStats);

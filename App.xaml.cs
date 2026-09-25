@@ -452,6 +452,11 @@ namespace Bakım
             services.AddSingleton<AnalyzerViewModel>();
             services.AddSingleton<AnalyzerHistoryViewModel>();
             services.AddSingleton<ActivityCenterViewModel>();
+            // Faz 4 IA: yeni sayfalar. Depolama tekil: Sistem Bilgisi'nden tarama başlatılabilir.
+            services.AddSingleton<StorageViewModel>();
+            services.AddTransient<WindowsToolsViewModel>();
+            services.AddSingleton<GameModeViewModel>();
+            services.AddSingleton<SentinelViewModel>();
             services.AddTransient<WindowsTweakerViewModel>();
             services.AddTransient<TweakerCategoriesViewModel>();
             services.AddTransient<SettingsViewModel>();

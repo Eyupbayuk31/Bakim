@@ -278,3 +278,18 @@ public sealed class ActivityQueryTests
         Assert.Contains("\"\"\"Foo Toolbar\"\" kaldırıldı\"", csv);
     }
 }
+
+public sealed class DurationTextTests
+{
+    [Theory]
+    [InlineData(0, "0 sn")]
+    [InlineData(45, "45 sn")]
+    [InlineData(60, "1 dk")]
+    [InlineData(725, "12 dk")]
+    [InlineData(3600, "1 sa")]
+    [InlineData(3900, "1 sa 5 dk")]
+    [InlineData(86400 * 2 + 3 * 3600, "2 gün 3 sa")]
+    [InlineData(-5, "0 sn")]
+    public void Describe(int seconds, string expected) =>
+        Assert.Equal(expected, Bakım.Core.Text.DurationText.Describe(TimeSpan.FromSeconds(seconds)));
+}

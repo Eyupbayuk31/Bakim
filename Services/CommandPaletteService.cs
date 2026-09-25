@@ -158,9 +158,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Donanım & Disk Bilgisi",
+                    Title = "Sistem Bilgisi",
                     Category = "Sayfa Navigasyonu",
-                    Description = "Sistem özellikleri, disk S.M.A.R.T sağlığı ve büyük dosya tarayıcı.",
+                    Description = "Donanım özellikleri, sürücüler ve disk S.M.A.R.T sağlığı.",
                     IconName = "Desktop24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "SystemInfo",
@@ -235,6 +235,36 @@ namespace Bakım.Services
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Analyzer",
                     KeyboardShortcut = "Analizör"
+                },
+                new()
+                {
+                    Title = "Depolama — Büyük Dosyalar, Yinelenenler, Boş Klasörler",
+                    Category = "Sayfa Navigasyonu",
+                    Description = "Diskte yer kaplayan büyük dosyaları, yinelenen kopyaları ve boş klasörleri bulur.",
+                    IconName = "HardDrive24",
+                    ActionKind = CommandActionKind.Navigate,
+                    TargetParameter = "Storage",
+                    KeyboardShortcut = "Depolama"
+                },
+                new()
+                {
+                    Title = "Oyun Modu",
+                    Category = "Sayfa Navigasyonu",
+                    Description = "Performans güç planı ve arka plan işlerini duraklatma; son oturumlar.",
+                    IconName = "Games24",
+                    ActionKind = CommandActionKind.Navigate,
+                    TargetParameter = "GameMode",
+                    KeyboardShortcut = "Oyun"
+                },
+                new()
+                {
+                    Title = "Kurulum Nöbetçisi — Kurulum Geçmişi",
+                    Category = "Sayfa Navigasyonu",
+                    Description = "Kurulumların eklediği dosya, başlangıç girdisi ve hizmetlerin raporları.",
+                    IconName = "ShieldCheckmark24",
+                    ActionKind = CommandActionKind.Navigate,
+                    TargetParameter = "Sentinel",
+                    KeyboardShortcut = "Nöbetçi"
                 },
                 new()
                 {
@@ -323,12 +353,12 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Yazılım Mağazası: Sistem Konsolları & Klasik Araçlar",
-                    Category = "Yazılım & Runtimes",
-                    Description = "24+ Windows yönetim konsolu, klasik Fotoğraf Görüntüleyici ve sistem araçları.",
-                    IconName = "WindowWrench24",
+                    Title = "Windows Araçları: Konsollar & Klasik Araçlar",
+                    Category = "Sayfa Navigasyonu",
+                    Description = "Windows yönetim konsolları, klasik Fotoğraf Görüntüleyici ve sistem araçları.",
+                    IconName = "Toolbox24",
                     ActionKind = CommandActionKind.Navigate,
-                    TargetParameter = "Store:ClassicTools"
+                    TargetParameter = "WindowsTools"
                 }
             };
         }

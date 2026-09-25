@@ -27,7 +27,11 @@ namespace Bakım.ViewModels
         WindowsTweaker,
         Settings,
         Store,
-        ActivityCenter
+        ActivityCenter,
+        Storage,
+        GameMode,
+        Sentinel,
+        WindowsTools
     }
 
     /// <summary>XAML'deki metin anahtarlarını modüllere çeviren tek kayıt tablosu.</summary>
@@ -63,6 +67,16 @@ namespace Bakım.ViewModels
                 ["Activity"] = AppModule.ActivityCenter,
                 ["ActivityCenter"] = AppModule.ActivityCenter,
                 ["Etkinlik"] = AppModule.ActivityCenter,
+                ["Storage"] = AppModule.Storage,
+                ["Depolama"] = AppModule.Storage,
+                ["GameMode"] = AppModule.GameMode,
+                ["OyunModu"] = AppModule.GameMode,
+                ["Sentinel"] = AppModule.Sentinel,
+                ["SetupSentinel"] = AppModule.Sentinel,
+                ["Nobetci"] = AppModule.Sentinel,
+                ["WindowsTools"] = AppModule.WindowsTools,
+                ["Tools"] = AppModule.WindowsTools,
+                ["ClassicTools"] = AppModule.WindowsTools,
             };
 
         /// <summary>

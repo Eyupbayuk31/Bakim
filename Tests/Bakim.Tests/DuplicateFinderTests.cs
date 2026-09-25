@@ -151,10 +151,7 @@ namespace Bakim.Tests
         public void ViewModel_SmartSelection_PreservesOldestOriginalFile()
         {
             // Arrange
-            var vm = new SystemInfoViewModel(
-                new SystemInfoRevampTests.MockSystemInfoService(),
-                new SystemInfoRevampTests.MockSettingsService(),
-                _service);
+            var vm = new StorageViewModel(_service, new SystemInfoRevampTests.MockSystemInfoService());
 
             var group = new DuplicateFileGroup
             {
@@ -216,10 +213,7 @@ namespace Bakim.Tests
         public void ViewModel_ToggleSelectAllEmptyFolders_HandlesBothStringAndBooleanParameters(object parameter, bool expected)
         {
             // Arrange
-            var vm = new SystemInfoViewModel(
-                new SystemInfoRevampTests.MockSystemInfoService(),
-                new SystemInfoRevampTests.MockSettingsService(),
-                _service);
+            var vm = new StorageViewModel(_service, new SystemInfoRevampTests.MockSystemInfoService());
 
             var folder1 = new EmptyFolderItem { FolderName = "Dir1", FolderPath = "C:\\test\\Dir1", IsSelected = !expected };
             var folder2 = new EmptyFolderItem { FolderName = "Dir2", FolderPath = "C:\\test\\Dir2", IsSelected = !expected };

@@ -35,6 +35,21 @@ namespace Bakım
             {
                 theme.ApplyBackdrop(settings.Current.IsMicaEnabled);
             };
+
+            // Farenin geri/ileri düğmeleri modüller arası gezinme geçmişinde dolaşır (§2.3).
+            PreviewMouseUp += (_, e) =>
+            {
+                if (e.ChangedButton == System.Windows.Input.MouseButton.XButton1 && viewModel.GoBackCommand.CanExecute(null))
+                {
+                    viewModel.GoBackCommand.Execute(null);
+                    e.Handled = true;
+                }
+                else if (e.ChangedButton == System.Windows.Input.MouseButton.XButton2 && viewModel.GoForwardCommand.CanExecute(null))
+                {
+                    viewModel.GoForwardCommand.Execute(null);
+                    e.Handled = true;
+                }
+            };
         }
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)

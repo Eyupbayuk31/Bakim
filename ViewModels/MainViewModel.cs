@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,6 +30,9 @@ namespace Bakım.ViewModels
         private readonly ITelemetryService _telemetryService;
         private readonly DispatcherTimer _miniTelemetryTimer;
         private readonly ILogService _log;
+        private readonly IAppSettingsService _appSettings;
+        private readonly Bakım.Services.Activity.IActivityService _activity;
+        private readonly ISetupSentinelService _sentinelService;
 
         // Alt modüller ilk erişimde oluşturulur: açılışta 14 ViewModel birden
         // ayağa kalkmaz, 14 servis grafiği çözülmez.
@@ -44,6 +48,10 @@ namespace Bakım.ViewModels
         private readonly Lazy<UninstallerViewModel> _uninstaller;
         private readonly Lazy<AnalyzerViewModel> _analyzer;
         private readonly Lazy<ActivityCenterViewModel> _activityCenter;
+        private readonly Lazy<StorageViewModel> _storage;
+        private readonly Lazy<WindowsToolsViewModel> _windowsTools;
+        private readonly Lazy<GameModeViewModel> _gameModePage;
+        private readonly Lazy<SentinelViewModel> _sentinel;
         private readonly Lazy<WindowsTweakerViewModel> _windowsTweaker;
         private readonly Lazy<SettingsViewModel> _settings;
         private readonly Lazy<TweakerCategoriesViewModel> _tweakerCategories;
@@ -60,8 +68,14 @@ namespace Bakım.ViewModels
             IBackgroundMaintenanceService maintenanceService,
             IGameModeService gameModeService,
             ITelemetryService telemetryService,
-            ILogService log)
+            ILogService log,
+            IAppSettingsService settings,
+            Bakım.Services.Activity.IActivityService activity,
+            ISetupSentinelService sentinel)
         {
+            _appSettings = settings;
+            _activity = activity;
+            _sentinelService = sentinel;
             _services = services;
             _paletteService = paletteService;
             _themeService = themeService;
@@ -99,6 +113,10 @@ namespace Bakım.ViewModels
             _uninstaller = Lazy(_services.GetRequiredService<UninstallerViewModel>);
             _analyzer = Lazy(_services.GetRequiredService<AnalyzerViewModel>);
             _activityCenter = Lazy(_services.GetRequiredService<ActivityCenterViewModel>);
+            _storage = Lazy(_services.GetRequiredService<StorageViewModel>);
+            _windowsTools = Lazy(_services.GetRequiredService<WindowsToolsViewModel>);
+            _gameModePage = Lazy(_services.GetRequiredService<GameModeViewModel>);
+            _sentinel = Lazy(_services.GetRequiredService<SentinelViewModel>);
             _windowsTweaker = Lazy(_services.GetRequiredService<WindowsTweakerViewModel>);
             _settings = Lazy(_services.GetRequiredService<SettingsViewModel>);
             _tweakerCategories = Lazy(_services.GetRequiredService<TweakerCategoriesViewModel>);
@@ -113,9 +131,24 @@ namespace Bakım.ViewModels
             FilteredCommands = new ObservableCollection<CommandPaletteItem>(
                 _paletteService.GetAllCommands().Take(12));
 
-            // Açılış modülü
+            // Kenar çubuğu (IA v2, §2.1)
+            NavGroups = NavCatalog.Build();
+            SettingsNavItem = NavCatalog.BuildSettingsItem();
+            _activity.Changed += (_, _) => OnUiThread(UpdateBadges);
+            _sentinelService.SetupFinished += _ => OnUiThread(UpdateBadges);
+
+            // Açılış modülü: ayar açıksa son sayfa (§2.3), değilse Kontrol Paneli.
             _currentView = Dashboard;
             _ = ActivateAsync(Dashboard);
+            UpdateNavSelection(AppModule.Dashboard);
+            string last = _appSettings.Current.LastModule;
+            if (_appSettings.Current.OpenLastModuleOnStartup &&
+                AppModuleRegistry.TryResolve(last, out var lastModule) && lastModule != AppModule.Dashboard)
+            {
+                Navigate(last, recordHistory: false);
+            }
+            UpdateBadges();
+            UpdateSentinelStatus();
 
             _ = CheckForUpdatesOnStartupAsync();
         }
@@ -137,6 +170,10 @@ namespace Bakım.ViewModels
         public UninstallerViewModel Uninstaller => _uninstaller.Value;
         public AnalyzerViewModel Analyzer => _analyzer.Value;
         public ActivityCenterViewModel ActivityCenter => _activityCenter.Value;
+        public StorageViewModel Storage => _storage.Value;
+        public WindowsToolsViewModel WindowsTools => _windowsTools.Value;
+        public GameModeViewModel GameModePage => _gameModePage.Value;
+        public SentinelViewModel Sentinel => _sentinel.Value;
         public WindowsTweakerViewModel WindowsTweaker => _windowsTweaker.Value;
         public SettingsViewModel Settings => _settings.Value;
         public TweakerCategoriesViewModel TweakerCategories => _tweakerCategories.Value;
@@ -201,6 +238,8 @@ namespace Bakım.ViewModels
             // Pencere tepside/simge durumundayken kenar çubuğu görünmez; örnekleme boşa gider.
             var window = System.Windows.Application.Current?.MainWindow;
             if (window == null || !window.IsVisible || window.WindowState == System.Windows.WindowState.Minimized) return;
+
+            UpdateSentinelStatus();
 
             try
             {
@@ -373,14 +412,15 @@ namespace Bakım.ViewModels
                         }
                         else if (parts.Length == 2 && parts[0] == "Store")
                         {
-                            Navigate("Store");
                             if (parts[1] == "ClassicTools")
                             {
-                                Store.SwitchToClassicTools();
+                                // Klasik araçlar Mağaza'dan Windows Araçları sayfasına taşındı (§2.2).
+                                Navigate("WindowsTools");
                             }
-                            else if (parts[1] == "Presets")
+                            else
                             {
-                                Store.SwitchToPresets();
+                                Navigate("Store");
+                                if (parts[1] == "Presets") Store.SwitchToPresets();
                             }
                         }
                     }
@@ -553,7 +593,9 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
-        public void Navigate(string target)
+        public void Navigate(string target) => Navigate(target, recordHistory: true);
+
+        private void Navigate(string target, bool recordHistory)
         {
             if (string.Equals(target, "PrivacyDebloat", StringComparison.OrdinalIgnoreCase))
             {
@@ -570,7 +612,17 @@ namespace Bakım.ViewModels
                 module = AppModule.Dashboard;
             }
 
+            if (recordHistory && !string.Equals(CurrentNavKey, target, StringComparison.OrdinalIgnoreCase))
+            {
+                _backStack.Push(CurrentNavKey);
+                if (_backStack.Count > 50) TrimStack(_backStack, 50);
+                _forwardStack.Clear();
+                NotifyHistory();
+            }
+
             CurrentNavKey = target;
+            UpdateNavSelection(module);
+            RememberModule(target, module);
 
             if (module is AppModule.WindowsTweaker or AppModule.PrivacyDebloat && IsSidebarExpanded)
             {
@@ -594,6 +646,10 @@ namespace Bakım.ViewModels
                 AppModule.Settings => Settings,
                 AppModule.Store => Store,
                 AppModule.ActivityCenter => ActivityCenter,
+                AppModule.Storage => Storage,
+                AppModule.WindowsTools => WindowsTools,
+                AppModule.GameMode => GameModePage,
+                AppModule.Sentinel => Sentinel,
                 _ => Dashboard
             };
 
@@ -602,6 +658,117 @@ namespace Bakım.ViewModels
             CurrentView = view;
             _ = SwitchActiveModuleAsync(view);
         }
+
+        #region Kenar çubuğu, rozetler ve gezinme geçmişi (§2.1, §2.3)
+
+        public IReadOnlyList<NavGroup> NavGroups { get; private set; } = Array.Empty<NavGroup>();
+        public NavItem SettingsNavItem { get; private set; } = NavCatalog.BuildSettingsItem();
+
+        private readonly Stack<string> _backStack = new();
+        private readonly Stack<string> _forwardStack = new();
+
+        public bool CanGoBack => _backStack.Count > 0;
+        public bool CanGoForward => _forwardStack.Count > 0;
+
+        [ObservableProperty] private string _sentinelStatusText = string.Empty;
+        [ObservableProperty] private bool _isSentinelEnabled;
+
+        private void NotifyHistory()
+        {
+            OnPropertyChanged(nameof(CanGoBack));
+            OnPropertyChanged(nameof(CanGoForward));
+            GoBackCommand.NotifyCanExecuteChanged();
+            GoForwardCommand.NotifyCanExecuteChanged();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanGoBack))]
+        public void GoBack()
+        {
+            if (_backStack.Count == 0) return;
+            _forwardStack.Push(CurrentNavKey);
+            Navigate(_backStack.Pop(), recordHistory: false);
+            NotifyHistory();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanGoForward))]
+        public void GoForward()
+        {
+            if (_forwardStack.Count == 0) return;
+            _backStack.Push(CurrentNavKey);
+            Navigate(_forwardStack.Pop(), recordHistory: false);
+            NotifyHistory();
+        }
+
+        private static void TrimStack(Stack<string> stack, int max)
+        {
+            var keep = stack.Take(max).Reverse().ToList();
+            stack.Clear();
+            foreach (var k in keep) stack.Push(k);
+        }
+
+        private void UpdateNavSelection(AppModule module)
+        {
+            // Gizlilik, Windows Ayarları'nın alt kategorisidir (§2.2).
+            var effective = module == AppModule.PrivacyDebloat ? AppModule.WindowsTweaker : module;
+            foreach (var item in NavCatalog.AllItems(NavGroups)) item.IsSelected = item.Module == effective;
+            SettingsNavItem.IsSelected = effective == AppModule.Settings;
+        }
+
+        private void RememberModule(string key, AppModule module)
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                _appSettings.Update(d =>
+                {
+                    d.LastModule = key;
+                    if (module == AppModule.ActivityCenter) d.ActivitySeenUtc = now;
+                    if (module == AppModule.Sentinel) d.SentinelSeenUtc = now;
+                });
+            }
+            catch (Exception ex)
+            {
+                _log.Warning("Son sayfa kaydedilemedi.", ex, nameof(MainViewModel));
+            }
+            if (module is AppModule.ActivityCenter or AppModule.Sentinel) UpdateBadges();
+        }
+
+        /// <summary>Okunmamış sayaçlar: son ziyaretten sonra eklenen etkinlikler ve kalıcılık ekleyen kurulumlar.</summary>
+        private void UpdateBadges()
+        {
+            try
+            {
+                var seenActivity = _appSettings.Current.ActivitySeenUtc ?? DateTime.MinValue;
+                int unread = _activity.Entries.Count(e => e.AtUtc > seenActivity && e.Kind != Bakım.Core.Activity.ActivityKind.Restore);
+                var seenSentinel = _appSettings.Current.SentinelSeenUtc ?? DateTime.MinValue;
+                int risky = _sentinelService.RecentReports.Count(r =>
+                    r.InstallTime > seenSentinel && (r.AddedStartupEntries.Count > 0 || r.AddedServices.Count > 0));
+
+                foreach (var item in NavCatalog.AllItems(NavGroups))
+                {
+                    item.Badge = item.Module switch
+                    {
+                        AppModule.ActivityCenter when !item.IsSelected => unread,
+                        AppModule.Sentinel when !item.IsSelected => risky,
+                        _ => 0
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Debug("Rozetler güncellenemedi: " + ex.Message, nameof(MainViewModel));
+            }
+        }
+
+        private void UpdateSentinelStatus()
+        {
+            IsSentinelEnabled = _sentinelService.IsEnabled;
+            SentinelStatusText = !_sentinelService.IsEnabled ? "Nöbetçi: Kapalı"
+                : _sentinelService.IsMonitoringActiveSession ? "Nöbetçi: Kurulum izleniyor"
+                : "Nöbetçi: Etkin";
+        }
+
+        #endregion
 
         /// <summary>Eski modülü durdurur, yenisini başlatır.</summary>
         private async Task SwitchActiveModuleAsync(object view)

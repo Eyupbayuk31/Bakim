@@ -92,6 +92,8 @@ namespace Bakım.Services
                 ? "Önceki güç planı geri yüklendi; Bakım'ın arka plan işleri devam ediyor."
                 : "Önceki güç planı geri yüklenemedi; Windows güç ayarlarından kontrol edin.";
 
+            RecordSession(state?.ActivatedAtUtc, restored);
+
             _log.Info("Oyun Modu kapatıldı: " + LastActionSummary, nameof(GameModeService));
             GameModeChanged?.Invoke(false);
         }
@@ -105,6 +107,19 @@ namespace Bakım.Services
             _log.Warning("Önceki oturumda Oyun Modu kapatılmadan uygulama sonlanmış; güç planı geri yükleniyor.", null, nameof(GameModeService));
             TrySetPowerScheme(state.PreviousScheme ?? BalancedScheme);
             DeleteState();
+        }
+
+        /// <summary>Oturumu Etkinlik Merkezi'ne yazar: süre ve güç planının geri gelip gelmediği.</summary>
+        private static void RecordSession(DateTime? activatedAtUtc, bool planRestored)
+        {
+            var activity = App.TryGetService<Activity.IActivityService>();
+            if (activity == null) return;
+
+            string duration = activatedAtUtc is { } start ? Core.Text.DurationText.Describe(DateTime.UtcNow - start) : "süre bilinmiyor";
+            Activity.ActivityRecording.RecordSimple(activity, Core.Activity.ActivityKind.GameModeSession, "Oyun Modu",
+                "Oyun Modu oturumu", $"{duration} · " + (planRestored ? "önceki güç planı geri yüklendi" : "güç planı geri yüklenemedi"),
+                planRestored ? Core.Activity.ActivityOutcome.Succeeded : Core.Activity.ActivityOutcome.PartiallySucceeded,
+                deepLink: "GameMode");
         }
 
         public async Task<long> ToggleGameModeAsync()

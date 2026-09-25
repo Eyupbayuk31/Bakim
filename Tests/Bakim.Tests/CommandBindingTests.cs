@@ -52,6 +52,12 @@ public class CommandBindingTests
         { "Views/Modules/UninstallerModuleView.xaml",    typeof(UninstallerViewModel) },
         { "Views/Modules/WindowsTweakerModuleView.xaml", typeof(WindowsTweakerViewModel) },
         { "Views/Modules/SettingsModuleView.xaml",       typeof(SettingsViewModel) },
+        { "Views/Modules/StorageModuleView.xaml",        typeof(StorageViewModel) },
+        { "Views/Modules/WindowsToolsModuleView.xaml",   typeof(WindowsToolsViewModel) },
+        { "Views/Modules/GameModeModuleView.xaml",       typeof(GameModeViewModel) },
+        { "Views/Modules/SentinelModuleView.xaml",       typeof(SentinelViewModel) },
+        { "Views/Modules/ActivityCenterView.xaml",       typeof(ActivityCenterViewModel) },
+        { "Views/Modules/StoreModuleView.xaml",          typeof(StoreViewModel) },
     };
 
     /// <summary>

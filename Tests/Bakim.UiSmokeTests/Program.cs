@@ -389,9 +389,10 @@ internal static class Program
             if (!store.IsPresetsTab) throw new InvalidOperationException("Presets tab secilemedi.");
             Console.WriteLine("  GECTI  | Hazır Paketler (Tab 1)");
 
-            store.SwitchToClassicTools();
-            if (!store.IsClassicToolsTab) throw new InvalidOperationException("ClassicTools tab secilemedi.");
-            Console.WriteLine("  GECTI  | Windows Konsolları & Klasik Araçlar (Tab 2)");
+            // Klasik araçlar Faz 4'te ayrı "Windows Araçları" sayfasına taşındı.
+            var tools = provider.GetRequiredService<Bakım.ViewModels.WindowsToolsViewModel>();
+            if (tools == null) throw new InvalidOperationException("WindowsTools cozulemedi.");
+            Console.WriteLine("  GECTI  | Windows Araçları (ayrı sayfa)");
         }
         catch (Exception ex)
         {

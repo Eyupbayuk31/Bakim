@@ -194,8 +194,8 @@ namespace Bakım.Views.Dialogs
                     mainWindow.Activate();
                 }
 
-                var mainVm = App.TryGetService<MainViewModel>();
-                mainVm?.Navigate("Analyzer");
+                // MainViewModel geçici kayıtlı; gezinme olay servisi üzerinden yapılır.
+                App.TryGetService<INavigationService>()?.Navigate("Analyzer");
 
                 var analyzerVm = App.TryGetService<AnalyzerViewModel>();
                 if (analyzerVm != null && _report.AddedExecutables.Count > 0)

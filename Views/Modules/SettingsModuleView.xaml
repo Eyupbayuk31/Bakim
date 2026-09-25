@@ -471,6 +471,25 @@
 
                             <Border Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1" Margin="0,0,0,14"/>
 
+                            <!-- Son sayfa (§2.3) -->
+                            <Grid Margin="0,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Açılışta son sayfayı aç" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Kapalıyken Bakım her zaman Kontrol Paneli ile açılır."
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Column="1"
+                                                 IsChecked="{Binding OpenLastModuleOnStartup, Mode=TwoWay}"
+                                                 AutomationProperties.Name="Açılışta son sayfayı aç"
+                                                 VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <Border Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1" Margin="0,0,0,14"/>
+
                             <!-- Item 3: Auto Clean on Exit -->
                             <Grid>
                                 <Grid.ColumnDefinitions>

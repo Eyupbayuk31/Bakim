@@ -122,6 +122,10 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _minimizeToTray;
 
+        /// <summary>Açılışta son açık sayfayı yükle (§2.3).</summary>
+        [ObservableProperty]
+        private bool _openLastModuleOnStartup = true;
+
         [ObservableProperty]
         private bool _notifyOnHighRam = true;
 
@@ -272,6 +276,7 @@ namespace Bakım.ViewModels
         partial void OnRefreshIntervalSecondsChanged(int value) => AutoSaveSettings();
         partial void OnAutoRamCleanIntervalMinutesChanged(int value) => AutoSaveSettings();
         partial void OnMinimizeToTrayChanged(bool value) => AutoSaveSettings();
+        partial void OnOpenLastModuleOnStartupChanged(bool value) => AutoSaveSettings();
         partial void OnNotifyOnHighRamChanged(bool value) => AutoSaveSettings();
         partial void OnAutoCleanOnExitChanged(bool value) => AutoSaveSettings();
         partial void OnPromptRestorePointBeforeUninstallChanged(bool value) => AutoSaveSettings();
@@ -377,6 +382,7 @@ namespace Bakım.ViewModels
             RefreshIntervalSeconds = data.RefreshIntervalSeconds;
             AutoRamCleanIntervalMinutes = data.AutoRamCleanIntervalMinutes;
             MinimizeToTray = data.MinimizeToTray;
+            OpenLastModuleOnStartup = data.OpenLastModuleOnStartup;
             NotifyOnHighRam = data.NotifyOnHighRam;
             AutoCleanOnExit = data.AutoCleanOnExit;
             PromptRestorePointBeforeUninstall = data.PromptRestorePointBeforeUninstall;
@@ -403,6 +409,7 @@ namespace Bakım.ViewModels
             data.AutoRamCleanIntervalMinutes = AutoRamCleanIntervalMinutes;
             data.StartWithWindows = StartWithWindows;
             data.MinimizeToTray = MinimizeToTray;
+            data.OpenLastModuleOnStartup = OpenLastModuleOnStartup;
             data.NotifyOnHighRam = NotifyOnHighRam;
             data.AutoCleanOnExit = AutoCleanOnExit;
             data.AlwaysRunAsAdmin = IsAlwaysRunAsAdmin;

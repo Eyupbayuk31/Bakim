@@ -128,8 +128,9 @@ namespace Bakım.Views.Dialogs
                 }
 
                 // 2. Navigate to Analyzer module
-                var mainVm = App.TryGetService<MainViewModel>();
-                mainVm?.Navigate("Analyzer");
+                // MainViewModel geçici (transient) kayıtlı: App.TryGetService yeni ve görünmeyen bir
+                // örnek döndürüyordu, sayfa hiç değişmiyordu. Gezinme olay servisi üzerinden yapılır.
+                App.TryGetService<INavigationService>()?.Navigate("Analyzer");
 
                 // 3. Ingest and trigger analysis on detected executables
                 var analyzerVm = App.TryGetService<AnalyzerViewModel>();

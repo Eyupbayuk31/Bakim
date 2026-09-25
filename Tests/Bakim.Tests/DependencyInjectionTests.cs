@@ -49,6 +49,8 @@ public class DependencyInjectionTests
         typeof(UninstallerViewModel), typeof(AnalyzerViewModel),
         typeof(WindowsTweakerViewModel), typeof(TweakerCategoriesViewModel),
         typeof(SettingsViewModel), typeof(LoginViewModel),
+        typeof(ActivityCenterViewModel), typeof(StorageViewModel), typeof(WindowsToolsViewModel),
+        typeof(GameModeViewModel), typeof(SentinelViewModel), typeof(StoreViewModel),
     };
 
     [Theory]
