@@ -46,13 +46,13 @@ namespace Bakım.Services
                 // Quick System Actions
                 new()
                 {
-                    Title = "Tek Tıkla Optimize Et",
+                    Title = "Hızlı Bakım",
                     Category = "Hızlı Eylem",
-                    Description = "RAM çalışma kümesini temizler ve geçici önbelleği boşaltır.",
-                    IconName = "TopSpeed24",
+                    Description = "Yaş filtreli geçici dosyalar, çökme dökümleri, tarayıcı ve gölgelendirici önbellekleri ile DNS önbelleğini temizler.",
+                    IconName = "Broom24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "QuickBoost",
-                    KeyboardShortcut = "Booster"
+                    KeyboardShortcut = "Bakım"
                 },
                 new()
                 {

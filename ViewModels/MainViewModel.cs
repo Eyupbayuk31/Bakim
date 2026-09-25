@@ -464,8 +464,8 @@ namespace Bakım.ViewModels
             switch (parameter)
             {
                 case "QuickBoost":
-                    await Dashboard.OneClickBoostCommand.ExecuteAsync(null);
-                    ShowToast("Bellek İşlemi", Dashboard.OptimizationResultMessage, InfoBarSeverity.Informational, "TopSpeed24");
+                    await Dashboard.QuickMaintenanceCommand.ExecuteAsync(null);
+                    ShowToast("Hızlı Bakım", Dashboard.OptimizationResultMessage, InfoBarSeverity.Informational, "Broom24");
                     break;
 
                 case "RestartExplorer":

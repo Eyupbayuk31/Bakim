@@ -3,6 +3,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Bakım.Core.Health;
 using Bakım.Models;
 using Bakım.Services;
 
@@ -15,6 +16,10 @@ namespace Bakım.ViewModels
         private readonly ISystemInfoService _infoService;
         private readonly ITelemetryService _telemetryService;
         private readonly IGameModeService _gameModeService;
+        private readonly IHealthSignalsService _healthSignals;
+        private readonly IQuickMaintenanceService _quickMaintenance;
+        private readonly Services.Activity.IActivityService _activity;
+        private readonly INavigationService _navigation;
 
         private readonly DispatcherTimer _telemetryTimer;
         private readonly Queue<double> _cpuHistory = new();
@@ -27,8 +32,20 @@ namespace Bakım.ViewModels
             ISystemInfoService infoService, 
             ITelemetryService telemetryService,
             IGameModeService gameModeService,
-            IAppSettingsService settingsService)
+            IAppSettingsService settingsService,
+            IHealthSignalsService healthSignals,
+            IQuickMaintenanceService quickMaintenance,
+            Services.Activity.IActivityService activity,
+            INavigationService navigation)
         {
+            _healthSignals = healthSignals;
+            _quickMaintenance = quickMaintenance;
+            _activity = activity;
+            _navigation = navigation;
+            _activity.Changed += (_, _) => System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                if (_isActive) LoadRecentActivity();
+            });
             _settingsService = settingsService;
             _cleanService = cleanService;
             _infoService = infoService;
@@ -115,9 +132,6 @@ namespace Bakım.ViewModels
         private TelemetryMetrics _metrics = new();
 
         [ObservableProperty]
-        private HealthScoreBreakdown _health = new();
-
-        [ObservableProperty]
         private PointCollection _cpuSparklinePoints = new();
 
         [ObservableProperty]
@@ -153,9 +167,9 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isGameModeActive;
 
-        public string GameModeStatusBadge => IsGameModeActive ? "Aktif · Arka Plan Donduruldu" : "Devre Dışı · Standart Mod";
+        public string GameModeStatusBadge => IsGameModeActive ? "Açık" : "Kapalı";
 
-        public string GameModeButtonText => IsGameModeActive ? "Oyun Modunu Kapat" : "Oyun Modunu Başlat";
+        public string GameModeButtonText => IsGameModeActive ? "Kapat" : "Aç";
 
         private void OnGameModeChanged(bool active)
         {
@@ -193,16 +207,113 @@ namespace Bakım.ViewModels
             IsBusy = true;
             try
             {
+                LoadRecentActivity();
+                var health = RefreshHealthAsync(forceRefresh: false);
                 Hardware = await _infoService.GetSystemHardwareAsync();
                 await OnTelemetryTickAsync();
                 await RefreshTopHogsAsync();
+                await health;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Pano verileri yüklenemedi.", ex, nameof(DashboardViewModel));
+            }
             finally
             {
                 IsBusy = false;
             }
         }
+
+        #region Sağlık (§5.1)
+
+        public ObservableCollection<HealthRow> HealthRows { get; } = new();
+
+        [ObservableProperty] private int _healthScoreValue = 100;
+        [ObservableProperty] private string _healthTitle = "Sağlık denetleniyor…";
+        [ObservableProperty] private string _healthSummary = string.Empty;
+        [ObservableProperty] private Intent _healthIntent = Intent.Neutral;
+        [ObservableProperty] private bool _isHealthLoading;
+
+        private async Task RefreshHealthAsync(bool forceRefresh)
+        {
+            IsHealthLoading = true;
+            try
+            {
+                var report = HealthScore.Evaluate(await _healthSignals.GetAsync(forceRefresh));
+                HealthScoreValue = report.Score;
+                HealthTitle = report.Title;
+                HealthSummary = report.Summary;
+                HealthIntent = report.Level switch
+                {
+                    HealthLevel.Good => Intent.Success,
+                    HealthLevel.Attention => Intent.Caution,
+                    HealthLevel.Problem => Intent.Critical,
+                    _ => Intent.Neutral
+                };
+                HealthRows.Clear();
+                // Önce puanı düşürenler, sonra iyi ve bilinmeyenler.
+                foreach (var c in report.Components.OrderByDescending(c => c.Deduction).ThenBy(c => c.Level == HealthLevel.Unknown))
+                    HealthRows.Add(new HealthRow(c));
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning("Sağlık sinyalleri okunamadı.", ex, nameof(DashboardViewModel));
+                HealthTitle = "Sağlık denetlenemedi";
+                HealthSummary = ex.Message;
+                HealthIntent = Intent.Neutral;
+            }
+            finally
+            {
+                IsHealthLoading = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task RefreshHealth() => await RefreshHealthAsync(forceRefresh: true);
+
+        [RelayCommand]
+        private void OpenHealthAction(HealthRow? row)
+        {
+            if (row == null) return;
+            if (row.Component.Key == "defender")
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("windowsdefender:") { UseShellExecute = true })?.Dispose();
+                }
+                catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+                {
+                    AppLog.Warning("Windows Güvenliği açılamadı.", ex, nameof(DashboardViewModel));
+                }
+                return;
+            }
+            if (row.Component.DeepLink is { Length: > 0 } link) _navigation.Navigate(link);
+        }
+
+        #endregion
+
+        #region Son etkinlikler
+
+        public ObservableCollection<ActivityRow> RecentActivity { get; } = new();
+
+        [ObservableProperty] private bool _hasRecentActivity;
+
+        private void LoadRecentActivity()
+        {
+            var now = DateTime.Now;
+            RecentActivity.Clear();
+            foreach (var e in _activity.Entries.Where(e => e.Kind != Core.Activity.ActivityKind.Restore).Take(5))
+                RecentActivity.Add(new ActivityRow(e, now));
+            HasRecentActivity = RecentActivity.Count > 0;
+        }
+
+        [RelayCommand]
+        private void OpenActivityCenter() => _navigation.Navigate("Activity");
+
+        [RelayCommand]
+        private void OpenGameModePage() => _navigation.Navigate("GameMode");
+
+        #endregion
 
         private async Task OnTelemetryTickAsync()
         {
@@ -220,13 +331,8 @@ namespace Bakım.ViewModels
 
                 UpdateSparklineCollections();
 
-                // Health Score Calculation
-                Health = _telemetryService.CalculateHealthScore(
-                    sample.RamUsagePercentage,
-                    sample.CpuUsagePercentage,
-                    sample.SystemDriveUsedPercentage,
-                    tempSizeBytes: 500 * 1024 * 1024,
-                    startupCount: 6);
+                // Sağlık puanı anlık CPU/RAM'den hesaplanmaz (§5.1); kalıcı sinyaller ayrı ve seyrek tazelenir.
+                // (Eskiden sabit "500 MB geçici dosya" ve "6 başlangıç programı" girdileriyle uydurma bir puan üretiliyordu.)
 
                 _sampleCount++;
                 if (_sampleCount % 3 == 0)
@@ -297,55 +403,65 @@ namespace Bakım.ViewModels
             catch { }
         }
 
+        /// <summary>
+        /// "Hızlı Bakım" (§5.1): güvenli, ölçülebilir temizlik + DNS önbelleği. İlerleme gerçek adım
+        /// sayısıdır; sonuç ölçümdür ve Etkinlik Merkezi'ne yazılır. (Eskiden "Tek Tıkla Optimize Et"
+        /// yalnızca RAM kırpıyordu; etkisi geçici olduğu için bu akıştan çıkarıldı.)
+        /// </summary>
         [RelayCommand]
-        public async Task OneClickBoostAsync()
+        public async Task QuickMaintenanceAsync()
         {
             if (IsOptimizing) return;
 
             IsOptimizing = true;
             HasOptimizationResult = false;
-            BoostStageText = "Sistem belleği analiz ediliyor...";
+            BoostStageText = "Hazırlanıyor…";
             BoostProgressPercent = 0;
+            _maintenanceCts = new CancellationTokenSource();
 
             try
             {
-                // v3.21: yapay "görsel kadans" beklemeleri ve sonuç 0 olduğunda gösterilen
-                // uydurma "450 MB" kaldırıldı. Her aşama gerçek bir işi temsil eder ve
-                // gösterilen sonuç ölçümdür.
-                BoostStageText = "Uygulamaların çalışma kümeleri kırpılıyor...";
-                BoostProgressPercent = 20;
-                long freed = await _cleanService.AutoTrimWorkingSetsAsync();
-
-                if (Bakım.Helpers.UacHelper.IsAdministrator())
+                var progress = new Progress<QuickMaintenanceProgress>(p =>
                 {
-                    BoostStageText = "Bekleme listesi boşaltılıyor...";
-                    BoostProgressPercent = 60;
-                    freed += await _cleanService.ClearStandbyListAsync();
-                }
+                    BoostStageText = p.Stage;
+                    BoostProgressPercent = p.Percent;
+                });
+                var result = await _quickMaintenance.RunAsync(progress, _maintenanceCts.Token);
 
-                BoostStageText = "Ölçümler güncelleniyor...";
-                BoostProgressPercent = 90;
-                await OnTelemetryTickAsync();
-                await RefreshTopHogsAsync();
-                BoostProgressPercent = 100;
-
-                OptimizationFreedBadge = Bakım.Core.Text.MemoryResultText.Badge(freed);
-                OptimizationResultMessage = Bakım.Core.Text.MemoryResultText.Describe(freed);
+                OptimizationFreedBadge = Core.Text.ByteFormatter.Format(result.BytesFreed);
+                OptimizationResultMessage = result.Cancelled ? "Hızlı Bakım iptal edildi. " + result.Summary : result.Summary;
+                MaintenanceDetails.Clear();
+                foreach (var d in result.Details) MaintenanceDetails.Add(d);
+                LastMaintenanceDeleted = result.FilesDeleted;
+                LastMaintenanceSkipped = result.FilesSkipped;
                 HasOptimizationResult = true;
+
+                await RefreshHealthAsync(forceRefresh: false);
             }
             catch (Exception ex)
             {
-                AppLog.Error("Hızlı bellek işlemi başarısız.", ex, nameof(DashboardViewModel));
+                AppLog.Error("Hızlı Bakım başarısız.", ex, nameof(DashboardViewModel));
                 OptimizationResultMessage = $"İşlem tamamlanamadı: {ex.Message}";
                 HasOptimizationResult = true;
             }
             finally
             {
+                _maintenanceCts?.Dispose();
+                _maintenanceCts = null;
                 BoostStageText = string.Empty;
                 BoostProgressPercent = 0;
                 IsOptimizing = false;
             }
         }
+
+        private CancellationTokenSource? _maintenanceCts;
+
+        public ObservableCollection<string> MaintenanceDetails { get; } = new();
+        [ObservableProperty] private int _lastMaintenanceDeleted;
+        [ObservableProperty] private int _lastMaintenanceSkipped;
+
+        [RelayCommand]
+        private void CancelMaintenance() => _maintenanceCts?.Cancel();
 
         [RelayCommand]
         public async Task KillHogProcessAsync(ResourceHogItem? item)
@@ -396,5 +512,38 @@ namespace Bakım.ViewModels
 
         [RelayCommand]
         private void GoToOptimizer() => NavigateToOptimizerRequested?.Invoke();
+    }
+}
+
+namespace Bakım.ViewModels
+{
+    /// <summary>Sağlık kartındaki bir satır (§5.1).</summary>
+    public sealed class HealthRow
+    {
+        public HealthRow(Bakım.Core.Health.HealthComponent component) => Component = component;
+
+        public Bakım.Core.Health.HealthComponent Component { get; }
+        public string Title => Component.Title;
+        public string Detail => Component.Detail;
+        public bool HasAction => !string.IsNullOrEmpty(Component.ActionText) || Component.Level == Bakım.Core.Health.HealthLevel.Good && Component.DeepLink != null;
+        public string ActionText => Component.ActionText ?? "Aç";
+        public string DeductionText => Component.Deduction > 0 ? $"−{Component.Deduction}" : string.Empty;
+        public bool HasDeduction => Component.Deduction > 0;
+
+        public Models.Intent Intent => Component.Level switch
+        {
+            Bakım.Core.Health.HealthLevel.Good => Models.Intent.Success,
+            Bakım.Core.Health.HealthLevel.Attention => Models.Intent.Caution,
+            Bakım.Core.Health.HealthLevel.Problem => Models.Intent.Critical,
+            _ => Models.Intent.Neutral
+        };
+
+        public string StatusText => Component.Level switch
+        {
+            Bakım.Core.Health.HealthLevel.Good => "İyi",
+            Bakım.Core.Health.HealthLevel.Attention => "Dikkat",
+            Bakım.Core.Health.HealthLevel.Problem => "Sorun",
+            _ => "Bilinmiyor"
+        };
     }
 }
