@@ -18,6 +18,12 @@ namespace Bakım.Services
         Task CheckInstalledStatusesAsync(IEnumerable<StoreAppItem> items);
         Task<bool> InstallAppAsync(StoreAppItem app, Action<int, string>? progress = null, CancellationToken cancellationToken = default);
         Task<bool> IsWingetAvailableAsync();
+
+        /// <summary>winget ile güncellenebilecek kurulu paketler (§5.12 Güncellemeler).</summary>
+        Task<(IReadOnlyList<Bakım.Core.Store.WingetUpgrade> Upgrades, string? Error)> GetUpgradesAsync(CancellationToken ct = default);
+
+        /// <summary>Tek paketi sessizce günceller; sonuç kullanıcıya gösterilecek metinle döner.</summary>
+        Task<(bool Success, string Message)> UpgradeAsync(Bakım.Core.Store.WingetUpgrade package, CancellationToken ct = default);
     }
 
     public class StoreService : IStoreService
@@ -998,6 +1004,88 @@ namespace Bakım.Services
             {
                 TryDeleteDirectory(stagingDir);
             }
+        }
+
+        #endregion
+
+        #region WinGet güncellemeleri (§5.12)
+
+        public async Task<(IReadOnlyList<Bakım.Core.Store.WingetUpgrade> Upgrades, string? Error)> GetUpgradesAsync(CancellationToken ct = default)
+        {
+            if (!await IsWingetAvailableAsync())
+                return (Array.Empty<Bakım.Core.Store.WingetUpgrade>(), "winget bulunamadı. Microsoft Store'dan 'Uygulama Yükleyicisi'ni kurun.");
+
+            var (exit, stdout, stderr) = await RunWingetCaptureAsync(new[]
+            {
+                "upgrade", "--source", "winget", "--accept-source-agreements", "--disable-interactivity"
+            }, TimeSpan.FromMinutes(2), ct);
+            var upgrades = Bakım.Core.Store.WingetTable.ParseUpgrades(stdout);
+            if (upgrades.Count == 0 && exit != 0 && exit != WingetNoApplicableUpdate && !string.IsNullOrWhiteSpace(stderr))
+                return (upgrades, $"winget listesi alınamadı (0x{exit:X8}).");
+            return (upgrades, null);
+        }
+
+        public async Task<(bool Success, string Message)> UpgradeAsync(Bakım.Core.Store.WingetUpgrade package, CancellationToken ct = default)
+        {
+            var (exit, _, _) = await RunWingetCaptureAsync(new[]
+            {
+                "upgrade", "--id", package.Id, "--exact", "--source", "winget", "--silent",
+                "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"
+            }, TimeSpan.FromMinutes(30), ct);
+
+            bool reboot = exit == WingetRebootRequiredToFinish || exit == WingetRebootInitiated;
+            bool ok = exit == 0 || reboot || exit == WingetNoApplicableUpdate;
+            string message = ok
+                ? reboot ? $"{package.Name} {package.Available} sürümüne güncellendi; yeniden başlatma gerekiyor."
+                         : $"{package.Name} {package.Available} sürümüne güncellendi."
+                : $"{package.Name} güncellenemedi (0x{exit:X8}).";
+
+            var activity = App.TryGetService<Activity.IActivityService>();
+            if (activity != null) Activity.ActivityRecording.RecordSimple(activity, Core.Activity.ActivityKind.StoreUpdate, "Mağaza",
+                ok ? $"\"{package.Name}\" güncellendi" : $"\"{package.Name}\" güncellenemedi",
+                $"{package.Version} → {package.Available} · winget ({package.Id})",
+                ok ? Core.Activity.ActivityOutcome.Succeeded : Core.Activity.ActivityOutcome.Failed, deepLink: "Store");
+            return (ok, message);
+        }
+
+        /// <summary>winget'i UTF-8 çıktıyla çalıştırır (tablo sütunları karakter konumuna göre ayrıştırılır).</summary>
+        private static async Task<(int ExitCode, string StdOut, string StdErr)> RunWingetCaptureAsync(string[] args, TimeSpan timeout, CancellationToken ct)
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "winget",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+                StandardErrorEncoding = System.Text.Encoding.UTF8
+            };
+            foreach (string a in args) psi.ArgumentList.Add(a);
+
+            using var process = new Process { StartInfo = psi };
+            try
+            {
+                process.Start();
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+            {
+                return (-1, string.Empty, ex.Message);
+            }
+            var stdout = process.StandardOutput.ReadToEndAsync(CancellationToken.None);
+            var stderr = process.StandardError.ReadToEndAsync(CancellationToken.None);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(timeout);
+            try
+            {
+                await process.WaitForExitAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                try { process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { }
+                return (-1, await stdout, "zaman aşımı");
+            }
+            return (process.ExitCode, await stdout, await stderr);
         }
 
         #endregion

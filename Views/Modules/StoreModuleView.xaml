@@ -100,6 +100,17 @@
                             </Border>
                         </StackPanel>
                     </ui:Button>
+
+                    <!-- Sekme 3: Güncellemeler (winget upgrade) -->
+                    <ui:Button Appearance="{Binding SelectedStoreTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=2}"
+                               Command="{Binding SwitchToUpdatesCommand}"
+                               Padding="14,6"
+                               Margin="0,0,4,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="15" Margin="0,0,6,0"/>
+                            <TextBlock Text="Güncellemeler" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                        </StackPanel>
+                    </ui:Button>
                 </StackPanel>
             </Border>
 
@@ -913,6 +924,62 @@
                     </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
+
+            <!-- ===================================================================== -->
+            <!-- TAB 2: GÜNCELLEMELER (winget upgrade)                                 -->
+            <!-- ===================================================================== -->
+            <Grid Visibility="{Binding SelectedStoreTabIndex, Converter={StaticResource IntEqualsToVis}, ConverterParameter=2}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="0,0,8,0"
+                                         Visibility="{Binding IsCheckingUpdates, Converter={StaticResource BoolToVis}}"/>
+                        <TextBlock Text="{Binding UpdatesStatus}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <ui:Button Appearance="Secondary" Padding="12,6" Margin="0,0,8,0" Content="Yenile" Icon="{ui:SymbolIcon ArrowClockwise24}"
+                                   Command="{Binding RefreshUpdatesCommand}"/>
+                        <ui:Button Appearance="Primary" Padding="12,6" Content="Tümünü güncelle" Icon="{ui:SymbolIcon ArrowDownload24}"
+                                   Command="{Binding UpgradeAllCommand}"/>
+                    </StackPanel>
+                </Grid>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Updates}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="8,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                                <Run Text="{Binding VersionText, Mode=OneWay}"/>
+                                                <Run Text=" · "/>
+                                                <Run Text="{Binding Id, Mode=OneWay}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding ResultText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <ui:Button Grid.Column="1" Appearance="Secondary" Padding="12,5" Content="Güncelle" VerticalAlignment="Center"
+                                                   IsEnabled="{Binding CanUpgrade}"
+                                                   Command="{Binding DataContext.UpgradePackageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}" AutomationProperties.Name="{Binding Name}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
 
         </Grid>
 

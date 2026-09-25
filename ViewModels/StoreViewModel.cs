@@ -32,11 +32,78 @@ namespace Bakım.ViewModels
 
         public bool IsCatalogTab => SelectedStoreTabIndex == 0;
         public bool IsPresetsTab => SelectedStoreTabIndex == 1;
+        public bool IsUpdatesTab => SelectedStoreTabIndex == 2;
 
         partial void OnSelectedStoreTabIndexChanged(int value)
         {
             OnPropertyChanged(nameof(IsCatalogTab));
             OnPropertyChanged(nameof(IsPresetsTab));
+            OnPropertyChanged(nameof(IsUpdatesTab));
+            if (value == 2 && !_updatesLoaded) _ = RefreshUpdatesAsync();
+        }
+
+        [RelayCommand]
+        public void SwitchToUpdates() => SelectedStoreTabIndex = 2;
+
+        #endregion
+
+        #region Güncellemeler (winget upgrade, §5.12)
+
+        private bool _updatesLoaded;
+
+        public ObservableCollection<WingetUpdateRow> Updates { get; } = new();
+
+        [ObservableProperty] private bool _isCheckingUpdates;
+        [ObservableProperty] private string _updatesStatus = "Güncellemeler için Yenile'ye basın.";
+
+        [RelayCommand]
+        public async Task RefreshUpdatesAsync()
+        {
+            if (IsCheckingUpdates) return;
+            IsCheckingUpdates = true;
+            UpdatesStatus = "winget ile güncellemeler denetleniyor…";
+            try
+            {
+                var (upgrades, error) = await _storeService.GetUpgradesAsync();
+                Updates.Clear();
+                foreach (var u in upgrades) Updates.Add(new WingetUpdateRow(u));
+                _updatesLoaded = true;
+                UpdatesStatus = error ?? (upgrades.Count == 0
+                    ? "Kurulu programlar güncel (winget kaynağındaki paketler)."
+                    : $"{upgrades.Count} program güncellenebilir.");
+            }
+            finally
+            {
+                IsCheckingUpdates = false;
+            }
+        }
+
+        [RelayCommand]
+        public async Task UpgradePackageAsync(WingetUpdateRow? row)
+        {
+            if (row == null || row.IsBusy || row.IsDone) return;
+            row.IsBusy = true;
+            row.ResultText = "Güncelleniyor…";
+            var (ok, message) = await _storeService.UpgradeAsync(row.Package);
+            row.IsBusy = false;
+            row.IsDone = ok;
+            row.ResultText = message;
+        }
+
+        [RelayCommand]
+        public async Task UpgradeAllAsync()
+        {
+            var pending = Updates.Where(u => !u.IsDone && !u.IsBusy).ToList();
+            if (pending.Count == 0) return;
+            if (System.Windows.MessageBox.Show($"{pending.Count} program sırayla ve sessizce güncellenecek. Açık olanları önce kapatmanız önerilir.\n\nDevam edilsin mi?",
+                    "Tümünü güncelle", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question) != System.Windows.MessageBoxResult.Yes) return;
+            int ok = 0;
+            foreach (var row in pending)
+            {
+                await UpgradePackageAsync(row);
+                if (row.IsDone) ok++;
+            }
+            UpdatesStatus = $"{ok}/{pending.Count} program güncellendi. Ayrıntılar Etkinlik Merkezi'nde.";
         }
 
         [RelayCommand]
@@ -564,4 +631,28 @@ namespace Bakım.ViewModels
         #endregion
 
     }
+
+    /// <summary>Güncellenebilir paket satırı.</summary>
+    public sealed partial class WingetUpdateRow : ObservableObject
+    {
+        public WingetUpdateRow(Bakım.Core.Store.WingetUpgrade package) => Package = package;
+
+        public Bakım.Core.Store.WingetUpgrade Package { get; }
+        public string Name => Package.Name;
+        public string VersionText => $"{Package.Version} → {Package.Available}";
+        public string Id => Package.Id;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanUpgrade))]
+        private bool _isBusy;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanUpgrade))]
+        private bool _isDone;
+
+        [ObservableProperty] private string _resultText = string.Empty;
+
+        public bool CanUpgrade => !IsBusy && !IsDone;
+    }
 }
+
