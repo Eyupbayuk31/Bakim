@@ -200,7 +200,7 @@
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="10"
+                CornerRadius="{StaticResource Radius.LG}"
                 Padding="12"
                 Margin="0,0,0,16">
             <Grid>
@@ -255,12 +255,12 @@
                     <!-- Filter Switches (Sysinternals Hide Microsoft) -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
-                            <TextBlock Text="Microsoft Girdilerini Gizle" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Microsoft Girdilerini Gizle" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <ui:ToggleSwitch IsChecked="{Binding HideMicrosoftEntries, Mode=TwoWay}" AutomationProperties.Name="Microsoft imzalı girdileri gizle" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Yalnızca İmzasızları Göster" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Yalnızca İmzasızları Göster" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <ui:ToggleSwitch IsChecked="{Binding ShowOnlyUnsigned, Mode=TwoWay}" AutomationProperties.Name="Yalnızca imzasız girdileri göster" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
@@ -281,7 +281,7 @@
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="10"
+                CornerRadius="{StaticResource Radius.LG}"
                 Padding="8">
             <ListBox ItemsSource="{Binding FilteredItems}"
                      Background="Transparent"
@@ -299,7 +299,7 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="8">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="{StaticResource Radius.MD}">
                                         <ContentPresenter/>
                                     </Border>
                                 </ControlTemplate>
@@ -313,7 +313,7 @@
                         <Border Background="{DynamicResource ControlFillColorSecondaryBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource Radius.MD}"
                                 Padding="12,10">
                             <Border.ContextMenu>
                                 <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
@@ -363,7 +363,7 @@
                                 <!-- Column 1: Application Icon -->
                                 <Border Grid.Column="1" 
                                         Width="36" Height="36" 
-                                        CornerRadius="6"
+                                        CornerRadius="{StaticResource Radius.SM}"
                                         Background="{DynamicResource ControlFillColorTertiaryBrush}"
                                         Margin="0,0,12,0"
                                         VerticalAlignment="Center">
@@ -385,19 +385,19 @@
                                 <!-- Column 2: Name, Path & Location Source -->
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <TextBlock Text="{Binding LocationSource, StringFormat=' ({0})'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="6,2,0,0"/>
+                                        <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding LocationSource, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="6,2,0,0"/>
                                     </StackPanel>
 
                                     <TextBlock Text="{Binding FilePath}" 
-                                               FontSize="11" 
+                                               FontSize="{StaticResource Font.Caption}" 
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                                TextTrimming="CharacterEllipsis"
                                                ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"
                                                Margin="0,2,0,0"/>
 
                                     <TextBlock Text="{Binding Publisher, StringFormat='Yayıncı: {0}'}" 
-                                               FontSize="10.5" 
+                                               FontSize="{StaticResource Font.Caption}" 
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
@@ -407,16 +407,16 @@
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="6"
+                                        CornerRadius="{StaticResource Radius.SM}"
                                         Padding="8,4"
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding CategoryDisplayName}" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryDisplayName}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                 </Border>
 
                                 <!-- Column 4: Digital Signature Badge -->
                                 <Border Grid.Column="4" 
-                                        CornerRadius="6"
+                                        CornerRadius="{StaticResource Radius.SM}"
                                         Padding="8,4"
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
@@ -453,7 +453,7 @@
                                                 </Style>
                                             </ui:SymbolIcon.Style>
                                         </ui:SymbolIcon>
-                                        <TextBlock Text="{Binding Signature}" FontSize="11" FontWeight="Medium">
+                                        <TextBlock Text="{Binding Signature}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock">
                                                     <Setter Property="Foreground" Value="{DynamicResource SystemFillColorCautionBrush}"/>
@@ -482,13 +482,13 @@
                                         Background="{DynamicResource Brush.Muted.Subtle}"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="6"
+                                        CornerRadius="{StaticResource Radius.SM}"
                                         Padding="8,4"
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                                        <TextBlock Text="{Binding VirusTotalScore}" FontSize="11" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Text="{Binding VirusTotalScore}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Border>
 
@@ -574,10 +574,10 @@
                                  Width="16" Height="16" 
                                  Margin="0,0,8,0"
                                  Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}"/>
-                <TextBlock Text="{Binding ScanStatusText}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <TextBlock Text="{Binding ScanStatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
 
-            <TextBlock Grid.Column="1" Text="Bakım Güvenlik Kalkanı v41.0" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            <TextBlock Grid.Column="1" Text="Bakım Güvenlik Kalkanı v41.0" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
         </Grid>
     </Grid>
 
@@ -592,7 +592,7 @@
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 BorderThickness="2"
-                CornerRadius="14"
+                CornerRadius="{StaticResource Radius.XL}"
                 Padding="24">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="32" ShadowDepth="6" Opacity="0.85" Color="{DynamicResource Color.Shadow}"/>
@@ -603,8 +603,8 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                         <StackPanel>
-                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
                     <ui:Button Appearance="Transparent"
@@ -616,7 +616,7 @@
                 </Grid>
 
                 <!-- API Key Input Field -->
-                <TextBlock Text="VirusTotal API Anahtarı (v3):" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="VirusTotal API Anahtarı (v3):" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,6"/>
                 <ui:TextBox Text="{Binding ApiKeyInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="64 karakterlik VirusTotal API anahtarınızı buraya yapıştırın..."
                             ClearButtonEnabled="True"
@@ -625,7 +625,7 @@
 
                 <!-- Status Message -->
                 <TextBlock Text="{Binding ApiKeyStatusText}" 
-                           FontSize="12" 
+                           FontSize="{StaticResource Font.Caption}" 
                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
                            FontWeight="Medium"
                            Margin="0,0,0,16"
@@ -642,7 +642,7 @@
 
                     <TextBlock Grid.Column="0" 
                                Text="virustotal.com üzerinden ücretsiz alabilirsiniz." 
-                               FontSize="11" 
+                               FontSize="{StaticResource Font.Caption}" 
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                VerticalAlignment="Center"/>
 

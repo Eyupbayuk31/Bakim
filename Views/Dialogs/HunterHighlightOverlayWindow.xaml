@@ -17,7 +17,7 @@
         <Border x:Name="TargetFrame"
                 BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 BorderThickness="3"
-                CornerRadius="6"
+                CornerRadius="{StaticResource Radius.SM}"
                 Background="{DynamicResource Brush.Accent.Subtle}">
             <Border.Effect>
                 <DropShadowEffect Color="{DynamicResource Color.Accent}" BlurRadius="18" ShadowDepth="0" Opacity="0.85"/>
@@ -31,7 +31,7 @@
                 Background="{DynamicResource Brush.Overlay.Scrim}"
                 BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 BorderThickness="1.5"
-                CornerRadius="8"
+                CornerRadius="{StaticResource Radius.MD}"
                 Padding="10,6">
             <Border.Effect>
                 <DropShadowEffect Color="{DynamicResource Color.Shadow}" BlurRadius="12" ShadowDepth="3" Opacity="0.7"/>
@@ -40,8 +40,8 @@
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <ui:SymbolIcon x:Name="HudIcon" Symbol="Target24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                 <StackPanel>
-                    <TextBlock x:Name="HudTitle" Text="Hedef Tespit Edildi" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    <TextBlock x:Name="HudSubtitle" Text="PID: ---" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                    <TextBlock x:Name="HudTitle" Text="Hedef Tespit Edildi" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock x:Name="HudSubtitle" Text="PID: ---" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                 </StackPanel>
             </StackPanel>
         </Border>

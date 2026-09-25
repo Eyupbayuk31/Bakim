@@ -316,6 +316,13 @@ Mevcut 5 bileşene aşağıdakiler eklenir. Her bileşenin bir "galeri" sayfası
 - Liste satırlarında `AutomationProperties.HelpText` yer alır: ikincil satırın metni.
 - Yüksek kontrast teması, yakınlaştırma (%100–%200, `LayoutTransform` ile, Ayarlar'dan) ve ekran okuyucu için canlı bölgeler (`AutomationProperties.LiveSetting`, ilerleme metinlerinde) sağlanır.
 
+### 3.8.1 Uygulama notları (Faz 4)
+
+- **Tipografi eşlemesi:** Plan ölçeği (Micro 11, Caption 12, Body 14, Subtitle 16, Title 20, TitleLarge 28, Display 40) uygulandı. Sabit değerler `Tools/migrate-font-sizes.py` ile taşındı: 8–10 → Micro, 10.5–12.5 → Caption, 13–14 → Body, 15 → BodyLarge, 16 → Subtitle, 17–18 → SectionTitle, 19–22 → Title, 23–28 → TitleLarge, 29–47 → Display. Böylece en küçük gövde metni 12 oldu; 12'lik metinler aynı kaldı (düzen riski düşük). Simge boyutları metin değildir, taşınmadı.
+- **Doğrulayıcılar tek betikte:** `verify-code-colors` ve `verify-catch` ayrı betikler yerine `Tools/verify-design-debt.py` içinde; eşikler `Tools/design-debt-baseline.json`'da, borç azaldıkça `--update` ile düşürülür.
+- **Stil adı çakışması:** "Text.Secondary" fırça anahtarı olduğu için ikincil gövde stili `Text.BodySecondary` adını aldı.
+- **Hareket:** "Animasyonları azalt" (ya da Windows'ta animasyonlar kapalı) açılışta `Motion.*`/`Duration.*` token'larını sıfırlar; döngüsel ilerleme animasyonları etkilenmez.
+
 ### 3.9 Doğrulayıcılar (CI'da zorunlu)
 
 | Betik | Kural |
@@ -1160,7 +1167,7 @@ Bu tablo her PR ile güncellenir.
 | Planlama | Tamam | Eyupbayuk31/Bakim#1 (planlar) | DEN, KAL, NÖB |
 | Master plan | Tamam | bu belge | |
 | Faz 1 | Tamam (PC testi bekliyor) | `claude/charming-feynman-g2crt8` | v3.21.0. S-17 açık. Core testleri: 218 (Linux) |
-| Faz 2 | Bekliyor | | |
-| Faz 3 | Başladı | `claude/charming-feynman-g2crt8` | **Analizör Geçmişi tamam** (Core + servis + dekoratör + Geçmiş/Değişiklikler sekmeleri + VT önbelleği). Kalan: Etkinlik Merkezi (§7); Kontrol Paneli "Son analizler" kartı, nav rozeti, zamanlanmış tarama + tepsi bildirimi, komut paleti araması |
-| Faz 4 | Bekliyor | | Tasarım sistemi v2 |
+| Faz 2 | Tamam (PC testi bekliyor) | `claude/charming-feynman-g2crt8` | H-1, H-6, H-9, H-10, H-13, H-16, H-17 (P0-3), H-18, H-19 (S-6/7/8); msiexec yanlış kurulum bildirimi; tek telemetri örnekleyici, zamanlayıcı koruması, tanılama paketi |
+| Faz 3 | Tamam (PC testi bekliyor) | `claude/charming-feynman-g2crt8` | Analizör Geçmişi + **Etkinlik Merkezi**: Temizleyici, Kaldırıcı, Windows Ayarları, Gizlilik, Başlangıç, Analizör, Hizmetler, Güvenlik duvarı, Nöbetçi ve Oyun Modu kayıt yazıyor; registry-values / reg-import / service-config / firewall-rule / recycle-bin geri alma; UndoToast |
+| Faz 4 | Tamam (PC testi bekliyor) | `claude/charming-feynman-g2crt8` | Gruplu kenar çubuğu, rozetler, son sayfa, Alt+←/→; Depolama, Windows Araçları, Oyun Modu, Kurulum Nöbetçisi sayfaları; v2 anlamsal token'lar (Surface/Border/Text/Status/Risk/Chart), Yüksek Kontrast, Windows vurgu rengi, animasyonları azalt; tipografi ölçeği + 1.059 FontSize ve 330 CornerRadius göçü; RiskBadge, StatusPill, SensorValue, AdminGate, KeyValueGrid, ResultCard, SkeletonRow; `verify-design-debt.py` cırcırı |
 | Faz 5–9 | Bekliyor | | |

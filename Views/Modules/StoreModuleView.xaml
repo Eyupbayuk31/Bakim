@@ -70,7 +70,7 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    CornerRadius="8"
+                    CornerRadius="{StaticResource Radius.MD}"
                     Padding="3">
                 <StackPanel Orientation="Horizontal">
                     <!-- Sekme 1: Uygulama Kataloğu -->
@@ -80,9 +80,9 @@
                                Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Apps24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Uygulama Kataloğu" FontWeight="SemiBold" FontSize="12"/>
-                            <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="8" Padding="6,1" Margin="8,0,0,0">
-                                <TextBlock Text="{Binding TotalAppsCount, StringFormat='{}{0} Yazılım'}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Uygulama Kataloğu" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="6,1" Margin="8,0,0,0">
+                                <TextBlock Text="{Binding TotalAppsCount, StringFormat='{}{0} Yazılım'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </Border>
                         </StackPanel>
                     </ui:Button>
@@ -94,9 +94,9 @@
                                Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Hazır Paketler &amp; Format Kurtarıcı" FontWeight="SemiBold" FontSize="12"/>
-                            <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="8" Padding="6,1" Margin="8,0,0,0">
-                                <TextBlock Text="4 Set + VC++" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="Hazır Paketler &amp; Format Kurtarıcı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.MD}" Padding="6,1" Margin="8,0,0,0">
+                                <TextBlock Text="4 Set + VC++" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             </Border>
                         </StackPanel>
                     </ui:Button>
@@ -108,36 +108,36 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    CornerRadius="8"
+                    CornerRadius="{StaticResource Radius.MD}"
                     Padding="12,5"
                     VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Toplam Katalog -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Katalogdaki toplam paket &amp; kütüphane">
                         <ui:SymbolIcon Symbol="Apps20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,5,0"/>
-                        <TextBlock Text="Katalog: " FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding TotalAppsCount}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Katalog: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding TotalAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Kurulu -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Sisteminizde halihazırda kurulu ve kullanıma hazır olanlar">
                         <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,5,0"/>
-                        <TextBlock Text="Kurulu: " FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding InstalledAppsCount}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                        <TextBlock Text="Kurulu: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding InstalledAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                     </StackPanel>
 
                     <!-- Kurulabilir / Eksik -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip="Henüz kurulmamış, indirilmeye hazır uygulamalar">
                         <ui:SymbolIcon Symbol="ArrowDownload20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,5,0"/>
-                        <TextBlock Text="Eksik: " FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding AvailableAppsCount}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Eksik: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding AvailableAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Seçili Kurulum -->
-                    <Border Background="{DynamicResource Brush.Caution.Subtle}" CornerRadius="6" Padding="8,3" Margin="2,0,0,0">
+                    <Border Background="{DynamicResource Brush.Caution.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="8,3" Margin="2,0,0,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip="Toplu kuruluma eklenen uygulamalar">
                             <ui:SymbolIcon Symbol="CheckboxChecked20" FontSize="13" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0"/>
-                            <TextBlock Text="{Binding SelectedAppsCount, StringFormat='{}{0} Seçili'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                            <TextBlock Text="{Binding SelectedAppsCount, StringFormat='{}{0} Seçili'}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -171,56 +171,56 @@
                                    Command="{Binding SetCategoryCommand}" CommandParameter="All" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Grid24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Tümü" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Tümü" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Runtimes'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Runtimes" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Runtimes &amp; Sistem" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Runtimes &amp; Sistem" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Gaming'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Gaming" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Games24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Oyun" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Oyun" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Music'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Music" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="MusicNote224" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Müzik &amp; Medya" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Müzik &amp; Medya" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Software'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Software" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Wrench24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Yazılım &amp; Araçlar" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Yazılım &amp; Araçlar" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Browsers'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Browsers" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Globe24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Tarayıcılar" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Tarayıcılar" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Social'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Social" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Chat24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="İletişim &amp; Sosyal" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="İletişim &amp; Sosyal" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Developer'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Developer" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Code24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Geliştirici" FontSize="12" FontWeight="SemiBold"/>
+                                <TextBlock Text="Geliştirici" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                     </WrapPanel>
@@ -274,7 +274,7 @@
                                 Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1" 
-                                CornerRadius="8" 
+                                CornerRadius="{StaticResource Radius.MD}" 
                                 Padding="2">
                             <StackPanel Orientation="Horizontal">
                                 <ui:Button Command="{Binding SetGridViewCommand}" 
@@ -312,7 +312,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StoreAppItem}">
                                 <Border Width="360" Margin="0,0,16,16" Padding="16,14"
-                                        CornerRadius="10"
+                                        CornerRadius="{StaticResource Radius.LG}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderThickness="1">
                                     <Border.Style>
@@ -358,7 +358,7 @@
                                                     BorderBrush="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"
                                                     BorderThickness="1"
                                                     Width="42" Height="42" 
-                                                    CornerRadius="8" 
+                                                    CornerRadius="{StaticResource Radius.MD}" 
                                                     Margin="0,0,12,0"
                                                     VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
@@ -370,21 +370,21 @@
                                             <!-- Name + Publisher & Category Badge -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,8,0">
                                                 <TextBlock Text="{Binding Name}" 
-                                                           FontSize="13.5" 
+                                                           FontSize="{StaticResource Font.Body}" 
                                                            FontWeight="SemiBold" 
                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                                            TextTrimming="CharacterEllipsis"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                                                     <TextBlock Text="{Binding Publisher}" 
-                                                               FontSize="11" 
+                                                               FontSize="{StaticResource Font.Caption}" 
                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                                                TextTrimming="CharacterEllipsis"
                                                                MaxWidth="140"/>
                                                     <TextBlock Text=" • " 
-                                                               FontSize="10" 
+                                                               FontSize="{StaticResource Font.Micro}" 
                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                                     <TextBlock Text="{Binding CategoryDisplayName}" 
-                                                               FontSize="10.5" 
+                                                               FontSize="{StaticResource Font.Caption}" 
                                                                FontWeight="SemiBold" 
                                                                Foreground="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"/>
                                                 </StackPanel>
@@ -396,7 +396,7 @@
                                                     Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                     BorderThickness="1"
-                                                    CornerRadius="6" 
+                                                    CornerRadius="{StaticResource Radius.SM}" 
                                                     Padding="4,2">
                                                 <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" 
                                                           Padding="0" Margin="0" MinWidth="0" MinHeight="0"
@@ -408,7 +408,7 @@
                                         <!-- ROW 1: Description -->
                                         <TextBlock Grid.Row="1" 
                                                    Text="{Binding Description}" 
-                                                   FontSize="11.5" 
+                                                   FontSize="{StaticResource Font.Caption}" 
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                                    TextWrapping="Wrap" 
                                                    Height="34" 
@@ -430,8 +430,8 @@
                                             </Grid.RowDefinitions>
                                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,3">
                                                 <ui:SymbolIcon Symbol="ArrowSync20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                                                <TextBlock Text="{Binding StatusMessage}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                                <TextBlock Text="{Binding ProgressPercentage, StringFormat='{} (%{0})'}" FontSize="10.5" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding ProgressPercentage, StringFormat='{} (%{0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             </StackPanel>
                                             <ProgressBar Grid.Row="1" Value="{Binding ProgressPercentage}" Maximum="100" Height="4"/>
                                         </Grid>
@@ -449,12 +449,12 @@
                                                     Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                     BorderThickness="1" 
-                                                    CornerRadius="6" 
+                                                    CornerRadius="{StaticResource Radius.SM}" 
                                                     Padding="7,3"
                                                     VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                     <ui:SymbolIcon Symbol="ArrowDownload16" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,4,0"/>
-                                                    <TextBlock Text="{Binding SizeText}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding SizeText}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                 </StackPanel>
                                             </Border>
 
@@ -466,12 +466,12 @@
                                                     <Border Background="{DynamicResource Brush.Success.Subtle}" 
                                                             BorderBrush="{DynamicResource Brush.Success}"
                                                             BorderThickness="1" 
-                                                            CornerRadius="6" 
+                                                            CornerRadius="{StaticResource Radius.SM}" 
                                                             Padding="8,4"
                                                             Margin="0,0,6,0">
                                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                             <ui:SymbolIcon Symbol="Checkmark20" FontSize="12" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
-                                                            <TextBlock Text="Kurulu" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                            <TextBlock Text="Kurulu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                                         </StackPanel>
                                                     </Border>
 
@@ -533,7 +533,7 @@
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:StoreAppItem}">
                             <Border Padding="14,10" 
-                                    CornerRadius="8" 
+                                    CornerRadius="{StaticResource Radius.MD}" 
                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                     BorderThickness="1">
                                 <Border.Style>
@@ -579,7 +579,7 @@
                                             BorderBrush="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"
                                             BorderThickness="1"
                                             Width="34" Height="34" 
-                                            CornerRadius="6" 
+                                            CornerRadius="{StaticResource Radius.SM}" 
                                             Margin="0,0,12,0"
                                             VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
@@ -591,10 +591,10 @@
                                     <!-- Column 2: Name & Description -->
                                     <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Name}" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding Publisher, StringFormat='{} • {0}'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Publisher, StringFormat='{} • {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                                         </StackPanel>
-                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <!-- Column 3: Category Pill -->
@@ -602,17 +602,17 @@
                                             Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                             BorderThickness="1" 
-                                            CornerRadius="6" 
+                                            CornerRadius="{StaticResource Radius.SM}" 
                                             Padding="8,3" 
                                             VerticalAlignment="Center"
                                             Margin="0,0,14,0">
-                                        <TextBlock Text="{Binding CategoryDisplayName}" FontSize="10.5" FontWeight="SemiBold" Foreground="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"/>
+                                        <TextBlock Text="{Binding CategoryDisplayName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{Binding CategoryDisplayName, Converter={StaticResource CategoryToForeground}}"/>
                                     </Border>
 
                                     <!-- Column 4: Size -->
                                     <TextBlock Grid.Column="4" 
                                                Text="{Binding SizeText}" 
-                                               FontSize="11" 
+                                               FontSize="{StaticResource Font.Caption}" 
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                                VerticalAlignment="Center" 
                                                HorizontalAlignment="Right"
@@ -624,21 +624,21 @@
                                         <Border Background="{DynamicResource Brush.Success.Subtle}" 
                                                 BorderBrush="{DynamicResource Brush.Success}"
                                                 BorderThickness="1" 
-                                                CornerRadius="6" 
+                                                CornerRadius="{StaticResource Radius.SM}" 
                                                 Padding="8,3"
                                                 Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="Checkmark20" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
-                                                <TextBlock Text="Kurulu" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                <TextBlock Text="Kurulu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                             </StackPanel>
                                         </Border>
                                         <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1" 
-                                                CornerRadius="6" 
+                                                CornerRadius="{StaticResource Radius.SM}" 
                                                 Padding="8,3"
                                                 Visibility="{Binding IsInstalled, Converter={StaticResource InverseBoolToVis}}">
-                                            <TextBlock Text="Yüklü Değil" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="Yüklü Değil" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         </Border>
                                     </StackPanel>
 
@@ -652,7 +652,7 @@
                                                    Icon="{ui:SymbolIcon ArrowDownload16}"
                                                    Padding="12,3"
                                                    Height="28"
-                                                   FontSize="11.5"
+                                                   FontSize="{StaticResource Font.Caption}"
                                                    FontWeight="SemiBold"/>
 
                                         <ui:Button Appearance="Secondary"
@@ -663,7 +663,7 @@
                                                    Icon="{ui:SymbolIcon ArrowClockwise16}"
                                                    Padding="10,3"
                                                    Height="28"
-                                                   FontSize="11"/>
+                                                   FontSize="{StaticResource Font.Caption}"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -686,7 +686,7 @@
                     <!-- HERO BANNER: ALL-IN-ONE RUNTIMES (BURAYA TAŞINDI) -->
                     <Border Margin="0,0,0,20" 
                             Padding="22,18" 
-                            CornerRadius="12" 
+                            CornerRadius="{StaticResource Radius.LG}" 
                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                             BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}" 
                             BorderThickness="1.5">
@@ -708,13 +708,13 @@
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <TextBlock Text="Format Sonrası Can Kurtaran: All-in-One Runtimes Paketi" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="6" Padding="6,2" Margin="10,0,0,0">
-                                        <TextBlock Text="Oyun &amp; Yazılım Garantili" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                    <TextBlock Text="Format Sonrası Can Kurtaran: All-in-One Runtimes Paketi" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0">
+                                        <TextBlock Text="Oyun &amp; Yazılım Garantili" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                     </Border>
                                 </StackPanel>
                                 <TextBlock Text="Resmi Gigabit CDN üzerinden Visual C++ (2005-2022 x86/x64) tüm kütüphanelerini, DirectX Web Setup ve .NET Desktop çalışma ortamlarını tek tuşla otomatik indirip sessizce kurar." 
-                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                             </StackPanel>
 
                             <ui:Button Grid.Column="2" 
@@ -724,7 +724,7 @@
                                        VerticalAlignment="Center"
                                        Icon="{ui:SymbolIcon TopSpeed24}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Tüm Runtimes'ları Kur" FontWeight="Bold" FontSize="13"/>
+                                    <TextBlock Text="Tüm Runtimes'ları Kur" FontWeight="Bold" FontSize="{StaticResource Font.Body}"/>
                                 </StackPanel>
                             </ui:Button>
                         </Grid>
@@ -738,8 +738,8 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Özenle Hazırlanmış Akıllı Kurulum Setleri" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Kullanım senaryonuza göre optimize edilmiş paketleri tek tıkla seçip tüm yazılımları sırayla arka planda kurabilirsiniz." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Özenle Hazırlanmış Akıllı Kurulum Setleri" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Kullanım senaryonuza göre optimize edilmiş paketleri tek tıkla seçip tüm yazılımları sırayla arka planda kurabilirsiniz." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:Button Grid.Column="1"
@@ -761,7 +761,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StorePresetItem}">
                                 <Border Width="550" Margin="0,0,16,16" Padding="18" 
-                                        CornerRadius="10"
+                                        CornerRadius="{StaticResource Radius.LG}"
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderThickness="1">
                                     <Border.Style>
@@ -796,7 +796,7 @@
                                             <Border Grid.Column="0" 
                                                     Background="{DynamicResource Brush.Accent.Subtle}" 
                                                     Width="48" Height="48" 
-                                                    CornerRadius="12" 
+                                                    CornerRadius="{StaticResource Radius.LG}" 
                                                     Margin="0,0,12,0"
                                                     VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="{Binding IconSymbol}" 
@@ -808,23 +808,23 @@
                                             <!-- Title & Subtitle -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                                    <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="6" Padding="6,2" Margin="8,0,0,0">
-                                                        <TextBlock Text="{Binding Badge}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                    <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="8,0,0,0">
+                                                        <TextBlock Text="{Binding Badge}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Subtitle}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
                                             </StackPanel>
 
                                             <!-- Live Installed Status Badge -->
                                             <Border Grid.Column="2" 
                                                     Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
-                                                    CornerRadius="8" 
+                                                    CornerRadius="{StaticResource Radius.MD}" 
                                                     Padding="10,4"
                                                     VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
-                                                    <TextBlock Text="{Binding InstalledStatusText}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding InstalledStatusText}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </StackPanel>
                                             </Border>
                                         </Grid>
@@ -832,14 +832,14 @@
                                         <!-- Description -->
                                         <TextBlock Grid.Row="1" 
                                                    Text="{Binding Description}" 
-                                                   FontSize="12" 
+                                                   FontSize="{StaticResource Font.Caption}" 
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                                    TextWrapping="Wrap" 
                                                    Margin="0,0,0,12"/>
 
                                         <!-- Included Apps Badges -->
                                         <StackPanel Grid.Row="2" Margin="0,0,0,12">
-                                            <TextBlock Text="Pakete Dahil Uygulamalar:" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Pakete Dahil Uygulamalar:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,6"/>
                                             <ItemsControl ItemsSource="{Binding IncludedApps}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -851,10 +851,10 @@
                                                         <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                                 BorderThickness="1" 
-                                                                CornerRadius="6" 
+                                                                CornerRadius="{StaticResource Radius.SM}" 
                                                                 Padding="8,3" 
                                                                 Margin="0,0,6,6">
-                                                            <TextBlock Text="{Binding}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                            <TextBlock Text="{Binding}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                         </Border>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
@@ -922,7 +922,7 @@
         <Border Grid.Row="3" 
                 Margin="0,14,0,0" 
                 Padding="16" 
-                CornerRadius="8" 
+                CornerRadius="{StaticResource Radius.MD}" 
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                 BorderThickness="1"
@@ -945,14 +945,14 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Canlı Kurulum Kuyruğu: " FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="{Binding CurrentAppName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"/>
-                        <TextBlock Text=" (" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding QueueProgressSummary}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text=")" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Canlı Kurulum Kuyruğu: " FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="{Binding CurrentAppName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"/>
+                        <TextBlock Text=" (" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="{Binding QueueProgressSummary}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text=")" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     </StackPanel>
 
-                    <TextBlock Grid.Column="1" Text="{Binding CurrentStatusText}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Grid.Column="1" Text="{Binding CurrentStatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0" TextTrimming="CharacterEllipsis"/>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <ui:Button Appearance="Secondary" 
@@ -982,13 +982,13 @@
 
                     <!-- Left: Terminal Badge & Auto-scroll Toggle -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="4" Padding="6,2" Margin="0,0,10,0">
-                            <TextBlock Text="Canlı Çıktı &amp; Log Konsolu" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,10,0">
+                            <TextBlock Text="Canlı Çıktı &amp; Log Konsolu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
 
                         <CheckBox IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}" 
                                   Content="Otomatik Kaydır" 
-                                  FontSize="11" 
+                                  FontSize="{StaticResource Font.Caption}" 
                                   VerticalAlignment="Center"/>
                     </StackPanel>
 
@@ -1000,7 +1000,7 @@
                                    Icon="{ui:SymbolIcon Delete24}" 
                                    Content="Temizle" 
                                    Padding="10,4" 
-                                   FontSize="11" 
+                                   FontSize="{StaticResource Font.Caption}" 
                                    Margin="0,0,6,0"/>
 
                         <ui:Button Appearance="Secondary" 
@@ -1009,7 +1009,7 @@
                                    Icon="{ui:SymbolIcon Copy24}" 
                                    Content="Kopyala" 
                                    Padding="10,4" 
-                                   FontSize="11" 
+                                   FontSize="{StaticResource Font.Caption}" 
                                    Margin="0,0,6,0"/>
 
                         <ui:Button Appearance="Secondary" 
@@ -1018,7 +1018,7 @@
                                    Icon="{ui:SymbolIcon ArrowMaximize24}" 
                                    Content="Genişlet" 
                                    Padding="10,4" 
-                                   FontSize="11"
+                                   FontSize="{StaticResource Font.Caption}"
                                    Visibility="{Binding IsConsoleExpanded, Converter={StaticResource InverseBoolToVis}}"/>
 
                         <ui:Button Appearance="Secondary" 
@@ -1027,7 +1027,7 @@
                                    Icon="{ui:SymbolIcon ArrowMinimize24}" 
                                    Content="Küçült" 
                                    Padding="10,4" 
-                                   FontSize="11"
+                                   FontSize="{StaticResource Font.Caption}"
                                    Visibility="{Binding IsConsoleExpanded, Converter={StaticResource BoolToVis}}"/>
                     </StackPanel>
                 </Grid>
@@ -1038,7 +1038,7 @@
                          IsReadOnly="True" 
                          TextChanged="OnConsoleTextBoxTextChanged"
                          FontFamily="Consolas, Cascadia Code, Courier New" 
-                         FontSize="11" 
+                         FontSize="{StaticResource Font.Caption}" 
                          Background="#080C14" 
                          Foreground="#A5B4FC" 
                          BorderThickness="0" 

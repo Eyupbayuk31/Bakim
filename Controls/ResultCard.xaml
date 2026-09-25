@@ -1,0 +1,67 @@
+<UserControl x:Class="Bakım.Controls.ResultCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root">
+    <!--
+        İşlem sonucu (§3.5, §3.7): başarılı / atlanan / başarısız sayıları, nedenleriyle
+        genişletilebilir ayrıntı, "Geri al" ve "Etkinlik Merkezi'nde aç".
+    -->
+    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource Radius.MD}"
+            Padding="{StaticResource Pad.Card}">
+        <StackPanel>
+            <TextBlock Text="{Binding Title, ElementName=Root}" Style="{StaticResource Text.CardTitle}" TextWrapping="Wrap"/>
+
+            <WrapPanel Margin="{StaticResource Gap.Top.SM}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,16,4">
+                    <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="{StaticResource Icon.MD}" Margin="{StaticResource Gap.IconText}"
+                                   Foreground="{DynamicResource Status.Success.Text}"/>
+                    <TextBlock FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center">
+                        <Run Text="{Binding SucceededCount, ElementName=Root, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="başarılı"/>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,16,4" x:Name="SkippedPanel">
+                    <ui:SymbolIcon Symbol="SubtractCircle20" FontSize="{StaticResource Icon.MD}" Margin="{StaticResource Gap.IconText}"
+                                   Foreground="{DynamicResource Status.Neutral.Text}"/>
+                    <TextBlock FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center">
+                        <Run Text="{Binding SkippedCount, ElementName=Root, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="atlandı"/>
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,16,4" x:Name="FailedPanel">
+                    <ui:SymbolIcon Symbol="ErrorCircle20" FontSize="{StaticResource Icon.MD}" Margin="{StaticResource Gap.IconText}"
+                                   Foreground="{DynamicResource Status.Critical.Text}"/>
+                    <TextBlock FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center">
+                        <Run Text="{Binding FailedCount, ElementName=Root, Mode=OneWay}" FontWeight="SemiBold"/>
+                        <Run Text="başarısız"/>
+                    </TextBlock>
+                </StackPanel>
+            </WrapPanel>
+
+            <Expander x:Name="DetailsExpander" Header="Ayrıntılar" Margin="{StaticResource Gap.Top.XS}">
+                <ItemsControl ItemsSource="{Binding Details, ElementName=Root}" Margin="{StaticResource Gap.Top.XS}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,2"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Expander>
+
+            <WrapPanel Margin="{StaticResource Gap.Top.SM}">
+                <ui:Button x:Name="UndoButton" Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="0,0,8,0"
+                           Icon="{ui:SymbolIcon ArrowUndo16}" Content="Geri al"
+                           Command="{Binding UndoCommand, ElementName=Root}"
+                           CommandParameter="{Binding UndoCommandParameter, ElementName=Root}"/>
+                <ui:Button Appearance="Transparent" Padding="{StaticResource Pad.Control}"
+                           Icon="{ui:SymbolIcon History24}" Content="Etkinlik Merkezi'nde aç"
+                           Click="OnOpenActivityClicked"/>
+            </WrapPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

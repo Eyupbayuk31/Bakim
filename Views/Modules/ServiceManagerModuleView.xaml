@@ -14,7 +14,7 @@
     <UserControl.Resources>
         <!-- Service Safety Badge Text Style -->
         <Style x:Key="ServiceSafetyTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
             <Style.Triggers>
@@ -29,7 +29,7 @@
 
         <!-- Driver Signature Badge Text Style -->
         <Style x:Key="DriverSignTextStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Foreground" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
             <Style.Triggers>
@@ -62,7 +62,7 @@
                 <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="8"
+                CornerRadius="{StaticResource Radius.MD}"
                 Padding="4"
                 Margin="0,0,12,0">
                 <StackPanel Orientation="Horizontal">
@@ -108,8 +108,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Toplam Hizmet" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.TotalServices}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Toplam Hizmet" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Stats.TotalServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Server24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -122,8 +122,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Çalışan Hizmetler" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.RunningServices}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Çalışan Hizmetler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Stats.RunningServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Play24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -136,8 +136,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Güvenli Kapatılabilir" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.OptimizableServices}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Güvenli Kapatılabilir" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Stats.OptimizableServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="TopSpeed24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -150,8 +150,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Durdurulanlar" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.StoppedServices}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Durdurulanlar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Stats.StoppedServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Stop24" FontSize="22" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -177,8 +177,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Toplam Donanım Sürücüsü" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.TotalDrivers}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Toplam Donanım Sürücüsü" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Stats.TotalDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Desktop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -191,8 +191,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Dijital İmzalı Sürücüler" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.SignedDrivers}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Dijital İmzalı Sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Stats.SignedDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Checkmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -205,8 +205,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="İmzasız / Şüpheli Sürücüler" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.ProblematicDrivers}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="İmzasız / Şüpheli Sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="{Binding Stats.ProblematicDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Warning24" FontSize="22" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -219,8 +219,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Sistem Entegrasyonu" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="PnP Çekirdek Aktif" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Sistem Entegrasyonu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="PnP Çekirdek Aktif" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Laptop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -274,7 +274,7 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                     BorderThickness="1,1,1,0" 
-                    CornerRadius="6,6,0,0" 
+                    CornerRadius="{StaticResource Radius.TopOnly}" 
                     Padding="16,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -286,12 +286,12 @@
                         <ColumnDefinition Width="Auto" SharedSizeGroup="SvcActionCol"/>  <!-- Actions -->
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Hizmet Adı &amp; Açıklama" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="Durum" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="2" Text="Başlangıç" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="3" Text="Hesap / PID" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="4" Text="Güvenlik Sınıfı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
+                    <TextBlock Grid.Column="0" Text="Hizmet Adı &amp; Açıklama" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Durum" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="2" Text="Başlangıç" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="3" Text="Hesap / PID" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="4" Text="Güvenlik Sınıfı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
                 </Grid>
             </Border>
 
@@ -371,13 +371,13 @@
                             <!-- Col 0: Service & Display Name -->
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                 <TextBlock Text="{Binding DisplayName}" 
-                                           FontSize="13" 
+                                           FontSize="{StaticResource Font.Body}" 
                                            FontWeight="SemiBold" 
                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                            TextTrimming="CharacterEllipsis"
                                            ToolTip="{Binding Description}"/>
                                 <TextBlock Text="{Binding ServiceName}" 
-                                           FontSize="11" 
+                                           FontSize="{StaticResource Font.Caption}" 
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                            Margin="0,1,0,0"/>
                             </StackPanel>
@@ -387,7 +387,7 @@
                                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
-                                    CornerRadius="6" 
+                                    CornerRadius="{StaticResource Radius.SM}" 
                                     Padding="8,3" 
                                     Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
@@ -406,22 +406,22 @@
                                             </Style>
                                         </Ellipse.Style>
                                     </Ellipse>
-                                    <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding Status}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
                             </Border>
 
                             <!-- Col 2: Startup Type -->
                             <TextBlock Grid.Column="2" 
                                        Text="{Binding StartupType}" 
-                                       FontSize="12" 
+                                       FontSize="{StaticResource Font.Caption}" 
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                        VerticalAlignment="Center"
                                        Margin="0,0,14,0"/>
 
                             <!-- Col 3: Account & PID -->
                             <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,14,0">
-                                <TextBlock Text="{Binding Account}" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
+                                <TextBlock Text="{Binding Account}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                             </StackPanel>
 
                             <!-- Col 4: Safety Classification -->
@@ -429,7 +429,7 @@
                                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
-                                    CornerRadius="6" 
+                                    CornerRadius="{StaticResource Radius.SM}" 
                                     Padding="8,4" 
                                     Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
@@ -495,7 +495,7 @@
                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                     BorderThickness="1,1,1,0" 
-                    CornerRadius="6,6,0,0" 
+                    CornerRadius="{StaticResource Radius.TopOnly}" 
                     Padding="16,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -507,12 +507,12 @@
                         <ColumnDefinition Width="Auto" SharedSizeGroup="DrvActionCol"/>   <!-- Actions -->
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Aygıt &amp; Sürücü Adı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="Aygıt Sınıfı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="2" Text="Üretici / Sağlayıcı" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="3" Text="Sürüm / Tarih" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="4" Text="Dijital İmza" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
+                    <TextBlock Grid.Column="0" Text="Aygıt &amp; Sürücü Adı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Aygıt Sınıfı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="2" Text="Üretici / Sağlayıcı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="3" Text="Sürüm / Tarih" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="4" Text="Dijital İmza" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
                 </Grid>
             </Border>
 
@@ -582,13 +582,13 @@
                             <!-- Col 0: Device Name -->
                             <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0">
                                 <TextBlock Text="{Binding DeviceName}" 
-                                           FontSize="13" 
+                                           FontSize="{StaticResource Font.Body}" 
                                            FontWeight="SemiBold" 
                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                            TextTrimming="CharacterEllipsis"
                                            ToolTip="{Binding DeviceID}"/>
                                 <TextBlock Text="{Binding Signer}" 
-                                           FontSize="11" 
+                                           FontSize="{StaticResource Font.Caption}" 
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                            Margin="0,1,0,0"
                                            TextTrimming="CharacterEllipsis"/>
@@ -599,19 +599,19 @@
                                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
-                                    CornerRadius="6" 
+                                    CornerRadius="{StaticResource Radius.SM}" 
                                     Padding="8,3" 
                                     Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
                                     HorizontalAlignment="Left"
                                     Visibility="{Binding DeviceClass, Converter={StaticResource NullToVisibilityConverter}}">
-                                <TextBlock Text="{Binding DeviceClass}" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding DeviceClass}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </Border>
 
                             <!-- Col 2: Manufacturer -->
                             <TextBlock Grid.Column="2" 
                                        Text="{Binding Manufacturer}" 
-                                       FontSize="12" 
+                                       FontSize="{StaticResource Font.Caption}" 
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                        VerticalAlignment="Center" 
                                        TextTrimming="CharacterEllipsis"
@@ -619,8 +619,8 @@
 
                             <!-- Col 3: Driver Version & Date -->
                             <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,14,0">
-                                <TextBlock Text="{Binding DriverVersion, StringFormat='v{0}'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Text="{Binding DriverDate}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
+                                <TextBlock Text="{Binding DriverVersion, StringFormat='v{0}'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding DriverDate}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                             </StackPanel>
 
                             <!-- Col 4: Digital Signature Badge -->
@@ -628,7 +628,7 @@
                                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
-                                    CornerRadius="6" 
+                                    CornerRadius="{StaticResource Radius.SM}" 
                                     Padding="8,4" 
                                     Margin="0,0,14,0"
                                     VerticalAlignment="Center" 
@@ -660,7 +660,7 @@
                 Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                 BorderThickness="1,0,1,1" 
-                CornerRadius="0,0,6,6" 
+                CornerRadius="{StaticResource Radius.BottomOnly}" 
                 Padding="14,8">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -670,12 +670,12 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:SymbolIcon Symbol="Checkmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
 
                 <TextBlock Grid.Column="1" 
                            Text="Sağ Tık: Hizmet Başlat / Durdur, Aygıt Kimliği Kopyalama" 
-                           FontSize="11" 
+                           FontSize="{StaticResource Font.Caption}" 
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                            VerticalAlignment="Center"/>
             </Grid>

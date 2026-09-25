@@ -101,6 +101,17 @@ namespace Bakım.ViewModels
         private bool _isLightTheme;
 
         [ObservableProperty]
+        private bool _isHighContrastTheme;
+
+        /// <summary>Vurgu rengi Windows'u takip eder (§3.1).</summary>
+        [ObservableProperty]
+        private bool _followWindowsAccent;
+
+        /// <summary>Animasyonları azalt (§3.3); yeniden başlatınca uygulanır.</summary>
+        [ObservableProperty]
+        private bool _reduceMotion;
+
+        [ObservableProperty]
         private bool _isMicaEnabled = true;
 
         [ObservableProperty]
@@ -276,6 +287,14 @@ namespace Bakım.ViewModels
         partial void OnRefreshIntervalSecondsChanged(int value) => AutoSaveSettings();
         partial void OnAutoRamCleanIntervalMinutesChanged(int value) => AutoSaveSettings();
         partial void OnMinimizeToTrayChanged(bool value) => AutoSaveSettings();
+        partial void OnReduceMotionChanged(bool value) => AutoSaveSettings();
+
+        partial void OnFollowWindowsAccentChanged(bool value)
+        {
+            if (_isInitializing) return;
+            AutoSaveSettings();
+            _themeService.SetFollowWindowsAccent(value);
+        }
         partial void OnOpenLastModuleOnStartupChanged(bool value) => AutoSaveSettings();
         partial void OnNotifyOnHighRamChanged(bool value) => AutoSaveSettings();
         partial void OnAutoCleanOnExitChanged(bool value) => AutoSaveSettings();
@@ -383,6 +402,8 @@ namespace Bakım.ViewModels
             AutoRamCleanIntervalMinutes = data.AutoRamCleanIntervalMinutes;
             MinimizeToTray = data.MinimizeToTray;
             OpenLastModuleOnStartup = data.OpenLastModuleOnStartup;
+            FollowWindowsAccent = data.FollowWindowsAccent;
+            ReduceMotion = data.ReduceMotion;
             NotifyOnHighRam = data.NotifyOnHighRam;
             AutoCleanOnExit = data.AutoCleanOnExit;
             PromptRestorePointBeforeUninstall = data.PromptRestorePointBeforeUninstall;
@@ -410,6 +431,8 @@ namespace Bakım.ViewModels
             data.StartWithWindows = StartWithWindows;
             data.MinimizeToTray = MinimizeToTray;
             data.OpenLastModuleOnStartup = OpenLastModuleOnStartup;
+            data.FollowWindowsAccent = FollowWindowsAccent;
+            data.ReduceMotion = ReduceMotion;
             data.NotifyOnHighRam = NotifyOnHighRam;
             data.AutoCleanOnExit = AutoCleanOnExit;
             data.AlwaysRunAsAdmin = IsAlwaysRunAsAdmin;
@@ -474,6 +497,9 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public void SetLightTheme() => SelectTheme(AppThemeKind.FluentLight);
 
+        [RelayCommand]
+        public void SetHighContrastTheme() => SelectTheme(AppThemeKind.HighContrast);
+
         private void SelectTheme(AppThemeKind kind)
         {
             // ThemeService temayı uygular ve tercihi kendisi kalıcı hale getirir.
@@ -488,12 +514,14 @@ namespace Bakım.ViewModels
             IsAmoledTheme = kind == AppThemeKind.AmoledBlack;
             IsCyberpunkTheme = kind == AppThemeKind.CyberpunkPurple;
             IsLightTheme = kind == AppThemeKind.FluentLight;
+            IsHighContrastTheme = kind == AppThemeKind.HighContrast;
 
             CurrentThemeStatus = kind switch
             {
                 AppThemeKind.AmoledBlack => "AMOLED Siyah (Kusursuz Derin Kontrast)",
                 AppThemeKind.CyberpunkPurple => "Cyberpunk Mor (Neon Vurgular)",
                 AppThemeKind.FluentLight => "Fluent Açık (Gündüz Modu)",
+                AppThemeKind.HighContrast => "Yüksek Kontrast (Windows sistem renkleri)",
                 _ => "Mica Koyu (Varsayılan Fluent 2.0)"
             };
         }
@@ -1650,7 +1678,7 @@ namespace Bakım.ViewModels
                 IsExpanded = false,
                 Highlights = new List<string>
                 {
-                    "Dört Tema Desteği: Mica Koyu, AMOLED Saf Siyah, Cyberpunk Neon Mor ve Fluent Açık.",
+                    "Beş tema: Mica Koyu, AMOLED Saf Siyah, Cyberpunk Neon Mor, Fluent Açık ve Windows Yüksek Kontrast (sistemde açıksa otomatik).",
                     "Güvenlik: Kaynağa gömülü şifreler kaldırıldı, OWASP PBKDF2-SHA256 parola türetme ve DPAPI şifreleme eklendi.",
                     "Çalışmayan sistem ayarları (Tepsi simgesi, RAM temizleme, Otomatik çıkış temizliği) gerçek Windows API'lerine bağlandı."
                 }

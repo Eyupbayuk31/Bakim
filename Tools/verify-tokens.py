@@ -24,11 +24,14 @@ TOKENS_DIR = ROOT / "Themes" / "Tokens"
 OWNED_PREFIXES = (
     "Brush.", "Color.", "Font.", "Icon.", "Space.", "Pad.",
     "Gap.", "Radius.", "Stroke.", "Duration.", "Ease.", "Time.", "Text.",
+    "Surface.", "Border.", "Status.", "Risk.", "Chart.", "Motion.",
 )
 
 KEY_USE = re.compile(r'\{(?:Dynamic|Static)Resource\s+([A-Za-z0-9_.]+)\s*\}')
 KEY_DEF = re.compile(r'x:Key="([A-Za-z0-9_.]+)"')
 THEME_SET = re.compile(r'Set(?:Color)?\(\s*res\s*,\s*"([A-Za-z0-9_.]+)"')
+# SemanticV2: yield return ("Surface.Base", ...) ve $"Status.{name}.Solid" kalıpları
+THEME_YIELD = re.compile(r'yield return \(\s*"([A-Za-z0-9_.]+)"')
 
 
 def iter_xaml(include_tokens):
@@ -43,6 +46,11 @@ def iter_xaml(include_tokens):
         yield path
 
 
+def bootstrap_keys_preview():
+    path = TOKENS_DIR / "Palette.Bootstrap.xaml"
+    return set(KEY_DEF.findall(path.read_text(encoding="utf-8"))) if path.exists() else set()
+
+
 def main():
     # --- Tanımlı anahtarlar ---
     bootstrap_keys = set()
@@ -55,8 +63,10 @@ def main():
         else:
             static_token_keys |= keys
 
-    theme_keys = set(THEME_SET.findall(
-        (ROOT / "Services" / "ThemeService.cs").read_text(encoding="utf-8")))
+    theme_src = (ROOT / "Services" / "ThemeService.cs").read_text(encoding="utf-8")
+    theme_keys = set(THEME_SET.findall(theme_src)) | set(THEME_YIELD.findall(theme_src))
+    # Şablonlu anahtarlar (Status.{name}.Solid, Risk.{name}, Chart.Series{i}) açılış paletinden doğrulanır:
+    theme_keys |= {k for k in bootstrap_keys_preview() if k.startswith(("Status.", "Risk.", "Chart."))}
 
     app_keys = set(KEY_DEF.findall((ROOT / "App.xaml").read_text(encoding="utf-8")))
 

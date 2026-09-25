@@ -134,7 +134,11 @@ namespace Bakım.ViewModels
             // Kenar çubuğu (IA v2, §2.1)
             NavGroups = NavCatalog.Build();
             SettingsNavItem = NavCatalog.BuildSettingsItem();
-            _activity.Changed += (_, _) => OnUiThread(UpdateBadges);
+            _activity.Changed += (_, _) => OnUiThread(() =>
+            {
+                UpdateBadges();
+                OnActivityRecorded();
+            });
             _sentinelService.SetupFinished += _ => OnUiThread(UpdateBadges);
 
             // Açılış modülü: ayar açıksa son sayfa (§2.3), değilse Kontrol Paneli.
@@ -514,14 +518,16 @@ namespace Bakım.ViewModels
         public void ShowToast(string title, string message,
             InfoBarSeverity severity = InfoBarSeverity.Success,
             string iconName = "CheckmarkCircle24")
-        {
-            var toast = new ToastNotificationItem
+            => ShowToast(new ToastNotificationItem
             {
                 Title = title,
                 Message = message,
                 Severity = severity,
                 IconName = iconName
-            };
+            }, TimeSpan.FromSeconds(3.5));
+
+        private void ShowToast(ToastNotificationItem toast, TimeSpan lifetime)
+        {
 
             // Bildirim yağmurunda ekranın dolmasını engelle
             while (ActiveToasts.Count >= MaxVisibleToasts)
@@ -531,13 +537,57 @@ namespace Bakım.ViewModels
 
             ActiveToasts.Add(toast);
 
-            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3.5) };
+            var timer = new DispatcherTimer { Interval = lifetime };
             timer.Tick += (s, e) =>
             {
                 timer.Stop();
-                ActiveToasts.Remove(toast);
+                if (!toast.IsActionRunning) ActiveToasts.Remove(toast);
             };
             timer.Start();
+        }
+
+        /// <summary>
+        /// UndoToast (§3.5, §3.7): geri alınabilir her değişiklikten sonra 10 sn "Geri al" sunar.
+        /// Etkinlik Merkezi'ne yazılan kayıttan tetiklenir; modüllerin ayrıca bir şey yapması gerekmez.
+        /// </summary>
+        private void OnActivityRecorded()
+        {
+            var latest = _activity.Entries.FirstOrDefault();
+            if (latest == null || !latest.CanUndo || latest.Kind == Bakım.Core.Activity.ActivityKind.Restore) return;
+            if (latest.UndoHandler == Bakım.Core.Activity.UndoHandlers.RecycleBin) return; // elle geri alma: toast gereksiz
+            if (latest.Id == _lastUndoToastId || (DateTime.UtcNow - latest.AtUtc).TotalSeconds > 5) return;
+            _lastUndoToastId = latest.Id;
+
+            ShowToast(new ToastNotificationItem
+            {
+                Title = latest.Title,
+                Message = string.IsNullOrWhiteSpace(latest.Summary) ? latest.Module : latest.Summary,
+                Severity = InfoBarSeverity.Informational,
+                IconName = "ArrowUndo20",
+                ActionText = "Geri al",
+                ActionArgument = latest.Id
+            }, TimeSpan.FromSeconds(10));
+        }
+
+        private string? _lastUndoToastId;
+
+        [RelayCommand]
+        private async Task ToastActionAsync(ToastNotificationItem? toast)
+        {
+            if (toast?.ActionArgument == null || toast.IsActionRunning) return;
+            toast.IsActionRunning = true;
+            try
+            {
+                var result = await _activity.UndoAsync(toast.ActionArgument);
+                ActiveToasts.Remove(toast);
+                ShowToast(result.Success ? "Geri alındı" : "Geri alma tamamlanamadı", result.Message,
+                    result.Success ? InfoBarSeverity.Success : InfoBarSeverity.Warning,
+                    result.Success ? "CheckmarkCircle24" : "Warning24");
+            }
+            finally
+            {
+                toast.IsActionRunning = false;
+            }
         }
 
         [RelayCommand]

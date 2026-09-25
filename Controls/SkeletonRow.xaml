@@ -1,0 +1,24 @@
+<UserControl x:Class="Bakım.Controls.SkeletonRow"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Yükleniyor"
+             Focusable="False">
+    <!-- Yükleniyor iskeleti (§3.5): liste ilk yüklenirken dönen simge yerine gri satırlar. -->
+    <Grid Margin="4,8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="80"/>
+        </Grid.ColumnDefinitions>
+        <Border Width="20" Height="20" CornerRadius="{StaticResource Radius.XS}" HorizontalAlignment="Left"
+                Background="{DynamicResource Surface.Hover}"/>
+        <StackPanel Grid.Column="1" Margin="{StaticResource Gap.Right.SM}">
+            <Border Height="12" Width="220" HorizontalAlignment="Left" CornerRadius="{StaticResource Radius.XS}"
+                    Background="{DynamicResource Surface.Hover}"/>
+            <Border Height="10" Width="320" HorizontalAlignment="Left" CornerRadius="{StaticResource Radius.XS}"
+                    Margin="{StaticResource Gap.Top.XS}" Background="{DynamicResource Surface.Pressed}"/>
+        </StackPanel>
+        <Border Grid.Column="2" Height="18" CornerRadius="{StaticResource Radius.XS}"
+                Background="{DynamicResource Surface.Hover}"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,47 @@
+<UserControl x:Class="Bakım.Controls.AdminGate"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root">
+    <!--
+        Yönetici gerektiren bölge (§3.5). Yönetici değilken içerik soluk ve etkileşimsizdir,
+        üstünde "Yönetici olarak yeniden başlat" şeridi görünür. Yöneticiyken şerit yoktur.
+    -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border x:Name="Banner"
+                Grid.Row="0"
+                Background="{DynamicResource Status.Caution.Subtle}"
+                BorderBrush="{DynamicResource Status.Caution.Border}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource Radius.MD}"
+                Padding="{StaticResource Pad.CardCompact}"
+                Margin="{StaticResource Gap.Bottom.SM}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ui:SymbolIcon Symbol="Shield20" FontSize="{StaticResource Icon.MD}" VerticalAlignment="Center"
+                               Margin="{StaticResource Gap.Right.SM}"
+                               Foreground="{DynamicResource Status.Caution.Text}"/>
+                <TextBlock Grid.Column="1" x:Name="MessageText" TextWrapping="Wrap" VerticalAlignment="Center"
+                           FontSize="{StaticResource Font.Body}"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                <ui:Button Grid.Column="2" Appearance="Primary" Padding="{StaticResource Pad.Control}"
+                           Margin="{StaticResource Gap.Right.XS}"
+                           Icon="{ui:SymbolIcon Shield20}"
+                           Content="Yönetici olarak yeniden başlat"
+                           Click="OnRestartClicked"
+                           AutomationProperties.Name="Bakım'ı yönetici olarak yeniden başlat"/>
+            </Grid>
+        </Border>
+
+        <ContentPresenter x:Name="Body" Grid.Row="1" Content="{Binding GatedContent, ElementName=Root}"/>
+    </Grid>
+</UserControl>

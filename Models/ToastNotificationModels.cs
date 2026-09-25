@@ -15,6 +15,17 @@ namespace Bakım.Models
         [ObservableProperty]
         private bool _isDismissed;
 
+        /// <summary>İsteğe bağlı eylem düğmesi (ör. "Geri al" — UndoToast, §3.5).</summary>
+        public string? ActionText { get; set; }
+
+        /// <summary>Eylem: Etkinlik Merkezi kaydının kimliği (Geri al) ya da başka bir anahtar.</summary>
+        public string? ActionArgument { get; set; }
+
+        public bool HasAction => !string.IsNullOrEmpty(ActionText);
+
+        [ObservableProperty]
+        private bool _isActionRunning;
+
         public string SeverityBrushKey => Severity switch
         {
             InfoBarSeverity.Success => "SystemFillColorSuccessBrush",

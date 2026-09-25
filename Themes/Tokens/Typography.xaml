@@ -16,34 +16,36 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
-    <!-- ============ METİN ÖLÇEĞİ ============ -->
+    <!-- ============ METİN ÖLÇEĞİ (v2, §3.2) ============ -->
+    <!-- En küçük okunur boyut 12. 11 yalnızca rozet/etiket (Font.Micro) içindir. -->
+    <!-- Sabit FontSize yerine bu anahtarlar kullanılır: Tools/migrate-font-sizes.py -->
 
     <!-- Yardımcı etiketler, rozet alt yazıları -->
-    <sys:Double x:Key="Font.Micro">10</sys:Double>
+    <sys:Double x:Key="Font.Micro">11</sys:Double>
 
     <!-- İkincil bilgi, meta veri, tablo alt satırı (en yaygın) -->
-    <sys:Double x:Key="Font.Caption">11</sys:Double>
+    <sys:Double x:Key="Font.Caption">12</sys:Double>
 
     <!-- Gövde metni, açıklama satırları -->
-    <sys:Double x:Key="Font.Body">12</sys:Double>
+    <sys:Double x:Key="Font.Body">14</sys:Double>
 
     <!-- Vurgulu gövde, liste öğesi başlığı -->
-    <sys:Double x:Key="Font.BodyLarge">13</sys:Double>
+    <sys:Double x:Key="Font.BodyLarge">15</sys:Double>
 
     <!-- Kart içi alt başlık -->
-    <sys:Double x:Key="Font.Subtitle">14</sys:Double>
+    <sys:Double x:Key="Font.Subtitle">16</sys:Double>
 
     <!-- Kart / bölüm başlığı -->
-    <sys:Double x:Key="Font.SectionTitle">16</sys:Double>
+    <sys:Double x:Key="Font.SectionTitle">18</sys:Double>
 
     <!-- Modül başlığı -->
     <sys:Double x:Key="Font.Title">20</sys:Double>
 
     <!-- Sayfa başlığı -->
-    <sys:Double x:Key="Font.TitleLarge">24</sys:Double>
+    <sys:Double x:Key="Font.TitleLarge">28</sys:Double>
 
     <!-- KPI sayıları, sağlık skoru -->
-    <sys:Double x:Key="Font.Display">32</sys:Double>
+    <sys:Double x:Key="Font.Display">40</sys:Double>
 
     <!-- ============ SİMGE ÖLÇEĞİ ============ -->
 
@@ -92,6 +94,34 @@
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <Style x:Key="Text.CardTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Subtitle}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <Style x:Key="Text.BodyStrong" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+    </Style>
+
+    <!-- İkincil gövde metni. ("Text.Secondary" fırça anahtarıdır; stil adı çakışmasın.) -->
+    <Style x:Key="Text.BodySecondary" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <!-- KPI ve skor: sabit genişlikli rakamlar, sayılar güncellenirken kaymaz. -->
+    <Style x:Key="Text.KPI" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Display}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Typography.NumeralAlignment" Value="Tabular"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
     </Style>
 
     <Style x:Key="Text.Mono" TargetType="TextBlock">

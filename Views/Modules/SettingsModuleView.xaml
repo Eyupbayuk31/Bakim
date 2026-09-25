@@ -73,7 +73,7 @@
                                Command="{Binding SelectCategoryCommand}"
                                CommandParameter="General"
                                Icon="{ui:SymbolIcon DarkTheme24}">
-                        <TextBlock Text="Görünüm &amp; Tema" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="Görünüm &amp; Tema" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                     </ui:Button>
 
                     <!-- 2. Performans -->
@@ -85,7 +85,7 @@
                                Command="{Binding SelectCategoryCommand}"
                                CommandParameter="Performance"
                                Icon="{ui:SymbolIcon TopSpeed24}">
-                        <TextBlock Text="Performans &amp; Bellek" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="Performans &amp; Bellek" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                     </ui:Button>
 
                     <!-- 3. Başlangıç & Sistem -->
@@ -97,7 +97,7 @@
                                Command="{Binding SelectCategoryCommand}"
                                CommandParameter="Startup"
                                Icon="{ui:SymbolIcon Settings24}">
-                        <TextBlock Text="Sistem &amp; Başlangıç" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="Sistem &amp; Başlangıç" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                     </ui:Button>
 
                     <!-- 4. Güvenlik & UAC -->
@@ -109,7 +109,7 @@
                                Command="{Binding SelectCategoryCommand}"
                                CommandParameter="Security"
                                Icon="{ui:SymbolIcon Shield24}">
-                        <TextBlock Text="Güvenlik &amp; UAC" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="Güvenlik &amp; UAC" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                     </ui:Button>
 
                     <!-- 5. Modül Ayarları (Program Kaldırıcı & VirusTotal) -->
@@ -121,7 +121,7 @@
                                Command="{Binding SelectCategoryCommand}"
                                CommandParameter="Modules"
                                Icon="{ui:SymbolIcon Apps24}">
-                        <TextBlock Text="Modül Tercihleri" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="Modül Tercihleri" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                     </ui:Button>
 
                     <!-- 6. Hakkında & Günlükler -->
@@ -133,7 +133,7 @@
                                Command="{Binding SelectCategoryCommand}"
                                CommandParameter="About"
                                Icon="{ui:SymbolIcon Info24}">
-                        <TextBlock Text="Hakkında &amp; Günlükler" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="13"/>
+                        <TextBlock Text="Hakkında &amp; Günlükler" Margin="8,0,0,0" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                     </ui:Button>
                 </StackPanel>
             </Border>
@@ -150,10 +150,10 @@
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="DarkTheme24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Arayüz Görünümü ve Temalar" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Arayüz Görünümü ve Temalar" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
                                 <TextBlock Text="Windows 11 Mica derinlik efekti ve dinamik renk paleti ile arayüz stilini belirleyin." 
-                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- 4 Theme Selection Grid -->
@@ -178,8 +178,8 @@
                                            Icon="{ui:SymbolIcon DarkTheme24}">
                                     <ui:Button.Content>
                                         <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="Mica Koyu" FontWeight="SemiBold" FontSize="13"/>
-                                            <TextBlock Text="Slate zemin &amp; Mica" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="Mica Koyu" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                            <TextBlock Text="Slate zemin &amp; Mica" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </ui:Button.Content>
                                 </ui:Button>
@@ -194,8 +194,8 @@
                                            Icon="{ui:SymbolIcon WeatherMoon24}">
                                     <ui:Button.Content>
                                         <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="AMOLED Siyah" FontWeight="SemiBold" FontSize="13"/>
-                                            <TextBlock Text="Saf OLED siyahı" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="AMOLED Siyah" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                            <TextBlock Text="Saf OLED siyahı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </ui:Button.Content>
                                 </ui:Button>
@@ -210,8 +210,8 @@
                                            Icon="{ui:SymbolIcon Color24}">
                                     <ui:Button.Content>
                                         <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="Cyberpunk Mor" FontWeight="SemiBold" FontSize="13"/>
-                                            <TextBlock Text="Neon mor &amp; pembe" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="Cyberpunk Mor" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                            <TextBlock Text="Neon mor &amp; pembe" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </ui:Button.Content>
                                 </ui:Button>
@@ -226,24 +226,40 @@
                                            Icon="{ui:SymbolIcon WeatherSunny24}">
                                     <ui:Button.Content>
                                         <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="Fluent Açık" FontWeight="SemiBold" FontSize="13"/>
-                                            <TextBlock Text="Aydınlık zemin" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                            <TextBlock Text="Fluent Açık" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                            <TextBlock Text="Aydınlık zemin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                         </StackPanel>
                                     </ui:Button.Content>
                                 </ui:Button>
                             </Grid>
 
+                            <!-- Yüksek Kontrast (§3.1, §3.8) -->
+                            <ui:Button HorizontalAlignment="Stretch"
+                                       HorizontalContentAlignment="Left"
+                                       Padding="14,10"
+                                       Margin="0,0,0,16"
+                                       Appearance="{Binding IsHighContrastTheme, Converter={StaticResource BoolToNavAppearance}}"
+                                       Command="{Binding SetHighContrastThemeCommand}"
+                                       AutomationProperties.Name="Yüksek Kontrast temasını uygula"
+                                       Icon="{ui:SymbolIcon Accessibility24}">
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="Yüksek Kontrast" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                    <TextBlock Text="Windows sistem renklerini kullanır. Windows'ta Yüksek Kontrast açıksa otomatik seçilir."
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </ui:Button>
+
                             <!-- Theme Status Badge -->
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
-                                    CornerRadius="6" 
+                                    CornerRadius="{StaticResource Radius.SM}" 
                                     Padding="12,8"
                                     Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="Checkmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Etkin Tema: " FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding CurrentThemeStatus}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Etkin Tema: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding CurrentThemeStatus}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                 </StackPanel>
                             </Border>
 
@@ -256,13 +272,49 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Windows 11 Mica Arka Plan Derinliği" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Windows 11 Mica Arka Plan Derinliği" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Masaüstü duvar kağıdıyla etkileşimli Mica saydamlık katmanını uygular." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1" 
                                                  IsChecked="{Binding IsMicaEnabled, Mode=TwoWay}"
                                                  AutomationProperties.Name="Mica arka plan efektini aç veya kapat"
+                                                 VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <Border Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1" Margin="0,16,0,16"/>
+
+                            <!-- Windows vurgu rengi (§3.1) -->
+                            <Grid Margin="0,0,0,16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Windows vurgu rengini kullan" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Düğmeler ve vurgular, Windows Ayarlar &gt; Kişiselleştirme &gt; Renkler'deki vurgu rengini alır."
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Column="1"
+                                                 IsChecked="{Binding FollowWindowsAccent, Mode=TwoWay}"
+                                                 AutomationProperties.Name="Windows vurgu rengini kullan"
+                                                 VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <!-- Animasyonları azalt (§3.3) -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Animasyonları azalt" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Geçiş animasyonları kapatılır. Windows'ta animasyonlar kapalıysa bu otomatik uygulanır. Bakım yeniden başlatılınca etkinleşir."
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Column="1"
+                                                 IsChecked="{Binding ReduceMotion, Mode=TwoWay}"
+                                                 AutomationProperties.Name="Animasyonları azalt"
                                                  VerticalAlignment="Center"/>
                             </Grid>
                         </StackPanel>
@@ -276,10 +328,10 @@
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Performans ve Bellek Tercihleri" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Performans ve Bellek Tercihleri" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
                                 <TextBlock Text="Canlı veri yenileme sıklığı ve otomatik RAM optimizasyon aralıkları." 
-                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- Item 1: Refresh Rate -->
@@ -289,9 +341,9 @@
                                     <ColumnDefinition Width="Auto" MinWidth="160"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Canlı Veri Yenileme Sıklığı" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Canlı Veri Yenileme Sıklığı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Donanım sayaçları ve işlem listelerinin arka planda güncellenme sıklığı." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ComboBox Grid.Column="1" 
                                           SelectedValuePath="Tag"
@@ -314,9 +366,9 @@
                                     <ColumnDefinition Width="Auto" MinWidth="160"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Otomatik RAM Temizleme Aralığı" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Otomatik RAM Temizleme Aralığı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Kullanılmayan sistem çalışma havuzlarını arka planda periyodik olarak boşaltır." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ComboBox Grid.Column="1" 
                                           SelectedValuePath="Tag"
@@ -340,9 +392,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Yüksek Bellek Tüketim Uyarısı" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Yüksek Bellek Tüketim Uyarısı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Sistem bellek kullanımı %85 eşiğini aştığında bildirimle uyarır." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1" 
                                                  IsChecked="{Binding NotifyOnHighRam, Mode=TwoWay}"
@@ -360,10 +412,10 @@
                             <StackPanel Margin="0,0,0,16">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="Settings24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Sistem Başlangıcı ve Davranışı" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Sistem Başlangıcı ve Davranışı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
                                 <TextBlock Text="Sistem açılışı, arka plan çalışma modu ve oturum temizlik davranışları." 
-                                           FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                             </StackPanel>
 
                             <!-- Item 1: Start with Windows & Health Diagnostic -->
@@ -380,9 +432,9 @@
 
                                 <!-- Title & Toggle -->
                                 <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Windows ile Birlikte Başlat" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Windows ile Birlikte Başlat" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Bilgisayar açıldığında uygulamayı otomatik olarak başlatır (UAC uyarısız en yüksek yetki)." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Row="0" Grid.Column="1" 
                                                  IsChecked="{Binding StartWithWindows, Mode=TwoWay}"
@@ -394,7 +446,7 @@
                                         Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                         BorderThickness="1" 
-                                        CornerRadius="8" 
+                                        CornerRadius="{StaticResource Radius.MD}" 
                                         Padding="14,10" 
                                         Margin="0,10,0,0">
                                     <Grid>
@@ -405,10 +457,10 @@
 
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,3">
-                                                <TextBlock Text="Başlangıç Durumu:" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
-                                                <TextBlock Text="{Binding AutostartHealthBadgeText}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="Başlangıç Durumu:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{Binding AutostartHealthBadgeText}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding AutostartDiagnosticDetails}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding AutostartDiagnosticDetails}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
@@ -431,10 +483,10 @@
                                 <!-- Warning banner if blocked -->
                                 <Border Grid.Row="2" Grid.ColumnSpan="2" 
                                         Visibility="{Binding IsAutostartBlocked, Converter={StaticResource BoolToVis}}"
-                                        Background="#22EF4444" 
-                                        BorderBrush="#88EF4444" 
+                                        Background="{DynamicResource Status.Critical.Subtle}" 
+                                        BorderBrush="{DynamicResource Status.Critical.Border}" 
                                         BorderThickness="1" 
-                                        CornerRadius="8" 
+                                        CornerRadius="{StaticResource Radius.MD}" 
                                         Padding="12,10" 
                                         Margin="0,8,0,0">
                                     <Grid>
@@ -442,8 +494,8 @@
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <ui:SymbolIcon Symbol="Warning24" FontSize="18" Foreground="#EF4444" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="11.5" Foreground="#FCA5A5">
+                                        <ui:SymbolIcon Symbol="Warning24" FontSize="18" Foreground="{DynamicResource Status.Critical.Solid}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource Status.Critical.Text}">
                                             <Run FontWeight="Bold">Kritik Windows UAC Engeli:</Run> Uygulama 'Yönetici Olarak Çalıştır' olarak işaretlendiği için standart Kayıt Defteri başlangıcı Windows tarafından sessizce engellenmektedir. Programın sorunsuz başlaması için lütfen yukarıdaki <Run FontWeight="Bold">'Başlangıcı Onar &amp; Kur'</Run> butonunu kullanın.
                                         </TextBlock>
                                     </Grid>
@@ -459,9 +511,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Kapatıldığında Sistem Tepsisine Küçült" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Kapatıldığında Sistem Tepsisine Küçült" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Uygulama kapatıldığında bildirim alanında (System Tray) çalışmayı sürdürür." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1" 
                                                  IsChecked="{Binding MinimizeToTray, Mode=TwoWay}"
@@ -497,9 +549,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Çıkışta Temp Dosyalarını Temizle" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Çıkışta Temp Dosyalarını Temizle" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Uygulamadan çıkıldığında kullanıcı geçici dosyalarını güvenle temizler." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1" 
                                                  IsChecked="{Binding AutoCleanOnExit, Mode=TwoWay}"
@@ -517,23 +569,23 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="Windows Gezgini Sağ Tık Menüsü" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <Border CornerRadius="4" Padding="6,2" Margin="8,0,0,0"
+                                        <TextBlock Text="Windows Gezgini Sağ Tık Menüsü" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="8,0,0,0"
                                                 Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1">
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Kayıtlı &amp; Aktif" FontSize="11" FontWeight="SemiBold"
+                                                <TextBlock Text="Kayıtlı &amp; Aktif" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                            Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                            Visibility="{Binding IsShellContextMenuEnabled, Converter={StaticResource BoolToVis}}"/>
-                                                <TextBlock Text="Devre Dışı" FontSize="11" FontWeight="SemiBold"
+                                                <TextBlock Text="Devre Dışı" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                            Visibility="{Binding IsShellContextMenuEnabled, Converter={StaticResource InverseBoolToVis}}"/>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
                                     <TextBlock Text="Masaüstü, klasör ve program dosyalarına (.exe, .lnk) sağ tıklandığında 'Bakım ile Kaldır' seçeneğini Windows bağlam menüsüne ekler." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1" 
                                                  IsChecked="{Binding IsShellContextMenuEnabled, Mode=TwoWay}"
@@ -559,14 +611,14 @@
                                 <ui:SymbolIcon Grid.Column="0" Symbol="Shield24" FontSize="26" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,14,0" VerticalAlignment="Center"/>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="Yönetici Yetki Seviyesi (UAC)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Yönetici Yetki Seviyesi (UAC)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Yönetici ayrıcalıkları devrede. Tüm sistem alanları tam yetkiyle yönetilebilir." 
-                                               FontSize="12" 
+                                               FontSize="{StaticResource Font.Caption}" 
                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}" 
                                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}" 
                                                Margin="0,3,0,0"/>
                                     <TextBlock Text="Standart kullanıcı modu. Korumalı sistem ayarlarını değiştirmek için yükseltme önerilir." 
-                                               FontSize="12" 
+                                               FontSize="{StaticResource Font.Caption}" 
                                                Foreground="{DynamicResource SystemFillColorCautionBrush}" 
                                                Visibility="{Binding IsAdmin, Converter={StaticResource InverseBoolToVis}}" 
                                                Margin="0,3,0,0"/>
@@ -591,9 +643,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Her Zaman Yönetici Olarak Çalıştır" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Her Zaman Yönetici Olarak Çalıştır" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Uygulamanın daima yönetici ayrıcalıklarıyla açılmasını sağlar." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1" 
                                                  IsChecked="{Binding IsAlwaysRunAsAdmin, Mode=TwoWay}"
@@ -610,9 +662,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="UAC Uyarısız Yönetici Başlat" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="UAC Uyarısız Yönetici Başlat" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Görev Zamanlayıcı üzerinden sistem açılışında UAC onayı sormadan en yüksek yetkiyle başlatır." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="1" 
                                                  IsChecked="{Binding IsTaskSchedulerAutoStart, Mode=TwoWay}"
@@ -631,7 +683,7 @@
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,14">
                                     <ui:SymbolIcon Symbol="ArrowCounterclockwise24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Program Kaldırıcı &amp; Sistem Geri Yükleme" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Program Kaldırıcı &amp; Sistem Geri Yükleme" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
 
                                 <!-- Item 1: Prompt restore point -->
@@ -641,9 +693,9 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="Kaldırma Öncesi Geri Yükleme Noktası Sor" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Kaldırma Öncesi Geri Yükleme Noktası Sor" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Uygulama kaldırılmadan önce sistem kurtarma noktası oluşturmayı sorar." 
-                                                   FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                                   FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <ui:ToggleSwitch Grid.Column="1" 
                                                      IsChecked="{Binding PromptRestorePointBeforeUninstall, Mode=TwoWay}"
@@ -660,9 +712,9 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="Sistem Geri Yükleme Koruması" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Sistem Geri Yükleme Koruması" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Kaldırma işlemlerinde otomatik kurtarma noktası oluşturur." 
-                                                   FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                                   FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <ui:ToggleSwitch Grid.Column="1" 
                                                      IsChecked="{Binding CreateRestorePointOnUninstall, Mode=TwoWay}"
@@ -680,23 +732,23 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="Windows Gezgini Sağ Tık Menüsü" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <Border CornerRadius="4" Padding="6,2" Margin="8,0,0,0"
+                                            <TextBlock Text="Windows Gezgini Sağ Tık Menüsü" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="8,0,0,0"
                                                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                     BorderThickness="1">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Kayıtlı &amp; Aktif" FontSize="11" FontWeight="SemiBold"
+                                                    <TextBlock Text="Kayıtlı &amp; Aktif" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                                Visibility="{Binding IsShellContextMenuEnabled, Converter={StaticResource BoolToVis}}"/>
-                                                    <TextBlock Text="Devre Dışı" FontSize="11" FontWeight="SemiBold"
+                                                    <TextBlock Text="Devre Dışı" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                                Visibility="{Binding IsShellContextMenuEnabled, Converter={StaticResource InverseBoolToVis}}"/>
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Text="Dosya, klasör ve kısayollara sağ tıklandığında 'Bakım ile Kaldır' seçeneğini ekler." 
-                                                   FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                                   FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <ui:ToggleSwitch Grid.Column="1" 
                                                      IsChecked="{Binding IsShellContextMenuEnabled, Mode=TwoWay}"
@@ -711,7 +763,7 @@
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,14">
                                     <ui:SymbolIcon Symbol="Shield24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Kurulum Nöbetçisi (Sentinel Setup Guard)" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Kurulum Nöbetçisi (Sentinel Setup Guard)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
 
                                 <Grid>
@@ -721,23 +773,23 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="Otomatik Kurulum Tespiti &amp; Değişiklik İzleme" FontSize="13.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <Border CornerRadius="4" Padding="6,2" Margin="8,0,0,0"
+                                            <TextBlock Text="Otomatik Kurulum Tespiti &amp; Değişiklik İzleme" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="8,0,0,0"
                                                     Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                     BorderThickness="1">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="Canlı İzleme Aktif" FontSize="11" FontWeight="SemiBold"
+                                                    <TextBlock Text="Canlı İzleme Aktif" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"
                                                                Visibility="{Binding IsSentinelSetupGuardEnabled, Converter={StaticResource BoolToVis}}"/>
-                                                    <TextBlock Text="Devre Dışı" FontSize="11" FontWeight="SemiBold"
+                                                    <TextBlock Text="Devre Dışı" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                                Visibility="{Binding IsSentinelSetupGuardEnabled, Converter={StaticResource InverseBoolToVis}}"/>
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Text="Yeni bir yazılım kurulurken arka planda eklenen dosya ve kayıt defteri değişikliklerini otomatik yakalar, kurulum bitince Analizör ile güvenlik ve VirusTotal taraması önerir." 
-                                                   FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                                   FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                     </StackPanel>
                                     <ui:ToggleSwitch Grid.Column="1" 
                                                      IsChecked="{Binding IsSentinelSetupGuardEnabled, Mode=TwoWay}"
@@ -753,10 +805,10 @@
                                 <StackPanel Margin="0,0,0,14">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                        <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="Başlangıç dosyalarını 70+ antivirüs motoruna karşı doğrulamak için VirusTotal API v3 anahtarınızı tanımlayın." 
-                                               FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                                 </StackPanel>
 
                                 <Grid Margin="0,0,0,8">
@@ -784,9 +836,9 @@
                                 </Grid>
 
                                 <StackPanel Orientation="Horizontal" Margin="2,4,0,0">
-                                    <TextBlock Text="Durum: " FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    <TextBlock Text="{Binding VirusTotalApiStatus}" FontSize="11.5" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Medium"/>
-                                    <TextBlock Text=" • Ücretsiz anahtar için virustotal.com/gui/join-us adresini ziyaret edin." FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="8,0,0,0"/>
+                                    <TextBlock Text="Durum: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="{Binding VirusTotalApiStatus}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Medium"/>
+                                    <TextBlock Text=" • Ücretsiz anahtar için virustotal.com/gui/join-us adresini ziyaret edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="8,0,0,0"/>
                                 </StackPanel>
                             </StackPanel>
                         </ui:Card>
@@ -807,10 +859,10 @@
                                 <StackPanel Grid.Column="0">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="Info24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                        <TextBlock Text="Uygulama Bilgileri ve Günlük Yönetimi" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Uygulama Bilgileri ve Günlük Yönetimi" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="Bakım yazılımı sürüm detayları, son yenilikler ve geçmiş sürüm notları." 
-                                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,4,0,0"/>
                                 </StackPanel>
 
                                 <!-- Actions -->
@@ -842,7 +894,7 @@
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="6"
+                                    CornerRadius="{StaticResource Radius.SM}"
                                     Padding="14,10"
                                     Margin="0,0,0,14">
                                 <Grid>
@@ -852,9 +904,9 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="Ayrıntılı Günlükleme (Debug Modu)" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Ayrıntılı Günlükleme (Debug Modu)" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Sorun analizi ve hata bildirimi için her işlem adımı günlük dosyasına kaydedilir." 
-                                                   FontSize="11.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                                   FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <ui:ToggleSwitch Grid.Column="1"
@@ -874,31 +926,31 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,8,0">
+                                <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="12,10" Margin="0,0,8,0">
                                     <StackPanel>
-                                        <TextBlock Text="Sürüm" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding AppVersion}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Sürüm" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <TextBlock Text="{Binding AppVersion}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,8,0">
+                                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="12,10" Margin="0,0,8,0">
                                     <StackPanel>
-                                        <TextBlock Text="Çalışma Zamanı" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding FrameworkVersion}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Çalışma Zamanı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <TextBlock Text="{Binding FrameworkVersion}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10" Margin="0,0,8,0">
+                                <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="12,10" Margin="0,0,8,0">
                                     <StackPanel>
-                                        <TextBlock Text="Mimari" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding Architecture}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Mimari" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <TextBlock Text="{Binding Architecture}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Border>
 
-                                <Border Grid.Column="3" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10">
+                                <Border Grid.Column="3" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="12,10">
                                     <StackPanel>
-                                        <TextBlock Text="Geliştirici" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <TextBlock Text="{Binding DeveloperName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Geliştirici" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <TextBlock Text="{Binding DeveloperName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -907,12 +959,12 @@
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
-                                    CornerRadius="6" 
+                                    CornerRadius="{StaticResource Radius.SM}" 
                                     Padding="12,8" 
                                     Margin="0,0,0,8">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="15" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="{Binding UpdateStatus}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding UpdateStatus}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </Border>
 
@@ -920,7 +972,7 @@
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                     BorderThickness="1" 
-                                    CornerRadius="6" 
+                                    CornerRadius="{StaticResource Radius.SM}" 
                                     Padding="12,10"
                                     Margin="0,0,0,16">
                                 <Grid>
@@ -931,10 +983,10 @@
                                     <ui:SymbolIcon Grid.Column="0" Symbol="AppFolder24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="Çalışma Modu: " FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text="{Binding InstallationStatus}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="Çalışma Modu: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding InstallationStatus}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
-                                        <TextBlock Text="{Binding InstalledDirectory}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding InstalledDirectory}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -943,7 +995,7 @@
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="8"
+                                    CornerRadius="{StaticResource Radius.MD}"
                                     Padding="18"
                                     Margin="0,0,0,16">
                                 <StackPanel>
@@ -957,16 +1009,16 @@
                                         <StackPanel Grid.Column="0">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="Rocket24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                                <TextBlock Text="En Son Güncellemede Ne Geldi?" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="En Son Güncellemede Ne Geldi?" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding LatestRelease.Title}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{Binding LatestRelease.Title}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                            <Border Background="{DynamicResource SystemFillColorSuccessBrush}" CornerRadius="6" Padding="10,4">
-                                                <TextBlock Text="{Binding LatestRelease.Version, StringFormat='{}{0} - Yayında'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
+                                            <Border Background="{DynamicResource SystemFillColorSuccessBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,4">
+                                                <TextBlock Text="{Binding LatestRelease.Version, StringFormat='{}{0} - Yayında'}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
                                             </Border>
-                                            <TextBlock Text="{Binding LatestRelease.ReleaseDate}" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" Margin="0,3,0,0"/>
+                                            <TextBlock Text="{Binding LatestRelease.ReleaseDate}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" Margin="0,3,0,0"/>
                                         </StackPanel>
                                     </Grid>
 
@@ -980,7 +1032,7 @@
                                                         <ColumnDefinition Width="*"/>
                                                     </Grid.ColumnDefinitions>
                                                     <ui:SymbolIcon Grid.Column="0" Symbol="Checkmark20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,8,0" VerticalAlignment="Top"/>
-                                                    <TextBlock Grid.Column="1" Text="{Binding}" FontSize="12" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" LineHeight="18"/>
+                                                    <TextBlock Grid.Column="1" Text="{Binding}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" LineHeight="18"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
@@ -992,15 +1044,15 @@
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="8"
+                                    CornerRadius="{StaticResource Radius.MD}"
                                     Padding="18">
                                 <StackPanel>
                                     <StackPanel Margin="0,0,0,14">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <ui:SymbolIcon Symbol="History24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                            <TextBlock Text="Sürüm Geçmişi &amp; Değişiklik Günlüğü" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="Sürüm Geçmişi &amp; Değişiklik Günlüğü" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
-                                        <TextBlock Text="Geçmiş sürümlerde yayınlanan tüm yenilikler ve optimizasyon notları." FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Geçmiş sürümlerde yayınlanan tüm yenilikler ve optimizasyon notları." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
 
                                     <ItemsControl ItemsSource="{Binding ReleaseHistory}">
@@ -1009,7 +1061,7 @@
                                                 <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                         BorderThickness="1" 
-                                                        CornerRadius="6" 
+                                                        CornerRadius="{StaticResource Radius.SM}" 
                                                         Padding="14,10" 
                                                         Margin="0,0,0,8">
                                                     <StackPanel>
@@ -1028,14 +1080,14 @@
                                                                 </Grid.ColumnDefinitions>
 
                                                                 <!-- Version Badge -->
-                                                                <Border Grid.Column="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="4" Padding="8,3" Margin="0,0,10,0" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding Version}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                                <Border Grid.Column="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="8,3" Margin="0,0,10,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding Version}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                                                 </Border>
 
                                                                 <!-- Title & Date -->
                                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                                                    <TextBlock Text="{Binding ReleaseDate}" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
+                                                                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                                    <TextBlock Text="{Binding ReleaseDate}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,1,0,0"/>
                                                                 </StackPanel>
 
                                                                 <!-- Chevron Toggle -->
@@ -1058,7 +1110,7 @@
                                                                                 <ColumnDefinition Width="*"/>
                                                                             </Grid.ColumnDefinitions>
                                                                             <ui:SymbolIcon Grid.Column="0" Symbol="ChevronRight20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,3,6,0" VerticalAlignment="Top"/>
-                                                                            <TextBlock Grid.Column="1" Text="{Binding}" FontSize="11.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
+                                                                            <TextBlock Grid.Column="1" Text="{Binding}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                                                         </Grid>
                                                                     </DataTemplate>
                                                                 </ItemsControl.ItemTemplate>

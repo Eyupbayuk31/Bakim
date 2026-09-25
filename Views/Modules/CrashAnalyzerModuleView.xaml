@@ -33,7 +33,7 @@
                 <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="8"
+                CornerRadius="{StaticResource Radius.MD}"
                 Padding="4"
                 Margin="0,0,12,0">
                 <StackPanel Orientation="Horizontal">
@@ -83,11 +83,11 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Sistem Sağlık Skoru" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Sistem Sağlık Skoru" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="%" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            <TextBlock Text="{Binding Stats.HealthScore}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            <TextBlock Text="{Binding Stats.HealthStatusText, StringFormat=' ({0})'}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock Text="%" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="{Binding Stats.HealthScore}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="{Binding Stats.HealthStatusText, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="ShieldCheckmark24" FontSize="24" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
@@ -102,10 +102,10 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Mavi Ekran / Çökme" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Mavi Ekran / Çökme" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding Stats.TotalCrashesCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
-                            <TextBlock Text=" adet döküm" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock Text="{Binding Stats.TotalCrashesCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
+                            <TextBlock Text=" adet döküm" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="DismissCircle24" FontSize="24" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
@@ -120,10 +120,10 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Kritik Olaylar (7 Gün)" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Kritik Olaylar (7 Gün)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding Stats.CriticalEvents7DaysCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                            <TextBlock Text=" kritik hata" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock Text="{Binding Stats.CriticalEvents7DaysCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                            <TextBlock Text=" kritik hata" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="Warning24" FontSize="24" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
@@ -138,10 +138,10 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Hata Günlükleri (7 Gün)" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Hata Günlükleri (7 Gün)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding Stats.ErrorEvents7DaysCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                            <TextBlock Text=" hata kaydı" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock Text="{Binding Stats.ErrorEvents7DaysCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text=" hata kaydı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         </StackPanel>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="DocumentBulletList24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
@@ -223,13 +223,13 @@
                     <StackPanel HorizontalAlignment="Center">
                         <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="48" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center"/>
                         <TextBlock Text="Mavi Ekran (BSOD) Çökmesi Bulunamadı!" 
-                                   FontSize="16" 
+                                   FontSize="{StaticResource Font.Subtitle}" 
                                    FontWeight="Bold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                    HorizontalAlignment="Center" 
                                    Margin="0,12,0,4"/>
                         <TextBlock Text="Sisteminizde kayıtlı herhangi bir Minidump dökümü veya çekirdek çökmesi tespit edilmedi. Donanımınız ve sürücüleriniz kararlı çalışıyor." 
-                                   FontSize="12" 
+                                   FontSize="{StaticResource Font.Caption}" 
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                    TextWrapping="Wrap" 
                                    TextAlignment="Center"/>
@@ -273,48 +273,48 @@
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                             <!-- BugCheck String -->
                                             <TextBlock Text="{Binding BugCheckString}" 
-                                                       FontSize="15" 
+                                                       FontSize="{StaticResource Font.BodyLarge}" 
                                                        FontWeight="Bold" 
                                                        Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
 
                                             <!-- BugCheck Code Badge -->
-                                            <Border CornerRadius="4" Padding="6,2" 
+                                            <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" 
                                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                     BorderBrush="{DynamicResource SystemFillColorCriticalBrush}" 
                                                     BorderThickness="1" 
                                                     Margin="10,0,0,0"
                                                     Visibility="{Binding BugCheckCode, Converter={StaticResource NullToVisibilityConverter}}">
-                                                <TextBlock Text="{Binding BugCheckCode}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
+                                                <TextBlock Text="{Binding BugCheckCode}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
                                             </Border>
 
                                             <!-- Time Badge -->
-                                            <Border CornerRadius="4" Padding="6,2" 
+                                            <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" 
                                                     Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                     BorderThickness="1" 
                                                     Margin="8,0,0,0"
                                                     Visibility="{Binding FormattedCrashTime, Converter={StaticResource NullToVisibilityConverter}}">
-                                                <TextBlock Text="{Binding FormattedCrashTime}" FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                <TextBlock Text="{Binding FormattedCrashTime}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             </Border>
                                         </StackPanel>
 
                                         <!-- Offending Driver -->
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                            <TextBlock Text="Neden Olan Sürücü: " FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text="{Binding CausedByDriver}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding DriverDescription, StringFormat=' ({0})'}" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="Neden Olan Sürücü: " FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding CausedByDriver}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding DriverDescription, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         </StackPanel>
 
                                         <!-- Explanation -->
                                         <TextBlock Text="{Binding Explanation}" 
-                                                   FontSize="12" 
+                                                   FontSize="{StaticResource Font.Caption}" 
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                                    TextWrapping="Wrap" 
                                                    Margin="0,2,0,6"/>
 
                                         <!-- Dump Path -->
                                         <TextBlock Text="{Binding DumpFilePath, StringFormat='Döküm Dosyası: {0}'}" 
-                                                   FontSize="11" 
+                                                   FontSize="{StaticResource Font.Caption}" 
                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     </StackPanel>
 
@@ -371,7 +371,7 @@
 
                                     <!-- Level Badge -->
                                     <Border Grid.Column="0" 
-                                            CornerRadius="4" 
+                                            CornerRadius="{StaticResource Radius.XS}" 
                                             Padding="8,4" 
                                             Margin="0,0,10,0"
                                             VerticalAlignment="Center" 
@@ -381,7 +381,7 @@
                                             BorderThickness="1"
                                             Visibility="{Binding Level, Converter={StaticResource NullToVisibilityConverter}}">
                                          <TextBlock Text="{Binding Level}" 
-                                                    FontSize="11" 
+                                                    FontSize="{StaticResource Font.Caption}" 
                                                     FontWeight="SemiBold" 
                                                     Foreground="{Binding Level, Converter={StaticResource EventLevelToBrush}}"/>
                                     </Border>
@@ -389,12 +389,12 @@
                                     <!-- Event Content -->
                                     <StackPanel Grid.Column="1" Margin="6,0,16,0" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Source}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding EventId, StringFormat=' (Olay ID: {0})'}" FontSize="12" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding LogName, StringFormat=' [{0}]'}" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="6,0,0,0"/>
+                                            <TextBlock Text="{Binding Source}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding EventId, StringFormat=' (Olay ID: {0})'}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding LogName, StringFormat=' [{0}]'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="6,0,0,0"/>
                                         </StackPanel>
                                         <TextBlock Text="{Binding Message}" 
-                                                   FontSize="12" 
+                                                   FontSize="{StaticResource Font.Caption}" 
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                                    TextWrapping="Wrap" 
                                                    Margin="0,3,0,0"/>
@@ -403,7 +403,7 @@
                                     <!-- Time -->
                                     <TextBlock Grid.Column="2" 
                                                Text="{Binding FormattedTime}" 
-                                               FontSize="11" 
+                                               FontSize="{StaticResource Font.Caption}" 
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                                VerticalAlignment="Center" 
                                                HorizontalAlignment="Right"
@@ -442,12 +442,12 @@
 
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                                 <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="SFC Sistem Dosyası Onarımı" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="SFC Sistem Dosyası Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
 
                             <TextBlock Grid.Row="1" 
                                        Text="Bozuk veya eksik Windows sistem dosyalarını otomatik olarak tarar ve önbellekteki temiz kopyalarla değiştirir (sfc /scannow)." 
-                                       FontSize="12" 
+                                       FontSize="{StaticResource Font.Caption}" 
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                        TextWrapping="Wrap" 
                                        Margin="0,0,0,12"/>
@@ -473,12 +473,12 @@
 
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                                 <ui:SymbolIcon Symbol="ArrowClockwise24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="DISM Windows İmaj Onarımı" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="DISM Windows İmaj Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
 
                             <TextBlock Grid.Row="1" 
                                        Text="Windows bileşen deposunu (Component Store) Windows Update sunucuları üzerinden indirilen sağlıklı dosyalarla onarır (DISM /RestoreHealth)." 
-                                       FontSize="12" 
+                                       FontSize="{StaticResource Font.Caption}" 
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                        TextWrapping="Wrap" 
                                        Margin="0,0,0,12"/>
@@ -510,7 +510,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Canlı Onarım Konsolu" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Canlı Onarım Konsolu" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Margin="10,0,0,0"
                                                  Visibility="{Binding IsRepairRunning, Converter={StaticResource BoolToVis}}"/>
                             </StackPanel>
@@ -527,7 +527,7 @@
                                 Background="{DynamicResource ApplicationBackgroundBrush}" 
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                 BorderThickness="1" 
-                                CornerRadius="6" 
+                                CornerRadius="{StaticResource Radius.SM}" 
                                 Padding="12">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                                 <TextBox Text="{Binding ConsoleOutput, Mode=OneWay}" AutomationProperties.Name="Konsol çıktısı" 
@@ -536,7 +536,7 @@
                                          BorderThickness="0" 
                                          Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
                                          FontFamily="Consolas, Cascadia Mono, Courier New" 
-                                         FontSize="12" 
+                                         FontSize="{StaticResource Font.Caption}" 
                                          TextWrapping="Wrap"/>
                             </ScrollViewer>
                         </Border>
@@ -552,7 +552,7 @@
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                 BorderThickness="1" 
-                CornerRadius="8">
+                CornerRadius="{StaticResource Radius.MD}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -561,7 +561,7 @@
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:SymbolIcon Symbol="Info20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
 
                 <ui:ProgressRing Grid.Column="1" 

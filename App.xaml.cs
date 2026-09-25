@@ -139,6 +139,7 @@ namespace Bakım
             // 5. Tema: kayıtlı tercihi geri yükle (yoksa Mica Koyu)
             ThemeService.Shared.Attach(settingsService, _logService);
             ThemeService.Shared.RestorePersistedTheme();
+            Helpers.MotionPolicy.Apply(settingsService.Current.ReduceMotion);
 
             // 6. Hedef Kaldırma Parametresi Denetimi (--uninstall-target "<path>")
             //    Sağ tık → "Bakım ile Kaldır" yalnızca sihirbazı açan ikinci bir süreçtir. Arka plan

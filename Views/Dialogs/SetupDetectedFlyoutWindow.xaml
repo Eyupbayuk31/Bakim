@@ -18,7 +18,7 @@
     <Border Background="{DynamicResource ApplicationBackgroundBrush}"
             BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
             BorderThickness="1.5"
-            CornerRadius="14"
+            CornerRadius="{StaticResource Radius.XL}"
             Padding="18">
         <Border.Effect>
             <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.6" Color="#000000"/>
@@ -42,14 +42,14 @@
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource Radius.MD}"
                                 Padding="8"
                                 Margin="0,0,10,0">
                             <ui:SymbolIcon Symbol="Eye24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Kurulum Nöbetçisi Devrede" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock x:Name="MonitoringAppNameText" Text="Yeni Yazılım Kurulumu İzleniyor..." FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            <TextBlock Text="Kurulum Nöbetçisi Devrede" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock x:Name="MonitoringAppNameText" Text="Yeni Yazılım Kurulumu İzleniyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -66,7 +66,7 @@
                 <!-- Status Body -->
                 <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,12,0,12">
                     <TextBlock Text="Kurulum süreci ve alt süreçler izleniyor. Sisteme eklenen dosyalar, kayıt defteri anahtarları ve servisler anlık olarak yakalanmaktadır."
-                               FontSize="11.5"
+                               FontSize="{StaticResource Font.Caption}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                TextWrapping="Wrap"
                                LineHeight="18"/>
@@ -76,7 +76,7 @@
 
                 <!-- Bottom Status -->
                 <Grid Grid.Row="2">
-                    <TextBlock x:Name="MonitoringStatusDetailText" Text="Canlı dosya sistemi ve kayıt defteri nöbetçisi aktif" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="MonitoringStatusDetailText" Text="Canlı dosya sistemi ve kayıt defteri nöbetçisi aktif" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
                     <ui:Button Appearance="Secondary" Content="Arka Planda İzle" HorizontalAlignment="Right" Padding="12,6" Click="OnDismissClicked"/>
                 </Grid>
             </Grid>
@@ -98,14 +98,14 @@
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
-                                CornerRadius="8"
+                                CornerRadius="{StaticResource Radius.MD}"
                                 Padding="8"
                                 Margin="0,0,10,0">
                             <ui:SymbolIcon Symbol="Shield24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Kurulum Tamamlandı" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock x:Name="FinishedAppNameText" Text="Uygulama Adı" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            <TextBlock Text="Kurulum Tamamlandı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock x:Name="FinishedAppNameText" Text="Uygulama Adı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -122,7 +122,7 @@
                 <!-- Body & Summary Pills -->
                 <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,10,0,10">
                     <TextBlock Text="Kurulan dosyalar Analizör ile güvenlik, dijital imza ve VirusTotal taramasından geçirilsin mi?"
-                               FontSize="12"
+                               FontSize="{StaticResource Font.Caption}"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                TextWrapping="Wrap"
@@ -133,7 +133,7 @@
                             Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="6"
+                            CornerRadius="{StaticResource Radius.SM}"
                             Padding="8,5"
                             Margin="0,8,0,2"
                             Visibility="Collapsed">
@@ -141,7 +141,7 @@
                             <ui:SymbolIcon Symbol="Shield24" FontSize="15" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
                             <TextBlock x:Name="QuickRiskSummaryText"
                                        Text="Risk analizi hazırlandı"
-                                       FontSize="11.5"
+                                       FontSize="{StaticResource Font.Caption}"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                        VerticalAlignment="Center"/>
@@ -153,37 +153,37 @@
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="6"
+                                CornerRadius="{StaticResource Radius.SM}"
                                 Padding="8,4"
                                 Margin="0,0,6,6">
-                            <TextBlock x:Name="FilesBadgeText" Text="+0 Dosya" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock x:Name="FilesBadgeText" Text="+0 Dosya" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
 
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="6"
+                                CornerRadius="{StaticResource Radius.SM}"
                                 Padding="8,4"
                                 Margin="0,0,6,6">
-                            <TextBlock x:Name="ExecutablesBadgeText" Text="+0 Yürütülebilir" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock x:Name="ExecutablesBadgeText" Text="+0 Yürütülebilir" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </Border>
 
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="6"
+                                CornerRadius="{StaticResource Radius.SM}"
                                 Padding="8,4"
                                 Margin="0,0,6,6">
-                            <TextBlock x:Name="RegistryBadgeText" Text="+0 Kayıt Defteri" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock x:Name="RegistryBadgeText" Text="+0 Kayıt Defteri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
 
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="6"
+                                CornerRadius="{StaticResource Radius.SM}"
                                 Padding="8,4"
                                 Margin="0,0,6,6">
-                            <TextBlock x:Name="SizeBadgeText" Text="0 MB" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock x:Name="SizeBadgeText" Text="0 MB" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </Border>
                     </WrapPanel>
                 </StackPanel>
@@ -203,7 +203,7 @@
                                ToolTip="Tüm dosya ve kayıt defteri listesini inceleyin">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Document24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="İncele" FontSize="11.5"/>
+                            <TextBlock Text="İncele" FontSize="{StaticResource Font.Caption}"/>
                         </StackPanel>
                     </ui:Button>
 
@@ -219,7 +219,7 @@
                                    Padding="12,6">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="Shield24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Analizör ile Tara" FontSize="11.5" FontWeight="SemiBold"/>
+                                <TextBlock Text="Analizör ile Tara" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                     </StackPanel>

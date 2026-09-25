@@ -11,7 +11,9 @@ namespace Bakım.Services
         MicaDark,
         AmoledBlack,
         CyberpunkPurple,
-        FluentLight
+        FluentLight,
+        /// <summary>Windows Yüksek Kontrast renkleri (SystemColors). Sistem ayarı açıksa otomatik seçilir.</summary>
+        HighContrast
     }
 
     /// <summary>Bir temanın tüm renk kararlarını taşıyan salt-okunur tanım.</summary>
@@ -62,6 +64,11 @@ namespace Bakım.Services
         /// <summary>Mica/Acrylic arka plan efektini açar veya kapatır.</summary>
         void ApplyBackdrop(bool micaEnabled);
 
+        /// <summary>Vurgu rengi Windows'u takip ediyor mu (§3.1).</summary>
+        bool FollowWindowsAccent { get; }
+
+        void SetFollowWindowsAccent(bool follow);
+
         event Action<AppThemeKind>? ThemeChanged;
     }
 
@@ -103,7 +110,8 @@ namespace Bakım.Services
             Definitions.MicaDark,
             Definitions.AmoledBlack,
             Definitions.CyberpunkPurple,
-            Definitions.FluentLight
+            Definitions.FluentLight,
+            Definitions.HighContrast
         };
 
         public event Action<AppThemeKind>? ThemeChanged;
@@ -115,10 +123,29 @@ namespace Bakım.Services
             _log = log ?? NullLogService.Instance;
         }
 
+        /// <summary>Windows vurgu rengini takip et (Ayarlar). Açıkken Accent/Primary sistemden gelir.</summary>
+        public bool FollowWindowsAccent { get; private set; }
+
+        public void SetFollowWindowsAccent(bool follow)
+        {
+            FollowWindowsAccent = follow;
+            ApplyTheme(CurrentTheme, persist: false);
+        }
+
         public void RestorePersistedTheme()
         {
             var saved = _settings?.Current;
             var kind = ParseKind(saved?.Theme);
+            FollowWindowsAccent = saved?.FollowWindowsAccent ?? false;
+
+            // Windows Yüksek Kontrast açıksa kayıtlı temadan önce gelir (§3.1, §3.8).
+            if (SystemParameters.HighContrast) kind = AppThemeKind.HighContrast;
+            SystemParameters.StaticPropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName != nameof(SystemParameters.HighContrast)) return;
+                var target = SystemParameters.HighContrast ? AppThemeKind.HighContrast : ParseKind(_settings?.Current.Theme);
+                ApplyTheme(target, persist: false);
+            };
 
             ApplyTheme(kind, persist: false);
             ApplyBackdrop(saved?.IsMicaEnabled ?? true);
@@ -128,7 +155,7 @@ namespace Bakım.Services
 
         public void ApplyTheme(AppThemeKind theme, bool persist = true)
         {
-            var def = GetDefinition(theme);
+            var def = WithWindowsAccent(GetDefinition(theme));
             CurrentTheme = theme;
 
             var app = Application.Current;
@@ -230,6 +257,10 @@ namespace Bakım.Services
                     Set(res, "Brush.Glow.Medium", WithAlpha(def.Accent, 0xCC));
                     Set(res, "Brush.Glow.Soft", WithAlpha(def.Accent, 0x66));
 
+                    // 9) TASARIM SİSTEMİ v2 — anlamsal katman (MASTER_PLAN §3.1).
+                    //    XAML yalnızca bu anlamsal anahtarları kullanır; ham palet burada kalır.
+                    PublishSemanticV2(res, def);
+
                     // 8) HAM RENKLER — GradientStop ve DropShadowEffect yalnızca Color kabul eder,
                     //    Brush kabul etmez. Bu yüzden aynı palet ayrıca Color olarak da yayınlanır.
                     SetColor(res, "Color.Window.Background", def.WindowBackground);
@@ -293,7 +324,8 @@ namespace Bakım.Services
                 AppThemeKind.MicaDark => AppThemeKind.AmoledBlack,
                 AppThemeKind.AmoledBlack => AppThemeKind.CyberpunkPurple,
                 AppThemeKind.CyberpunkPurple => AppThemeKind.FluentLight,
-                AppThemeKind.FluentLight => AppThemeKind.MicaDark,
+                AppThemeKind.FluentLight => AppThemeKind.HighContrast,
+                AppThemeKind.HighContrast => AppThemeKind.MicaDark,
                 _ => AppThemeKind.MicaDark
             };
 
@@ -339,8 +371,112 @@ namespace Bakım.Services
             AppThemeKind.AmoledBlack => Definitions.AmoledBlack,
             AppThemeKind.CyberpunkPurple => Definitions.CyberpunkPurple,
             AppThemeKind.FluentLight => Definitions.FluentLight,
+            AppThemeKind.HighContrast => Definitions.HighContrast,
             _ => Definitions.MicaDark
         };
+
+        /// <summary>Surface / Border / Text / Status / Risk / Chart anahtarları (v2).</summary>
+        private static void PublishSemanticV2(ResourceDictionary res, ThemeDefinition def)
+        {
+            foreach (var (key, color) in SemanticV2(def)) Set(res, key, color);
+        }
+
+        /// <summary>
+        /// v2 anlamsal paletinin tek tanımı. Açılış paleti (Palette.Bootstrap.xaml) ve testler
+        /// aynı değerleri buradan üretir.
+        /// </summary>
+        public static IEnumerable<(string Key, Color Color)> SemanticV2(ThemeDefinition def)
+        {
+            var white = Color.FromRgb(0xFF, 0xFF, 0xFF);
+
+            // Yüzeyler
+            yield return ("Surface.Base", def.WindowBackground);
+            yield return ("Surface.Raised", def.CardBackground);
+            yield return ("Surface.Overlay", def.IsDark ? def.ControlFill : def.CardBackground);
+            yield return ("Surface.Sunken", def.CardBackgroundAlt);
+            yield return ("Surface.Hover", def.SubtleHover);
+            yield return ("Surface.Pressed", def.SubtlePressed);
+            yield return ("Surface.Selected", WithAlpha(def.Primary, 0x33));
+
+            // Kenarlıklar
+            yield return ("Border.Subtle", WithAlpha(def.CardStroke, 0x99));
+            yield return ("Border.Default", def.CardStroke);
+            yield return ("Border.Strong", def.ControlStroke);
+            yield return ("Border.Focus", def.Accent);
+
+            // Metin
+            yield return ("Text.Primary", def.TextPrimary);
+            yield return ("Text.Secondary", def.TextSecondary);
+            yield return ("Text.Tertiary", def.TextTertiary);
+            yield return ("Text.Disabled", WithAlpha(def.TextTertiary, 0x99));
+            yield return ("Text.OnAccent", white);
+            yield return ("Text.Link", def.Accent);
+
+            // Durum: Solid / Subtle / Text / Border
+            foreach (var (name, color) in new[]
+            {
+                ("Success", def.Success), ("Caution", def.Caution), ("Critical", def.Critical),
+                ("Info", def.Accent), ("Neutral", def.TextTertiary)
+            })
+            {
+                yield return ($"Status.{name}.Solid", color);
+                yield return ($"Status.{name}.Subtle", WithAlpha(color, 0x22));
+                yield return ($"Status.{name}.Text", ReadableOn(color, def.IsDark));
+                yield return ($"Status.{name}.Border", WithAlpha(color, 0x66));
+            }
+
+            // Risk (Analizör, Nöbetçi, Kaldırıcı): tek kaynak
+            var high = Mix(def.Caution, def.Critical, 0.5);
+            foreach (var (name, color) in new[]
+            {
+                ("Clean", def.Success), ("Low", def.Accent), ("Medium", def.Caution), ("High", high), ("Critical", def.Critical)
+            })
+            {
+                yield return ($"Risk.{name}", color);
+                yield return ($"Risk.{name}.Subtle", WithAlpha(color, 0x22));
+                yield return ($"Risk.{name}.Text", ReadableOn(color, def.IsDark));
+            }
+
+            // Veri görselleştirme: Okabe-Ito (renk körlüğü dostu). CPU=1, RAM=2, Disk=3, Ağ=4 sabit.
+            var series = def.IsDark
+                ? new[] { "#56B4E9", "#E69F00", "#2EC4A0", "#CC79A7", "#F0E442", "#7AA7FF" }
+                : new[] { "#0072B2", "#B36B00", "#007A5E", "#A6457F", "#8A7F00", "#3355CC" };
+            for (int i = 0; i < series.Length; i++)
+            {
+                yield return ($"Chart.Series{i + 1}", Hex(series[i]));
+                yield return ($"Chart.Series{i + 1}.Subtle", WithAlpha(Hex(series[i]), 0x22));
+            }
+            yield return ("Chart.Grid", WithAlpha(def.TextTertiary, 0x33));
+            yield return ("Chart.Axis", def.TextTertiary);
+        }
+
+        /// <summary>"Windows vurgu rengini takip et" açıksa Accent/Primary sistem renginden türetilir.</summary>
+        private ThemeDefinition WithWindowsAccent(ThemeDefinition def)
+        {
+            if (!FollowWindowsAccent || def.Kind == AppThemeKind.HighContrast) return def;
+            Color accent;
+            try
+            {
+                accent = SystemParameters.WindowGlassColor;
+            }
+            catch
+            {
+                return def;
+            }
+            accent = Color.FromRgb(accent.R, accent.G, accent.B);
+            // Okunabilirlik: vurgu metni koyu temada açılır, açık temada koyulaşır.
+            var accentText = def.IsDark ? Mix(accent, Color.FromRgb(0xFF, 0xFF, 0xFF), 0.35) : Mix(accent, Color.FromRgb(0, 0, 0), 0.25);
+            return new ThemeDefinition
+            {
+                Kind = def.Kind, DisplayName = def.DisplayName, IsDark = def.IsDark,
+                WindowBackground = def.WindowBackground, CardBackground = def.CardBackground, CardBackgroundAlt = def.CardBackgroundAlt,
+                CardStroke = def.CardStroke, ControlFill = def.ControlFill, ControlFillAlt = def.ControlFillAlt,
+                ControlStroke = def.ControlStroke, SubtleHover = def.SubtleHover, SubtlePressed = def.SubtlePressed,
+                TextPrimary = def.TextPrimary, TextSecondary = def.TextSecondary, TextTertiary = def.TextTertiary,
+                Accent = accentText, Primary = accent,
+                Success = def.Success, Caution = def.Caution, Critical = def.Critical
+            };
+        }
 
         private static void Set(ResourceDictionary res, string key, Color color)
         {
@@ -447,6 +583,46 @@ namespace Bakım.Services
                 Caution = Hex("#FBBF24"),
                 Critical = Hex("#F43F5E")
             };
+
+            /// <summary>
+            /// Windows Yüksek Kontrast teması: renkler kullanıcının seçtiği sistem renkleridir.
+            /// Durum renkleri de metin rengini kullanır; anlam simge ve metinle taşınır.
+            /// </summary>
+            public static ThemeDefinition HighContrast
+            {
+                get
+                {
+                    var window = SystemColors.WindowColor;
+                    var text = SystemColors.WindowTextColor;
+                    var gray = SystemColors.GrayTextColor;
+                    var highlight = SystemColors.HighlightColor;
+                    var link = SystemColors.HotTrackColor;
+                    bool dark = (0.2126 * window.R + 0.7152 * window.G + 0.0722 * window.B) < 128;
+                    return new ThemeDefinition
+                    {
+                        Kind = AppThemeKind.HighContrast,
+                        DisplayName = "Yüksek Kontrast (Windows)",
+                        IsDark = dark,
+                        WindowBackground = window,
+                        CardBackground = window,
+                        CardBackgroundAlt = window,
+                        CardStroke = text,
+                        ControlFill = window,
+                        ControlFillAlt = window,
+                        ControlStroke = text,
+                        SubtleHover = window,
+                        SubtlePressed = window,
+                        TextPrimary = text,
+                        TextSecondary = text,
+                        TextTertiary = gray,
+                        Accent = link,
+                        Primary = highlight,
+                        Success = text,
+                        Caution = text,
+                        Critical = text
+                    };
+                }
+            }
 
             public static readonly ThemeDefinition FluentLight = new()
             {

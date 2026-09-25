@@ -54,6 +54,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Design token doğrulaması başarısız!" }
           python Tools/verify-symbols.py
           if ($LASTEXITCODE -ne 0) { throw "SymbolRegular sembol doğrulaması başarısız!" }
+          python Tools/verify-design-debt.py
+          if ($LASTEXITCODE -ne 0) { throw "Tasarım/kod borcu eşiği aşıldı (Tools/design-debt-baseline.json)!" }
 
       - name: Restore dependencies
         run: dotnet restore

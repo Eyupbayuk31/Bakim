@@ -104,4 +104,75 @@
     <Color x:Key="Color.Surface.Transparent">#001E293B</Color>
     <Color x:Key="Color.Shadow">#000000</Color>
 
+    <!-- ============ TASARIM SİSTEMİ v2: ANLAMSAL KATMAN (§3.1) ============ -->
+    <!-- ThemeService.SemanticV2 ile aynı formüller (MicaDark). XAML yalnızca bunları kullanmalı. -->
+    <SolidColorBrush x:Key="Surface.Base" Color="#0F172A"/>
+    <SolidColorBrush x:Key="Surface.Raised" Color="#1E293B"/>
+    <SolidColorBrush x:Key="Surface.Overlay" Color="#273549"/>
+    <SolidColorBrush x:Key="Surface.Sunken" Color="#172033"/>
+    <SolidColorBrush x:Key="Surface.Hover" Color="#273549"/>
+    <SolidColorBrush x:Key="Surface.Pressed" Color="#1B2637"/>
+    <SolidColorBrush x:Key="Surface.Selected" Color="#332563EB"/>
+    <SolidColorBrush x:Key="Border.Subtle" Color="#99334155"/>
+    <SolidColorBrush x:Key="Border.Default" Color="#334155"/>
+    <SolidColorBrush x:Key="Border.Strong" Color="#3A4A63"/>
+    <SolidColorBrush x:Key="Border.Focus" Color="#56CCF8"/>
+    <SolidColorBrush x:Key="Text.Primary" Color="#F8FAFC"/>
+    <SolidColorBrush x:Key="Text.Secondary" Color="#CBD5E1"/>
+    <SolidColorBrush x:Key="Text.Tertiary" Color="#94A3B8"/>
+    <SolidColorBrush x:Key="Text.Disabled" Color="#9994A3B8"/>
+    <SolidColorBrush x:Key="Text.OnAccent" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Text.Link" Color="#56CCF8"/>
+    <SolidColorBrush x:Key="Status.Success.Solid" Color="#34D399"/>
+    <SolidColorBrush x:Key="Status.Success.Subtle" Color="#2234D399"/>
+    <SolidColorBrush x:Key="Status.Success.Text" Color="#8FE7C7"/>
+    <SolidColorBrush x:Key="Status.Success.Border" Color="#6634D399"/>
+    <SolidColorBrush x:Key="Status.Caution.Solid" Color="#FBBF24"/>
+    <SolidColorBrush x:Key="Status.Caution.Subtle" Color="#22FBBF24"/>
+    <SolidColorBrush x:Key="Status.Caution.Text" Color="#FDDC87"/>
+    <SolidColorBrush x:Key="Status.Caution.Border" Color="#66FBBF24"/>
+    <SolidColorBrush x:Key="Status.Critical.Solid" Color="#F87171"/>
+    <SolidColorBrush x:Key="Status.Critical.Subtle" Color="#22F87171"/>
+    <SolidColorBrush x:Key="Status.Critical.Text" Color="#FBB1B1"/>
+    <SolidColorBrush x:Key="Status.Critical.Border" Color="#66F87171"/>
+    <SolidColorBrush x:Key="Status.Info.Solid" Color="#56CCF8"/>
+    <SolidColorBrush x:Key="Status.Info.Subtle" Color="#2256CCF8"/>
+    <SolidColorBrush x:Key="Status.Info.Text" Color="#A2E3FB"/>
+    <SolidColorBrush x:Key="Status.Info.Border" Color="#6656CCF8"/>
+    <SolidColorBrush x:Key="Status.Neutral.Solid" Color="#94A3B8"/>
+    <SolidColorBrush x:Key="Status.Neutral.Subtle" Color="#2294A3B8"/>
+    <SolidColorBrush x:Key="Status.Neutral.Text" Color="#C4CCD8"/>
+    <SolidColorBrush x:Key="Status.Neutral.Border" Color="#6694A3B8"/>
+    <SolidColorBrush x:Key="Risk.Clean" Color="#34D399"/>
+    <SolidColorBrush x:Key="Risk.Clean.Subtle" Color="#2234D399"/>
+    <SolidColorBrush x:Key="Risk.Clean.Text" Color="#8FE7C7"/>
+    <SolidColorBrush x:Key="Risk.Low" Color="#56CCF8"/>
+    <SolidColorBrush x:Key="Risk.Low.Subtle" Color="#2256CCF8"/>
+    <SolidColorBrush x:Key="Risk.Low.Text" Color="#A2E3FB"/>
+    <SolidColorBrush x:Key="Risk.Medium" Color="#FBBF24"/>
+    <SolidColorBrush x:Key="Risk.Medium.Subtle" Color="#22FBBF24"/>
+    <SolidColorBrush x:Key="Risk.Medium.Text" Color="#FDDC87"/>
+    <SolidColorBrush x:Key="Risk.High" Color="#FA984A"/>
+    <SolidColorBrush x:Key="Risk.High.Subtle" Color="#22FA984A"/>
+    <SolidColorBrush x:Key="Risk.High.Text" Color="#FCC69B"/>
+    <SolidColorBrush x:Key="Risk.Critical" Color="#F87171"/>
+    <SolidColorBrush x:Key="Risk.Critical.Subtle" Color="#22F87171"/>
+    <SolidColorBrush x:Key="Risk.Critical.Text" Color="#FBB1B1"/>
+    <SolidColorBrush x:Key="Chart.Series1" Color="#56B4E9"/>
+    <SolidColorBrush x:Key="Chart.Series1.Subtle" Color="#2256B4E9"/>
+    <SolidColorBrush x:Key="Chart.Series2" Color="#E69F00"/>
+    <SolidColorBrush x:Key="Chart.Series2.Subtle" Color="#22E69F00"/>
+    <SolidColorBrush x:Key="Chart.Series3" Color="#2EC4A0"/>
+    <SolidColorBrush x:Key="Chart.Series3.Subtle" Color="#222EC4A0"/>
+    <SolidColorBrush x:Key="Chart.Series4" Color="#CC79A7"/>
+    <SolidColorBrush x:Key="Chart.Series4.Subtle" Color="#22CC79A7"/>
+    <SolidColorBrush x:Key="Chart.Series5" Color="#F0E442"/>
+    <SolidColorBrush x:Key="Chart.Series5.Subtle" Color="#22F0E442"/>
+    <SolidColorBrush x:Key="Chart.Series6" Color="#7AA7FF"/>
+    <SolidColorBrush x:Key="Chart.Series6.Subtle" Color="#227AA7FF"/>
+    <SolidColorBrush x:Key="Chart.Grid" Color="#3394A3B8"/>
+    <SolidColorBrush x:Key="Chart.Axis" Color="#94A3B8"/>
+    <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#EEEEEE"/>
+
 </ResourceDictionary>

@@ -16,7 +16,7 @@
     <Border Background="{DynamicResource ApplicationBackgroundBrush}"
             BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
             BorderThickness="1.5"
-            CornerRadius="14"
+            CornerRadius="{StaticResource Radius.XL}"
             Padding="22">
         <Border.Effect>
             <DropShadowEffect BlurRadius="30" ShadowDepth="6" Opacity="0.65" Color="#000000"/>
@@ -40,14 +40,14 @@
 
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource Radius.MD}"
                             Padding="10"
                             Margin="0,0,12,0">
                         <ui:SymbolIcon Symbol="Document24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="DialogTitleText" Text="Kurulum Değişiklikleri Raporu" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock x:Name="DialogSubtitleText" Text="Sistem izleme detayları" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                        <TextBlock x:Name="DialogTitleText" Text="Kurulum Değişiklikleri Raporu" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock x:Name="DialogSubtitleText" Text="Sistem izleme detayları" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -71,34 +71,34 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Files Card -->
-                <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,8,0">
+                <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="Eklenen Dosyalar" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiFilesText" Text="0" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="Eklenen Dosyalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock x:Name="KpiFilesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Executables Card -->
-                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,8,0">
+                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="Yürütülebilir (.exe / .dll)" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiExecutablesText" Text="0" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="Yürütülebilir (.exe / .dll)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock x:Name="KpiExecutablesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Registry Card -->
-                <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10" Margin="0,0,8,0">
+                <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="Kayıt Defteri Girdileri" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiRegistryText" Text="0" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="Kayıt Defteri Girdileri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock x:Name="KpiRegistryText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Services Card -->
-                <Border Grid.Column="3" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+                <Border Grid.Column="3" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="Servis &amp; Başlangıç" FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiServicesText" Text="0" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock Text="Servis &amp; Başlangıç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock x:Name="KpiServicesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -115,12 +115,12 @@
                          Padding="10,7"
                          TextChanged="OnSearchBoxTextChanged"
                          Tag="Dosya yolu veya anahtar adı ile filtreleyin..."
-                         FontSize="12"/>
+                         FontSize="{StaticResource Font.Caption}"/>
 
                 <TextBlock Grid.Column="1"
                            x:Name="FilteredCountText"
                            Text="Tüm kayıtlar gösteriliyor"
-                           FontSize="11"
+                           FontSize="{StaticResource Font.Caption}"
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                            VerticalAlignment="Center"
                            Margin="12,0,0,0"/>
@@ -133,7 +133,7 @@
                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource Radius.MD}"
                             ClipToBounds="True">
                         <ListView x:Name="FilesListView"
                                   Background="Transparent"
@@ -151,16 +151,16 @@
 
                                             <Border Grid.Column="0"
                                                     Background="{DynamicResource ApplicationBackgroundBrush}"
-                                                    CornerRadius="4"
+                                                    CornerRadius="{StaticResource Radius.XS}"
                                                     Padding="6,2"
                                                     Margin="0,0,8,0"
                                                     VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Extension}" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Extension}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding FileName}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                                <TextBlock Text="{Binding FullPath}" FontSize="10.5" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding FileName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding FullPath}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis"/>
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -180,7 +180,7 @@
                                                            Click="OnAnalyzeSingleFileClicked">
                                                     <StackPanel Orientation="Horizontal">
                                                         <ui:SymbolIcon Symbol="Shield24" FontSize="14" Margin="0,0,4,0"/>
-                                                        <TextBlock Text="Analiz Et" FontSize="10.5"/>
+                                                        <TextBlock Text="Analiz Et" FontSize="{StaticResource Font.Caption}"/>
                                                     </StackPanel>
                                                 </ui:Button>
                                             </StackPanel>
@@ -197,7 +197,7 @@
                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource Radius.MD}"
                             ClipToBounds="True">
                         <ListView x:Name="RegistryListView"
                                   Background="Transparent"
@@ -213,16 +213,16 @@
 
                                             <Border Grid.Column="0"
                                                     Background="{DynamicResource ApplicationBackgroundBrush}"
-                                                    CornerRadius="4"
+                                                    CornerRadius="{StaticResource Radius.XS}"
                                                     Padding="6,2"
                                                     Margin="0,0,8,0"
                                                     VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Hive}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Hive}" FontSize="{StaticResource Font.Micro}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding KeyPath}" FontSize="11.5" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Text="{Binding Details}" FontSize="10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                <TextBlock Text="{Binding KeyPath}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Details}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
@@ -237,7 +237,7 @@
                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
-                            CornerRadius="8"
+                            CornerRadius="{StaticResource Radius.MD}"
                             ClipToBounds="True">
                         <ListView x:Name="ServicesListView"
                                   Background="Transparent"
@@ -246,8 +246,8 @@
                                 <DataTemplate>
                                     <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="8,8">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding PathOrKey}" FontSize="10.5" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding PathOrKey}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
@@ -272,7 +272,7 @@
                                Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Save24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="JSON Olarak Dışa Aktar" FontSize="11.5"/>
+                            <TextBlock Text="JSON Olarak Dışa Aktar" FontSize="{StaticResource Font.Caption}"/>
                         </StackPanel>
                     </ui:Button>
 
@@ -281,7 +281,7 @@
                                Padding="12,7">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Folder24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Klasörde Göster" FontSize="11.5"/>
+                            <TextBlock Text="Klasörde Göster" FontSize="{StaticResource Font.Caption}"/>
                         </StackPanel>
                     </ui:Button>
                 </StackPanel>
@@ -293,7 +293,7 @@
                                Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Shield24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Tüm Yürütülebilirleri Analizörde Tara" FontSize="11.5" FontWeight="SemiBold"/>
+                            <TextBlock Text="Tüm Yürütülebilirleri Analizörde Tara" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                         </StackPanel>
                     </ui:Button>
 

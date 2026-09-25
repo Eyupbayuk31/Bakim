@@ -14,6 +14,12 @@ namespace Bakım.Models
         public string Theme { get; set; } = "MicaDark";
         public bool IsMicaEnabled { get; set; } = true;
 
+        /// <summary>Vurgu rengi Windows'un vurgu rengini takip eder (§3.1).</summary>
+        public bool FollowWindowsAccent { get; set; } = false;
+
+        /// <summary>Animasyonları azalt: tüm geçiş süreleri sıfırlanır (§3.3). Yeniden başlatınca uygulanır.</summary>
+        public bool ReduceMotion { get; set; } = false;
+
         // --- Performans & Otomasyon ---
         /// <summary>Canlı telemetri örnekleme aralığı (saniye). 1-10 arası kısıtlanır.</summary>
         public int RefreshIntervalSeconds { get; set; } = 2;

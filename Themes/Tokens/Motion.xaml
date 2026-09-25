@@ -9,7 +9,13 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
-    <!-- ============ SÜRELER ============ -->
+    <!-- ============ SÜRELER (v2, §3.3) ============ -->
+    <!-- "Animasyonları azalt" açıkken Helpers/MotionPolicy bunları açılışta 0'a çeker. -->
+    <Duration x:Key="Motion.Fast">0:0:0.12</Duration>
+    <Duration x:Key="Motion.Normal">0:0:0.2</Duration>
+    <Duration x:Key="Motion.Slow">0:0:0.3</Duration>
+
+    <!-- Eski adlar (geriye uyumluluk) -->
     <Duration x:Key="Duration.Instant">0:0:0.08</Duration>
     <Duration x:Key="Duration.Fast">0:0:0.15</Duration>
     <Duration x:Key="Duration.Base">0:0:0.25</Duration>
