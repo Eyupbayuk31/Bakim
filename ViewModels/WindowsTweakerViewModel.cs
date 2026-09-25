@@ -288,6 +288,7 @@ namespace Bakım.ViewModels
                 foreach (var fe in fileExplorer) AllTweaks.Add(fe);
                 foreach (var sc in settingsCpl) AllTweaks.Add(sc);
                 foreach (var ed in edge) AllTweaks.Add(ed);
+                foreach (var tweak in AllTweaks) tweak.ApplySecurityNote();
 
                 // OEM Bilgisi & WindowMetrics
                 OemInfo = await _toolsService.GetOemInfoAsync();
@@ -347,8 +348,25 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            tweak.IsBusy = true;
             bool targetState = !tweak.IsEnabled;
+
+            // S-16: güvenlik katmanını kapatan ayar ayrı ve açık bir onay ister.
+            if (targetState && tweak.ReducesSecurity)
+            {
+                var confirm = System.Windows.MessageBox.Show(
+                    $"'{tweak.Title}' güvenliği azaltır.\n\n{tweak.SecurityWarning}\n\nYine de uygulansın mı?",
+                    "Güvenliği Azaltan Ayar",
+                    System.Windows.MessageBoxButton.YesNo,
+                    System.Windows.MessageBoxImage.Warning,
+                    System.Windows.MessageBoxResult.No);
+                if (confirm != System.Windows.MessageBoxResult.Yes)
+                {
+                    tweak.NotifyStateChanged();
+                    return;
+                }
+            }
+
+            tweak.IsBusy = true;
 
             // Reversible Engine Guard (V22.0): Değişiklikten önce orijinal durumu snapshot dosyasına kaydet
             await _snapshotService.RecordTweakBeforeChangeAsync(tweak);
