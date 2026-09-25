@@ -2,15 +2,22 @@ using System.Diagnostics;
 using System.IO;
 using Microsoft.Win32;
 using Bakım.Models;
+using Bakım.Core.Security;
 using Bakım.Helpers;
 
 namespace Bakım.Services
 {
+    /// <summary>Yönetici kısayolu oluşturma sonucu.</summary>
+    public sealed record ElevatedShortcutResult(bool Created, string Message)
+    {
+        public static ElevatedShortcutResult Fail(string message) => new(false, message);
+    }
+
     public interface IContextMenuShortcutsService
     {
         Task<List<SystemTweakItem>> GetContextMenuShortcutsTweaksAsync();
         Task<bool> ApplyTweakAsync(SystemTweakItem tweak, bool enable);
-        Task<bool> CreateElevatedShortcutAsync(string targetExePath, string shortcutName);
+        Task<ElevatedShortcutResult> CreateElevatedShortcutAsync(string targetExePath, string shortcutName);
         Task<bool> ApplyAllRecommendedAsync(List<SystemTweakItem> tweaks);
         Task<bool> RestoreDefaultsAsync(List<SystemTweakItem> tweaks);
     }
@@ -196,57 +203,120 @@ namespace Bakım.Services
             });
         }
 
-        public async Task<bool> CreateElevatedShortcutAsync(string targetExePath, string shortcutName)
+        /// <summary>
+        /// UAC sormadan yönetici olarak açılan kısayol: en yüksek yetkili bir zamanlanmış görev
+        /// ve onu tetikleyen bir .lnk (S-11).
+        ///
+        /// Güvenlik: görev UAC'yi atladığı için hedefi standart bir kullanıcı değiştirebiliyorsa bu
+        /// bir yetki yükseltme açığı olur. Bu yüzden hedef yalnızca Program Files / Windows altında
+        /// olabilir ve dosyanın, üst klasörlerinin sahibi ve yazma izni olanlar yalnızca SYSTEM,
+        /// Administrators ve TrustedInstaller olmalıdır. Eskiden her exe kabul ediliyor ve
+        /// masaüstüne bir .vbs yazılıyordu (VBScript Windows'tan kaldırılıyor).
+        /// </summary>
+        public async Task<ElevatedShortcutResult> CreateElevatedShortcutAsync(string targetExePath, string shortcutName)
         {
             return await Task.Run(() =>
             {
+                string target;
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(targetExePath) || !File.Exists(targetExePath))
-                        return false;
-
-                    string cleanName = string.IsNullOrWhiteSpace(shortcutName)
-                        ? Path.GetFileNameWithoutExtension(targetExePath)
-                        : shortcutName.Trim();
-
-                    // Özel geçersiz karakterleri temizle
-                    foreach (char c in Path.GetInvalidFileNameChars())
-                    {
-                        cleanName = cleanName.Replace(c, '_');
-                    }
-
-                    string taskName = $"Bakim_Elevated_{cleanName}";
-
-                    // 1. schtasks ile en yüksek yetkili (Highest) görev oluştur
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "schtasks.exe",
-                        Arguments = $"/create /tn \"{taskName}\" /tr \"\\\"{targetExePath}\\\"\" /sc ONCE /st 00:00 /rl HIGHEST /f",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    };
-
-                    using (var proc = Process.Start(psi))
-                    {
-                        proc?.WaitForExit();
-                        if (proc?.ExitCode != 0) return false;
-                    }
-
-                    // 2. Masaüstünde schtasks'ı tetikleyen bir VBS / Shortcut oluştur
-                    string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                    string vbsPath = Path.Combine(desktopPath, $"{cleanName} (Yönetici).vbs");
-
-                    string vbsContent = $"Set WshShell = CreateObject(\"WScript.Shell\"){Environment.NewLine}" +
-                                        $"WshShell.Run \"schtasks /run /tn \"\"{taskName}\"\"\", 0, False";
-
-                    File.WriteAllText(vbsPath, vbsContent);
-                    return true;
+                    target = Path.GetFullPath((targetExePath ?? string.Empty).Trim().Trim('"'));
                 }
                 catch
                 {
-                    return false;
+                    return ElevatedShortcutResult.Fail("Geçersiz dosya yolu.");
                 }
+
+                if (!File.Exists(target))
+                    return ElevatedShortcutResult.Fail("Dosya bulunamadı.");
+                if (!string.Equals(Path.GetExtension(target), ".exe", StringComparison.OrdinalIgnoreCase))
+                    return ElevatedShortcutResult.Fail("Yalnızca .exe dosyaları için kısayol oluşturulabilir.");
+
+                string? refusal = CheckElevationTarget(target);
+                if (refusal != null) return ElevatedShortcutResult.Fail(refusal);
+
+                string cleanName = string.IsNullOrWhiteSpace(shortcutName)
+                    ? Path.GetFileNameWithoutExtension(target)
+                    : shortcutName.Trim();
+                foreach (char c in Path.GetInvalidFileNameChars()) cleanName = cleanName.Replace(c, '_');
+                cleanName = cleanName.Trim(' ', '.');
+                if (cleanName.Length == 0) cleanName = Path.GetFileNameWithoutExtension(target);
+
+                string taskName = $"Bakim_Elevated_{cleanName}";
+
+                var create = ProcessRunner.Run("schtasks.exe", new[]
+                {
+                    "/create", "/tn", taskName, "/tr", $"\"{target}\"", "/sc", "ONCE", "/st", "00:00", "/rl", "HIGHEST", "/f"
+                }, TimeSpan.FromSeconds(30));
+                if (!create.Succeeded)
+                {
+                    string reason = create.Describe();
+                    if (!UacHelper.IsAdministrator()) reason = "Bakım'ı yönetici olarak çalıştırın (" + reason + ")";
+                    return ElevatedShortcutResult.Fail($"Zamanlanmış görev oluşturulamadı: {reason}");
+                }
+
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string linkPath = Path.Combine(desktop, $"{cleanName} (Yönetici).lnk");
+                try
+                {
+                    ShellLink.Create(linkPath,
+                        Path.Combine(Environment.SystemDirectory, "schtasks.exe"),
+                        $"/run /tn \"{taskName}\"",
+                        target,
+                        $"{cleanName} programını yönetici olarak başlatır (Bakım).",
+                        ShellLink.ShowMinimizedNoActive);
+                }
+                catch (Exception ex)
+                {
+                    ProcessRunner.Run("schtasks.exe", new[] { "/delete", "/tn", taskName, "/f" }, TimeSpan.FromSeconds(15));
+                    return ElevatedShortcutResult.Fail($"Kısayol dosyası yazılamadı: {ex.Message}");
+                }
+
+                return new ElevatedShortcutResult(true, $"'{Path.GetFileName(linkPath)}' masaüstüne oluşturuldu.");
             });
+        }
+
+        /// <summary>Hedef güvenliyse null, değilse kullanıcıya gösterilecek ret nedeni.</summary>
+        private static string? CheckElevationTarget(string target)
+        {
+            string? root = ElevationTargetPolicy.FindAllowedRoot(target, new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                Environment.GetFolderPath(Environment.SpecialFolder.Windows)
+            });
+            if (root == null)
+            {
+                return "Güvenlik nedeniyle yalnızca Program Files ya da Windows klasöründeki programlar için " +
+                       "UAC'siz kısayol oluşturulabilir. Kullanıcı klasörlerindeki bir programı herhangi bir " +
+                       "zararlı değiştirip yönetici yetkisi kazanabilir.";
+            }
+
+            foreach (string path in ElevationTargetPolicy.ChainToRoot(target, root))
+            {
+                try
+                {
+                    if (File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint))
+                        return $"'{path}' bir sembolik bağlantı/bağlantı noktası; bu tür yollar desteklenmez.";
+                }
+                catch (Exception ex)
+                {
+                    return $"'{path}' okunamadı: {ex.Message}";
+                }
+
+                var snapshot = FileSecurityReader.TryRead(path);
+                if (snapshot == null)
+                    return $"'{path}' için izinler okunamadı; güvenli olduğu doğrulanamadı.";
+
+                string? writer = ElevationTargetPolicy.FindUntrustedWriter(snapshot);
+                if (writer != null)
+                {
+                    return $"'{path}' konumunu {FileSecurityReader.DescribeSid(writer)} değiştirebiliyor. " +
+                           "Bu programa UAC'siz yönetici kısayolu vermek, yönetici yetkisini o hesaptaki her " +
+                           "programa açmak anlamına gelir; bu yüzden kısayol oluşturulmadı.";
+                }
+            }
+            return null;
         }
 
         public async Task<bool> ApplyAllRecommendedAsync(List<SystemTweakItem> tweaks)

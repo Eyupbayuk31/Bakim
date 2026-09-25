@@ -801,20 +801,14 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            bool ok = await _contextMenuService.CreateElevatedShortcutAsync(ElevatedShortcutTargetPath, ElevatedShortcutName);
-            if (ok)
+            var result = await _contextMenuService.CreateElevatedShortcutAsync(ElevatedShortcutTargetPath, ElevatedShortcutName);
+            OperationResultBanner = result.Message;
+            ResultBannerSeverity = result.Created ? InfoBarSeverity.Success : InfoBarSeverity.Error;
+            HasResultBanner = true;
+            if (result.Created)
             {
-                OperationResultBanner = "UAC'siz (Kullanıcı Hesabı Denetimi uyarısı çıkarmayan) Yönetici Kısayolu Masaüstüne oluşturuldu!";
-                ResultBannerSeverity = InfoBarSeverity.Success;
-                HasResultBanner = true;
                 ElevatedShortcutTargetPath = string.Empty;
                 ElevatedShortcutName = string.Empty;
-            }
-            else
-            {
-                OperationResultBanner = "Kısayol oluşturulamadı. Hedef dosyanın varlığını ve görev zamanlayıcı izinlerini kontrol edin.";
-                ResultBannerSeverity = InfoBarSeverity.Error;
-                HasResultBanner = true;
             }
         }
 
