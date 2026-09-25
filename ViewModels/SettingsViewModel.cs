@@ -1056,13 +1056,33 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v3220 = new ReleaseChangelogItem
+            {
+                Version = "v3.22.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Etkinlik Merkezi, Yeni Depolama & Disk Haritası, Kurulum Nöbetçisi v2 & Gelişmiş Sistem Denetimi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Etkinlik Merkezi: Sistemde yapılan tüm bakım, temizlik, ayar ve kurulum işlemlerinin tek merkezden izlenmesi ve güvenli geri alma desteği.",
+                    "Depolama & Disk Haritası: Etkileşimli Treemap disk görselleştirmesi, büyük dosya avcısı, sabit bağlantı (hardlink) farkındalıklı yinelenen dosya tarayıcısı.",
+                    "Kurulum Nöbetçisi v2: Derin sensörler, risk değerlendirme motoru, tek tıkla zararlı kalıcılık müdahaleleri ve kurulum kaynak doğrulaması.",
+                    "Kaldırıcı v2 & İz Toplama: Kaldırma öncesi sistem ayak izi (footprint) çıkarma, kanıt tabanlı kalıntı analizi ve tekil örnek IPC iletişimi.",
+                    "TweakEngine & JSON Kataloğu: Veri tabanlı yeni ince ayar motoru, güvenli profil yapılandırması ve tek tıkla fabrika ayarlarına dönüş.",
+                    "Sistem & Başlangıç Analizi: Windows açılış ölçümleri (Event Log 100), hizmetler için güvenli profiller ve Olaylar güvenilirlik zaman çizelgesi.",
+                    "Mağaza & Winget: Winget güncellemeler sekmesi, tek tıkla toplu yazılım güncelleme ve sürüm kontrolü.",
+                    "Yeni Bilgi Mimarisi & Fluent 2: Gruplandırılmış modern kenar çubuğu, anlamsal tasarım token'ları ve gelişmiş tipografi ölçeği."
+                }
+            };
+
             var v3210 = new ReleaseChangelogItem
             {
                 Version = "v3.21.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Güvenlik ve Dürüstlük Sürümü: Veri Kaybı Riskleri Kapatıldı, Uydurma Değerler Kaldırıldı",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Güvenli Kaldırıcı: yayıncı klasörü ya da kurulu başka bir programın klasörü artık kalıntı sayılmaz; yalnızca kesin kalıntılar otomatik temizlenir, her silme Geri Dönüşüm Kutusu'na gider ve kayıt defteri silinmeden önce yedeklenir (geri yüklenebilir).",
@@ -1750,8 +1770,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v3210;
+            LatestRelease = v3220;
 
+            ReleaseHistory.Add(v3220);
             ReleaseHistory.Add(v3210);
             ReleaseHistory.Add(v3200);
             ReleaseHistory.Add(v3191);

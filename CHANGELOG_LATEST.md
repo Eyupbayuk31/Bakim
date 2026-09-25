@@ -1,36 +1,45 @@
-# Bakım v3.21.0 - Sürüm Notları
+# Bakım v3.22.0 - Sürüm Notları
 
-## Güvenlik ve Dürüstlük Sürümü: Veri Kaybı Riskleri Kapatıldı, Uydurma Değerler Kaldırıldı & Analizör Geçmişi
+## Etkinlik Merkezi, Yeni Depolama & Disk Haritası, Kurulum Nöbetçisi v2 & Gelişmiş Sistem Denetimi
 
-### 1. Güvenli Kaldırıcı (Uninstaller v2 Temelleri)
-- **PathSafetyGuard & RegistrySafetyGuard:** Yayıncı klasörü veya kurulu başka bir programın klasörü artık kalıntı sayılmaz; sistem kökleri ve kullanıcı dizinleri tavizsiz koruma altındadır.
-- **Kanıt Tabanlı Temizlik:** Yalnızca kesin kalıntılar (`Certain`) otomatik temizlenir. Her dosya silme işlemi Geri Dönüşüm Kutusu'na gider (`FOF_ALLOWUNDO`).
-- **Kayıt Defteri Geri Alma Günlüğü (UndoJournal):** Silinen kayıt defteri anahtarları ve değerleri silinmeden önce otomatik `.reg` yedeğine alınır ve tek tıkla geri yüklenebilir.
-- **İzlenen Kaldırma & Doğrulama (UninstallRunner):** Kaldırıcı ve alt süreçleri Job Object ve süreç ağacıyla sonuna kadar izlenir. Sonuç Uninstall kaydından doğrulanır; iptal, yeniden başlatma gereksinimi ve başarısızlıklar dürüstçe raporlanır.
-- **Tek Seferlik Geri Yükleme Noktası (RestorePointService):** Kaldırma öncesi WMI ile tek seferlik sistem geri yükleme noktası oluşturulur; 24 saat kısıtlaması dürüstçe raporlanır.
+### 1. Etkinlik Merkezi (Activity Center)
+- **Tüm Değişikliklerin Tek Kaydı:** Sistemde gerçekleştirilen tüm bakım, temizlik, ince ayar, süreç askıya alma ve kaldırma eylemleri tek bir zaman çizelgesinde kayıt altına alınır.
+- **Tek Tıkla Geri Alma (Undo Support):** Yapılan değişiklikler ve uygulanan ayarlar doğrudan Etkinlik Merkezi üzerinden güvenle geri alınabilir.
+- **Arama ve Filtreleme:** Modül, önem düzeyi ve tarih aralığına göre anlık filtreleme ve JSON/metin dışa aktarma yeteneği.
 
-### 2. Temizleyici ve Güvenli Dosya Hedefleri
-- **Kapsam Tabanlı Temizlik:** Temizleyici yalnızca her kategorinin kendi klasörlerinde silme yapar (`CleanupScope`). Yolunda rastgele "temp" ya da "cache" geçen dosyalar artık hedef alınmaz.
-- **24 Saat Koruması:** Temp dizinlerinde son 24 saate ait dosyalar korunur.
-- **Spotify & Çevrimdışı İndirmeler:** Spotify çevrimdışı indirilen şarkılar varsayılan seçimden çıkarıldı.
+### 2. Yeni Depolama Modülü & Disk Haritası (Treemap)
+- **Etkileşimli Disk Haritası (Treemap):** Sürücülerdeki alan kullanımını görselleştiren, klasör ve dosya blokları arasında derinlemesine gezinme imkanı sunan yüksek performanslı görsel harita.
+- **Büyük Dosya ve Alan Avcısı:** Disk alanını tüketen devasa dosyaların hızlı tespiti ve güvenli temizliği.
+- **Akıllı Yinelenen Dosyalar (Hardlink Farkındalığı):** Sabit bağlantı (NTFS hard link) içeren dosyaları tekilleştirerek diski yıpratmadan ve çift sayım yapmadan gerçek yinelenenleri tespit eder.
+- **Boş Klasör Temizleyici:** Güvenli kök kontrolleriyle sistem bütünlüğünü bozmadan gereksiz boş dizinleri ayıklar.
 
-### 3. Dürüstlük: Gerçek Metrikler ve Ölçümler
-- **Sensör Doğruluğu:** CPU ve GPU sıcaklığı uydurulmaz; donanım sensörü okunamıyorsa "—" gösterilir.
-- **Dürüst RAM & Performans:** RAM boşaltma fonksiyonları sabit değerler yerine gerçekte boşaltılan bellek farkını söyler.
-- **Oyun Modu Güç Planı:** Oyun Modu kapatıldığında sistemin önceki güç planı eksiksiz geri yüklenir.
+### 3. Kurulum Nöbetçisi v2 (Sensörler & Risk Motoru)
+- **Derin Sensörler ve Sistem Durumu:** Dosya sistemi (64 KB FSW tamponu), kayıt defteri hotspot'ları, Windows servisleri, zamanlanmış görevler ve güvenlik duvarı kuralları gerçek zamanlı izlenir.
+- **Risk Motoru ve Triage:** Kurulum paketinin oluşturduğu değişiklikler MITRE ATT&CK teknikleriyle puanlanır; şüpheli kalıcılık yöntemleri anında işaretlenir.
+- **Tek Tıkla Zararlı Müdahalesi:** Şüpheli kurulumların eklediği Run girdileri, servisler veya görevler doğrudan bulgu kartından tek tıkla devre dışı bırakılabilir.
+- **Kurulum Kaynağı Doğrulaması:** İndirilen sitenin MOTW kaynağı, dijital imza durumu ve PE başlık kontrolleri rapora işlenir.
 
-### 4. Güvenlik İnce Ayarları ve Doğrulama
-- **Yaz-Oku-Karşılaştır Doğrulaması:** İnce ayarlar yazıldıktan sonra geri okunarak doğrulanır; yazılamayan ayarlar asla "uygulandı" görünmez, gerçek hata nedeni bildirilir.
-- **Güvenlik Etki Rozetleri:** Güvenliği azaltabilecek ayarlar (SmartScreen, Windows Update vb.) kırmızı "Güvenliği Azaltır" rozeti ve ayrı onay diyaloğu alır.
+### 4. Kaldırıcı v2 & Kanıt Tabanlı Kalıntı Analizi
+- **Ön Ayak İzi (Footprint) Toplama:** Kaldırma işlemi başlamadan önce programa ait kayıt defteri, servis, görev, kısayol ve dosya izleri eksiksiz haritalanır.
+- **Kanıt Tabanlı Temizlik:** Yalnızca kesin (`Certain`) ve yüksek güvenli kalıntılar önerilir; başka uygulamaların veya ortak yayıncıların dosyaları asla silinmez.
+- **Tek Örnek & IPC (Single Instance):** Sağ tıkla kaldırma çağrıları çalışan Bakım örneğine adlandırılmış kanal (Named Pipe) üzerinden hafif ve UAC istemi olmaksızın iletilir.
+- **Kaldırma Geçmişi:** Yapılan tüm kaldırma işlemleri, temizlenen alanlar ve kayıt defteri geri alma noktaları saklanır.
 
-### 5. Güvenli Mağaza ve Yönetici Kısayolları
-- **Resmî Paketler & İmza Denetimi:** Üçüncü taraf VC++ paketleri yerine resmî winget paketleri kullanılır. DirectX kurulumunun Microsoft dijital imzası doğrulanır.
-- **UAC Görev Kısayolları Güvenliği:** Yönetici kısayolu oluşturma özelliği yalnızca standart kullanıcıların değiştiremeyeceği güvenli konumlardaki programlar için `.lnk` olarak oluşturulur.
+### 5. TweakEngine & Veri Tabanlı İnce Ayar Kataloğu
+- **JSON Tabanlı Ayar Motoru:** İnce ayarlar hardcoded mantıktan çıkarılarak şema versiyonlu JSON kataloglarına (`Assets/tweaks/*.json`) taşındı.
+- **Yaz-Oku Doğrulaması:** Her ayar uygulandıktan sonra sistemden doğrulanır; uygulanamayan ayarlar dürüstçe raporlanır.
+- **Güvenlik Rozetleri:** Güvenlik etkisi olan ayarlar belirgin rozetlerle işaretlenir.
 
-### 6. Analizör Geçmişi ve Değişiklik Panelleri
-- **Tam Analiz Geçmişi:** Yapılan tüm tehdit analizleri, hash, imza durumu ve risk puanları kalıcı olarak indekslenir ve listelenir.
-- **Dosya Değişiklikleri Paneli:** Taranan dosyaların önceki analizlerle karşılaştırmalı değişimleri incelenebilir.
+### 6. Performans, Başlangıç ve Hizmet Yönetimi
+- **Windows Açılış Ölçümleri:** Tahmini süreler yerine Windows Olay Günlüğü'nden (Event 100) okunan gerçek önyükleme ve masaüstü hazır olma süreleri sunulur.
+- **Güvenli Hizmet Profilleri:** Windows servisleri için güvenli, hafif ve oyuncu profilleri; kritik sistem servislerini kapatmaya karşı tekil koruma politikası.
+- **Askıya Alınan Süreç Defteri & Oyun Modu:** Oyun modu profiliyle arka plan kaynakları dondurulur, çıkışta önceki güç planı ve süreç durumları eksiksiz geri yüklenir.
+- **Olaylar & Güvenilirlik Zaman Çizelgesi:** Windows çökme ve güvenilirlik olayları (Reliability Index) entegre zaman çizelgesinde incelenebilir.
 
-### 7. Tek Sürüm Kaynağı (Directory.Build.props) ve CI Kalitesi
-- **H-15 Çözümü:** Sürüm numarası tek bir merkezden (`Directory.Build.props`) yönetilir.
-- **456 Test & Sıfır Hata:** 249 Core testi ve 207 sistem testi %100 başarılı; Fluent 2 token ve sembol doğrulamaları tam onaylı.
+### 7. Mağaza & Winget Güncellemeleri
+- **Yazılım Güncellemeleri Sekmesi:** Sistemde kurulu tüm yazılımların winget üzerinden güncel sürümleri listelenir ve tek tıkla toplu güncellenebilir.
+- **Resmî Paket Sağlayıcıları:** Üçüncü taraf riskli betikler yerine resmî winget ve doğrulanmış Microsoft kaynakları kullanılır.
+
+### 8. Bilgi Mimarisi v2 & Fluent 2 Tasarım Sistemi
+- **Gruplandırılmış Kenar Çubuğu:** Genel Bakış, Temizlik & Depolama, Performans, Güvenlik, Yazılım ve Sistem kategorileriyle sade ve modern navigasyon.
+- **Tasarım Token'ları & Tipografi Ölçeği:** Semantik renk fırçaları, standart yazı boyutları ve yumuşak kavislerle kusursuz Windows 11 Fluent 2 deneyimi.
