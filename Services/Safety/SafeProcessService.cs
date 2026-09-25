@@ -23,6 +23,12 @@ namespace Bakım.Services.Safety
 
         /// <summary>Tek süreç için korumalı mı? (Optimizer, avcı modu vb. için)</summary>
         bool IsProtected(int processId, string? processName, string? imagePath);
+
+        /// <summary>
+        /// Tek bir süreci (PID) koruma kontrolüyle sonlandırır: kritik sistem süreçleri,
+        /// Windows klasöründeki ikililer ve Bakım'ın kendisi reddedilir.
+        /// </summary>
+        Task<OperationResult> TerminateProcessAsync(int processId);
     }
 
     /// <summary>
@@ -84,6 +90,25 @@ namespace Bakım.Services.Safety
             }
 
             return result;
+        }
+
+        public async Task<OperationResult> TerminateProcessAsync(int processId)
+        {
+            ProcessCandidate candidate;
+            try
+            {
+                using var p = Process.GetProcessById(processId);
+                candidate = new ProcessCandidate(processId, p.ProcessName,
+                    NativeProcess.TryGetImagePath(processId) ?? string.Empty,
+                    NativeProcess.TryGetStartTimeUtc(processId));
+            }
+            catch (ArgumentException)
+            {
+                return new OperationResult($"PID {processId}", DeleteOutcome.NotFound, "Süreç zaten kapanmış.", 0);
+            }
+
+            var results = await TerminateAsync(new[] { candidate });
+            return results[0];
         }
 
         public async Task<IReadOnlyList<OperationResult>> TerminateAsync(IEnumerable<ProcessCandidate> processes)

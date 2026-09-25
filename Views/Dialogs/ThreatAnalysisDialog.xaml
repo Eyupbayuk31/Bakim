@@ -1232,8 +1232,9 @@
                                Padding="{StaticResource Pad.Control}"
                                Margin="{StaticResource Gap.Right.SM}"
                                Icon="{ui:SymbolIcon Delete24}"
-                               Content="Zorla Sil"
-                               AutomationProperties.Name="Dosyayı sahiplik alarak zorla sil"/>
+                               Content="Dosyayı Kaldır"
+                               ToolTip="Geri Dönüşüm Kutusu'na taşır; kullanımdaysa yeniden başlatmada siler."
+                               AutomationProperties.Name="Dosyayı Geri Dönüşüm Kutusu'na taşı"/>
 
                     <ui:Button Appearance="Primary"
                                Command="{Binding CloseCommand}"

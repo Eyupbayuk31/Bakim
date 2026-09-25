@@ -733,25 +733,20 @@ namespace Bakım.Services
             });
         }
 
+        /// <summary>
+        /// Süreci ortak güvenlik kuralıyla sonlandırır (H-7). Eski yerel liste yalnızca 9 adı
+        /// koruyordu; Windows klasöründeki diğer ikililer (winlogon, fontdrvhost…) ve
+        /// Bakım'ın kendisi sonlandırılabiliyordu. Başarısızlıkta nedeni istisna olarak taşır.
+        /// </summary>
         public async Task<bool> KillProcessAsync(int processId)
         {
-            return await Task.Run(() =>
-            {
-                var protectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    "system", "smss", "csrss", "wininit", "services", "lsass", "svchost", "dwm", "explorer"
-                };
-
-                using var proc = System.Diagnostics.Process.GetProcessById(processId);
-                if (protectedNames.Contains(proc.ProcessName))
-                {
-                    throw new InvalidOperationException($"'{proc.ProcessName}' kritik bir Windows sistem sürecidir ve güvenliğiniz için sonlandırılamaz.");
-                }
-
-                proc.Kill(entireProcessTree: true);
-                proc.WaitForExit(3000);
-                return true;
-            });
+            var safeProcess = App.TryGetService<Bakım.Services.Safety.ISafeProcessService>()
+                              ?? new Bakım.Services.Safety.SafeProcessService(AppLog.Current);
+            var result = await safeProcess.TerminateProcessAsync(processId);
+            if (result.Succeeded || result.Outcome == Bakım.Services.Safety.DeleteOutcome.NotFound) return true;
+            throw new InvalidOperationException(result.Outcome == Bakım.Services.Safety.DeleteOutcome.Blocked
+                ? "Bu bir Windows sistem sürecidir; sistem kararlılığı için sonlandırılamaz."
+                : result.Message);
         }
 
         public async Task<bool> SetProcessPriorityAsync(int processId, System.Diagnostics.ProcessPriorityClass priority)
