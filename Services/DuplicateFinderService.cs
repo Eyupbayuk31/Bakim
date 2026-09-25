@@ -249,7 +249,13 @@ namespace Bakım.Services
                 catch { }
 
                 // Yalnızca boyutu aynı olan birden fazla dosya içeren grupları al (Tekilleri %90 ele)
-                var sizeCandidates = filesBySize.Values.Where(g => g.Count > 1).ToList();
+                // Sabit bağlantılar (hardlink) aynı dosyadır: diskte bir kez yer kaplar, silmek yer açmaz.
+                // Aynı dosya kimliğine sahip yollar tek aday sayılır (§5.3).
+                var sizeCandidates = filesBySize.Values
+                    .Where(g => g.Count > 1)
+                    .Select(g => CollapseHardlinks(g, progressState))
+                    .Where(g => g.Count > 1)
+                    .ToList();
                 progressState.ScannedFiles = scannedCount;
                 progressState.CandidateGroups = sizeCandidates.Count;
                 progressState.CurrentStage = "2/3: Aday dosyaların ilk 4 KB başlıkları doğrulanıyor...";
@@ -387,8 +393,13 @@ namespace Bakım.Services
 
                 progressState.ProgressPercentage = 100;
                 progressState.ConfirmedDuplicates = resultGroups.Sum(g => g.GroupCount - 1);
-                progressState.CurrentStage = progressState.SkippedCloudFiles > 0
-                    ? $"Tarama tamamlandı. {progressState.SkippedCloudFiles:N0} bulut dosyası (yalnızca çevrimiçi) indirilmemek için atlandı."
+                var notes = new List<string>();
+                if (progressState.SkippedCloudFiles > 0)
+                    notes.Add($"{progressState.SkippedCloudFiles:N0} bulut dosyası (yalnızca çevrimiçi) indirilmemek için atlandı");
+                if (progressState.SkippedHardlinks > 0)
+                    notes.Add($"{progressState.SkippedHardlinks:N0} sabit bağlantı aynı dosya olduğu için kopya sayılmadı");
+                progressState.CurrentStage = notes.Count > 0
+                    ? "Tarama tamamlandı. " + string.Join("; ", notes) + "."
                     : "Tarama tamamlandı!";
                 progress?.Report(progressState);
 
@@ -529,6 +540,53 @@ namespace Bakım.Services
         }
 
         #region Hashing Yardımcıları
+
+        #region Sabit bağlantı (hardlink) tanıma
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct BY_HANDLE_FILE_INFORMATION
+        {
+            public uint FileAttributes;
+            public System.Runtime.InteropServices.ComTypes.FILETIME CreationTime, LastAccessTime, LastWriteTime;
+            public uint VolumeSerialNumber, FileSizeHigh, FileSizeLow, NumberOfLinks, FileIndexHigh, FileIndexLow;
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool GetFileInformationByHandle(Microsoft.Win32.SafeHandles.SafeFileHandle hFile, out BY_HANDLE_FILE_INFORMATION info);
+
+        /// <summary>Birden fazla bağlantısı olan dosyanın kimliği (birim + dosya dizini); tek bağlantılıysa null.</summary>
+        private static (uint Volume, ulong Index)? HardlinkIdentity(string path)
+        {
+            try
+            {
+                using var handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                if (!GetFileInformationByHandle(handle, out var info) || info.NumberOfLinks <= 1) return null;
+                return (info.VolumeSerialNumber, ((ulong)info.FileIndexHigh << 32) | info.FileIndexLow);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+
+        private static List<FileInfo> CollapseHardlinks(List<FileInfo> group, DuplicateScanProgress progress)
+        {
+            var seen = new HashSet<(uint, ulong)>();
+            var unique = new List<FileInfo>(group.Count);
+            foreach (var file in group)
+            {
+                var id = HardlinkIdentity(file.FullName);
+                if (id is { } key && !seen.Add(key))
+                {
+                    progress.SkippedHardlinks++;
+                    continue;
+                }
+                unique.Add(file);
+            }
+            return unique;
+        }
+
+        #endregion
 
         private static string ComputeFastHeaderHash(string filePath)
         {

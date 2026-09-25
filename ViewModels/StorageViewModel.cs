@@ -18,13 +18,20 @@ namespace Bakım.ViewModels
     {
         private readonly IDuplicateFinderService _duplicateService;
         private readonly ISystemInfoService _infoService;
+        private readonly IDiskMapService _diskMap;
+        private readonly Services.Safety.ISafeDeleteService _safeDelete;
+        private readonly Services.Activity.IActivityService _activity;
         private CancellationTokenSource? _scanCts;
         private CancellationTokenSource? _duplicateScanCts;
 
-        public StorageViewModel(IDuplicateFinderService duplicateService, ISystemInfoService infoService)
+        public StorageViewModel(IDuplicateFinderService duplicateService, ISystemInfoService infoService,
+            IDiskMapService diskMap, Services.Safety.ISafeDeleteService safeDelete, Services.Activity.IActivityService activity)
         {
             _duplicateService = duplicateService;
             _infoService = infoService;
+            _diskMap = diskMap;
+            _safeDelete = safeDelete;
+            _activity = activity;
             LargeFiles = new ObservableCollection<LargeDiskFileItem>();
             FilteredLargeFiles = new ObservableCollection<LargeDiskFileItem>();
             DuplicateGroups = new ObservableCollection<DuplicateFileGroup>();
@@ -56,13 +63,15 @@ namespace Bakım.ViewModels
         public ObservableCollection<string> AvailableDrives { get; }
 
         [ObservableProperty]
-        private string _activeSubTab = "LargeFiles"; // LargeFiles, Duplicates
+        private string _activeSubTab = "DiskMap"; // DiskMap, LargeFiles, Duplicates
 
+        public bool IsDiskMapTab => ActiveSubTab == "DiskMap";
         public bool IsLargeFilesTab => ActiveSubTab == "LargeFiles";
         public bool IsDuplicatesTab => ActiveSubTab == "Duplicates";
 
         partial void OnActiveSubTabChanged(string value)
         {
+            OnPropertyChanged(nameof(IsDiskMapTab));
             OnPropertyChanged(nameof(IsLargeFilesTab));
             OnPropertyChanged(nameof(IsDuplicatesTab));
         }
@@ -1361,6 +1370,166 @@ namespace Bakım.ViewModels
 
         #endregion
 
+        #region Disk Haritası (§5.3)
+
+        public ObservableCollection<TreemapTile> Tiles { get; } = new();
+        public ObservableCollection<Bakım.Core.Storage.FolderNode> Breadcrumb { get; } = new();
+
+        [ObservableProperty] private string _diskMapTarget = string.Empty;
+        [ObservableProperty] private bool _isDiskMapScanning;
+        [ObservableProperty] private string _diskMapStatus = "Bir sürücü ya da klasör seçip haritayı çıkarın.";
+        [ObservableProperty] private bool _hasDiskMap;
+        [ObservableProperty] private string _currentFolderSummary = string.Empty;
+
+        private Bakım.Core.Storage.FolderNode? _currentNode;
+        private CancellationTokenSource? _diskMapCts;
+        private double _mapWidth, _mapHeight;
+
+        /// <summary>Harita için seçilebilir hedefler: sabit sürücüler.</summary>
+        public IEnumerable<string> DiskMapTargets => AvailableDrives.Where(d => d != "Tüm Sürücüler");
+
+        [RelayCommand]
+        private async Task ScanDiskMapAsync()
+        {
+            if (IsDiskMapScanning) return;
+            string target = string.IsNullOrWhiteSpace(DiskMapTarget) ? (DiskMapTargets.FirstOrDefault() ?? "C:\\") : DiskMapTarget;
+            DiskMapTarget = target;
+
+            IsDiskMapScanning = true;
+            _diskMapCts = new CancellationTokenSource();
+            var started = DateTime.UtcNow;
+            try
+            {
+                var progress = new Progress<DiskMapProgress>(p =>
+                    DiskMapStatus = $"{p.FilesScanned:N0} dosya · {Core.Text.ByteFormatter.Format(p.BytesCounted)} · {p.CurrentFolder}");
+                var root = await _diskMap.ScanAsync(target, progress, _diskMapCts.Token);
+                Breadcrumb.Clear();
+                ShowNode(root);
+                HasDiskMap = true;
+                DiskMapStatus = $"{Core.Text.ByteFormatter.Format(root.SizeBytes)} · {root.FileCount:N0} dosya · {(DateTime.UtcNow - started).TotalSeconds:F0} sn. " +
+                                "Bağlantı noktaları ve yalnızca çevrimiçi OneDrive dosyaları sayılmadı.";
+            }
+            catch (OperationCanceledException)
+            {
+                DiskMapStatus = "Tarama iptal edildi.";
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Disk haritası çıkarılamadı.", ex, nameof(StorageViewModel));
+                DiskMapStatus = $"Harita çıkarılamadı: {ex.Message}";
+            }
+            finally
+            {
+                IsDiskMapScanning = false;
+                _diskMapCts?.Dispose();
+                _diskMapCts = null;
+            }
+        }
+
+        [RelayCommand]
+        private void CancelDiskMap() => _diskMapCts?.Cancel();
+
+        /// <summary>Görünüm, harita alanının boyutu değişince çağırır.</summary>
+        public void SetMapViewport(double width, double height)
+        {
+            _mapWidth = width;
+            _mapHeight = height;
+            LayoutTiles();
+        }
+
+        private void ShowNode(Bakım.Core.Storage.FolderNode node)
+        {
+            _currentNode = node;
+            Breadcrumb.Clear();
+            for (var n = node; n != null; n = n.Parent) Breadcrumb.Insert(0, n);
+            CurrentFolderSummary = $"{node.FullPath} · {Core.Text.ByteFormatter.Format(node.SizeBytes)} · {node.FileCount:N0} dosya";
+            LayoutTiles();
+        }
+
+        private void LayoutTiles()
+        {
+            Tiles.Clear();
+            if (_currentNode == null || _mapWidth < 20 || _mapHeight < 20) return;
+
+            var children = _currentNode.Children.Where(c => c.SizeBytes > 0).OrderByDescending(c => c.SizeBytes).ToList();
+            var rects = Bakım.Core.Storage.Treemap.Layout(children.Select(c => (double)c.SizeBytes).ToList(),
+                new Bakım.Core.Storage.TreemapRect(0, 0, _mapWidth, _mapHeight));
+            for (int i = 0; i < children.Count; i++)
+            {
+                var r = rects[i];
+                if (r.Width < 1 || r.Height < 1) continue;
+                double percent = _currentNode.SizeBytes > 0 ? 100.0 * children[i].SizeBytes / _currentNode.SizeBytes : 0;
+                Tiles.Add(new TreemapTile(children[i], r.X, r.Y, r.Width, r.Height, i % 6, Core.Text.ByteFormatter.Format(children[i].SizeBytes), percent));
+            }
+        }
+
+        [RelayCommand]
+        private void OpenTile(TreemapTile? tile)
+        {
+            if (tile == null || tile.Node.IsAggregate || tile.Node.Children.Count == 0) return;
+            ShowNode(tile.Node);
+        }
+
+        [RelayCommand]
+        private void NavigateCrumb(Bakım.Core.Storage.FolderNode? node)
+        {
+            if (node != null) ShowNode(node);
+        }
+
+        [RelayCommand]
+        private void DiskMapUp()
+        {
+            if (_currentNode?.Parent != null) ShowNode(_currentNode.Parent);
+        }
+
+        [RelayCommand]
+        private void OpenTileInExplorer(TreemapTile? tile)
+        {
+            if (tile == null) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo("explorer.exe", $"\"{tile.Node.FullPath}\"") { UseShellExecute = true })?.Dispose();
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+            {
+                AppLog.Warning("Klasör açılamadı.", ex, nameof(StorageViewModel));
+            }
+        }
+
+        /// <summary>Klasörü Geri Dönüşüm Kutusu'na taşır (korunan konumlar PathSafetyGuard ile reddedilir).</summary>
+        [RelayCommand]
+        private async Task RecycleTileAsync(TreemapTile? tile)
+        {
+            if (tile == null || tile.Node.IsAggregate || tile.Node.Parent == null) return;
+            var confirm = System.Windows.MessageBox.Show(
+                $"Bu klasör Geri Dönüşüm Kutusu'na taşınsın mı?\n\n{tile.Node.FullPath}\n{tile.SizeText} · {tile.Node.FileCount:N0} dosya\n\n" +
+                "Windows ve program klasörleri gibi korunan konumlar taşınmaz.",
+                "Geri Dönüşüm Kutusu'na taşı", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning,
+                System.Windows.MessageBoxResult.No);
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+            var result = await _safeDelete.DeletePathAsync(tile.Node.FullPath, isDirectory: true, new Services.Safety.DeletePolicy());
+            var outcome = result.Succeeded ? Core.Activity.ActivityOutcome.Succeeded : Core.Activity.ActivityOutcome.Failed;
+            Services.Activity.ActivityRecording.RecordRecycled(_activity, Core.Activity.ActivityKind.Clean, "Depolama",
+                $"\"{tile.Node.Name}\" Geri Dönüşüm Kutusu'na taşındı", $"{tile.SizeText} · {result.Message}", outcome,
+                new[] { new Core.Activity.ActivityItem(tile.Node.FullPath, "Geri Dönüşüm Kutusu", result.Outcome.ToString(), result.Message) },
+                deepLink: "Storage");
+
+            if (result.Succeeded && _currentNode != null)
+            {
+                _currentNode.Children.Remove(tile.Node);
+                _currentNode.SizeBytes -= tile.Node.SizeBytes;
+                ShowNode(_currentNode);
+                DiskMapStatus = $"\"{tile.Node.Name}\" Geri Dönüşüm Kutusu'na taşındı.";
+            }
+            else
+            {
+                DiskMapStatus = $"Taşınamadı: {result.Message}";
+            }
+        }
+
+        #endregion
+
         #region Modül Yaşam Döngüsü
 
         public Task OnActivatedAsync() => Task.CompletedTask;
@@ -1369,5 +1538,39 @@ namespace Bakım.ViewModels
         public Task OnDeactivatedAsync() => Task.CompletedTask;
 
         #endregion
+    }
+}
+
+namespace Bakım.ViewModels
+{
+    /// <summary>Disk haritasındaki bir dikdörtgen.</summary>
+    public sealed class TreemapTile
+    {
+        public TreemapTile(Bakım.Core.Storage.FolderNode node, double x, double y, double width, double height,
+            int colorIndex, string sizeText, double percent)
+        {
+            Node = node;
+            X = x;
+            Y = y;
+            Width = Math.Max(0, width - 2);   // karolar arasında 2 px boşluk
+            Height = Math.Max(0, height - 2);
+            ColorIndex = colorIndex;
+            SizeText = sizeText;
+            Percent = percent;
+        }
+
+        public Bakım.Core.Storage.FolderNode Node { get; }
+        public double X { get; }
+        public double Y { get; }
+        public double Width { get; }
+        public double Height { get; }
+        public int ColorIndex { get; }
+        public string SizeText { get; }
+        public double Percent { get; }
+        public string Name => Node.Name;
+        public bool ShowLabel => Width >= 70 && Height >= 36;
+        public bool CanDrill => !Node.IsAggregate && Node.Children.Count > 0;
+        public string Tooltip => $"{Node.FullPath}\n{SizeText} · %{Percent:F1} · {Node.FileCount:N0} dosya" +
+                                 (Node.IsAggregate ? "\n(Küçük öğeler birleştirildi)" : CanDrill ? "\nİçine girmek için tıklayın" : "");
     }
 }

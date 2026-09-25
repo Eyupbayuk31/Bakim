@@ -123,7 +123,7 @@ public class SystemInfoRevampTests
     }
 
     private static StorageViewModel NewStorage() =>
-        new(new DuplicateFinderService(), new MockSystemInfoService());
+        TestFactories.Storage(new DuplicateFinderService(), new MockSystemInfoService());
 
     private static SystemInfoViewModel NewSystemInfo() =>
         new(new MockSystemInfoService(), new MockSettingsService(), NavigationService.Instance, NewStorage());
@@ -142,6 +142,8 @@ public class SystemInfoRevampTests
 
         // Büyük dosyalar ve yinelenenler Faz 4'te Depolama sayfasına taşındı.
         var storage = NewStorage();
+        Assert.True(storage.IsDiskMapTab);
+        storage.SwitchSubTab("LargeFiles");
         Assert.True(storage.IsLargeFilesTab);
         storage.SwitchSubTab("Duplicates");
         Assert.False(storage.IsLargeFilesTab);

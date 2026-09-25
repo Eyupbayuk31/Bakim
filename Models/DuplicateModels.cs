@@ -87,6 +87,9 @@ namespace Bakım.Models
 
         /// <summary>İndirilmemek için atlanan bulut (OneDrive "yalnızca çevrimiçi") dosya sayısı.</summary>
         public int SkippedCloudFiles { get; set; }
+
+        /// <summary>Aynı dosyanın sabit bağlantıları (hardlink): kopya sayılmadı (§5.3).</summary>
+        public int SkippedHardlinks { get; set; }
     }
 
     /// <summary>
