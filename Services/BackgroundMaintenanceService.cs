@@ -15,6 +15,9 @@ namespace Bakım.Services
 
         /// <summary>Zamanlanmış otomatik RAM temizliği bittiğinde tetiklenir (kazanılan bayt).</summary>
         event Action<long>? AutoRamCleanCompleted;
+
+        /// <summary>Haftalık güvenli temizlik bitti (sonuç özeti). §5.2</summary>
+        event Action<string>? ScheduledCleanupCompleted;
     }
 
     /// <summary>
@@ -31,8 +34,11 @@ namespace Bakım.Services
         private static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan HighRamNotifyCooldown = TimeSpan.FromMinutes(15);
 
+        private static readonly TimeSpan ScheduledCleanupInterval = TimeSpan.FromDays(7);
+
         private readonly ISystemCleanService _cleanService;
         private readonly IAppSettingsService _settings;
+        private readonly IQuickMaintenanceService _quickMaintenance;
         private readonly ILogService _log;
         private readonly object _gate = new();
 
@@ -45,8 +51,10 @@ namespace Bakım.Services
         public BackgroundMaintenanceService(
             ISystemCleanService cleanService,
             IAppSettingsService settings,
-            ILogService log)
+            ILogService log,
+            IQuickMaintenanceService quickMaintenance)
         {
+            _quickMaintenance = quickMaintenance;
             _cleanService = cleanService;
             _settings = settings;
             _log = log ?? NullLogService.Instance;
@@ -55,6 +63,7 @@ namespace Bakım.Services
         public bool IsGameModeActive { get; set; }
         public event Action<int>? HighRamDetected;
         public event Action<long>? AutoRamCleanCompleted;
+        public event Action<string>? ScheduledCleanupCompleted;
 
         public void Start()
         {
@@ -158,7 +167,11 @@ namespace Bakım.Services
 
             if (token.IsCancellationRequested) return;
 
-            // --- 2. Zamanlanmış otomatik RAM temizliği ---
+            // --- 2. Haftalık güvenli temizlik (§5.2) ---
+            await RunScheduledCleanupIfDueAsync(settings, token).ConfigureAwait(false);
+            if (token.IsCancellationRequested) return;
+
+            // --- 3. Zamanlanmış otomatik RAM temizliği ---
             try
             {
                 int intervalMinutes = settings.AutoRamCleanIntervalMinutes;
@@ -183,6 +196,33 @@ namespace Bakım.Services
             catch (Exception ex)
             {
                 _log.Error("Otomatik RAM temizliği başarısız oldu.", ex, nameof(BackgroundMaintenanceService));
+            }
+        }
+
+        /// <summary>
+        /// Haftada bir, yalnızca Hızlı Bakım'ın güvenli kategorileri (yaş filtreli temp, önbellekler).
+        /// Son çalışma ayarlara yazılır; uygulama kapalıyken kaçırılan hafta açılışta bir kez çalışır.
+        /// </summary>
+        private async Task RunScheduledCleanupIfDueAsync(Models.AppSettingsData settings, CancellationToken token)
+        {
+            if (!settings.WeeklySafeCleanup) return;
+            var last = settings.LastScheduledCleanupUtc ?? DateTime.MinValue;
+            if (DateTime.UtcNow - last < ScheduledCleanupInterval) return;
+
+            try
+            {
+                // Önce zamanı yaz: temizlik yarıda kesilse bile döngü her dakika yeniden denemesin.
+                _settings.Update(d => d.LastScheduledCleanupUtc = DateTime.UtcNow);
+                var result = await _quickMaintenance.RunAsync(null, token, QuickMaintenanceOrigin.Scheduled).ConfigureAwait(false);
+                _log.Info("Haftalık güvenli temizlik: " + result.Summary, nameof(BackgroundMaintenanceService));
+                Raise(() => ScheduledCleanupCompleted?.Invoke(result.Summary));
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Haftalık güvenli temizlik başarısız oldu.", ex, nameof(BackgroundMaintenanceService));
             }
         }
 

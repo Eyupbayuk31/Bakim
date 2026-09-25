@@ -21,6 +21,13 @@ namespace Bakım.Models
         /// </summary>
         public TimeSpan MinFileAge { get; set; } = TimeSpan.Zero;
 
+        /// <summary>Bu kategorinin dosyalarını kullanan süreçler (ör. "chrome"). Açıksa kullanıcı uyarılır (§5.2).</summary>
+        public string[] ProcessNames { get; set; } = System.Array.Empty<string>();
+
+        /// <summary>İlgili uygulama şu an açık: bazı dosyalar kilitli olacağı için atlanacak.</summary>
+        [ObservableProperty]
+        private bool _isAppRunning;
+
         [ObservableProperty]
         private bool _isSelected = true;
 

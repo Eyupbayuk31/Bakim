@@ -39,6 +39,32 @@ namespace Bakım.ViewModels
             FilteredFilesView.Filter = FilterFilePredicate;
 
             RefreshDriveInfo();
+            RefreshRunningApps();
+        }
+
+        /// <summary>
+        /// Önbelleği kullanan uygulama açık mı (§5.2)? Açıksa kategori uyarı gösterir: kilitli dosyalar
+        /// atlanacaktır. Uygulama Bakım tarafından kapatılmaz; kullanıcı karar verir.
+        /// </summary>
+        public void RefreshRunningApps()
+        {
+            foreach (var category in Categories)
+            {
+                bool running = false;
+                foreach (var name in category.ProcessNames)
+                {
+                    var processes = Process.GetProcessesByName(name);
+                    try
+                    {
+                        if (processes.Length > 0) { running = true; break; }
+                    }
+                    finally
+                    {
+                        foreach (var p in processes) p.Dispose();
+                    }
+                }
+                category.IsAppRunning = running;
+            }
         }
 
         public ObservableCollection<CleanCategory> Categories { get; }
@@ -352,6 +378,7 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public async Task ScanAsync()
         {
+            RefreshRunningApps();
             if (IsBusy) return;
 
             IsBusy = true;
@@ -481,6 +508,17 @@ namespace Bakım.ViewModels
                 return;
             }
 
+            if (itemsToClean.Any(i => i.FilePath == "shell:RecycleBinFolder"))
+            {
+                var confirm = MessageBox.Show(
+                    "Geri Dönüşüm Kutusu boşaltılacak. Bu işlem geri alınamaz.\n\nDevam edilsin mi?",
+                    "Geri Dönüşüm Kutusu", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                if (confirm != MessageBoxResult.Yes)
+                    itemsToClean = itemsToClean.Where(i => i.FilePath != "shell:RecycleBinFolder").ToList();
+                if (itemsToClean.Count == 0) return;
+            }
+
+            RefreshRunningApps();
             IsBusy = true;
             IsCleaning = true;
             HasResultBanner = false;

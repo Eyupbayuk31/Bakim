@@ -28,9 +28,12 @@ namespace Bakım.Services
     /// çökme dökümleri, gölgelendirici ve tarayıcı önbellekleri, DNS önbelleği. RAM kırpma YOKTUR:
     /// etkisi geçicidir ve "hızlandırma" gibi sunulmamalıdır.
     /// </summary>
+    public enum QuickMaintenanceOrigin { Manual, Scheduled }
+
     public interface IQuickMaintenanceService
     {
-        Task<QuickMaintenanceResult> RunAsync(IProgress<QuickMaintenanceProgress>? progress, CancellationToken ct);
+        Task<QuickMaintenanceResult> RunAsync(IProgress<QuickMaintenanceProgress>? progress, CancellationToken ct,
+            QuickMaintenanceOrigin origin = QuickMaintenanceOrigin.Manual);
     }
 
     public sealed class QuickMaintenanceService : IQuickMaintenanceService
@@ -51,7 +54,8 @@ namespace Bakım.Services
             _activity = activity;
         }
 
-        public async Task<QuickMaintenanceResult> RunAsync(IProgress<QuickMaintenanceProgress>? progress, CancellationToken ct)
+        public async Task<QuickMaintenanceResult> RunAsync(IProgress<QuickMaintenanceProgress>? progress, CancellationToken ct,
+            QuickMaintenanceOrigin origin = QuickMaintenanceOrigin.Manual)
         {
             bool admin = UacHelper.IsAdministrator();
             var categories = _clean.GetDefaultCategories()
@@ -120,7 +124,10 @@ namespace Bakım.Services
                 : deleted == 0 && skipped > 0 && !dns ? ActivityOutcome.Failed
                 : ActivityOutcome.Succeeded;
             var final = new QuickMaintenanceResult(deleted, skipped, freed, dns, details, cancelled);
-            _activity.RecordSimple(ActivityKind.Clean, "Kontrol Paneli", "Hızlı Bakım", final.Summary, outcome, items, deepLink: "Dashboard");
+            if (origin == QuickMaintenanceOrigin.Scheduled)
+                _activity.RecordSimple(ActivityKind.Clean, "Zamanlanmış bakım", "Haftalık güvenli temizlik", final.Summary, outcome, items, deepLink: "Settings");
+            else
+                _activity.RecordSimple(ActivityKind.Clean, "Kontrol Paneli", "Hızlı Bakım", final.Summary, outcome, items, deepLink: "Dashboard");
             return final;
         }
     }

@@ -31,6 +31,12 @@ namespace Bakım.Models
         public bool MinimizeToTray { get; set; } = false;
         public bool NotifyOnHighRam { get; set; } = true;
         public bool AutoCleanOnExit { get; set; } = false;
+
+        /// <summary>Haftada bir güvenli kategorileri (Hızlı Bakım kapsamı) otomatik temizle (§5.2).</summary>
+        public bool WeeklySafeCleanup { get; set; } = false;
+
+        /// <summary>Son zamanlanmış temizliğin zamanı.</summary>
+        public DateTime? LastScheduledCleanupUtc { get; set; }
         public bool AlwaysRunAsAdmin { get; set; } = false;
         public bool TaskSchedulerAutoStart { get; set; } = false;
 

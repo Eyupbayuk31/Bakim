@@ -561,6 +561,25 @@
 
                             <Border Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1" Margin="0,14,0,14"/>
 
+                            <!-- Haftalık güvenli temizlik (§5.2) -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="Haftalık güvenli temizlik" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Haftada bir, yalnızca Hızlı Bakım kapsamı: 24 saatten eski geçici dosyalar, çökme dökümleri, tarayıcı ve gölgelendirici önbellekleri. Sonuç Etkinlik Merkezi'ne yazılır."
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Column="1"
+                                                 IsChecked="{Binding WeeklySafeCleanup, Mode=TwoWay}"
+                                                 AutomationProperties.Name="Haftalık güvenli temizlik"
+                                                 VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <Border Background="{DynamicResource CardStrokeColorDefaultBrush}" Height="1" Margin="0,14,0,14"/>
+
                             <!-- Item 4: Windows Gezgini Sağ Tık Menüsü Entegrasyonu -->
                             <Grid>
                                 <Grid.ColumnDefinitions>

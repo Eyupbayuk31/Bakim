@@ -317,7 +317,7 @@ namespace Bakım.ViewModels
             maintenance.HighRamDetected += percent => OnUiThread(() =>
                 ShowToast(
                     "Yüksek Bellek Kullanımı",
-                    $"RAM kullanımı %{percent} seviyesinde. Tek tıkla hızlandırmayı deneyebilirsiniz.",
+                    $"RAM kullanımı %{percent} seviyesinde. Süreçler sayfasında en çok bellek kullananları görebilirsiniz.",
                     InfoBarSeverity.Warning,
                     "Warning24"));
 
@@ -327,6 +327,9 @@ namespace Bakım.ViewModels
                     $"{CleanCategory.FormatBytes(freedBytes)} bellek geri kazanıldı.",
                     InfoBarSeverity.Success,
                     "TopSpeed24"));
+
+            maintenance.ScheduledCleanupCompleted += summary => OnUiThread(() =>
+                ShowToast("Haftalık güvenli temizlik", summary, InfoBarSeverity.Success, "Broom24"));
         }
 
         private static void OnUiThread(Action action)

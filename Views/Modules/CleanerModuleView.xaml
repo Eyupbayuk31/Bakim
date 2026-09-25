@@ -290,8 +290,11 @@
                         <ui:Button Content="Web Tarayıcıları" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
                                    Command="{Binding SetCategoryGroupCommand}" CommandParameter="Web Tarayıcıları"/>
 
-                        <ui:Button Content="Oyunlar &amp; Medya" Appearance="Secondary" Padding="10,4"
+                        <ui:Button Content="Oyunlar &amp; Medya" Appearance="Secondary" Padding="10,4" Margin="0,0,4,0"
                                    Command="{Binding SetCategoryGroupCommand}" CommandParameter="Oyunlar &amp; Medya"/>
+
+                        <ui:Button Content="Geliştirici" Appearance="Secondary" Padding="10,4"
+                                   Command="{Binding SetCategoryGroupCommand}" CommandParameter="Geliştirici"/>
                     </StackPanel>
 
                     <!-- Quick Preset Chips -->
@@ -329,7 +332,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ui:Card Padding="12,10" Margin="3" Cursor="Hand" ClipToBounds="False">
+                            <ui:Card Padding="12,10" Margin="3" Cursor="Hand" ClipToBounds="False" ToolTip="{Binding Description}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -340,7 +343,8 @@
                                     <!-- CheckBox -->
                                     <CheckBox Grid.Column="0" 
                                               IsChecked="{Binding IsSelected}" 
-                                              AutomationProperties.Name="{Binding FileName}"
+                                              AutomationProperties.Name="{Binding Name}"
+                                              AutomationProperties.HelpText="{Binding Description}"
                                               Cursor="Hand"
                                               VerticalAlignment="Center"
                                               Margin="0,0,8,0"/>
@@ -373,6 +377,16 @@
                                                        FontSize="{StaticResource Font.Micro}" 
                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                        Visibility="{Binding FileCount, Converter={StaticResource IntToVis}}"/>
+                                        </StackPanel>
+
+                                        <!-- İlgili uygulama açık: kilitli dosyalar atlanacak (§5.2) -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0"
+                                                    Visibility="{Binding IsAppRunning, Converter={StaticResource BoolToVis}}">
+                                            <ui:SymbolIcon Symbol="Warning20" FontSize="{StaticResource Icon.XS}" Margin="0,0,4,0"
+                                                           Foreground="{DynamicResource Status.Caution.Text}"/>
+                                            <TextBlock Text="Uygulama açık · bazı dosyalar atlanacak" FontSize="{StaticResource Font.Micro}"
+                                                       Foreground="{DynamicResource Status.Caution.Text}" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="Kullanımdaki önbellek dosyaları silinemez. Tamamı için uygulamayı kapatıp yeniden tarayın."/>
                                         </StackPanel>
                                     </StackPanel>
 

@@ -17,6 +17,7 @@ namespace Bakim.Tests
 #pragma warning disable CS0067
             public event Action<int>? HighRamDetected;
             public event Action<long>? AutoRamCleanCompleted;
+            public event Action<string>? ScheduledCleanupCompleted;
 #pragma warning restore CS0067
 
             public void Start() { }

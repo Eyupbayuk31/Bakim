@@ -143,6 +143,10 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _autoCleanOnExit;
 
+        /// <summary>Haftalık güvenli temizlik (§5.2).</summary>
+        [ObservableProperty]
+        private bool _weeklySafeCleanup;
+
         [ObservableProperty]
         private bool _isAlwaysRunAsAdmin;
 
@@ -298,6 +302,7 @@ namespace Bakım.ViewModels
         partial void OnOpenLastModuleOnStartupChanged(bool value) => AutoSaveSettings();
         partial void OnNotifyOnHighRamChanged(bool value) => AutoSaveSettings();
         partial void OnAutoCleanOnExitChanged(bool value) => AutoSaveSettings();
+        partial void OnWeeklySafeCleanupChanged(bool value) => AutoSaveSettings();
         partial void OnPromptRestorePointBeforeUninstallChanged(bool value) => AutoSaveSettings();
         partial void OnCreateRestorePointOnUninstallChanged(bool value) => AutoSaveSettings();
 
@@ -402,6 +407,7 @@ namespace Bakım.ViewModels
             AutoRamCleanIntervalMinutes = data.AutoRamCleanIntervalMinutes;
             MinimizeToTray = data.MinimizeToTray;
             OpenLastModuleOnStartup = data.OpenLastModuleOnStartup;
+            WeeklySafeCleanup = data.WeeklySafeCleanup;
             FollowWindowsAccent = data.FollowWindowsAccent;
             ReduceMotion = data.ReduceMotion;
             NotifyOnHighRam = data.NotifyOnHighRam;
@@ -431,6 +437,7 @@ namespace Bakım.ViewModels
             data.StartWithWindows = StartWithWindows;
             data.MinimizeToTray = MinimizeToTray;
             data.OpenLastModuleOnStartup = OpenLastModuleOnStartup;
+            data.WeeklySafeCleanup = WeeklySafeCleanup;
             data.FollowWindowsAccent = FollowWindowsAccent;
             data.ReduceMotion = ReduceMotion;
             data.NotifyOnHighRam = NotifyOnHighRam;
