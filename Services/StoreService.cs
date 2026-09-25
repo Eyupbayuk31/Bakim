@@ -1082,7 +1082,14 @@ namespace Bakım.Services
             }
             catch (OperationCanceledException)
             {
-                try { process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { }
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    AppLog.Debug($"winget zaten kapanmış: {ex.Message}", nameof(StoreService));
+                }
                 return (-1, await stdout, "zaman aşımı");
             }
             return (process.ExitCode, await stdout, await stderr);
