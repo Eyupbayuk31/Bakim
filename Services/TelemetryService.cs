@@ -125,9 +125,9 @@ namespace Bakım.Services
             return await Task.Run(() =>
             {
                 var list = new List<ResourceHogItem>();
+                var processes = Process.GetProcesses();
                 try
                 {
-                    var processes = Process.GetProcesses();
                     var sorted = processes
                         .Where(p =>
                         {
@@ -172,6 +172,11 @@ namespace Bakım.Services
                     }
                 }
                 catch { }
+                finally
+                {
+                    // Pano bu metodu her telemetri turunda çağırır; tanıtıcılar serbest bırakılmazsa birikir.
+                    foreach (var p in processes) p.Dispose();
+                }
 
                 return list;
             });

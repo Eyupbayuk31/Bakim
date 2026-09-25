@@ -177,72 +177,80 @@ namespace Bakım.Services
             int currentPid = Environment.ProcessId;
             var processes = Process.GetProcesses();
 
-            foreach (var proc in processes)
+            try
             {
-                try
+                foreach (var proc in processes)
                 {
-                    if (proc.Id == currentPid || proc.Id <= 4) continue;
-
-                    ProcessInfoReader.TryGetProcessDetails(
-                        proc.Id,
-                        out string? exePath,
-                        out int? parentPid,
-                        out DateTime? creationTime);
-
-                    long creationTicks = creationTime?.Ticks ?? 0;
-                    var key = (proc.Id, creationTicks);
-
-                    if (_handledProcesses.ContainsKey(key)) continue;
-
-                    string? title = null;
-                    try { title = proc.MainWindowTitle; } catch { }
-
-                    string? desc = null;
-                    string? prod = null;
-                    if (!string.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
+                    try
                     {
-                        try
+                        if (proc.Id == currentPid || proc.Id <= 4) continue;
+
+                        ProcessInfoReader.TryGetProcessDetails(
+                            proc.Id,
+                            out string? exePath,
+                            out int? parentPid,
+                            out DateTime? creationTime);
+
+                        long creationTicks = creationTime?.Ticks ?? 0;
+                        var key = (proc.Id, creationTicks);
+
+                        if (_handledProcesses.ContainsKey(key)) continue;
+
+                        string? title = null;
+                        try { title = proc.MainWindowTitle; } catch { }
+
+                        string? desc = null;
+                        string? prod = null;
+                        if (!string.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
                         {
-                            var fvi = FileVersionInfo.GetVersionInfo(exePath);
-                            desc = fvi.FileDescription;
-                            prod = fvi.ProductName;
+                            try
+                            {
+                                var fvi = FileVersionInfo.GetVersionInfo(exePath);
+                                desc = fvi.FileDescription;
+                                prod = fvi.ProductName;
+                            }
+                            catch { }
                         }
-                        catch { }
+
+                        bool isTarget = InstallerClassifier.ClassifyProcess(
+                            proc.ProcessName,
+                            exePath,
+                            title,
+                            desc,
+                            prod,
+                            null,
+                            out SessionKind kind,
+                            out string detectedAppName,
+                            out int confidenceScore);
+
+                        if (isTarget)
+                        {
+                            _handledProcesses[key] = true;
+
+                            if (kind == SessionKind.Uninstall)
+                            {
+                                _log.Info($"Kaldırma süreci saptandı (oturum açılmadı): {detectedAppName} (PID: {proc.Id})", nameof(SetupSentinelService));
+                                continue;
+                            }
+
+                            if (kind == SessionKind.Install && confidenceScore >= 50)
+                            {
+                                await StartSessionAsync(proc.Id, creationTicks, proc.ProcessName, detectedAppName, exePath ?? proc.ProcessName);
+                                break;
+                            }
+                        }
                     }
-
-                    bool isTarget = InstallerClassifier.ClassifyProcess(
-                        proc.ProcessName,
-                        exePath,
-                        title,
-                        desc,
-                        prod,
-                        null,
-                        out SessionKind kind,
-                        out string detectedAppName,
-                        out int confidenceScore);
-
-                    if (isTarget)
+                    catch { }
+                    finally
                     {
-                        _handledProcesses[key] = true;
-
-                        if (kind == SessionKind.Uninstall)
-                        {
-                            _log.Info($"Kaldırma süreci saptandı (oturum açılmadı): {detectedAppName} (PID: {proc.Id})", nameof(SetupSentinelService));
-                            continue;
-                        }
-
-                        if (kind == SessionKind.Install && confidenceScore >= 50)
-                        {
-                            await StartSessionAsync(proc.Id, creationTicks, proc.ProcessName, detectedAppName, exePath ?? proc.ProcessName);
-                            break;
-                        }
+                        proc.Dispose();
                     }
                 }
-                catch { }
-                finally
-                {
-                    proc.Dispose();
-                }
+            }
+            finally
+            {
+                // Her turda (≈2 sn) tüm süreçler için tanıtıcı açılır; serbest bırakılmazsa birikir.
+                foreach (var disposable in processes) disposable.Dispose();
             }
         }
 
@@ -397,44 +405,52 @@ namespace Bakım.Services
             try
             {
                 var processes = Process.GetProcesses();
-                foreach (var p in processes)
+                try
                 {
-                    try
+                    foreach (var p in processes)
                     {
-                        ProcessInfoReader.TryGetProcessDetails(p.Id, out string? path, out int? parentPid, out DateTime? creationTime);
-                        long creationTicks = creationTime?.Ticks ?? 0;
-                        var pKey = (p.Id, creationTicks);
-
-                        if (!_activeSession.TrackedProcesses.ContainsKey(pKey))
+                        try
                         {
-                            string pName = p.ProcessName.ToLowerInvariant();
+                            ProcessInfoReader.TryGetProcessDetails(p.Id, out string? path, out int? parentPid, out DateTime? creationTime);
+                            long creationTicks = creationTime?.Ticks ?? 0;
+                            var pKey = (p.Id, creationTicks);
 
-                            // Ebeveyn PID bizim ağacımızda mı?
-                            bool isChildOfTracked = parentPid.HasValue &&
-                                (_activeSession.TrackedProcessIds.Contains(parentPid.Value) ||
-                                 _activeSession.TrackedProcesses.Keys.Any(k => k.Pid == parentPid.Value));
-
-                            // msiexec özel durumu (P0-8): yalnızca ebeveyn ağaçtaysa ekle (msiexec /V arka plan servisini hariç tut)
-                            if (pName == "msiexec")
+                            if (!_activeSession.TrackedProcesses.ContainsKey(pKey))
                             {
-                                if (isChildOfTracked)
+                                string pName = p.ProcessName.ToLowerInvariant();
+
+                                // Ebeveyn PID bizim ağacımızda mı?
+                                bool isChildOfTracked = parentPid.HasValue &&
+                                    (_activeSession.TrackedProcessIds.Contains(parentPid.Value) ||
+                                     _activeSession.TrackedProcesses.Keys.Any(k => k.Pid == parentPid.Value));
+
+                                // msiexec özel durumu (P0-8): yalnızca ebeveyn ağaçtaysa ekle (msiexec /V arka plan servisini hariç tut)
+                                if (pName == "msiexec")
                                 {
-                                    _activeSession.TrackedProcesses[pKey] = true;
-                                    _activeSession.TrackedProcessIds.Add(p.Id);
+                                    if (isChildOfTracked)
+                                    {
+                                        _activeSession.TrackedProcesses[pKey] = true;
+                                        _activeSession.TrackedProcessIds.Add(p.Id);
+                                    }
                                 }
-                            }
-                            else if (isChildOfTracked || pName.Contains(_activeSession.ProcessName.ToLowerInvariant()))
-                            {
-                                if (!InstallerClassifier.ExcludedProcessNames.Contains(pName))
+                                else if (isChildOfTracked || pName.Contains(_activeSession.ProcessName.ToLowerInvariant()))
                                 {
-                                    _activeSession.TrackedProcesses[pKey] = true;
-                                    _activeSession.TrackedProcessIds.Add(p.Id);
+                                    if (!InstallerClassifier.ExcludedProcessNames.Contains(pName))
+                                    {
+                                        _activeSession.TrackedProcesses[pKey] = true;
+                                        _activeSession.TrackedProcessIds.Add(p.Id);
+                                    }
                                 }
                             }
                         }
+                        catch { }
+                        finally { p.Dispose(); }
                     }
-                    catch { }
-                    finally { p.Dispose(); }
+                }
+                finally
+                {
+                    // Her turda (≈2 sn) tüm süreçler için tanıtıcı açılır; serbest bırakılmazsa birikir.
+                    foreach (var disposable in processes) disposable.Dispose();
                 }
             }
             catch { }

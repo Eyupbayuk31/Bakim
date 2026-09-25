@@ -25,6 +25,7 @@ namespace Bakım.ViewModels
 
         private readonly List<ProcessMemoryItem> _allLoadedProcesses = new();
         private static readonly Dictionary<int, (DateTime SampleTime, TimeSpan CpuTime)> CpuTracker = new();
+        private bool _isBackgroundRefreshing;
 
         public OptimizerViewModel(
             ISystemCleanService cleanService, 
@@ -47,9 +48,17 @@ namespace Bakım.ViewModels
             };
             _autoRefreshTimer.Tick += async (_, _) =>
             {
-                if (IsAutoRefreshEnabled && !IsBusy)
+                // Yeniden girme koruması: önceki yenileme (ikon/sürüm okuma) 3 sn'den uzun
+                // sürerse turlar üst üste binip süreç tanıtıcıları birikiyordu.
+                if (!IsAutoRefreshEnabled || IsBusy || _isBackgroundRefreshing) return;
+                _isBackgroundRefreshing = true;
+                try
                 {
                     await RefreshBackgroundAsync();
+                }
+                finally
+                {
+                    _isBackgroundRefreshing = false;
                 }
             };
         }
@@ -586,15 +595,23 @@ namespace Bakım.ViewModels
             await Task.Run(() =>
             {
                 var list = new List<ProcessMemoryItem>();
-                var protectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    "system", "smss", "csrss", "wininit", "services", "lsass", "svchost", "dwm", "explorer"
-                };
+                string windowsDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                int currentPid = Environment.ProcessId;
 
+                // H-6: GetProcesses() her süreç için bir tanıtıcı açar; eskiden hiçbiri Dispose
+                // edilmiyordu ve 3 sn'de bir yenilemede tanıtıcı sayısı sürekli artıyordu.
+                var processes = Process.GetProcesses();
                 try
                 {
                     var now = DateTime.UtcNow;
-                    var processes = Process.GetProcesses();
+
+                    // Kapanmış süreçlerin CPU örneklerini at (sözlük sınırsız büyüyordu).
+                    var alive = new HashSet<int>(processes.Select(p => p.Id));
+                    lock (CpuTracker)
+                    {
+                        foreach (var deadPid in CpuTracker.Keys.Where(pid => !alive.Contains(pid)).ToList())
+                            CpuTracker.Remove(deadPid);
+                    }
 
                     var topList = processes
                         .Select(p =>
@@ -643,7 +660,10 @@ namespace Bakım.ViewModels
                         try
                         {
                             TimeSpan currentCpu = p.TotalProcessorTime;
-                            if (CpuTracker.TryGetValue(p.Id, out var previous))
+                            (DateTime SampleTime, TimeSpan CpuTime) previous;
+                            bool hasPrevious;
+                            lock (CpuTracker) hasPrevious = CpuTracker.TryGetValue(p.Id, out previous);
+                            if (hasPrevious)
                             {
                                 double deltaCpuMs = (currentCpu - previous.CpuTime).TotalMilliseconds;
                                 double deltaRealMs = (now - previous.SampleTime).TotalMilliseconds;
@@ -654,7 +674,7 @@ namespace Bakım.ViewModels
                                     if (cpuPct > 100) cpuPct = 100;
                                 }
                             }
-                            CpuTracker[p.Id] = (now, currentCpu);
+                            lock (CpuTracker) CpuTracker[p.Id] = (now, currentCpu);
                         }
                         catch { }
 
@@ -687,7 +707,8 @@ namespace Bakım.ViewModels
                             HandleCount = p.HandleCount,
                             PriorityText = priorityStr,
                             UptimeText = uptime,
-                            IsSystemProcess = protectedNames.Contains(p.ProcessName)
+                            // Sonlandırmayı reddeden kuralın aynısı (CriticalProcessPolicy, H-7).
+                            IsSystemProcess = Bakım.Core.Safety.CriticalProcessPolicy.IsProtected(p.Id, p.ProcessName, exePath, windowsDir, currentPid)
                         });
                     }
 
@@ -702,9 +723,13 @@ namespace Bakım.ViewModels
                         ApplyFilterAndSearch();
                     });
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Savunmacı yaklaşım
+                    AppLog.Debug($"Süreç listesi okunamadı: {ex.Message}", nameof(OptimizerViewModel));
+                }
+                finally
+                {
+                    foreach (var proc in processes) proc.Dispose();
                 }
             });
         }

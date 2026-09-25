@@ -516,21 +516,24 @@ namespace Bakım.Services
             {
                 string targetPath = Path.GetFullPath(filePath);
                 var processes = Process.GetProcesses();
-
-                foreach (var proc in processes)
+                try
                 {
-                    try
+                    foreach (var proc in processes)
                     {
-                        string? procPath = proc.MainModule?.FileName;
+                        // MainModule yerine sınırlı sorgu: korumalı süreçlerde istisna atmaz, daha hızlı.
+                        string? procPath = Helpers.NativeProcess.TryGetImagePath(proc.Id);
                         if (!string.IsNullOrWhiteSpace(procPath) && procPath.Equals(targetPath, StringComparison.OrdinalIgnoreCase))
                         {
                             result.IsActiveProcess = true;
                             result.ActiveProcessId = proc.Id;
-                            result.ActiveProcessMemory = FormatBytes(proc.WorkingSet64);
+                            try { result.ActiveProcessMemory = FormatBytes(proc.WorkingSet64); } catch { }
                             return;
                         }
                     }
-                    catch { }
+                }
+                finally
+                {
+                    foreach (var proc in processes) proc.Dispose();
                 }
             }
             catch { }
