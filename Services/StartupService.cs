@@ -12,6 +12,9 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using Bakım.Core.Safety;
+using Bakım.Core.Startup;
+using Bakım.Helpers;
 using Bakım.Models;
 
 namespace Bakım.Services
@@ -58,119 +61,99 @@ namespace Bakım.Services
             });
         }
 
+        /// <summary>
+        /// Görev Yöneticisi ile aynı yöntem: durum Explorer\StartupApproved altında tutulur (H-1).
+        /// Eskiden 32 bit girdiler için var olmayan "WOW6432Node\...\StartupApproved\Run" anahtarına
+        /// yazılıyordu (etkisiz), başlangıç klasörü kısayolları ise ".disabled" olarak yeniden adlandırılıyordu.
+        /// Eski ".disabled" dosyaları etkinleştirilirken hâlâ geri adlandırılır.
+        /// </summary>
         public async Task<bool> SetStartupProgramStateAsync(StartupProgramItem item, bool enable)
         {
             return await Task.Run(() =>
             {
                 try
                 {
-                    // 1. Başlangıç Klasörü Kontrolü
-                    if (item.LocationType.Contains("Klasör") || item.RegistryPath.Contains("Klasör"))
+                    RegistryKey root = item.IsCurrentUser ? Registry.CurrentUser : Registry.LocalMachine;
+                    string approvedKeyPath;
+                    string valueName;
+
+                    if (IsFolderItem(item))
                     {
                         string currentPath = item.FilePath;
-                        if (enable)
+                        if (currentPath.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (currentPath.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase))
-                            {
-                                string targetPath = currentPath.Substring(0, currentPath.Length - ".disabled".Length);
-                                File.Move(currentPath, targetPath);
-                                item.FilePath = targetPath;
-                            }
+                            if (!enable) return true;
+                            string targetPath = currentPath[..^".disabled".Length];
+                            File.Move(currentPath, targetPath);
+                            item.FilePath = currentPath = targetPath;
                         }
-                        else
-                        {
-                            if (!currentPath.EndsWith(".disabled", StringComparison.OrdinalIgnoreCase) && File.Exists(currentPath))
-                            {
-                                string targetPath = currentPath + ".disabled";
-                                File.Move(currentPath, targetPath);
-                                item.FilePath = targetPath;
-                            }
-                        }
-
-                        item.IsEnabled = enable;
-                        item.StatusText = enable ? "Etkin" : "Devre Dışı";
-                        return true;
+                        approvedKeyPath = StartupApprovedPaths.ForStartupFolder;
+                        valueName = Path.GetFileName(currentPath);
                     }
-
-                    // 2. Kayıt Defteri (StartupApproved\Run)
-                    RegistryKey root = item.IsCurrentUser ? Registry.CurrentUser : Registry.LocalMachine;
-                    string approvedKeyPath = item.RegistryPath.Contains("WOW6432Node", StringComparison.OrdinalIgnoreCase)
-                        ? @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
-                        : @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
-
-                    using var approvedKey = root.OpenSubKey(approvedKeyPath, true) ?? root.CreateSubKey(approvedKeyPath);
-                    if (approvedKey != null)
+                    else
                     {
-                        byte[] existing = approvedKey.GetValue(item.Name) as byte[] ?? new byte[12];
-                        if (existing.Length < 12)
-                        {
-                            Array.Resize(ref existing, 12);
-                        }
-
-                        // Windows standardı: 02 = Enabled, 03 = Disabled
-                        existing[0] = enable ? (byte)0x02 : (byte)0x03;
-                        approvedKey.SetValue(item.Name, existing, RegistryValueKind.Binary);
-
-                        item.IsEnabled = enable;
-                        item.StatusText = enable ? "Etkin" : "Devre Dışı";
-                        return true;
-                    }
-                }
-                catch (UnauthorizedAccessException) { }
-                catch (Exception) { }
-
-                return false;
-            });
-        }
-
-        public async Task<bool> DeleteStartupProgramAsync(StartupProgramItem item)
-        {
-            return await Task.Run(() =>
-            {
-                try
-                {
-                    // 1. Başlangıç klasörü ise doğrudan kısayolu sil
-                    if (item.LocationType.Contains("Klasör") || item.RegistryPath.Contains("Klasör"))
-                    {
-                        if (File.Exists(item.FilePath))
-                        {
-                            File.Delete(item.FilePath);
-                            return true;
-                        }
-                        if (File.Exists(item.FilePath + ".disabled"))
-                        {
-                            File.Delete(item.FilePath + ".disabled");
-                            return true;
-                        }
-                        return false;
+                        approvedKeyPath = StartupApprovedPaths.ForRunKey(item.RegistryPath);
+                        valueName = item.Name;
                     }
 
-                    // 2. Kayıt Defteri ise Run anahtarından sil
-                    RegistryKey root = item.IsCurrentUser ? Registry.CurrentUser : Registry.LocalMachine;
-                    string subKeyPath = item.RegistryPath.Replace($"{root.Name}\\", "");
+                    byte[]? existing;
+                    using (var readKey = root.OpenSubKey(approvedKeyPath, false))
+                        existing = readKey?.GetValue(valueName) as byte[];
 
-                    using (var key = root.OpenSubKey(subKeyPath, true))
-                    {
-                        key?.DeleteValue(item.Name, false);
-                    }
+                    bool ok = VerifiedRegistry.SetBinary(root, approvedKeyPath, valueName,
+                        StartupApprovedPaths.BuildValue(enable, DateTime.UtcNow, existing));
+                    if (!ok) return false;
 
-                    // Onay anahtarından da temizle
-                    string approvedKeyPath = item.RegistryPath.Contains("WOW6432Node", StringComparison.OrdinalIgnoreCase)
-                        ? @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
-                        : @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
-
-                    using (var approvedKey = root.OpenSubKey(approvedKeyPath, true))
-                    {
-                        approvedKey?.DeleteValue(item.Name, false);
-                    }
-
+                    item.IsEnabled = enable;
+                    item.StatusText = enable ? "Etkin" : "Devre Dışı";
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    AppLog.Warning($"Başlangıç girdisi değiştirilemedi: {item.Name}", ex, nameof(StartupService));
                     return false;
                 }
             });
+        }
+
+        private static bool IsFolderItem(StartupProgramItem item) =>
+            item.LocationType.Contains("Klasör") || item.RegistryPath.Contains("Klasör");
+
+        /// <summary>
+        /// Başlangıç klasörü kısayolu Geri Dönüşüm Kutusu'na taşınır; kayıt defteri girdisi
+        /// silinmeden önce yedeklenir (geri yüklenebilir). Eskiden ikisi de kalıcı siliniyordu.
+        /// </summary>
+        public async Task<bool> DeleteStartupProgramAsync(StartupProgramItem item)
+        {
+            try
+            {
+                RegistryKey root = item.IsCurrentUser ? Registry.CurrentUser : Registry.LocalMachine;
+
+                if (IsFolderItem(item))
+                {
+                    string path = File.Exists(item.FilePath) ? item.FilePath : item.FilePath + ".disabled";
+                    if (!File.Exists(path)) return false;
+                    if (!RecycleBin.TrySend(path)) return false;
+                    VerifiedRegistry.DeleteValue(root, StartupApprovedPaths.ForStartupFolder, Path.GetFileName(item.FilePath));
+                    return true;
+                }
+
+                var safeRegistry = App.TryGetService<Safety.ISafeRegistryService>() ?? new Safety.SafeRegistryService(AppLog.Current);
+                string journal = Safety.UndoJournal.Create($"Başlangıç girdisi silindi: {item.Name}");
+                var hive = item.IsCurrentUser ? RegistryHive.CurrentUser : RegistryHive.LocalMachine;
+                string subKeyPath = item.RegistryPath.Replace($"{root.Name}\\", "");
+
+                var result = await safeRegistry.DeleteValueAsync(new RegistryPath(hive, RegistryView.Registry64, subKeyPath, item.Name), journal);
+                if (!result.Succeeded && result.Outcome != Safety.DeleteOutcome.NotFound) return false;
+
+                VerifiedRegistry.DeleteValue(root, StartupApprovedPaths.ForRunKey(item.RegistryPath), item.Name);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning($"Başlangıç girdisi silinemedi: {item.Name}", ex, nameof(StartupService));
+                return false;
+            }
         }
 
         public async Task<bool> AddNewStartupProgramAsync(string name, string executablePath)
@@ -187,9 +170,7 @@ namespace Bakım.Services
 
                     key.SetValue(name, $"\"{executablePath}\"");
 
-                    string approvedKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
-                    using var approvedKey = Registry.CurrentUser.OpenSubKey(approvedKeyPath, true) ?? Registry.CurrentUser.CreateSubKey(approvedKeyPath);
-                    approvedKey?.SetValue(name, new byte[] { 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, RegistryValueKind.Binary);
+                    VerifiedRegistry.SetBinary(Registry.CurrentUser, StartupApprovedPaths.ForRunKey(null), name, StartupApprovedPaths.BuildValue(true));
 
                     return true;
                 }
@@ -236,14 +217,19 @@ namespace Bakım.Services
             {
                 if (!Directory.Exists(folderPath)) return;
 
+                using var approvedKey = (isCurrentUser ? Registry.CurrentUser : Registry.LocalMachine)
+                    .OpenSubKey(StartupApprovedPaths.ForStartupFolder, false);
+
                 var dir = new DirectoryInfo(folderPath);
                 foreach (var file in dir.EnumerateFiles())
                 {
                     if (file.Name.Equals("desktop.ini", StringComparison.OrdinalIgnoreCase))
                         continue;
 
-                    bool isDisabled = file.Extension.Equals(".disabled", StringComparison.OrdinalIgnoreCase);
-                    string realName = isDisabled
+                    bool legacyDisabled = file.Extension.Equals(".disabled", StringComparison.OrdinalIgnoreCase);
+                    bool approved = StartupApprovedPaths.IsEnabled(approvedKey?.GetValue(file.Name) as byte[]);
+                    bool isDisabled = legacyDisabled || !approved;
+                    string realName = legacyDisabled
                         ? Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file.Name))
                         : Path.GetFileNameWithoutExtension(file.Name);
 
@@ -284,27 +270,14 @@ namespace Bakım.Services
                 using var key = root.OpenSubKey(subKey, false);
                 if (key == null) return;
 
-                string approvedKeyPath = subKey.Contains("WOW6432Node", StringComparison.OrdinalIgnoreCase)
-                    ? @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run"
-                    : @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run";
-
-                using var approvedKey = root.OpenSubKey(approvedKeyPath, false);
+                using var approvedKey = root.OpenSubKey(StartupApprovedPaths.ForRunKey(subKey), false);
 
                 foreach (var valueName in key.GetValueNames())
                 {
                     if (string.IsNullOrWhiteSpace(valueName)) continue;
 
                     string command = key.GetValue(valueName)?.ToString() ?? string.Empty;
-                    bool isEnabled = true;
-
-                    if (approvedKey != null)
-                    {
-                        var binVal = approvedKey.GetValue(valueName) as byte[];
-                        if (binVal != null && binVal.Length > 0)
-                        {
-                            isEnabled = (binVal[0] == 0x02);
-                        }
-                    }
+                    bool isEnabled = StartupApprovedPaths.IsEnabled(approvedKey?.GetValue(valueName) as byte[]);
 
                     string cleanPath = CleanExecutablePath(command);
                     bool exists = File.Exists(cleanPath);

@@ -13,6 +13,9 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using Bakım.Core.Safety;
+using Bakım.Core.Startup;
+using Bakım.Helpers;
 using Bakım.Models;
 
 namespace Bakım.Services
@@ -168,6 +171,8 @@ namespace Bakım.Services
             {
                 using var baseKey = RegistryKey.OpenBaseKey(target.Hive, RegistryView.Default);
                 using var subKey = baseKey.OpenSubKey(target.SubKey);
+                bool approvable = IsApprovableRunKey(target.SubKey);
+                using var approvedKey = approvable ? baseKey.OpenSubKey(StartupApprovedPaths.ForRunKey(target.SubKey)) : null;
                 if (subKey != null)
                 {
                     foreach (var valueName in subKey.GetValueNames())
@@ -176,8 +181,14 @@ namespace Bakım.Services
                         if (string.IsNullOrWhiteSpace(rawCmd)) continue;
 
                         var (filePath, args) = ParseCommandAndArgs(rawCmd);
-                        bool isEnabled = !valueName.StartsWith("Bakim_Disabled_");
-                        string cleanName = isEnabled ? valueName : valueName.Replace("Bakim_Disabled_", "");
+
+                        // Eski sürümler devre dışı bırakmak için değeri "Bakim_Disabled_X" diye yeniden
+                        // adlandırıyordu; Windows Run altındaki HER değeri çalıştırdığı için bu etkisizdi.
+                        // Gerçek durum StartupApproved'dan okunur; eski adlar olduğu gibi (etkin) gösterilir.
+                        bool isEnabled = !approvable || StartupApprovedPaths.IsEnabled(approvedKey?.GetValue(valueName) as byte[]);
+                        string cleanName = valueName.StartsWith(LegacyDisabledPrefix, StringComparison.Ordinal)
+                            ? valueName[LegacyDisabledPrefix.Length..]
+                            : valueName;
 
                         var item = CreateItem(
                             cleanName,
@@ -188,6 +199,8 @@ namespace Bakım.Services
                             $"{target.Display} -> {valueName}");
 
                         item.IsEnabled = isEnabled;
+                        item.RegistryKeyPath = (target.Hive == RegistryHive.LocalMachine ? "HKLM\\" : "HKCU\\") + target.SubKey;
+                        item.RegistryValueName = valueName;
                         yield return item;
                     }
                 }
@@ -195,6 +208,13 @@ namespace Bakım.Services
 
             await Task.CompletedTask;
         }
+
+        private const string LegacyDisabledPrefix = "Bakim_Disabled_";
+        private const string LegacyDisabledFileSuffix = ".bakim_disabled";
+
+        /// <summary>StartupApproved yalnızca Run ve WOW6432Node Run için geçerlidir (RunOnce ve politika anahtarları için değil).</summary>
+        private static bool IsApprovableRunKey(string subKey) =>
+            subKey.EndsWith(@"\CurrentVersion\Run", StringComparison.OrdinalIgnoreCase);
 
         #endregion
 
@@ -232,7 +252,8 @@ namespace Bakım.Services
 
                     string targetFile = file;
                     string args = string.Empty;
-                    bool isEnabled = !fileName.EndsWith(".bakim_disabled", StringComparison.OrdinalIgnoreCase);
+                    bool legacyDisabled = fileName.EndsWith(LegacyDisabledFileSuffix, StringComparison.OrdinalIgnoreCase);
+                    bool isEnabled = !legacyDisabled && StartupApprovedPaths.IsEnabled(ReadStartupFolderApproval(folder.Path == commonStartup, fileName));
 
                     // Resolve .lnk target if shortcut
                     if (file.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
@@ -241,7 +262,7 @@ namespace Bakım.Services
                     }
 
                     var item = CreateItem(
-                        Path.GetFileNameWithoutExtension(fileName).Replace(".bakim_disabled", ""),
+                        Path.GetFileNameWithoutExtension(fileName.Replace(LegacyDisabledFileSuffix, "", StringComparison.OrdinalIgnoreCase)),
                         targetFile,
                         args,
                         PersistenceCategory.StartupFolder,
@@ -249,11 +270,25 @@ namespace Bakım.Services
                         folder.Display);
 
                     item.IsEnabled = isEnabled;
+                    item.SourceFilePath = file;
                     yield return item;
                 }
             }
 
             await Task.CompletedTask;
+        }
+
+        private static byte[]? ReadStartupFolderApproval(bool common, string fileName)
+        {
+            try
+            {
+                using var key = (common ? Registry.LocalMachine : Registry.CurrentUser).OpenSubKey(StartupApprovedPaths.ForStartupFolder);
+                return key?.GetValue(fileName) as byte[];
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion
@@ -565,171 +600,170 @@ namespace Bakım.Services
 
         #region Toggle & Delete Operations
 
+        /// <summary>
+        /// Girdiyi Görev Yöneticisi ile aynı yöntemle etkinleştirir/devre dışı bırakır.
+        ///
+        /// Eski hatalar: Run değerini "Bakim_Disabled_X" diye yeniden adlandırmak etkisizdi (Windows her
+        /// değeri çalıştırır); başlangıç klasörü girdisinde kısayol yerine kısayolun HEDEFİ olan program
+        /// exe'si yeniden adlandırılıyordu (program bozuluyordu); WOW6432Node ve politika anahtarlarının
+        /// yolu yanlış çözülüyordu.
+        /// </summary>
         public async Task<bool> ToggleItemAsync(PersistenceItem item, bool enable)
         {
-            return await Task.Run(() =>
+            try
             {
-                try
+                switch (item.Category)
                 {
-                    if (item.Category == PersistenceCategory.RegistryRun)
-                    {
-                        // Example: HKCU\...\Run -> valueName
-                        return ToggleRegistryItem(item, enable);
-                    }
-                    else if (item.Category == PersistenceCategory.ScheduledTask)
+                    case PersistenceCategory.RegistryRun:
+                        return await Task.Run(() => ToggleRegistryItem(item, enable));
+
+                    case PersistenceCategory.StartupFolder:
+                        return await Task.Run(() => ToggleStartupFolderItem(item, enable));
+
+                    case PersistenceCategory.ScheduledTask:
                     {
                         string taskName = item.LocationSource.Replace("Görev: ", "").Trim();
-                        string arg = enable ? "/Enable" : "/Disable";
-                        var psi = new ProcessStartInfo
-                        {
-                            FileName = "schtasks.exe",
-                            Arguments = $"/Change /TN \"{taskName}\" {arg}",
-                            CreateNoWindow = true,
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        using var proc = Process.Start(psi);
-                        proc?.WaitForExit(5000);
-                        return proc?.ExitCode == 0;
+                        var result = await ElevatedPowerShell.RunAsync(
+                            $"schtasks.exe /Change /TN {ElevatedPowerShell.Quote(taskName)} {(enable ? "/Enable" : "/Disable")}; exit $LASTEXITCODE",
+                            TimeSpan.FromSeconds(30));
+                        return result.Succeeded;
                     }
-                    else if (item.Category == PersistenceCategory.StartupFolder)
-                    {
-                        if (File.Exists(item.FilePath))
-                        {
-                            if (!enable && !item.FilePath.EndsWith(".bakim_disabled"))
-                            {
-                                string newPath = item.FilePath + ".bakim_disabled";
-                                File.Move(item.FilePath, newPath);
-                                item.FilePath = newPath;
-                                return true;
-                            }
-                            else if (enable && item.FilePath.EndsWith(".bakim_disabled"))
-                            {
-                                string newPath = item.FilePath.Substring(0, item.FilePath.Length - ".bakim_disabled".Length);
-                                File.Move(item.FilePath, newPath);
-                                item.FilePath = newPath;
-                                return true;
-                            }
-                        }
-                    }
-                    else if (item.Category == PersistenceCategory.WindowsService)
+
+                    case PersistenceCategory.WindowsService:
                     {
                         string serviceName = item.LocationSource.Replace("Hizmet: ", "").Split(' ')[0];
-                        string startMode = enable ? "auto" : "disabled";
-                        var psi = new ProcessStartInfo
-                        {
-                            FileName = "sc.exe",
-                            Arguments = $"config \"{serviceName}\" start={startMode}",
-                            CreateNoWindow = true,
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        using var proc = Process.Start(psi);
-                        proc?.WaitForExit(5000);
-                        return proc?.ExitCode == 0;
+                        var result = await ElevatedPowerShell.RunAsync(
+                            $"Set-Service -Name {ElevatedPowerShell.Quote(serviceName)} -StartupType {(enable ? "Automatic" : "Disabled")}",
+                            TimeSpan.FromSeconds(30));
+                        return result.Succeeded;
                     }
                 }
-                catch { }
-
-                return false;
-            });
+            }
+            catch (Exception ex)
+            {
+                AppLog.Warning($"Kalıcılık girdisi değiştirilemedi: {item.Name}", ex, nameof(AutorunsScannerEngine));
+            }
+            return false;
         }
 
         private static bool ToggleRegistryItem(PersistenceItem item, bool enable)
         {
+            if (string.IsNullOrEmpty(item.RegistryKeyPath) || string.IsNullOrEmpty(item.RegistryValueName)) return false;
+            var root = item.RegistryKeyPath.StartsWith("HKLM", StringComparison.OrdinalIgnoreCase) ? Registry.LocalMachine : Registry.CurrentUser;
+            string subKey = item.RegistryKeyPath[5..];
+
+            // RunOnce ve politika anahtarları StartupApproved'u dikkate almaz: devre dışı bırakılamaz, silinebilir.
+            if (!IsApprovableRunKey(subKey)) return false;
+
+            string valueName = item.RegistryValueName;
+
+            // Eski "Bakim_Disabled_" adını özgün adına döndür (yoksa Windows onu çalıştırmaya devam eder).
+            if (valueName.StartsWith(LegacyDisabledPrefix, StringComparison.Ordinal))
+            {
+                string original = valueName[LegacyDisabledPrefix.Length..];
+                using var key = root.OpenSubKey(subKey, writable: true);
+                object? value = key?.GetValue(valueName, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
+                if (key == null || value == null) return false;
+                key.SetValue(original, value, key.GetValueKind(valueName));
+                key.DeleteValue(valueName, false);
+                valueName = original;
+                item.RegistryValueName = original;
+            }
+
+            string approvedPath = StartupApprovedPaths.ForRunKey(subKey);
+            byte[]? existing;
+            using (var approved = root.OpenSubKey(approvedPath))
+                existing = approved?.GetValue(valueName) as byte[];
+
+            if (!VerifiedRegistry.SetBinary(root, approvedPath, valueName, StartupApprovedPaths.BuildValue(enable, DateTime.UtcNow, existing)))
+                return false;
+            item.IsEnabled = enable;
+            return true;
+        }
+
+        private static bool ToggleStartupFolderItem(PersistenceItem item, bool enable)
+        {
+            // Yalnızca taramadan gelen gerçek kısayol; hedef programa ASLA dokunulmaz.
+            string? shortcut = item.SourceFilePath;
+            if (string.IsNullOrEmpty(shortcut) || !File.Exists(shortcut)) return false;
+
+            bool common = shortcut.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), StringComparison.OrdinalIgnoreCase);
+            var root = common ? Registry.LocalMachine : Registry.CurrentUser;
+
+            if (shortcut.EndsWith(LegacyDisabledFileSuffix, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!enable) return true;
+                string restored = shortcut[..^LegacyDisabledFileSuffix.Length];
+                File.Move(shortcut, restored);
+                item.SourceFilePath = shortcut = restored;
+            }
+
+            string name = Path.GetFileName(shortcut);
+            byte[]? existing;
+            using (var approved = root.OpenSubKey(StartupApprovedPaths.ForStartupFolder))
+                existing = approved?.GetValue(name) as byte[];
+
+            if (!VerifiedRegistry.SetBinary(root, StartupApprovedPaths.ForStartupFolder, name, StartupApprovedPaths.BuildValue(enable, DateTime.UtcNow, existing)))
+                return false;
+            item.IsEnabled = enable;
+            return true;
+        }
+
+        /// <summary>
+        /// Girdiyi kaldırır. Kayıt defteri değeri silinmeden önce yedeklenir (geri yüklenebilir);
+        /// başlangıç klasörü kısayolu Geri Dönüşüm Kutusu'na gider. Eskiden klasör girdisinde kısayolun
+        /// hedefi olan PROGRAM exe'si kalıcı olarak siliniyordu.
+        /// </summary>
+        public async Task<bool> DeleteItemAsync(PersistenceItem item)
+        {
             try
             {
-                // Parse Hive and SubKey from LocationSource
-                string loc = item.LocationSource;
-                int arrowIdx = loc.IndexOf("->");
-                if (arrowIdx <= 0) return false;
-
-                string pathPart = loc.Substring(0, arrowIdx).Trim();
-                string valName = loc.Substring(arrowIdx + 2).Trim();
-
-                RegistryKey? rootKey = loc.StartsWith("HKLM") ? Registry.LocalMachine : Registry.CurrentUser;
-                string subPath = pathPart.Replace("HKLM\\", "").Replace("HKCU\\", "").Replace("...\\", "Software\\Microsoft\\Windows\\CurrentVersion\\");
-
-                using var key = rootKey.OpenSubKey(subPath, writable: true);
-                if (key == null) return false;
-
-                if (!enable && !valName.StartsWith("Bakim_Disabled_"))
+                switch (item.Category)
                 {
-                    object? val = key.GetValue(valName);
-                    if (val != null)
+                    case PersistenceCategory.RegistryRun:
                     {
-                        key.SetValue($"Bakim_Disabled_{valName}", val);
-                        key.DeleteValue(valName);
+                        if (string.IsNullOrEmpty(item.RegistryKeyPath) || string.IsNullOrEmpty(item.RegistryValueName)) return false;
+                        bool hklm = item.RegistryKeyPath.StartsWith("HKLM", StringComparison.OrdinalIgnoreCase);
+                        string subKey = item.RegistryKeyPath[5..];
+                        var safeRegistry = App.TryGetService<Safety.ISafeRegistryService>() ?? new Safety.SafeRegistryService(AppLog.Current);
+                        string journal = Safety.UndoJournal.Create($"Kalıcılık girdisi silindi: {item.Name}");
+                        var result = await safeRegistry.DeleteValueAsync(
+                            new RegistryPath(hklm ? RegistryHive.LocalMachine : RegistryHive.CurrentUser, RegistryView.Registry64, subKey, item.RegistryValueName),
+                            journal);
+                        if (!result.Succeeded && result.Outcome != Safety.DeleteOutcome.NotFound) return false;
+
+                        if (IsApprovableRunKey(subKey))
+                            VerifiedRegistry.DeleteValue(hklm ? Registry.LocalMachine : Registry.CurrentUser, StartupApprovedPaths.ForRunKey(subKey), item.RegistryValueName);
                         return true;
                     }
-                }
-                else if (enable && valName.StartsWith("Bakim_Disabled_"))
-                {
-                    string originalVal = valName.Replace("Bakim_Disabled_", "");
-                    object? val = key.GetValue(valName);
-                    if (val != null)
+
+                    case PersistenceCategory.ScheduledTask:
                     {
-                        key.SetValue(originalVal, val);
-                        key.DeleteValue(valName);
+                        string taskName = item.LocationSource.Replace("Görev: ", "").Trim();
+                        var result = await ElevatedPowerShell.RunAsync(
+                            $"schtasks.exe /Delete /TN {ElevatedPowerShell.Quote(taskName)} /F; exit $LASTEXITCODE",
+                            TimeSpan.FromSeconds(30));
+                        return result.Succeeded;
+                    }
+
+                    case PersistenceCategory.StartupFolder:
+                    {
+                        string? shortcut = item.SourceFilePath;
+                        if (string.IsNullOrEmpty(shortcut) || !File.Exists(shortcut)) return false;
+                        if (!RecycleBin.TrySend(shortcut)) return false;
+
+                        bool common = shortcut.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), StringComparison.OrdinalIgnoreCase);
+                        VerifiedRegistry.DeleteValue(common ? Registry.LocalMachine : Registry.CurrentUser,
+                            StartupApprovedPaths.ForStartupFolder, Path.GetFileName(shortcut));
                         return true;
                     }
                 }
             }
-            catch { }
-
-            return false;
-        }
-
-        public async Task<bool> DeleteItemAsync(PersistenceItem item)
-        {
-            return await Task.Run(() =>
+            catch (Exception ex)
             {
-                try
-                {
-                    if (item.Category == PersistenceCategory.RegistryRun)
-                    {
-                        string loc = item.LocationSource;
-                        int arrowIdx = loc.IndexOf("->");
-                        if (arrowIdx > 0)
-                        {
-                            string pathPart = loc.Substring(0, arrowIdx).Trim();
-                            string valName = loc.Substring(arrowIdx + 2).Trim();
-                            RegistryKey? rootKey = loc.StartsWith("HKLM") ? Registry.LocalMachine : Registry.CurrentUser;
-                            string subPath = pathPart.Replace("HKLM\\", "").Replace("HKCU\\", "").Replace("...\\", "Software\\Microsoft\\Windows\\CurrentVersion\\");
-
-                            using var key = rootKey.OpenSubKey(subPath, writable: true);
-                            key?.DeleteValue(valName, false);
-                            return true;
-                        }
-                    }
-                    else if (item.Category == PersistenceCategory.ScheduledTask)
-                    {
-                        string taskName = item.LocationSource.Replace("Görev: ", "").Trim();
-                        var psi = new ProcessStartInfo
-                        {
-                            FileName = "schtasks.exe",
-                            Arguments = $"/Delete /TN \"{taskName}\" /F",
-                            CreateNoWindow = true,
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        using var proc = Process.Start(psi);
-                        proc?.WaitForExit(5000);
-                        return proc?.ExitCode == 0;
-                    }
-                    else if (item.Category == PersistenceCategory.StartupFolder)
-                    {
-                        if (File.Exists(item.FilePath))
-                        {
-                            File.Delete(item.FilePath);
-                            return true;
-                        }
-                    }
-                }
-                catch { }
-
-                return false;
-            });
+                AppLog.Warning($"Kalıcılık girdisi silinemedi: {item.Name}", ex, nameof(AutorunsScannerEngine));
+            }
+            return false;
         }
 
         #endregion

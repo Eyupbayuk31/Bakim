@@ -31,6 +31,18 @@ namespace Bakım.Models
         public PersistenceCategory Category { get; set; }
         public string CategoryDisplayName { get; set; } = string.Empty;
         public string LocationSource { get; set; } = string.Empty; // e.g., HKLM\...\Run or Task: \GoogleUpdateTask
+
+        /// <summary>
+        /// Başlangıç klasörü girdisinde kısayolun KENDİ yolu (.lnk). <see cref="FilePath"/> kısayolun
+        /// hedefidir (asıl program); devre dışı bırakma ve silme yalnızca bu dosyaya uygulanır.
+        /// </summary>
+        public string? SourceFilePath { get; set; }
+
+        /// <summary>Kayıt defteri girdisinin tam anahtarı (ör. HKLM\Software\WOW6432Node\...\Run).</summary>
+        public string? RegistryKeyPath { get; set; }
+
+        /// <summary>Kayıt defteri girdisinin gerçek değer adı.</summary>
+        public string? RegistryValueName { get; set; }
         public string Publisher { get; set; } = string.Empty;
         public SignatureStatus Signature { get; set; } = SignatureStatus.Unsigned;
         public string SignatureSignerName { get; set; } = string.Empty;

@@ -376,9 +376,14 @@ namespace Bakım.ViewModels
                 {
                     // Revert state on failure
                     item.IsEnabled = !targetState;
+                    string reason = item.Category == PersistenceCategory.RegistryRun
+                                    && item.RegistryKeyPath != null
+                                    && !item.RegistryKeyPath.EndsWith(@"\CurrentVersion\Run", StringComparison.OrdinalIgnoreCase)
+                        ? "Bu tür girdiler (RunOnce / politika anahtarı) Windows'ta devre dışı bırakılamaz; gerekiyorsa silebilirsiniz."
+                        : "Yönetici izni gerekebilir ya da girdi artık yok (listeyi yenileyin).";
                     MessageBox.Show(
-                        $"{item.Name} durumu değiştirilemedi. Lütfen uygulamayı Yönetici Olarak çalıştırdığınızdan emin olun.",
-                        "Yetki Hatası",
+                        $"{item.Name} durumu değiştirilemedi.\n\n{reason}",
+                        "Değiştirilemedi",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                 }
@@ -399,11 +404,11 @@ namespace Bakım.ViewModels
             if (item == null) return;
 
             var confirm = MessageBox.Show(
-                $"Kalıcı Olarak Silinsin mi?\n\n" +
+                $"Başlangıç girdisi kaldırılsın mı?\n\n" +
                 $"Girdi: {item.Name}\n" +
-                $"Kaynak: {item.LocationSource}\n" +
-                $"Dosya: {item.FilePath}\n\n" +
-                "Bu işlem ilgili başlangıç kaydını ve dosyasını sistemden kalıcı olarak silecektir. Devam etmek istiyor musunuz?",
+                $"Kaynak: {item.LocationSource}\n\n" +
+                "Yalnızca başlangıç kaydı kaldırılır; programın kendisine dokunulmaz. Kayıt defteri girdisi önce " +
+                "yedeklenir, başlangıç klasörü kısayolu Geri Dönüşüm Kutusu'na gider. Devam edilsin mi?",
                 "Kalıcılık Girişini Sil",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -425,7 +430,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("Silme işlemi gerçekleştirilemedi. Dosya kullanımda olabilir veya Yönetici yetkisi gereklidir.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Girdi kaldırılamadı. Yönetici izni gerekebilir ya da girdi artık yok (listeyi yenileyin).", "Kaldırılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
