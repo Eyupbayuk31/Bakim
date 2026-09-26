@@ -17,13 +17,6 @@
                   IsScrollable="False">
     <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button Appearance="Primary"
-                               Command="{Binding InstallSelectedBatchCommand}"
-                               Content="{Binding SelectedAppsText}"
-                               Padding="14,8"
-                               Margin="0,0,8,0"
-                               ToolTip="Seçili uygulamaları sırayla, arka planda kurar."/>
-
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ToggleQueueDrawerCommand}"
                                Content="İndirmeler"
@@ -41,6 +34,23 @@
                 </StackPanel>
             
     </c:ModulePage.Actions>
+    <c:ModulePage.Footer>
+        <c:SelectionBar Summary="{Binding SelectedAppsCount, StringFormat='{}{0} uygulama seçildi'}"
+                        Visibility="{Binding SelectedAppsCount, Converter={StaticResource IntToVis}}">
+            <StackPanel Orientation="Horizontal">
+                <ui:Button Appearance="Secondary"
+                           Content="Seçimi temizle"
+                           Command="{Binding ClearSelectionCommand}"
+                           Margin="0,0,8,0"/>
+                <ui:Button Appearance="Primary"
+                           Content="Seçilenleri kur"
+                           Icon="{ui:SymbolIcon ArrowDownload24}"
+                           Command="{Binding InstallSelectedBatchCommand}"
+                           ToolTip="Seçili uygulamaları sırayla, arka planda kurar."/>
+            </StackPanel>
+        </c:SelectionBar>
+    </c:ModulePage.Footer>
+
 
     <Grid>
         <Grid.RowDefinitions>
@@ -186,16 +196,6 @@
                                    Margin="0,0,8,0"
                                    Padding="12,6"/>
 
-                        <ui:Button Grid.Column="3" 
-                                   Appearance="Secondary" 
-                                   Command="{Binding ClearSelectionCommand}" 
-                                   Content="Seçimi temizle" 
-                                   Icon="{ui:SymbolIcon Dismiss24}"
-                                   Padding="12,6"
-                                   Margin="0,0,12,0"
-                                   Visibility="{Binding SelectedAppsCount, Converter={StaticResource IntToVis}}"
-                                   ToolTip="Tüm uygulama seçimlerini temizle"/>
-
                         <!-- Görünüm Modu Switcher (Kart vs Liste) -->
                         <Border Grid.Column="4" 
                                 Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
@@ -233,12 +233,13 @@
                     <ItemsControl ItemsSource="{Binding DisplayApps}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
+                                <c:AdaptiveGrid MinColumnWidth="320" MaxColumns="4"
+                                                ColumnSpacing="{StaticResource Layout.GridGap}" RowSpacing="{StaticResource Layout.GridGap}"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StoreAppItem}">
-                                <Border Width="360" Margin="0,0,16,16" Padding="16,14"
+                                <Border Padding="16,14"
                                         CornerRadius="{StaticResource Radius.MD}"
                                         BorderThickness="1">
                                     <Border.Style>
