@@ -30,12 +30,16 @@ namespace Bakım.Services.Sentinel.Storage
             PropertyNameCaseInsensitive = true
         };
 
-        public string StorageDirectory { get; } = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Bakım", "InstallationLogs");
+        public string StorageDirectory { get; }
 
-        public SessionStore()
+        public SessionStore(string? storageDirectory = null)
         {
+            StorageDirectory = !string.IsNullOrWhiteSpace(storageDirectory)
+                ? storageDirectory
+                : Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "Bakım", "InstallationLogs");
+
             try
             {
                 if (!Directory.Exists(StorageDirectory))

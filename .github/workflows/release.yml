@@ -49,6 +49,8 @@ jobs:
 
       - name: Verify XAML Design Tokens and Symbols
         shell: pwsh
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
           python Tools/verify-tokens.py
           if ($LASTEXITCODE -ne 0) { throw "Design token doğrulaması başarısız!" }
@@ -56,6 +58,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "SymbolRegular sembol doğrulaması başarısız!" }
           python Tools/verify-design-debt.py
           if ($LASTEXITCODE -ne 0) { throw "Tasarım/kod borcu eşiği aşıldı (Tools/design-debt-baseline.json)!" }
+          python Tools/verify-bindings.py
+          if ($LASTEXITCODE -ne 0) { throw "Sayfada görünüm modelinde olmayan bir özelliğe bağlama var!" }
 
       - name: Restore dependencies
         run: dotnet restore

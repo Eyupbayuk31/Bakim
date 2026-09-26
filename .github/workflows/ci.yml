@@ -40,6 +40,8 @@ jobs:
 
       - name: Verify XAML Design Tokens and Symbols
         shell: pwsh
+        env:
+          PYTHONIOENCODING: utf-8
         run: |
           python Tools/verify-tokens.py
           if ($LASTEXITCODE -ne 0) { throw "Design token doğrulaması başarısız!" }

@@ -1,24 +1,23 @@
-# Bakım v4.2.3 - Sürüm Notları
+# Bakım v4.2.4 - Sürüm Notları
 
-## Windows 11 FluentWindow (Mica) Diyalogları & Başlangıç/Olaylar Tek Kart Mimarisi
+## CI/CD Doğrulama Kararlılığı & Birim Test İzolasyonu
 
-Bakım v4.2.3 sürümü; tüm diyalog pencerelerini yerel Windows 11 Mica zeminli FluentWindow standardına taşımakta, Başlangıç ve Olaylar sayfalarındaki dağınık KPI bloklarını tek odak durum kartında birleştirmektedir.
-
----
-
-### 1. Yerel Windows 11 FluentWindow (Mica) Diyalogları
-- **Sahte Kenarlıklar ve Gölgeler Kaldırıldı:** Kaldırıcı, güncelleme, artık temizliği, kurulum nöbetçisi fark inceleme ve hedef eylem diyalogları `AllowsTransparency` tabanlı hantal yapılardan yerel DWM ve Mica zeminli `ui:FluentWindow` mimarisine geçirildi.
-- **Doğal Köşeler ve Başlık Çubuğu:** Standart Windows 11 pencere yuvarlamaları, sistem gölgeleri ve yerel başlık çubuğu butonları pürüzsüz çalışır.
-- **Gereksiz Topmost İptal:** Diyalogların masaüstündeki diğer uygulamaları zorla kapatması (`Topmost`) engellendi; yalnızca pencereden seç modunda korundu.
+Bakım v4.2.4 sürümü; GitHub Actions CI/CD derleme hattındaki Windows konsol kodlama hatalarını gidermekte, Kurulum Nöbetçisi birim testlerini izole geçici çalışma alanına taşımakta ve tüm doğrulama cırcırlarını kusursuzlaştırmaktadır.
 
 ---
 
-### 2. Başlangıç Programları Tek Durum Kartı
-- **Windows Ölçümlü Açılış Süresi:** 4 ayrık KPI kutusu yerine Windows Event Log (Olay 100/101) tabanlı açılış süresi, son açılışların sütun grafiği ve sade sayımlar tek bir odak kartında toplandı.
-- **Kartsız Temiz Komut Satırı:** Filtre çubuğu ve eylemler zarif bir şeride taşındı; program isimleri ve rozetler göz yormayan doğal boyutlara uyarlandı.
+### 1. CI/CD Doğrulama Kararlılığı (Unicode / Charmap Düzeltmesi)
+- **UTF-8 Çıkış Yapılandırması:** Windows tabanlı GitHub Actions çalıştırıcılarında Türkçe özel karakterlerin konsol kod sayfasında (`cp1252` / `charmap`) `UnicodeEncodeError` oluşturması engellendi; Python araçlarına UTF-8 akış yapılandırması ve CI iş akışlarına `PYTHONIOENCODING: utf-8` ortam değişkeni eklendi.
+- **Güvenli Durum Mesajları:** Bağlama doğrulama betiğindeki çıktı metinleri platformlar arası güvenli ASCII standartlarına uyarlandı.
 
 ---
 
-### 3. Olaylar ve Güvenilirlik Zaman Çizelgesi
-- **Birleşik Sağlık & Güvenilirlik Kartı:** Sistem sağlığı ve 30 günlük güvenilirlik eğilimi tek bir Fluent kartında birleştirildi.
-- **SelectorBar Filtreleri:** Başlık eylemlerindeki dağınık sekmeler alt çizgili SelectorBar sekme düzenine kavuşturuldu.
+### 2. Kurulum Nöbetçisi Test İzolasyonu
+- **Parametrik SessionStore:** `SessionStore` sınıfına isteğe bağlı depolama dizini (`storageDirectory`) parametresi kazandırıldı.
+- **Kullanıcı Verisinden Bağımsız Birim Testler:** Birim testlerin yerel kullanıcı profili dizinindeki (`%APPDATA%\Bakım\InstallationLogs`) geçmiş kurulum günlüklerinden etkilenmesi engellendi; her test izole geçici dizinlerde çalışacak şekilde güçlendirildi.
+
+---
+
+### 3. Cümle Düzeni ve Komut Bağlama Uyumu
+- **WPF Eylem Butonları:** Windows 11 cümle düzeni (sentence-case) standartlarına geçişle güncellenen buton metinleri birim test kontrol kıstaslarıyla tam senkronize edildi.
+- **Eksiksiz Test Başarısı:** Çekirdek mantık (462 test) ve UI/WPF katmanı (307 test) olmak üzere toplam 769 testin tamamı %100 başarıyla tamamlandı.

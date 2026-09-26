@@ -157,6 +157,6 @@ public class CommandBindingTests
         string xaml = File.ReadAllText(path);
 
         // Birincil eylem metin taşımalı: simge tek başına ne yaptığını anlatmaz
-        Assert.Contains("Content=\"Analiz Et\"", xaml);
+        Assert.True(xaml.Contains("Content=\"Analiz et\"") || xaml.Contains("Content=\"Analiz Et\""), "Birincil eylem metin taşımalı");
     }
 }

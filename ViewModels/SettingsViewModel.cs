@@ -1064,13 +1064,29 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v424 = new ReleaseChangelogItem
+            {
+                Version = "v4.2.4",
+                ReleaseDate = "Eylül 2026",
+                Title = "CI/CD Doğrulama Kararlılığı & Birim Test İzolasyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "CI Doğrulama Kararlılığı: Windows GitHub Actions ortamındaki Türkçe karakter kaynaklı charmap (UnicodeEncodeError) kodlama hatası giderildi; UTF-8 akış yapılandırmaları uygulandı.",
+                    "Kurulum Nöbetçisi Test İzolasyonu: SessionStore depolama dizini yalıtılarak birim testlerin kullanıcı dizininden bağımsız çalışması sağlandı.",
+                    "WPF Komut Bağlama Uyumu: Windows 11 cümle düzeni (sentence-case) güncellemeleri birim test onaylarıyla tam senkronize edildi.",
+                    "Sıfır Hata Güvencesi: Tüm token, sembol ve tasarım sistemi cırcırları %100 yeşil teyit edildi."
+                }
+            };
+
             var v423 = new ReleaseChangelogItem
             {
                 Version = "v4.2.3",
                 ReleaseDate = "Eylül 2026",
                 Title = "FluentWindow Mica Diyalogları & Başlangıç/Olaylar Tek Kart Mimarisi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Windows 11 FluentWindow (Mica) Diyalogları: Kaldırıcı, güncelleme, kalıntı temizliği, kurulum nöbetçisi fark inceleme ve hedef seçim diyalogları sahte kenarlıklardan arındırılarak yerel Mica zeminli FluentWindow standardına geçirildi.",
@@ -1939,8 +1955,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v423;
+            LatestRelease = v424;
 
+            ReleaseHistory.Add(v424);
             ReleaseHistory.Add(v423);
             ReleaseHistory.Add(v422);
             ReleaseHistory.Add(v421);

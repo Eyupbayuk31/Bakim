@@ -14,6 +14,11 @@ import re
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 ROOT = Path(__file__).parent.parent
 
 def class_sources(name):
@@ -94,6 +99,6 @@ for view in sorted((ROOT / "Views" / "Modules").glob("*.xaml")):
         print(f"{view.name} ({vm}): {', '.join(missing)}")
 
 if missing_total:
-    print(f"\nHATA: {missing_total} bağlama görünüm modelinde bulunamadı.")
+    print(f"\nHATA: {missing_total} baglama gorunum modelinde bulunamadi.")
     sys.exit(1)
-print("[OK] Sayfa bağlamalarının hepsi görünüm modelinde var.")
+print("[OK] Sayfa baglamalarinin hepsi gorunum modelinde var.")
