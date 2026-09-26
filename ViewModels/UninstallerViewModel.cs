@@ -624,7 +624,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Avcı Modu başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Pencereden seçim başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -99,7 +99,7 @@
                                Margin="{StaticResource Gap.Right.SM}"
                                Icon="{ui:SymbolIcon DocumentSearch24}"
                                Content="Dosya incele"
-                               ToolTip="Herhangi bir .exe, .dll veya başlangıç dosyasını röntgenle"
+                               ToolTip="Herhangi bir .exe, .dll veya başlangıç dosyasını analiz et"
                                AutomationProperties.Name="Bir dosyayı seçip derinlemesine incele"/>
 
                     <ui:Button Appearance="Primary"

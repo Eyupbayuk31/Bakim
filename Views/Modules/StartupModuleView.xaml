@@ -24,7 +24,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
-                         Title="Başlangıç uygulamaları ve açılış optimizasyonu"
+                         Title="Başlangıç"
                          Description="Windows oturumu açılırken otomatik başlatılan tüm uygulama, servis ve kayıt defteri ögelerini yönetin.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal">
@@ -414,7 +414,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Başlatıcı röntgeni" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Ayrıntılar" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="Ayrıntılı dosya ve kayıt denetimi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </StackPanel>
 

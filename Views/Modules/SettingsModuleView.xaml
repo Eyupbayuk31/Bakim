@@ -22,7 +22,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Ayarlar ve Tercihler"
+                         Title="Ayarlar"
                          Description="Görünüm teması, sistem performansı, başlangıç davranışı, güvenlik ve modül ayarları.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal">

@@ -56,7 +56,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Hizmetler ve sürücü yönetimi"
+                         Title="Hizmetler ve sürücüler"
                          Description="Windows arka plan servisleri, güvenlik analizi ve donanım sürücüleri.">
             <c:SectionHeader.Actions>
                 <!-- Sub-Tab Switcher & Refresh Button -->

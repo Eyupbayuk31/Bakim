@@ -10,7 +10,7 @@
                  xmlns:c="clr-namespace:Bakım.Controls"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance Type=vm:ThreatAnalysisViewModel}"
-                 Title="Analizör — Dosya röntgeni"
+                 Title="Dosya analizi"
                  Width="940" Height="780"
                  MinWidth="820" MinHeight="640"
                  WindowStartupLocation="CenterOwner"
@@ -158,7 +158,7 @@
 
         <!-- ============ 0. BAŞLIK ÇUBUĞU ============ -->
         <ui:TitleBar Grid.Row="0"
-                     Title="Analizör — Dosya röntgeni"
+                     Title="Dosya analizi"
                      ShowMaximize="True"
                      ShowMinimize="False"
                      Icon="{ui:SymbolIcon ShieldTask24}"/>

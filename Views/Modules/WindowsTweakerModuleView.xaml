@@ -25,7 +25,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Windows tweaker ve ince ayarlar"
+                         Title="Windows Ayarları"
                          Description="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar.">
             <c:SectionHeader.Actions>
                 <!-- Top Actions Toolbar -->
@@ -575,7 +575,7 @@
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                 <ui:SymbolIcon Symbol="ArrowSync24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="Önbellek sıfırlama motoru (Reset Cache Engine)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Önbellek sıfırlama" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                             <TextBlock Text="Bozulmuş simgeleri, beyaz dosya ikonlarını ve siyah küçük resim önizlemelerini onarmak için IconCache.db, Thumbnail ve Tray bildirim önbelleklerini temizleyip Explorer'ı yeniden başlatır." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>

@@ -1272,7 +1272,7 @@
                             <Border Background="{DynamicResource Chart.Series1.Subtle}" CornerRadius="{StaticResource Radius.XL}" Width="72" Height="72" HorizontalAlignment="Center" Margin="0,0,0,16">
                                 <ui:SymbolIcon Symbol="DocumentCopy24" FontSize="36" Foreground="{DynamicResource Chart.Series1}"/>
                             </Border>
-                            <TextBlock Text="Yinelenen dosya avcısı" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock Text="Yinelenen dosyalar" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                             <TextBlock Text="Diskinizdeki veya seçtiğiniz klasördeki birebir aynı içeriğe sahip (SHA-256 hash eşleşmeli) kopya dosyaları milisaniyeler içinde tespit edin. Güvenli akıllı seçim sayesinde orijinal dosyalarınız korunur, kopyalar güvenle Geri Dönüşüm Kutusu'na taşınır."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Margin="0,0,0,20"/>
                             <ui:Button Appearance="Primary"
@@ -1289,7 +1289,7 @@
                              Visibility="{Binding FilteredDuplicateGroups.Count, Converter={StaticResource IntEqualsToVis}, ConverterParameter=0}">
                         <StackPanel HorizontalAlignment="Center" Visibility="{Binding HasDuplicateScanned, Converter={StaticResource BoolToVis}}">
                             <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="36" Foreground="{DynamicResource Chart.Series3}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                            <TextBlock Text="Harika! Hiçbir yinelenen dosya bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="Yinelenen dosya bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                             <TextBlock Text="Belirtilen konumda aynı içeriğe sahip mükerrer dosya bulunmuyor veya arama kriterinizle eşleşen grup yok."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center"/>
                         </StackPanel>
@@ -1452,7 +1452,7 @@
                              Visibility="{Binding FilteredEmptyFolders.Count, Converter={StaticResource IntEqualsToVis}, ConverterParameter=0}">
                         <StackPanel HorizontalAlignment="Center" Visibility="{Binding HasEmptyFolderScanned, Converter={StaticResource BoolToVis}}">
                             <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="36" Foreground="{DynamicResource Chart.Series3}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                            <TextBlock Text="Sisteminiz temiz! Boş klasör bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="Boş klasör bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                             <TextBlock Text="Belirtilen konumda temizlenecek sahipsiz boş klasör bulunmuyor."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center"/>
                         </StackPanel>

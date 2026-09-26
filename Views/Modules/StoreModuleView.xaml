@@ -26,7 +26,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
-                         Title="Yazılım ve runtimes mağazası"
+                         Title="Mağaza"
                          Description="Sık kullanılan yazılımları ve çalışma zamanı paketlerini (VC++, DirectX) sessizce kurun.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -748,7 +748,7 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Özenle hazırlanmış akıllı kurulum setleri" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Kullanım senaryonuza göre optimize edilmiş paketleri tek tıkla seçip tüm yazılımları sırayla arka planda kurabilirsiniz." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Kullanım senaryonuza göre optimize edilmiş paketleri seçip tüm yazılımları sırayla arka planda kurabilirsiniz." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:Button Grid.Column="1"

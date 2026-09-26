@@ -26,7 +26,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Olay günlüğü ve sistem sağlığı"
+                         Title="Olaylar ve çökmeler"
                          Description="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı.">
             <c:SectionHeader.Actions>
                 <!-- Sub-Tab Switcher & Refresh Button -->

@@ -39,7 +39,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
-                         Title="Ağ ve bağlantı merkezi"
+                         Title="Ağ İzleyici"
                          Description="Etkin bağlantılar, dinleyen portlar, ağ bağdaştırıcıları ve hız testi.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -202,7 +202,7 @@
                            Margin="0,0,4,0">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <ui:SymbolIcon Symbol="ArrowDownload20" Margin="0,0,8,0" FontSize="16"/>
-                        <TextBlock Text="1000 Mbps hız testi" VerticalAlignment="Center"/>
+                        <TextBlock Text="Hız testi" VerticalAlignment="Center"/>
                     </StackPanel>
                 </ui:Button>
 
@@ -450,7 +450,7 @@
                                         Margin="0,0,0,14">
                                     <ui:SymbolIcon Symbol="Shield24" FontSize="28" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock Text="Ayrıntılı röntgen" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Ayrıntılar" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Soldaki listeden bir bağlantıya tıklayarak süreç kimliği, soket, ters DNS ve güvenlik analizini inceleyebilirsiniz." 
                                            FontSize="{StaticResource Font.Caption}" 
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
@@ -479,7 +479,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Bağlantı ve süreç röntgeni" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Bağlantı ayrıntıları" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Ayrıntılı soket ve güvenlik denetimi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     </StackPanel>
 
@@ -487,7 +487,7 @@
                                                Appearance="Secondary" 
                                                Padding="6,4" 
                                                Command="{Binding DataContext.CloseDrawerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                               ToolTip="Röntgen panelini kapat"
+                                               ToolTip="Ayrıntıları kapat"
                                                Icon="{ui:SymbolIcon Dismiss20}"/>
                                 </Grid>
 
@@ -630,7 +630,7 @@
                         </StackPanel>
 
                         <TextBlock Grid.Column="1" 
-                                   Text="İpucu: Bir satıra tıkladığınızda sağda ayrıntılı röntgen ve güvenlik paneli açılır." 
+                                   Text="İpucu: Bir satıra tıkladığınızda sağda ayrıntılar ve güvenlik paneli açılır." 
                                    FontSize="{StaticResource Font.Caption}" 
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                    VerticalAlignment="Center"/>
@@ -803,7 +803,7 @@
                                    Icon="{ui:SymbolIcon Broom20}" 
                                    Padding="12,8" 
                                    Margin="0,0,8,0"
-                                   ToolTip="Windows DNS çözümleyici önbelleğini temizle (Flush DNS)"/>
+                                   ToolTip="DNS önbelleğini temizle"/>
                         <ui:Button Appearance="Secondary" 
                                    Command="{Binding RenewIpFromAdaptersCommand}" 
                                    Content="IP yenile" 
@@ -940,7 +940,7 @@
 
                                 <!-- Title -->
                                 <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                                    <TextBlock Text="1000 Mbps ultra gigabit hız testi" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Hız testi" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Yüksek hızlı fiber bağlantılar için optimize edilmiş, kesintisiz 6 saniyelik çoklu akış (multi-stream) indirme motoru." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
@@ -1026,7 +1026,7 @@
                         <!-- Informative Card -->
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="16">
                             <StackPanel>
-                                <TextBlock Text="Gigabit (1000 Mbps) hız testi nasıl çalışır?" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Hız testi nasıl çalışır?" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
                                 <TextBlock Text="Bu test, 1000 Mbps fiber hatlarda küçük dosya hatalarını önlemek için 3 paralel bağlantı üzerinden dinamik 100 MB veri blokları indirir. 6 saniye boyunca hat sonuna kadar yüklenir ve gerçek bant genişliği kayan pencere algoritmasıyla ölçülür." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
@@ -1106,7 +1106,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Tek tıkla DNS çözümleyici önbelleğini temizle (Flush DNS)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="DNS önbelleğini temizle" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Bozuk veya eski DNS kayıtlarını sıfırlayarak internet bağlantı ve erişim problemlerini çözer." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,6"/>
                                     <TextBlock Text="{Binding FlushDnsStatus}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>

@@ -11,107 +11,60 @@
               d:DesignHeight="850" d:DesignWidth="1100">
     <Grid Margin="24">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Row 0: Top 4 KPI Cards & Drive Health -->
+            <RowDefinition Height="Auto"/> <!-- Row 0: Başlık ve özet -->
             <RowDefinition Height="Auto"/> <!-- Row 1: InfoBar Operation Result -->
             <RowDefinition Height="Auto"/> <!-- Row 2: Cleaning Targets & Toolbar -->
             <RowDefinition Height="Auto"/> <!-- Row 3: Realtime Progress & Status -->
             <RowDefinition Height="*"/>    <!-- Row 4: Virtualized Scanned Files & Drawer -->
         </Grid.RowDefinitions>
 
-        <!-- ========================================================================= -->
-        <!-- ROW 0: TOP 4 INTERACTIVE KPI CARDS & SYSTEM DRIVE GAUGE                   -->
-        <!-- ========================================================================= -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="1.2*"/>
-            </Grid.ColumnDefinitions>
+        <!-- ROW 0: Sayfa başlığı (tek birincil eylem: Temizle) + özet şeridi -->
+        <StackPanel Grid.Row="0">
+            <c:SectionHeader IsPageTitle="True"
+                             Icon="Broom24"
+                             HeaderMargin="0,0,0,20"
+                             Title="Temizleyici"
+                             Description="Geçici dosyaları, önbellekleri ve uygulama kalıntılarını bulur. Silinenler Etkinlik Merkezi'ne kaydedilir.">
+                <c:SectionHeader.Actions>
+                    <StackPanel Orientation="Horizontal">
+                        <ui:Button Appearance="Secondary"
+                                   Content="İptal"
+                                   Icon="{ui:SymbolIcon Dismiss20}"
+                                   Command="{Binding CancelCommand}"
+                                   Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
+                                   Margin="{StaticResource Gap.Right.SM}"/>
+                        <ui:Button Appearance="Secondary"
+                                   Content="Tara"
+                                   Icon="{ui:SymbolIcon Search20}"
+                                   Command="{Binding ScanCommand}"
+                                   IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                                   Margin="{StaticResource Gap.Right.SM}"
+                                   AutomationProperties.Name="Seçili hedefleri tara"/>
+                        <ui:Button Appearance="Primary"
+                                   Content="Temizle"
+                                   Icon="{ui:SymbolIcon Broom20}"
+                                   Command="{Binding CleanCommand}"
+                                   IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                                   AutomationProperties.Name="Seçili hedefleri güvenle temizle"/>
+                    </StackPanel>
+                </c:SectionHeader.Actions>
+            </c:SectionHeader>
 
-            <!-- Card 1: Total Found Bytes -->
-            <c:StatCard Grid.Column="0" 
-                        Icon="Broom24" 
-                        Label="Temizlenebilir boyut" 
-                        Value="{Binding FormattedFoundBytes}" 
-                        Caption="{Binding TotalFilesFound, StringFormat='{}{0} adet dosya tespit edildi'}" 
-                        Intent="Caution" 
-                        IsInteractive="True"/>
-
-            <!-- Card 2: Total Freed Size -->
-            <c:StatCard Grid.Column="2" 
-                        Icon="CheckmarkCircle24" 
-                        Label="Kazanılan toplam alan" 
-                        Value="{Binding FormattedFreedBytes}" 
-                        Caption="{Binding TotalFilesCleaned, StringFormat='{}{0} dosya güvenle temizlendi'}" 
-                        Intent="Success" 
-                        IsInteractive="True"/>
-
-            <!-- Card 3: Security Whitelist Protection Info -->
-            <c:StatCard Grid.Column="4" 
-                        Icon="ShieldCheckmark24" 
-                        Label="Sistem koruması" 
-                        Value="Kalkan Aktif" 
-                        Caption="System32 ve Çekirdek korumalı" 
-                        Intent="Success" 
-                        IsInteractive="True"/>
-
-            <!-- Card 4: System Drive (C:) Health & Capacity Gauge -->
-            <ui:Card Grid.Column="6" Style="{StaticResource InteractiveCard}" Padding="16,14">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="{Binding SystemDrive.Name, StringFormat='Sürücü {0}'}" 
-                                       FontSize="{StaticResource Font.Caption}" 
-                                       FontWeight="SemiBold" 
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                        <TextBlock Grid.Column="1" 
-                                   Text="{Binding SystemDrive.FormattedFree, StringFormat='{}{0} boş'}" 
-                                   FontSize="{StaticResource Font.Caption}" 
-                                   FontWeight="SemiBold" 
-                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    </Grid>
-
-                    <!-- Drive Progress Bar -->
-                    <ProgressBar Grid.Row="1" 
-                                 Value="{Binding SystemDrive.UsagePercentage}" 
-                                 Maximum="100" 
-                                 Height="8" 
-                                 Margin="0,10,0,6"
-                                 Foreground="{Binding SystemDrive.UsagePercentage, Converter={StaticResource PercentageToBrush}}"/>
-
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" 
-                                   Text="{Binding SystemDrive.UsagePercentage, StringFormat='%{0} Dolu'}" 
-                                   FontSize="{StaticResource Font.Micro}" 
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Grid.Column="1" 
-                                   Text="{Binding SystemDrive.FormattedTotal, StringFormat='Toplam {0}'}" 
-                                   FontSize="{StaticResource Font.Micro}" 
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                    </Grid>
-                </Grid>
-            </ui:Card>
-        </Grid>
+            <c:SummaryStrip>
+                <c:StatCard Icon="Broom24"
+                            Label="Temizlenebilir"
+                            Value="{Binding FormattedFoundBytes}"
+                            Caption="{Binding TotalFilesFound, StringFormat='{}{0} dosya bulundu'}"/>
+                <c:StatCard Icon="CheckmarkCircle24"
+                            Label="Bu oturumda temizlenen"
+                            Value="{Binding FormattedFreedBytes}"
+                            Caption="{Binding TotalFilesCleaned, StringFormat='{}{0} dosya'}"/>
+                <c:StatCard Icon="HardDrive20"
+                            Label="{Binding SystemDrive.Name, StringFormat='Sürücü {0}'}"
+                            Value="{Binding SystemDrive.FormattedFree, StringFormat='{}{0} boş'}"
+                            Caption="{Binding SystemDrive.UsagePercentage, StringFormat='%{0} dolu'}"/>
+            </c:SummaryStrip>
+        </StackPanel>
 
         <!-- ========================================================================= -->
         <!-- ROW 1: OPERATION RESULT BANNER                                            -->
@@ -119,7 +72,7 @@
         <ui:InfoBar Grid.Row="1" 
                     IsOpen="{Binding HasResultBanner}" 
                     Severity="Success" 
-                    Title="Operasyon tamamlandı" 
+                    Title="Temizlik tamamlandı" 
                     Message="{Binding OperationResultBanner}" 
                     Margin="0,0,0,14"/>
 
@@ -135,51 +88,12 @@
                     <RowDefinition Height="Auto"/> <!-- Categories Grid -->
                 </Grid.RowDefinitions>
 
-                <!-- Row 0: Title, Presets & Actions -->
-                <Grid Grid.Row="0" Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Left: Title & Subtitle -->
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Temizlik hedefleri (20 kategori)" 
-                                   FontSize="{StaticResource Font.Subtitle}" 
-                                   FontWeight="SemiBold" 
-                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="Temizlenecek geçici dizinleri, önbellekleri ve uygulama kalıntılarını belirleyin." 
-                                   FontSize="{StaticResource Font.Caption}" 
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
-                                   Margin="0,3,0,0"/>
-                    </StackPanel>
-
-                    <!-- Right: Main Action Buttons -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:Button Content="Analiz et (tara)" 
-                                   Appearance="Primary"
-                                   Icon="{ui:SymbolIcon Search24}"
-                                   Command="{Binding ScanCommand}"
-                                   IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                                   Padding="14,8"
-                                   Margin="0,0,8,0"/>
-
-                        <ui:Button Content="Güvenle temizle" 
-                                   Appearance="Primary"
-                                   Icon="{ui:SymbolIcon Broom24}"
-                                   Command="{Binding CleanCommand}"
-                                   IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                                   Padding="14,8"
-                                   Margin="0,0,8,0"/>
-
-                        <ui:Button Content="İptal" 
-                                   Appearance="Secondary"
-                                   Icon="{ui:SymbolIcon Dismiss24}"
-                                   Command="{Binding CancelCommand}"
-                                   IsEnabled="{Binding IsBusy}"
-                                   Padding="12,8"/>
-                    </StackPanel>
-                </Grid>
+                <!-- Row 0: Bölüm başlığı -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                    <TextBlock Text="Temizlik hedefleri" Style="{StaticResource Text.CardTitle}"/>
+                    <TextBlock Text="Temizlenecek geçici klasörleri, önbellekleri ve uygulama kalıntılarını seçin."
+                               Style="{StaticResource Text.SettingDescription}" MaxWidth="10000"/>
+                </StackPanel>
 
                 <!-- Row 1: Tarama ilerlemesi (Fluent ProgressBar) -->
                 <ProgressBar Grid.Row="1"
@@ -624,7 +538,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" 
-                                   Text="Dosya teftiş röntgeni" 
+                                   Text="Dosya ayrıntıları" 
                                    FontSize="{StaticResource Font.Body}" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"

@@ -21,7 +21,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
-                         Title="Bellek ve Süreçler"
+                         Title="Süreçler"
                          Description="Çalışan süreçler ve bellek dağılımı; kullanılmayan belleği Windows'a geri verme.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -339,7 +339,7 @@
                                 <Grid Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                     <Grid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Teftiş çekmecesini aç" 
+                                            <MenuItem Header="Ayrıntıları göster" 
                                                       Command="{Binding PlacementTarget.Tag.SelectProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                             <MenuItem Header="Dosya konumunu aç (Explorer)" 
@@ -466,7 +466,7 @@
                                                    CommandParameter="{Binding}"
                                                    Padding="6,4" 
                                                    Margin="0,0,6,0"
-                                                   ToolTip="Teftiş çekmecesini aç" 
+                                                   ToolTip="Ayrıntıları göster" 
                                                    Icon="{ui:SymbolIcon Info20}"/>
 
                                         <!-- Kill Button -->
@@ -517,7 +517,7 @@
                                        Appearance="Transparent" 
                                        Command="{Binding CloseDrawerCommand}" 
                                        Icon="{ui:SymbolIcon Dismiss24}" 
-                                       ToolTip="Çekmeceyi kapat"/>
+                                       ToolTip="Ayrıntıları kapat"/>
                         </Grid>
 
                         <!-- Description / Publisher -->
