@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -33,6 +34,17 @@ internal static class Screenshots
     {
         Directory.CreateDirectory(outDir);
         int saved = 0, failed = 0;
+        string current = "başlangıç";
+
+        // Bekçi: bir sayfa kalıcı diyalog açar ya da donarsa iş 25 dk boyunca sessizce beklemesin.
+        var watchdog = new Thread(() =>
+        {
+            Thread.Sleep(TimeSpan.FromMinutes(8));
+            Console.WriteLine($"ZAMAN ASIMI | son adim: {current}; {saved} goruntu kaydedildi");
+            Console.Out.Flush();
+            Environment.Exit(2);
+        }) { IsBackground = true };
+        watchdog.Start();
 
         var app = new Bakım.App();
         app.InitializeComponent();
@@ -61,6 +73,8 @@ internal static class Screenshots
         main.ShowInTaskbar = false;
         main.Width = Widths[0];
         main.Height = 900;
+        current = "pencere gosteriliyor";
+        Console.WriteLine("  PENCERE    | gosteriliyor");
         try
         {
             main.Show();
@@ -87,6 +101,8 @@ internal static class Screenshots
 
                 foreach (string key in keys)
                 {
+                    current = $"{themeName}-{width}-{key}";
+                    Console.WriteLine($"  GIDILIYOR  | {current}");
                     try
                     {
                         vm.Navigate(key);

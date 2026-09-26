@@ -8,11 +8,15 @@ on:
     paths-ignore: [ 'docs/**', '**/*.md' ]
   workflow_dispatch:
 
+concurrency:
+  group: screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   screenshots:
     name: Render pages
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
 
     steps:
       - name: Check out repository
