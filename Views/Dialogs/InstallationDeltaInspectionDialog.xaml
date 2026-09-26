@@ -48,7 +48,7 @@
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock x:Name="DialogTitleText" Text="Kurulum Değişiklikleri Raporu" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock x:Name="DialogTitleText" Text="Kurulum Değişiklikleri Raporu" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <Border x:Name="ProtectionStatusBadge" Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
                                 <TextBlock x:Name="ProtectionStatusText" Text="Tam Koruma Modu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             </Border>
@@ -80,7 +80,7 @@
                 <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
                         <TextBlock Text="Eklenen Dosyalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiFilesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="KpiFilesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
@@ -88,7 +88,7 @@
                 <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
                         <TextBlock Text="Yürütülebilir (.exe / .dll)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiExecutablesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="KpiExecutablesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
@@ -96,7 +96,7 @@
                 <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
                         <TextBlock Text="Kayıt Defteri Girdileri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiRegistryText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="KpiRegistryText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
@@ -104,7 +104,7 @@
                 <Border Grid.Column="3" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10">
                     <StackPanel>
                         <TextBlock Text="Servis &amp; Başlangıç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiServicesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="KpiServicesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -168,7 +168,7 @@
                                                        AutomationProperties.Name="{Binding ActionLabel}"/>
                                             <StackPanel>
                                                 <TextBlock FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                                                    <Run Text="{Binding Severity, Mode=OneWay}" FontWeight="Bold"/>
+                                                    <Run Text="{Binding Severity, Mode=OneWay}" FontWeight="SemiBold"/>
                                                     <Run Text=" · "/>
                                                     <Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold"/>
                                                     <Run Text="{Binding Technique, Mode=OneWay}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
@@ -281,7 +281,7 @@
                                                     Padding="6,2"
                                                     Margin="0,0,8,0"
                                                     VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Hive}" FontSize="{StaticResource Font.Micro}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Hive}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">

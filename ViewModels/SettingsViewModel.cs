@@ -92,6 +92,9 @@ namespace Bakım.ViewModels
         private bool _isMicaTheme = true;
 
         [ObservableProperty]
+        private bool _isSlateTheme;
+
+        [ObservableProperty]
         private bool _isAmoledTheme;
 
         [ObservableProperty]
@@ -542,6 +545,9 @@ namespace Bakım.ViewModels
         public void SetMicaDarkTheme() => SelectTheme(AppThemeKind.MicaDark);
 
         [RelayCommand]
+        public void SetSlateTheme() => SelectTheme(AppThemeKind.SlateDark);
+
+        [RelayCommand]
         public void SetAmoledTheme() => SelectTheme(AppThemeKind.AmoledBlack);
 
         [RelayCommand]
@@ -564,6 +570,7 @@ namespace Bakım.ViewModels
         private void SyncThemeSelection(AppThemeKind kind)
         {
             IsMicaTheme = kind == AppThemeKind.MicaDark;
+            IsSlateTheme = kind == AppThemeKind.SlateDark;
             IsAmoledTheme = kind == AppThemeKind.AmoledBlack;
             IsCyberpunkTheme = kind == AppThemeKind.CyberpunkPurple;
             IsLightTheme = kind == AppThemeKind.FluentLight;
@@ -571,11 +578,12 @@ namespace Bakım.ViewModels
 
             CurrentThemeStatus = kind switch
             {
-                AppThemeKind.AmoledBlack => "AMOLED Siyah (Kusursuz Derin Kontrast)",
-                AppThemeKind.CyberpunkPurple => "Cyberpunk Mor (Neon Vurgular)",
-                AppThemeKind.FluentLight => "Fluent Açık (Gündüz Modu)",
+                AppThemeKind.SlateDark => "Slate Koyu",
+                AppThemeKind.AmoledBlack => "AMOLED Siyah",
+                AppThemeKind.CyberpunkPurple => "Cyberpunk Mor",
+                AppThemeKind.FluentLight => "Windows 11 Açık",
                 AppThemeKind.HighContrast => "Yüksek Kontrast (Windows sistem renkleri)",
-                _ => "Mica Koyu (Varsayılan Fluent 2.0)"
+                _ => "Windows 11 Koyu (varsayılan)"
             };
         }
 

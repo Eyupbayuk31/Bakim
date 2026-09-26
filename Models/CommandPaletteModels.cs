@@ -15,6 +15,10 @@ namespace Bakım.Models
         public string IconName { get; set; } = "Apps24";
         public CommandActionKind ActionKind { get; set; } = CommandActionKind.Navigate;
         public string TargetParameter { get; set; } = string.Empty;
+        /// <summary>Gerçek klavye kısayolu (ör. "Ctrl+1"); paletteki kısayol hapında gösterilir.</summary>
         public string KeyboardShortcut { get; set; } = string.Empty;
+
+        /// <summary>Yalnızca aramada eşleşen ek sözcükler; ekranda gösterilmez.</summary>
+        public string Keywords { get; set; } = string.Empty;
     }
 }

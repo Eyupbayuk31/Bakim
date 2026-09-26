@@ -33,7 +33,7 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:SymbolIcon Symbol="Target24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                     <StackPanel>
-                        <TextBlock Text="Avcı Modu - Hedef Yakalandı" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Avcı Modu - Hedef Yakalandı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Seçilen hedef üzerinde gerçekleştirmek istediğiniz işlemi seçin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>

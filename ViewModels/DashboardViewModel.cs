@@ -169,13 +169,25 @@ namespace Bakım.ViewModels
 
         public string GameModeStatusBadge => IsGameModeActive ? "Açık" : "Kapalı";
 
-        public string GameModeButtonText => IsGameModeActive ? "Kapat" : "Aç";
+        public string GameModeButtonText => IsGameModeActive ? "Kapat" : "Başlat";
+
+        /// <summary>Oyun Modu kartının alt satırı: kapalıyken ne yaptığı, açıkken nasıl açıldığı.</summary>
+        public string GameModeDetail => IsGameModeActive
+            ? (_gameModeService.CurrentSession?.TriggerGame is { } game
+                ? $"{game} algılandı, otomatik açıldı. Kapatınca her şey geri alınır."
+                : "Güç planı yükseltildi, arka plan işleri duraklatıldı. Kapatınca her şey geri alınır.")
+            : "Oyun sırasında güç planını yükseltir ve arka plan yükünü azaltır.";
+
+        partial void OnIsGameModeActiveChanged(bool value)
+        {
+            OnPropertyChanged(nameof(GameModeStatusBadge));
+            OnPropertyChanged(nameof(GameModeButtonText));
+            OnPropertyChanged(nameof(GameModeDetail));
+        }
 
         private void OnGameModeChanged(bool active)
         {
             IsGameModeActive = active;
-            OnPropertyChanged(nameof(GameModeStatusBadge));
-            OnPropertyChanged(nameof(GameModeButtonText));
         }
 
         [RelayCommand]
@@ -183,8 +195,6 @@ namespace Bakım.ViewModels
         {
             long freed = await _gameModeService.ToggleGameModeAsync();
             IsGameModeActive = _gameModeService.IsGameModeActive;
-            OnPropertyChanged(nameof(GameModeStatusBadge));
-            OnPropertyChanged(nameof(GameModeButtonText));
 
             if (IsGameModeActive)
             {

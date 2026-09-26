@@ -34,6 +34,8 @@
     <Thickness x:Key="Pad.CardCompact">16,14</Thickness>
     <Thickness x:Key="Pad.Dialog">24</Thickness>
     <Thickness x:Key="Pad.Module">24</Thickness>
+    <!-- Fluent SettingsCard: 16 yatay, 16 dikey (MinHeight 68 ile) -->
+    <Thickness x:Key="Pad.SettingsCard">16,12,16,12</Thickness>
 
     <!-- ============ ARALIK (Margin) ============ -->
     <Thickness x:Key="Gap.None">0</Thickness>
@@ -53,6 +55,12 @@
     <!-- Simge ile metin arası standart boşluk -->
     <Thickness x:Key="Gap.IconText">0,0,6,0</Thickness>
 
+    <!-- Fluent ayar düzeni: kartlar arası 4, bloklar arası 16, bölüm başlığı üstü 30 -->
+    <Thickness x:Key="Gap.Card">0,0,0,4</Thickness>
+    <Thickness x:Key="Gap.Block">0,0,0,16</Thickness>
+    <Thickness x:Key="Gap.SectionHeader">1,30,0,6</Thickness>
+    <Thickness x:Key="Gap.SectionHeader.First">1,0,0,6</Thickness>
+
     <!-- Üst aralık -->
     <Thickness x:Key="Gap.Top.XS">0,4,0,0</Thickness>
     <Thickness x:Key="Gap.Top.SM">0,8,0,0</Thickness>
@@ -61,13 +69,14 @@
     <!-- ============ YARIÇAP ============ -->
     <CornerRadius x:Key="Radius.None">0</CornerRadius>
     <CornerRadius x:Key="Radius.XS">4</CornerRadius>
-    <CornerRadius x:Key="Radius.SM">6</CornerRadius>
+    <!-- Fluent: denetim ve ayar kartı 4, kart/açılır yüzey 8. Daha büyük yarıçap kullanılmaz. -->
+    <CornerRadius x:Key="Radius.SM">4</CornerRadius>
     <CornerRadius x:Key="Radius.MD">8</CornerRadius>
-    <CornerRadius x:Key="Radius.LG">12</CornerRadius>
-    <CornerRadius x:Key="Radius.XL">16</CornerRadius>
+    <CornerRadius x:Key="Radius.LG">8</CornerRadius>
+    <CornerRadius x:Key="Radius.XL">8</CornerRadius>
     <CornerRadius x:Key="Radius.Pill">999</CornerRadius>
-    <CornerRadius x:Key="Radius.TopOnly">6,6,0,0</CornerRadius>
-    <CornerRadius x:Key="Radius.BottomOnly">0,0,6,6</CornerRadius>
+    <CornerRadius x:Key="Radius.TopOnly">4,4,0,0</CornerRadius>
+    <CornerRadius x:Key="Radius.BottomOnly">0,0,4,4</CornerRadius>
 
     <!-- ============ KENARLIK KALINLIĞI ============ -->
     <Thickness x:Key="Stroke.None">0</Thickness>
@@ -75,5 +84,10 @@
     <Thickness x:Key="Stroke.Medium">2</Thickness>
     <!-- Sol kenarda vurgu şeridi (aktif navigasyon öğesi) -->
     <Thickness x:Key="Stroke.AccentBar">3,0,0,0</Thickness>
+
+    <!-- ============ SAYFA DÜZENİ ============ -->
+    <!-- Ayar/form sayfalarının içerik genişliği sınırı: satır uzunluğu okunur kalır. -->
+    <sys:Double x:Key="Layout.PageMaxWidth">1180</sys:Double>
+    <sys:Double x:Key="Layout.SettingsCardMinHeight">68</sys:Double>
 
 </ResourceDictionary>

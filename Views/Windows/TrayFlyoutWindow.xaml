@@ -56,7 +56,7 @@
                         </Grid.ColumnDefinitions>
                         <ui:SymbolIcon Grid.Column="0" Symbol="DeveloperBoard20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Text="İşlemci (CPU)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" x:Name="CpuText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" x:Name="CpuText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
                     <ProgressBar x:Name="CpuProgress" Height="4" Minimum="0" Maximum="100" Value="0" Margin="0,0,0,10" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
 
@@ -69,7 +69,7 @@
                         </Grid.ColumnDefinitions>
                         <ui:SymbolIcon Grid.Column="0" Symbol="TopSpeed20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Text="Bellek (RAM)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" x:Name="RamText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" x:Name="RamText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
                     <ProgressBar x:Name="RamProgress" Height="4" Minimum="0" Maximum="100" Value="0" Margin="0,0,0,4" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                     <TextBlock x:Name="RamDetailText" Text="Hesaplanıyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right"/>
@@ -105,7 +105,7 @@
             <!-- Quick Actions -->
             <StackPanel Grid.Row="3" Margin="14,12">
                 <ui:Button x:Name="BtnQuickBoost" Appearance="Primary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon Broom24}" Content="Hızlı Bakım" ToolTip="Geçici dosyalar, tarayıcı önbellekleri ve DNS önbelleği (Temizleyici'deki güvenli kurallarla)" Click="BtnQuickBoost_Click"/>
-                <ui:Button x:Name="BtnGameMode" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon TopSpeed24}" Content="Oyun Modunu Aç" Click="BtnGameMode_Click"/>
+                <ui:Button x:Name="BtnGameMode" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon Games24}" Content="Oyun Modunu başlat" Click="BtnGameMode_Click"/>
                 <ui:Button x:Name="BtnShowMainWindow" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon Desktop24}" Content="Ana Ekranı Aç" Click="BtnShowMainWindow_Click"/>
                 <ui:Button x:Name="BtnSettings" Appearance="Secondary" HorizontalAlignment="Stretch" Padding="10,8" Icon="{ui:SymbolIcon Settings24}" Content="Ayarlar" Click="BtnSettings_Click"/>
             </StackPanel>

@@ -55,7 +55,7 @@
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <TextBlock Text="Klasik Windows Fotoğraf Görüntüleyicisi (Photo Viewer)" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Klasik Windows Fotoğraf Görüntüleyicisi (Photo Viewer)" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     
                                     <!-- Aktif Rozeti -->
                                     <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0"
@@ -80,7 +80,7 @@
                                        VerticalAlignment="Center"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Fotoğraf Görüntüleyicisini Sisteme Tanımla &amp; Aç" FontWeight="Bold" FontSize="{StaticResource Font.Body}"/>
+                                    <TextBlock Text="Fotoğraf Görüntüleyicisini Sisteme Tanımla &amp; Aç" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                                 </StackPanel>
                             </ui:Button>
                         </Grid>

@@ -8,12 +8,15 @@ namespace Bakım.Services
 {
     public enum AppThemeKind
     {
+        /// <summary>Windows 11 koyu (Fluent). Ad, kayıtlı ayarlarla uyum için korunur.</summary>
         MicaDark,
         AmoledBlack,
         CyberpunkPurple,
         FluentLight,
         /// <summary>Windows Yüksek Kontrast renkleri (SystemColors). Sistem ayarı açıksa otomatik seçilir.</summary>
-        HighContrast
+        HighContrast,
+        /// <summary>v4.1'in lacivert-gri (Slate) koyu teması; isteğe bağlı.</summary>
+        SlateDark
     }
 
     /// <summary>Bir temanın tüm renk kararlarını taşıyan salt-okunur tanım.</summary>
@@ -108,6 +111,7 @@ namespace Bakım.Services
         public IReadOnlyList<ThemeDefinition> AvailableThemes { get; } = new List<ThemeDefinition>
         {
             Definitions.MicaDark,
+            Definitions.SlateDark,
             Definitions.AmoledBlack,
             Definitions.CyberpunkPurple,
             Definitions.FluentLight,
@@ -185,6 +189,9 @@ namespace Bakım.Services
                     Set(res, "CardBackgroundFillColorDefaultBrush", def.CardBackground);
                     Set(res, "CardBackgroundFillColorSecondaryBrush", def.CardBackgroundAlt);
                     Set(res, "CardStrokeColorDefaultBrush", def.CardStroke);
+                    // ui:Card ve ui:CardControl'ün WPF-UI varsayılan fırçaları: aksi halde kartlar temaya uymaz.
+                    Set(res, "CardBackground", def.CardBackground);
+                    Set(res, "CardBorderBrush", def.CardStroke);
 
                     Set(res, "ControlFillColorDefaultBrush", def.ControlFill);
                     Set(res, "ControlFillColorSecondaryBrush", def.ControlFill);
@@ -200,8 +207,10 @@ namespace Bakım.Services
 
                     Set(res, "AccentTextFillColorPrimaryBrush", def.Accent);
                     Set(res, "AccentFillColorDefaultBrush", def.Primary);
-                    Set(res, "TextOnAccentFillColorPrimaryBrush", Color.FromRgb(0xFF, 0xFF, 0xFF));
-                    Set(res, "TextOnAccentFillColorSecondaryBrush", Color.FromRgb(0xEE, 0xEE, 0xEE));
+                    // Fluent koyu temada vurgu dolgusu açık renktir (#60CDFF) ve üzerindeki metin siyahtır.
+                    var onAccent = TextOnAccent(def.Primary);
+                    Set(res, "TextOnAccentFillColorPrimaryBrush", onAccent);
+                    Set(res, "TextOnAccentFillColorSecondaryBrush", WithAlpha(onAccent, 0xB3));
 
                     Set(res, "SystemFillColorSuccessBrush", def.Success);
                     Set(res, "SystemFillColorCautionBrush", def.Caution);
@@ -317,19 +326,10 @@ namespace Bakım.Services
             catch (Exception ex) { _log.Error("Tema değişikliği aboneleri hata verdi.", ex, nameof(ThemeService)); }
         }
 
+        /// <summary>Başlık çubuğundaki "Açık / koyu tema" düğmesi: Windows 11 koyu ↔ açık.</summary>
         public void ToggleNextTheme()
         {
-            var next = CurrentTheme switch
-            {
-                AppThemeKind.MicaDark => AppThemeKind.AmoledBlack,
-                AppThemeKind.AmoledBlack => AppThemeKind.CyberpunkPurple,
-                AppThemeKind.CyberpunkPurple => AppThemeKind.FluentLight,
-                AppThemeKind.FluentLight => AppThemeKind.HighContrast,
-                AppThemeKind.HighContrast => AppThemeKind.MicaDark,
-                _ => AppThemeKind.MicaDark
-            };
-
-            ApplyTheme(next);
+            ApplyTheme(GetDefinition(CurrentTheme).IsDark ? AppThemeKind.FluentLight : AppThemeKind.MicaDark);
         }
 
         public void ApplyBackdrop(bool micaEnabled)
@@ -372,6 +372,7 @@ namespace Bakım.Services
             AppThemeKind.CyberpunkPurple => Definitions.CyberpunkPurple,
             AppThemeKind.FluentLight => Definitions.FluentLight,
             AppThemeKind.HighContrast => Definitions.HighContrast,
+            AppThemeKind.SlateDark => Definitions.SlateDark,
             _ => Definitions.MicaDark
         };
 
@@ -409,7 +410,7 @@ namespace Bakım.Services
             yield return ("Text.Secondary", def.TextSecondary);
             yield return ("Text.Tertiary", def.TextTertiary);
             yield return ("Text.Disabled", WithAlpha(def.TextTertiary, 0x99));
-            yield return ("Text.OnAccent", white);
+            yield return ("Text.OnAccent", TextOnAccent(def.Primary));
             yield return ("Text.Link", def.Accent);
 
             // Durum: Solid / Subtle / Text / Border
@@ -464,8 +465,22 @@ namespace Bakım.Services
                 return def;
             }
             accent = Color.FromRgb(accent.R, accent.G, accent.B);
+            var white = Color.FromRgb(0xFF, 0xFF, 0xFF);
+            var black = Color.FromRgb(0, 0, 0);
             // Okunabilirlik: vurgu metni koyu temada açılır, açık temada koyulaşır.
-            var accentText = def.IsDark ? Mix(accent, Color.FromRgb(0xFF, 0xFF, 0xFF), 0.35) : Mix(accent, Color.FromRgb(0, 0, 0), 0.25);
+            var accentText = def.IsDark ? Mix(accent, white, 0.35) : Mix(accent, black, 0.25);
+            // Windows 11 Fluent: koyu temada dolgu SystemAccentColorLight2, metin Light3;
+            // açık temada dolgu Dark1, metin Dark2 tonudur.
+            if (def.Kind == AppThemeKind.MicaDark)
+            {
+                accentText = Mix(accent, white, 0.65);
+                accent = Mix(accent, white, 0.45);
+            }
+            else if (def.Kind == AppThemeKind.FluentLight)
+            {
+                accentText = Mix(accent, black, 0.45);
+                accent = Mix(accent, black, 0.2);
+            }
             return new ThemeDefinition
             {
                 Kind = def.Kind, DisplayName = def.DisplayName, IsDark = def.IsDark,
@@ -500,6 +515,13 @@ namespace Bakım.Services
                 ? Mix(intent, Color.FromRgb(0xFF, 0xFF, 0xFF), 0.45)
                 : Mix(intent, Color.FromRgb(0x00, 0x00, 0x00), 0.30);
 
+        /// <summary>Vurgu dolgusu üzerindeki metin: açık dolguda siyah, koyu dolguda beyaz.</summary>
+        public static Color TextOnAccent(Color accentFill)
+        {
+            double luminance = (0.2126 * accentFill.R + 0.7152 * accentFill.G + 0.0722 * accentFill.B) / 255.0;
+            return luminance > 0.6 ? Color.FromRgb(0, 0, 0) : Color.FromRgb(0xFF, 0xFF, 0xFF);
+        }
+
         private static Color Mix(Color a, Color b, double t)
         {
             byte Lerp(byte x, byte y) => (byte)Math.Round(x + (y - x) * t);
@@ -512,10 +534,40 @@ namespace Bakım.Services
         /// <summary>Tema paletleri. Metin/yüzey çiftleri WCAG AA (4.5:1) hedefiyle seçilmiştir.</summary>
         private static class Definitions
         {
+            /// <summary>
+            /// Windows 11 koyu (WinUI 3 Fluent tema kaynakları). Kartlar yarı saydam katmanın
+            /// #202020 taban üzerindeki opak karşılığıdır (CardBackgroundFillColorDefault = %5 beyaz);
+            /// hafif dolgular (hover/basılı) gerçek alfa kullanır, böylece her yüzeyde çalışır.
+            /// Bilinçli sapmalar: kart kenarlığı ve üçüncül metin WCAG eşiklerini geçecek kadar belirgin.
+            /// </summary>
             public static readonly ThemeDefinition MicaDark = new()
             {
                 Kind = AppThemeKind.MicaDark,
-                DisplayName = "Mica Koyu (Slate)",
+                DisplayName = "Windows 11 Koyu",
+                IsDark = true,
+                WindowBackground = Hex("#202020"),
+                CardBackground = Hex("#2B2B2B"),
+                CardBackgroundAlt = Hex("#272727"),
+                CardStroke = Hex("#404040"),
+                ControlFill = Hex("#323232"),
+                ControlFillAlt = Hex("#282828"),
+                ControlStroke = Hex("#3D3D3D"),
+                SubtleHover = Hex("#0FFFFFFF"),
+                SubtlePressed = Hex("#0AFFFFFF"),
+                TextPrimary = Hex("#FFFFFF"),
+                TextSecondary = Hex("#CFCFCF"),
+                TextTertiary = Hex("#9B9B9B"),
+                Accent = Hex("#99EBFF"),
+                Primary = Hex("#60CDFF"),
+                Success = Hex("#6CCB5F"),
+                Caution = Hex("#FCE100"),
+                Critical = Hex("#FF99A4")
+            };
+
+            public static readonly ThemeDefinition SlateDark = new()
+            {
+                Kind = AppThemeKind.SlateDark,
+                DisplayName = "Slate Koyu",
                 IsDark = true,
                 WindowBackground = Hex("#0F172A"),
                 CardBackground = Hex("#1E293B"),
@@ -624,28 +676,32 @@ namespace Bakım.Services
                 }
             }
 
+            /// <summary>
+            /// Windows 11 açık (WinUI 3 Fluent tema kaynakları; kart = %70 beyaz katman, #F3F3F3 taban).
+            /// Üçüncül metin Fluent'in #72000000 değerinden biraz koyu: WCAG AA 4.5:1.
+            /// </summary>
             public static readonly ThemeDefinition FluentLight = new()
             {
                 Kind = AppThemeKind.FluentLight,
-                DisplayName = "Fluent Açık",
+                DisplayName = "Windows 11 Açık",
                 IsDark = false,
-                WindowBackground = Hex("#F3F4F6"),
-                CardBackground = Hex("#FFFFFF"),
-                CardBackgroundAlt = Hex("#F9FAFB"),
-                CardStroke = Hex("#CBD5E1"), // 1.24:1 -> 1.50:1 (beyaz kart uzerinde gorunur)
-                ControlFill = Hex("#F1F5F9"),
-                ControlFillAlt = Hex("#E8EDF3"),
-                ControlStroke = Hex("#CBD5E1"),
-                SubtleHover = Hex("#EEF2F7"),
-                SubtlePressed = Hex("#E2E8F0"),
-                TextPrimary = Hex("#0F172A"),
-                TextSecondary = Hex("#475569"),
-                TextTertiary = Hex("#64748B"),
-                Accent = Hex("#1D4ED8"),
-                Primary = Hex("#2563EB"),
-                Success = Hex("#047857"),
-                Caution = Hex("#B45309"),
-                Critical = Hex("#B91C1C")
+                WindowBackground = Hex("#F3F3F3"),
+                CardBackground = Hex("#FBFBFB"),
+                CardBackgroundAlt = Hex("#F6F6F6"),
+                CardStroke = Hex("#DADADA"),
+                ControlFill = Hex("#FDFDFD"),
+                ControlFillAlt = Hex("#F5F5F5"),
+                ControlStroke = Hex("#D1D1D1"),
+                SubtleHover = Hex("#09000000"),
+                SubtlePressed = Hex("#06000000"),
+                TextPrimary = Hex("#1B1B1B"),
+                TextSecondary = Hex("#5F5F5F"),
+                TextTertiary = Hex("#707070"),
+                Accent = Hex("#003E92"),
+                Primary = Hex("#005FB8"),
+                Success = Hex("#0F7B0F"),
+                Caution = Hex("#9D5D00"),
+                Critical = Hex("#C42B1C")
             };
         }
     }

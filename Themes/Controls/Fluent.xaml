@@ -1,0 +1,104 @@
+<!--
+    FLUENT YÜZEY VE AYAR KALIPLARI (Windows 11 Ayarlar uygulaması)
+    ==============================================================
+    • Card.Setting        ui:CardControl → SettingsCard: ayrı kart, MinHeight 68, 4 px köşe,
+                          kartlar arası 4 px. Simge 20 px verilir: {ui:SymbolIcon X24, FontSize=20}.
+    • Card.Setting.Action Tıklanabilir ayar kartı (hover'da zemin bir ton açılır, odaklanabilir).
+    • Card.Surface        Genel kart (Border): 8 px köşe, 1 px kenarlık, 20 px dolgu.
+    • Card.Inset          Kart içindeki ikincil yüzey (liste, önizleme).
+    • Text.SettingTitle / Text.SettingDescription   Ayar kartı başlık ve açıklaması.
+    • Text.SectionLabel   Ayar grubu başlığı (Body Strong, büyük harf yok, üstte 30 px).
+    • Layout.Page         Ayar/form sayfası içerik sınırı (MaxWidth 1180, ortalanır).
+
+    CardControl'ün WPF-UI varsayılan zemini (CardBackground) ThemeService tarafından
+    boyanmadığı için buradaki stiller zemin ve kenarlığı tema fırçalarına bağlar.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+
+    <!-- ============ AYAR KARTI ============ -->
+    <Style x:Key="Card.Setting" TargetType="{x:Type ui:CardControl}" BasedOn="{StaticResource {x:Type ui:CardControl}}">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="Padding" Value="{StaticResource Pad.SettingsCard}"/>
+        <Setter Property="MinHeight" Value="{StaticResource Layout.SettingsCardMinHeight}"/>
+        <Setter Property="Margin" Value="{StaticResource Gap.Card}"/>
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.XS}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <!-- Salt ayar satırı: tıklanamaz, sekme sırasına girmez (odak içindeki denetime gider). -->
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+    </Style>
+
+    <Style x:Key="Card.Setting.Action" TargetType="{x:Type ui:CardControl}" BasedOn="{StaticResource Card.Setting}">
+        <Setter Property="Focusable" Value="True"/>
+        <Setter Property="IsTabStop" Value="True"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="Text.SettingTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="Text.SettingDescription" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="MaxWidth" Value="560"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="Margin" Value="0,2,0,0"/>
+    </Style>
+
+    <!-- ============ BÖLÜM BAŞLIĞI ============ -->
+    <Style x:Key="Text.SectionLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="Margin" Value="{StaticResource Gap.SectionHeader}"/>
+    </Style>
+
+    <!-- ============ KARTLAR ============ -->
+    <Style x:Key="Card.Surface" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+        <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.MD}"/>
+        <Setter Property="Padding" Value="{StaticResource Pad.Card}"/>
+    </Style>
+
+    <Style x:Key="Card.Inset" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+        <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.XS}"/>
+        <Setter Property="Padding" Value="{StaticResource Pad.CardCompact}"/>
+    </Style>
+
+    <!-- Simge kutusu (hero kartı, boş durum): 48 px, hafif dolgu -->
+    <Style x:Key="Card.IconTile" TargetType="Border">
+        <Setter Property="Width" Value="48"/>
+        <Setter Property="Height" Value="48"/>
+        <Setter Property="CornerRadius" Value="{StaticResource Radius.MD}"/>
+        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+    </Style>
+
+    <!-- ============ SAYFA DÜZENİ ============ -->
+    <Style x:Key="Layout.Page" TargetType="FrameworkElement">
+        <Setter Property="MaxWidth" Value="{StaticResource Layout.PageMaxWidth}"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Margin" Value="32,24,32,32"/>
+    </Style>
+
+</ResourceDictionary>

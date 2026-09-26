@@ -54,7 +54,7 @@ namespace Bakım.Services
                     IconName = "Wrench24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = $"WindowsTweaker:{key}",
-                    KeyboardShortcut = d.Category
+                    Keywords = d.Category
                 };
             }
         }
@@ -70,7 +70,7 @@ namespace Bakım.Services
                 IconName = icon,
                 ActionKind = CommandActionKind.Navigate,
                 TargetParameter = target,
-                KeyboardShortcut = "Geçmiş"
+                Keywords = "Geçmiş"
             };
             yield return Link("Kaldırma geçmişi", "Kaldırılan programlar ve kalıntı temizlikleri; kayıt defteri yedeklerini geri yükleme.", "AppsList24", "Activity?kind=Uninstall");
             yield return Link("Temizlik geçmişi", "Temizleyici ve Hızlı Bakım kayıtları.", "Broom24", "Activity?kind=Clean");
@@ -92,7 +92,7 @@ namespace Bakım.Services
 
             // Türkçe duyarsız, çok kelimeli arama: "kaldirici gecmis" → "Kaldırma geçmişi".
             return _commands
-                .Select(c => (Command: c, Score: Bakım.Core.Text.SearchText.Score(query, c.Title, c.Category, c.Description, c.KeyboardShortcut)))
+                .Select(c => (Command: c, Score: Bakım.Core.Text.SearchText.Score(query, c.Title, c.Category, c.Description, c.KeyboardShortcut, c.Keywords)))
                 .Where(x => x.Score > 0)
                 .OrderByDescending(x => x.Score)
                 .ThenBy(x => x.Command.Title.Length)
@@ -114,7 +114,7 @@ namespace Bakım.Services
                     IconName = "Broom24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "QuickBoost",
-                    KeyboardShortcut = "Bakım"
+                    Keywords = "Bakım"
                 },
                 new()
                 {
@@ -124,7 +124,7 @@ namespace Bakım.Services
                     IconName = "ArrowClockwise24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "RestartExplorer",
-                    KeyboardShortcut = "Action"
+                    Keywords = "Action"
                 },
                 new()
                 {
@@ -134,7 +134,7 @@ namespace Bakım.Services
                     IconName = "History24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "CreateRestorePoint",
-                    KeyboardShortcut = "Backup"
+                    Keywords = "Backup"
                 },
                 new()
                 {
@@ -144,7 +144,7 @@ namespace Bakım.Services
                     IconName = "ShieldKeyhole24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "ElevateAdmin",
-                    KeyboardShortcut = "UAC"
+                    Keywords = "UAC"
                 },
                 new()
                 {
@@ -154,7 +154,7 @@ namespace Bakım.Services
                     IconName = "DarkTheme24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "ToggleTheme",
-                    KeyboardShortcut = "Theme"
+                    Keywords = "Theme"
                 },
                 new()
                 {
@@ -164,7 +164,7 @@ namespace Bakım.Services
                     IconName = "DarkTheme24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "Theme:Amoled",
-                    KeyboardShortcut = "OLED"
+                    Keywords = "OLED"
                 },
                 new()
                 {
@@ -174,7 +174,7 @@ namespace Bakım.Services
                     IconName = "Color24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "Theme:Cyberpunk",
-                    KeyboardShortcut = "Neon"
+                    Keywords = "Neon"
                 },
 
                 // Module Navigation
@@ -256,7 +256,6 @@ namespace Bakım.Services
                     IconName = "ShieldKeyhole24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "PrivacyDebloat",
-                    KeyboardShortcut = "Ctrl+8"
                 },
                 new()
                 {
@@ -266,7 +265,6 @@ namespace Bakım.Services
                     IconName = "HeartPulse24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "CrashAnalyzer",
-                    KeyboardShortcut = "Ctrl+9"
                 },
                 new()
                 {
@@ -276,7 +274,6 @@ namespace Bakım.Services
                     IconName = "Apps24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Uninstaller",
-                    KeyboardShortcut = "Ctrl+0"
                 },
                 new()
                 {
@@ -286,7 +283,7 @@ namespace Bakım.Services
                     IconName = "AppsAddIn24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Store",
-                    KeyboardShortcut = "Mağaza"
+                    Keywords = "Mağaza"
                 },
                 new()
                 {
@@ -296,7 +293,7 @@ namespace Bakım.Services
                     IconName = "ShieldCheckmark24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Analyzer",
-                    KeyboardShortcut = "Analizör"
+                    Keywords = "Analizör"
                 },
                 new()
                 {
@@ -306,7 +303,7 @@ namespace Bakım.Services
                     IconName = "HardDrive20",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Storage",
-                    KeyboardShortcut = "Depolama"
+                    Keywords = "Depolama"
                 },
                 new()
                 {
@@ -316,7 +313,8 @@ namespace Bakım.Services
                     IconName = "Games24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "GameMode",
-                    KeyboardShortcut = "Oyun"
+                    Keywords = "Oyun",
+                    KeyboardShortcut = "Ctrl+Shift+G"
                 },
                 new()
                 {
@@ -326,7 +324,7 @@ namespace Bakım.Services
                     IconName = "ShieldCheckmark24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Sentinel",
-                    KeyboardShortcut = "Nöbetçi"
+                    Keywords = "Nöbetçi"
                 },
                 new()
                 {
@@ -336,7 +334,7 @@ namespace Bakım.Services
                     IconName = "History24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Activity",
-                    KeyboardShortcut = "Etkinlik"
+                    Keywords = "Etkinlik"
                 },
                 new()
                 {
@@ -346,7 +344,8 @@ namespace Bakım.Services
                     IconName = "Wrench24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "WindowsTweaker",
-                    KeyboardShortcut = "Tweaker"
+                    Keywords = "Tweaker",
+                    KeyboardShortcut = "Ctrl+8"
                 },
 
                 // Tweaker Subcategory Shortcuts

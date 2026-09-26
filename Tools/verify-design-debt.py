@@ -8,7 +8,7 @@ Borç sayıları Tools/design-debt-baseline.json'daki eşiği AŞAMAZ; azaldık�
   xaml_hex_colors     Views/ ve Controls/ XAML'inde sabit renk (#RGB, #RRGGBB, #AARRGGBB)
   xaml_font_sizes     Sabit metin FontSize'ı (simgeler hariç) — Font.* / Text.* kullanın
   xaml_corner_radius  Sabit CornerRadius — Radius.* kullanın
-  code_hex_colors     Models/, ViewModels/, Services/ içinde "#RRGGBB" dize sabiti
+  code_hex_colors     Models/, ViewModels/, Services/ içinde "#RRGGBB" dize sabiti (ThemeService hariç)
   empty_catch         Boş `catch { }` blokları (hatayı sessizce yutar)
 
 Çalıştırma:  python Tools/verify-design-debt.py [--update]
@@ -65,6 +65,9 @@ def measure():
         bump("xaml_corner_radius", path, len(CORNER_ATTR.findall(text)) + len(CORNER_SETTER.findall(text)))
 
     for path in iter_files(["Models", "ViewModels", "Services"], "*.cs"):
+        # ThemeService paletlerin tek resmi kaynağıdır; oradaki renk sabitleri borç değil tanımdır.
+        if path.name == "ThemeService.cs":
+            continue
         text = path.read_text(encoding="utf-8", errors="ignore")
         bump("code_hex_colors", path, len(CODE_HEX.findall(text)))
 

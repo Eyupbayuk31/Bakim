@@ -84,7 +84,7 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold"
+                                <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold"
                                            VerticalAlignment="Top" HorizontalAlignment="Center"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <StackPanel Grid.Column="1" Margin="{StaticResource Gap.Right.SM}">

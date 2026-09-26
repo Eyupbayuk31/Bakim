@@ -35,16 +35,17 @@ namespace Bakım.Views.Windows
         public void UpdateState()
         {
             bool isActive = _gameModeService.IsGameModeActive;
-            BtnGameMode.Content = isActive ? "Oyun Modunu Kapat" : "Oyun Modunu Aç";
+            BtnGameMode.Content = isActive ? "Oyun Modunu kapat" : "Oyun Modunu başlat";
             if (isActive)
             {
-                BtnGameMode.Appearance = ControlAppearance.Success;
+                // Fluent: başlatmak birincil eylem (vurgu), kapatmak standart düğme.
+                BtnGameMode.Appearance = ControlAppearance.Secondary;
                 StatusText.Text = "Oyun Modu açık";
                 StatusText.Foreground = (System.Windows.Media.Brush)FindResource("SystemFillColorSuccessBrush");
             }
             else
             {
-                BtnGameMode.Appearance = ControlAppearance.Secondary;
+                BtnGameMode.Appearance = ControlAppearance.Primary;
                 StatusText.Text = "Arka plan bakımı etkin";
                 StatusText.Foreground = (System.Windows.Media.Brush)FindResource("TextFillColorSecondaryBrush");
             }
@@ -139,9 +140,12 @@ namespace Bakım.Views.Windows
                 long freed = await _gameModeService.ToggleGameModeAsync();
                 UpdateState();
                 bool isActive = _gameModeService.IsGameModeActive;
-                _trayIconService.ShowBalloon(isActive ? "Oyun Modu Açık" : "Oyun Modu Kapatıldı", _gameModeService.LastActionSummary);
+                _trayIconService.ShowBalloon(isActive ? "Oyun Modu açık" : "Oyun Modu kapatıldı", _gameModeService.LastActionSummary);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                AppLog.Error("Oyun Modu tepsi menüsünden değiştirilemedi.", ex, nameof(TrayFlyoutWindow));
+            }
         }
 
         private void BtnSettings_Click(object sender, RoutedEventArgs e)

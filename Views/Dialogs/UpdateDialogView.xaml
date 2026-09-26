@@ -48,7 +48,7 @@
                         <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Yeni Sürüm Güncellemesi!" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Yeni Sürüm Güncellemesi!" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Bakım için yeni performans ve güvenlik paketi yayınlandı." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -87,7 +87,7 @@
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Yeni Sürüm: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource ApplicationBackgroundBrush}" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="LatestVersionText" Text="v2.6.0" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
+                        <TextBlock x:Name="LatestVersionText" Text="v2.6.0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
                     </StackPanel>
                 </Border>
 
@@ -127,7 +127,7 @@
             <StackPanel x:Name="ProgressPanel" Grid.Row="3" Margin="0,0,0,14" Visibility="Collapsed">
                 <Grid Margin="0,0,0,6">
                     <TextBlock x:Name="StatusLabel" Text="Güncelleme paketi indiriliyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock x:Name="PercentageLabel" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" HorizontalAlignment="Right" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock x:Name="PercentageLabel" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                 </Grid>
                 <ProgressBar x:Name="DownloadProgressBar" Height="8" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
             </StackPanel>

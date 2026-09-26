@@ -1,0 +1,13 @@
+[
+  { "process": "OneDrive", "name": "Microsoft OneDrive" },
+  { "process": "ms-teams", "name": "Microsoft Teams" },
+  { "process": "Teams", "name": "Microsoft Teams (klasik)" },
+  { "process": "Dropbox", "name": "Dropbox" },
+  { "process": "GoogleDriveFS", "name": "Google Drive" },
+  { "process": "iCloudDrive", "name": "iCloud Drive" },
+  { "process": "AdobeCollabSync", "name": "Adobe Acrobat eşitleme" },
+  { "process": "CCXProcess", "name": "Adobe Creative Cloud" },
+  { "process": "PhoneExperienceHost", "name": "Telefon Bağlantısı" },
+  { "process": "Slack", "name": "Slack" },
+  { "process": "Widgets", "name": "Windows Pencere Öğeleri" }
+]

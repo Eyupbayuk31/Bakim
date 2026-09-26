@@ -104,7 +104,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Toplam İnce Ayar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="Wrench24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                 </Grid>
@@ -120,7 +120,7 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Aktif Özelleştirme" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding Stats.ActiveTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="{Binding Stats.ActiveTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             <TextBlock Text=" / " FontSize="{StaticResource Font.Subtitle}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="{StaticResource Font.Subtitle}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                         </StackPanel>
@@ -138,7 +138,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Windows 11 Ayarları" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.Windows11TweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.Windows11TweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="AppGeneric24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                 </Grid>
@@ -153,7 +153,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Görünüm &amp; Tema" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.AppearanceTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.AppearanceTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <ui:SymbolIcon Grid.Column="1" Symbol="Color24" FontSize="24" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
                 </Grid>
@@ -190,7 +190,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <ui:SymbolIcon Grid.Column="0" Symbol="Grid24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="1" Text="KATEGORİLER" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="KATEGORİLER" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                             <Border Grid.Column="2" CornerRadius="{StaticResource Radius.LG}" Padding="6,2" Background="{DynamicResource SubtleFillColorTertiaryBrush}">
                                 <TextBlock Text="{Binding CategoryList.Count}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </Border>
@@ -236,7 +236,7 @@
                                                     <!-- Header -->
                                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                                         <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{Binding DisplayName}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                                                     </StackPanel>
 
                                                     <!-- Short Description -->
@@ -293,7 +293,7 @@
                     <!-- Active Category Title & Hint -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <Border CornerRadius="{StaticResource Radius.SM}" Padding="8,4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" Margin="0,0,10,0">
-                            <TextBlock Text="{Binding ActiveCategoryDisplayName}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{Binding ActiveCategoryDisplayName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </Border>
                         <TextBlock Text="Seçili kategorideki ince ayarları yapılandırabilir veya filtreleyebilirsiniz." 
                                    FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
@@ -372,7 +372,7 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
                                         <Border Grid.Column="1" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" Margin="8,0,0,0">
                                             <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                         </Border>
@@ -775,7 +775,7 @@
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                 <ui:SymbolIcon Symbol="FontIncrease24" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
-                                <TextBlock Text="Gelişmiş Görünüm &amp; Pencere Metrikleri (WindowMetrics)" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Gelişmiş Görünüm &amp; Pencere Metrikleri (WindowMetrics)" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                             <TextBlock Text="Masaüstü simge aralıkları, pencerelerin kenarlık kalınlıkları, kaydırma çubuğu genişliği, menü ve başlık çubuğu yüksekliklerini doğrudan piksel seviyesinde kontrol edin. Değişiklikler DWM yayın protokolü ile anında uygulanır." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>

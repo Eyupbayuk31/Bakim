@@ -1,0 +1,38 @@
+<UserControl x:Class="Bakım.Controls.KeyCap"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Root"
+             Focusable="False">
+
+    <!--
+        Klavye kısayolu gösterimi: "Ctrl+Shift+G" → [Ctrl] [Shift] [G].
+        Fluent'teki (PowerToys, Ayarlar) tuş kapağı görünümü: hafif dolgu, ince kenarlık,
+        4 px köşe, 12 px metin. Ekran okuyucu tüm kısayolu tek metin olarak okur.
+    -->
+
+    <ItemsControl ItemsSource="{Binding Keys, ElementName=Root}"
+                  Focusable="False"
+                  AutomationProperties.Name="{Binding Shortcut, ElementName=Root}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal"/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                        BorderThickness="{StaticResource Stroke.Thin}"
+                        CornerRadius="{StaticResource Radius.XS}"
+                        MinWidth="22"
+                        Padding="6,1"
+                        Margin="0,0,4,0">
+                    <TextBlock Text="{Binding}"
+                               HorizontalAlignment="Center"
+                               FontSize="{StaticResource Font.Caption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </Border>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

@@ -1,0 +1,91 @@
+<UserControl x:Class="Bakım.Controls.ChipListEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             x:Name="Root">
+
+    <!--
+        Ad listesi düzenleyici (süreç / oyun adları). Virgüllü metin kutusunun yerini alır:
+          • Her ad kaldırılabilir bir çiptir (× düğmesi, ya da giriş boşken Backspace son çipi siler).
+          • Giriş kutusunda Enter veya virgül adı ekler; ".exe" ve yinelenenler otomatik ayıklanır.
+          • Öneriler (varsa) soluk "+ ad" düğmeleri olarak listelenir; tıklayınca eklenir.
+        Görünüm Fluent "token" kalıbı: hafif dolgu, ince kenarlık, 4 px köşe.
+    -->
+
+    <StackPanel>
+        <WrapPanel x:Name="ChipPanel">
+            <ItemsControl ItemsSource="{Binding Items, ElementName=Root}" Focusable="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="{StaticResource Stroke.Thin}"
+                                CornerRadius="{StaticResource Radius.XS}"
+                                Height="32"
+                                Padding="10,0,2,0"
+                                Margin="0,0,6,6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding}" VerticalAlignment="Center"
+                                           FontSize="{StaticResource Font.Body}"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <ui:Button Appearance="Transparent"
+                                           Padding="0" Width="26" Height="26" Margin="4,0,0,0"
+                                           Icon="{ui:SymbolIcon Dismiss12}"
+                                           Tag="{Binding}"
+                                           Click="OnRemoveClick"
+                                           ToolTip="Kaldır"
+                                           AutomationProperties.Name="{Binding StringFormat='{}{0} öğesini kaldır'}"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ui:TextBox x:Name="Input"
+                        MinWidth="220"
+                        Height="32"
+                        Margin="0,0,0,6"
+                        PlaceholderText="{Binding PlaceholderText, ElementName=Root}"
+                        ClearButtonEnabled="False"
+                        PreviewKeyDown="OnInputKeyDown"
+                        LostKeyboardFocus="OnInputLostFocus"
+                        AutomationProperties.Name="{Binding InputAutomationName, ElementName=Root}"/>
+        </WrapPanel>
+
+        <!-- Reddedilen adlar için geri bildirim -->
+        <TextBlock x:Name="Feedback" Visibility="Collapsed" TextWrapping="Wrap" Margin="0,0,0,6"
+                   FontSize="{StaticResource Font.Caption}"
+                   Foreground="{DynamicResource Brush.Critical.Text}"/>
+
+        <!-- Öneriler -->
+        <WrapPanel x:Name="SuggestionPanel" Margin="0,2,0,0">
+            <TextBlock Text="Öneriler:" VerticalAlignment="Center" Margin="0,0,8,6"
+                       FontSize="{StaticResource Font.Caption}"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <ItemsControl ItemsSource="{Binding VisibleSuggestions, ElementName=Root}" Focusable="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ui:Button Appearance="Transparent"
+                                   Padding="8,0" Height="28" Margin="0,0,4,6"
+                                   Icon="{ui:SymbolIcon Add20, FontSize=12}"
+                                   Content="{Binding}"
+                                   Tag="{Binding}"
+                                   Click="OnSuggestionClick"
+                                   FontSize="{StaticResource Font.Caption}"
+                                   AutomationProperties.Name="{Binding StringFormat='{}{0} ekle'}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </WrapPanel>
+    </StackPanel>
+</UserControl>

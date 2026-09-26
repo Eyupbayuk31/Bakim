@@ -87,7 +87,7 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding Hardware.RamPercentage, StringFormat='%{0} Dolu'}" 
                                    FontSize="{StaticResource Font.Subtitle}" 
-                                   FontWeight="Bold" 
+                                   FontWeight="SemiBold" 
                                    Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"/>
                         <TextBlock Text="{Binding Hardware.UsedRamGb, StringFormat=' ({0:F1} GB / '}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB)'}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
@@ -600,7 +600,7 @@
                                    VerticalAlignment="Center"/>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding SelectedProcess.ProcessName}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding SelectedProcess.ProcessName}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding SelectedProcess.Id, StringFormat='PID: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -626,7 +626,7 @@
                                 <TextBlock Text="BELLEK AYRINTILARI" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
                                 <Grid Margin="0,0,0,4">
                                     <TextBlock Text="Çalışma Kümesi (RAM)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding SelectedProcess.FormattedMemory}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{Binding SelectedProcess.FormattedMemory}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,4">
                                     <TextBlock Text="Özel Ayrılmış (Private)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>

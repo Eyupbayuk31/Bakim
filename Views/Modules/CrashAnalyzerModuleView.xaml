@@ -87,8 +87,8 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Sistem Sağlık Skoru" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="%" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            <TextBlock Text="{Binding Stats.HealthScore}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="%" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="{Binding Stats.HealthScore}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             <TextBlock Text="{Binding Stats.HealthStatusText, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                         </StackPanel>
                         <!-- Windows Güvenilirlik İzleyicisi: son 30 günün günlük en düşük endeksi (§5.10.4) -->
@@ -216,7 +216,7 @@
                         <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="48" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center"/>
                         <TextBlock Text="Mavi Ekran (BSOD) Çökmesi Bulunamadı!" 
                                    FontSize="{StaticResource Font.Subtitle}" 
-                                   FontWeight="Bold" 
+                                   FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                    HorizontalAlignment="Center" 
                                    Margin="0,12,0,4"/>
@@ -266,7 +266,7 @@
                                             <!-- BugCheck String -->
                                             <TextBlock Text="{Binding BugCheckString}" 
                                                        FontSize="{StaticResource Font.BodyLarge}" 
-                                                       FontWeight="Bold" 
+                                                       FontWeight="SemiBold" 
                                                        Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
 
                                             <!-- BugCheck Code Badge -->
@@ -293,7 +293,7 @@
                                         <!-- Offending Driver -->
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                             <TextBlock Text="Neden Olan Sürücü: " FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text="{Binding CausedByDriver}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding CausedByDriver}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             <TextBlock Text="{Binding DriverDescription, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         </StackPanel>
 
@@ -434,7 +434,7 @@
 
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                                 <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="SFC Sistem Dosyası Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="SFC Sistem Dosyası Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
 
                             <TextBlock Grid.Row="1" 
@@ -465,7 +465,7 @@
 
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                                 <ui:SymbolIcon Symbol="ArrowClockwise24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="DISM Windows İmaj Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="DISM Windows İmaj Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
 
                             <TextBlock Grid.Row="1" 

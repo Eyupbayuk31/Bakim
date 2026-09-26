@@ -9,26 +9,28 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
-    <!-- ============ SÜRELER (v2, §3.3) ============ -->
-    <!-- "Animasyonları azalt" açıkken Helpers/MotionPolicy bunları açılışta 0'a çeker. -->
-    <Duration x:Key="Motion.Fast">0:0:0.12</Duration>
-    <Duration x:Key="Motion.Normal">0:0:0.2</Duration>
-    <Duration x:Key="Motion.Slow">0:0:0.3</Duration>
+    <!-- ============ SÜRELER (Windows 11 Fluent: 83 / 167 / 250 / 333 ms) ============ -->
+    <!-- "Animasyonları azalt" açıkken Helpers/MotionPolicy bunları açılışta 0'a çeker.
+         Fluent'te hareket işlevseldir: yalnızca durum değişimini anlatır, sürekli döngü yoktur. -->
+    <Duration x:Key="Motion.Fast">0:0:0.083</Duration>
+    <Duration x:Key="Motion.Normal">0:0:0.167</Duration>
+    <Duration x:Key="Motion.Slow">0:0:0.25</Duration>
+    <Duration x:Key="Motion.Slower">0:0:0.333</Duration>
 
     <!-- Eski adlar (geriye uyumluluk) -->
-    <Duration x:Key="Duration.Instant">0:0:0.08</Duration>
-    <Duration x:Key="Duration.Fast">0:0:0.15</Duration>
+    <Duration x:Key="Duration.Instant">0:0:0.083</Duration>
+    <Duration x:Key="Duration.Fast">0:0:0.167</Duration>
     <Duration x:Key="Duration.Base">0:0:0.25</Duration>
-    <Duration x:Key="Duration.Slow">0:0:0.4</Duration>
+    <Duration x:Key="Duration.Slow">0:0:0.333</Duration>
 
     <!-- KeyTime / BeginTime için TimeSpan karşılıkları -->
-    <sys:TimeSpan x:Key="Time.Fast">0:0:0.15</sys:TimeSpan>
+    <sys:TimeSpan x:Key="Time.Fast">0:0:0.167</sys:TimeSpan>
     <sys:TimeSpan x:Key="Time.Base">0:0:0.25</sys:TimeSpan>
 
     <!-- ============ YUMUŞATMA EĞRİLERİ ============ -->
 
-    <!-- Standart: çoğu geçiş için -->
-    <CubicEase x:Key="Ease.Standard" EasingMode="EaseOut"/>
+    <!-- Standart: Fluent "fast out, slow in" (cubic-bezier(0,0,0,1)) yaklaşımı -->
+    <ExponentialEase x:Key="Ease.Standard" EasingMode="EaseOut" Exponent="6"/>
 
     <!-- Vurgulu: dikkat çeken giriş animasyonları -->
     <QuarticEase x:Key="Ease.Emphasized" EasingMode="EaseOut"/>

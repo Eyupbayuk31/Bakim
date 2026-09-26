@@ -16,8 +16,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 
-    <!-- ============ METİN ÖLÇEĞİ (v2, §3.2) ============ -->
-    <!-- En küçük okunur boyut 12. 11 yalnızca rozet/etiket (Font.Micro) içindir. -->
+    <!-- ============ METİN ÖLÇEĞİ (Windows 11 Fluent tip rampası) ============ -->
+    <!-- Fluent: Caption 12 · Body 14 · Body Strong 14 SB · Body Large 18 · Subtitle 20 SB ·
+         Title 28 SB · Title Large 40 SB · Display 68 SB. Anahtar adları geriye uyum için korunur;
+         değerler rampaya oturtulmuştur. Kalın (Bold) kullanılmaz, vurgu SemiBold'dur.
+         11 yalnızca rozet/InfoBadge (Font.Micro) içindir. -->
     <!-- Sabit FontSize yerine bu anahtarlar kullanılır: Tools/migrate-font-sizes.py -->
 
     <!-- Yardımcı etiketler, rozet alt yazıları -->
@@ -29,29 +32,29 @@
     <!-- Gövde metni, açıklama satırları -->
     <sys:Double x:Key="Font.Body">14</sys:Double>
 
-    <!-- Vurgulu gövde, liste öğesi başlığı -->
-    <sys:Double x:Key="Font.BodyLarge">15</sys:Double>
+    <!-- Vurgulu gövde, liste öğesi başlığı (Fluent Body Strong boyutu; SemiBold ile kullanılır) -->
+    <sys:Double x:Key="Font.BodyLarge">14</sys:Double>
 
-    <!-- Kart içi alt başlık -->
-    <sys:Double x:Key="Font.Subtitle">16</sys:Double>
+    <!-- Kart içi alt başlık (Fluent Body Large) -->
+    <sys:Double x:Key="Font.Subtitle">18</sys:Double>
 
-    <!-- Kart / bölüm başlığı -->
-    <sys:Double x:Key="Font.SectionTitle">18</sys:Double>
+    <!-- Kart / bölüm başlığı (Fluent Subtitle) -->
+    <sys:Double x:Key="Font.SectionTitle">20</sys:Double>
 
-    <!-- Modül başlığı -->
+    <!-- Büyük değer / öne çıkan başlık (Fluent Subtitle) -->
     <sys:Double x:Key="Font.Title">20</sys:Double>
 
-    <!-- Sayfa başlığı -->
+    <!-- Sayfa başlığı (Fluent Title) -->
     <sys:Double x:Key="Font.TitleLarge">28</sys:Double>
 
-    <!-- KPI sayıları, sağlık skoru -->
+    <!-- KPI sayıları, sağlık skoru (Fluent Title Large) -->
     <sys:Double x:Key="Font.Display">40</sys:Double>
 
-    <!-- ============ SİMGE ÖLÇEĞİ ============ -->
+    <!-- ============ SİMGE ÖLÇEĞİ (Fluent System Icons: 12/16/20/24/32) ============ -->
 
-    <sys:Double x:Key="Icon.XS">13</sys:Double>
-    <sys:Double x:Key="Icon.SM">15</sys:Double>
-    <sys:Double x:Key="Icon.MD">18</sys:Double>
+    <sys:Double x:Key="Icon.XS">12</sys:Double>
+    <sys:Double x:Key="Icon.SM">16</sys:Double>
+    <sys:Double x:Key="Icon.MD">16</sys:Double>
     <sys:Double x:Key="Icon.LG">20</sys:Double>
     <sys:Double x:Key="Icon.XL">24</sys:Double>
     <sys:Double x:Key="Icon.XXL">32</sys:Double>
@@ -61,7 +64,7 @@
 
     <Style x:Key="Text.PageTitle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource Font.TitleLarge}"/>
-        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
     </Style>

@@ -110,7 +110,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Toplam Hizmet" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.TotalServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.TotalServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Server24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -124,7 +124,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Çalışan Hizmetler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.RunningServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.RunningServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Play24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -138,7 +138,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Güvenli Kapatılabilir" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.OptimizableServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.OptimizableServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="TopSpeed24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -152,7 +152,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Durdurulanlar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.StoppedServices}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.StoppedServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Stop24" FontSize="22" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -179,7 +179,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Toplam Donanım Sürücüsü" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.TotalDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.TotalDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Desktop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -193,7 +193,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Dijital İmzalı Sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.SignedDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.SignedDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Checkmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -207,7 +207,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="İmzasız / Şüpheli Sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.ProblematicDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.ProblematicDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Warning24" FontSize="22" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
                     </Grid>

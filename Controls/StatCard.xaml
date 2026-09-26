@@ -189,7 +189,7 @@
             <TextBlock Grid.Row="1"
                        Text="{Binding Value, ElementName=Root}"
                        FontSize="{StaticResource Font.Title}"
-                       FontWeight="Bold"
+                       FontWeight="SemiBold"
                        Margin="{StaticResource Gap.Top.XS}"
                        TextTrimming="CharacterEllipsis"
                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>

@@ -85,7 +85,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock Text="Toplam Bağlantı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.TotalConnections}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.TotalConnections}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="1" Background="{DynamicResource Brush.Primary.Subtle}" CornerRadius="{StaticResource Radius.MD}" Width="40" Height="40" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Globe24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -102,7 +102,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock Text="Aktif İletişim" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.EstablishedCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.EstablishedCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="1" Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.MD}" Width="40" Height="40" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Checkmark24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -119,7 +119,7 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock Text="Dinlenen Portlar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.ListeningCount}" FontSize="{StaticResource Font.Title}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                        <TextBlock Text="{Binding Stats.ListeningCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="1" Background="{DynamicResource Brush.Accent.Subtle}" CornerRadius="{StaticResource Radius.MD}" Width="40" Height="40" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Laptop24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -397,7 +397,7 @@
 
                                             <!-- Col 1: Protocol & State -->
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,12,0">
-                                                <TextBlock Text="{Binding Protocol}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Protocol}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                                 <TextBlock Text="{Binding State}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,1,0,0"/>
                                             </StackPanel>
 
@@ -464,7 +464,7 @@
                                         Margin="0,0,0,14">
                                     <ui:SymbolIcon Symbol="Shield24" FontSize="28" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock Text="Ayrıntılı Röntgen" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Ayrıntılı Röntgen" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center"/>
                                 <TextBlock Text="Soldaki listeden bir bağlantıya tıklayarak süreç kimliği, soket, ters DNS ve güvenlik analizini inceleyebilirsiniz." 
                                            FontSize="{StaticResource Font.Caption}" 
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
@@ -493,7 +493,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Bağlantı &amp; Süreç Röntgeni" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Bağlantı &amp; Süreç Röntgeni" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Ayrıntılı soket ve güvenlik denetimi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     </StackPanel>
 
@@ -508,7 +508,7 @@
                                 <!-- Process Overview -->
                                 <ui:Card Grid.Row="1" Padding="12" Margin="0,0,0,12">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding ProcessName}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding ProcessName}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                         <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,4"/>
                                         
                                         <TextBlock Text="Yayımcı / İmza:" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,4,0,0"/>
@@ -526,7 +526,7 @@
                                         
                                         <Grid Margin="0,2">
                                             <TextBlock Text="Protokol / Durum:" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <TextBlock Text="{Binding Protocol, StringFormat='{}{0}'}" HorizontalAlignment="Right" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Protocol, StringFormat='{}{0}'}" HorizontalAlignment="Right" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                         </Grid>
                                         <Grid Margin="0,2">
                                             <TextBlock Text="Yerel Uç Nokta:" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
@@ -558,7 +558,7 @@
                                     <StackPanel>
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                             <ui:SymbolIcon Symbol="Shield20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                                            <TextBlock Text="{Binding PortCategory}" FontWeight="Bold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding PortCategory}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
                                         <TextBlock Text="{Binding ThreatDescription}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                     </StackPanel>
@@ -764,7 +764,7 @@
 
                                         <!-- Col 0: Port & Protocol -->
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Port}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{Binding Port}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
                                             <TextBlock Text="{Binding Protocol, StringFormat='({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
                                         </StackPanel>
 
@@ -809,7 +809,7 @@
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" Margin="0,0,0,12">
-                    <TextBlock Text="Sistemdeki Aktif Ağ Arayüzleri ve IP Yapılandırması" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="Sistemdeki Aktif Ağ Arayüzleri ve IP Yapılandırması" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <ui:Button Appearance="Secondary" 
                                    Command="{Binding FlushDnsFromAdaptersCommand}" 
@@ -856,7 +856,7 @@
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding TypeName}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                                     </Border>
@@ -865,7 +865,7 @@
                                             </StackPanel>
 
                                             <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="10,4" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Status}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                <TextBlock Text="{Binding Status}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                             </Border>
                                         </Grid>
 
@@ -883,7 +883,7 @@
                                             <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="12">
                                                 <StackPanel>
                                                     <TextBlock Text="IPv4 &amp; Alt Ağ" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                                    <TextBlock Text="{Binding Ipv4Address}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
+                                                    <TextBlock Text="{Binding Ipv4Address}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
                                                     <TextBlock Text="{Binding SubnetMask, StringFormat='Mask: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                 </StackPanel>
                                             </Border>
@@ -901,7 +901,7 @@
                                             <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="12">
                                                 <StackPanel>
                                                     <TextBlock Text="Donanım Hızı &amp; MAC" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                                    <TextBlock Text="{Binding SpeedText}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
+                                                    <TextBlock Text="{Binding SpeedText}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
                                                     <TextBlock Text="{Binding MacAddress, StringFormat='MAC: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                                 </StackPanel>
                                             </Border>
@@ -954,14 +954,14 @@
 
                                 <!-- Title -->
                                 <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                                    <TextBlock Text="1000 Mbps Ultra Gigabit Hız Testi" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="1000 Mbps Ultra Gigabit Hız Testi" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Yüksek hızlı fiber bağlantılar için optimize edilmiş, kesintisiz 6 saniyelik çoklu akış (multi-stream) indirme motoru." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
                                 <!-- Big Speed Display -->
                                 <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,10,0,20">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                        <TextBlock Text="{Binding CurrentSpeedMbps, StringFormat='{}{0:F1}'}" FontSize="64" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding CurrentSpeedMbps, StringFormat='{}{0:F1}'}" FontSize="64" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Mbps" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Bottom" Margin="8,0,0,12"/>
                                     </StackPanel>
                                     <TextBlock Text="{Binding SpeedTestStatus}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
@@ -988,7 +988,7 @@
                                     <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="14">
                                         <StackPanel HorizontalAlignment="Center">
                                             <TextBlock Text="Gecikme (Ping)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <TextBlock Text="{Binding SpeedPingMs, StringFormat='{}{0:F1} ms'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{Binding SpeedPingMs, StringFormat='{}{0:F1} ms'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
 
@@ -996,7 +996,7 @@
                                     <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="14">
                                         <StackPanel HorizontalAlignment="Center">
                                             <TextBlock Text="Jitter (Dalgalanma)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <TextBlock Text="{Binding SpeedJitterMs, StringFormat='{}{0:F1} ms'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{Binding SpeedJitterMs, StringFormat='{}{0:F1} ms'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
 
@@ -1004,7 +1004,7 @@
                                     <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="14">
                                         <StackPanel HorizontalAlignment="Center">
                                             <TextBlock Text="Tepe (Peak) Hız" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <TextBlock Text="{Binding PeakSpeedMbps, StringFormat='{}{0:F1} Mbps'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{Binding PeakSpeedMbps, StringFormat='{}{0:F1} Mbps'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
 
@@ -1012,7 +1012,7 @@
                                     <Border Grid.Column="6" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="14">
                                         <StackPanel HorizontalAlignment="Center">
                                             <TextBlock Text="İndirilen Veri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <TextBlock Text="{Binding DownloadedMb, StringFormat='{}{0:F1} MB'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                                            <TextBlock Text="{Binding DownloadedMb, StringFormat='{}{0:F1} MB'}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -1040,7 +1040,7 @@
                         <!-- Informative Card -->
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="16">
                             <StackPanel>
-                                <TextBlock Text="Gigabit (1000 Mbps) Hız Testi Nasıl Çalışır?" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Gigabit (1000 Mbps) Hız Testi Nasıl Çalışır?" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
                                 <TextBlock Text="Bu test, 1000 Mbps fiber hatlarda küçük dosya hatalarını önlemek için 3 paralel bağlantı üzerinden dinamik 100 MB veri blokları indirir. 6 saniye boyunca hat sonuna kadar yüklenir ve gerçek bant genişliği kayan pencere algoritmasıyla ölçülür." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
@@ -1078,7 +1078,7 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Canlı Ping &amp; Gecikme Testi" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Canlı Ping &amp; Gecikme Testi" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Herhangi bir IP veya web adresine ICMP ping paketi göndererek gidiş-dönüş süresini (RTT) test edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
@@ -1120,7 +1120,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                    <TextBlock Text="Tek Tıkla DNS Çözümleyici Önbelleğini Temizle (Flush DNS)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Tek Tıkla DNS Çözümleyici Önbelleğini Temizle (Flush DNS)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Bozuk veya eski DNS kayıtlarını sıfırlayarak internet bağlantı ve erişim problemlerini çözer." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,6"/>
                                     <TextBlock Text="{Binding FlushDnsStatus}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                 </StackPanel>
@@ -1145,7 +1145,7 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Port Erişilebilirlik Testi (Port Connectivity Checker)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Port Erişilebilirlik Testi (Port Connectivity Checker)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Hedef sunucu ve portun açık, filtrelenmiş veya erişilebilir olup olmadığını TCP bağlantısıyla test edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
@@ -1198,7 +1198,7 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Gelişmiş Ağ Rota İzleme (Traceroute)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Gelişmiş Ağ Rota İzleme (Traceroute)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="Veri paketlerinin hedefe ulaşana kadar geçtiği tüm ağ yönlendiricilerini (hop), gecikme sürelerini ve ters DNS kayıtlarını adım adım analiz edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                 </StackPanel>
 
@@ -1249,7 +1249,7 @@
                                                             <ColumnDefinition Width="80"/>
                                                             <ColumnDefinition Width="*"/>
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0" Text="{Binding HopNumber, StringFormat='{}{0}.'}" FontFamily="Consolas" FontWeight="Bold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                        <TextBlock Grid.Column="0" Text="{Binding HopNumber, StringFormat='{}{0}.'}" FontFamily="Consolas" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                         <TextBlock Grid.Column="1" Text="{Binding Address}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                         <TextBlock Grid.Column="2" Text="{Binding RoundtripTimeMs, StringFormat='{}{0} ms'}" FontFamily="Consolas" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                                         <TextBlock Grid.Column="3" Text="{Binding Hostname}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis"/>
@@ -1277,7 +1277,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="DNS Sunucu Yanıt Süresi &amp; Benchmark" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="DNS Sunucu Yanıt Süresi &amp; Benchmark" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Dünyanın önde gelen DNS sağlayıcılarını (Cloudflare, Google, Quad9, AdGuard vb.) sorgulayarak en düşük gecikmeli sunucuyu tespit edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <ui:Button Grid.Column="1" 
@@ -1309,7 +1309,7 @@
                                                             <TextBlock Text="{Binding PrimaryIp}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                                         </StackPanel>
 
-                                                        <TextBlock Grid.Column="1" Text="{Binding DisplayLatency}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding DisplayLatency}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
 
                                                         <TextBlock Grid.Column="2" Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
 
@@ -1319,7 +1319,7 @@
                                                                 Padding="8,4" 
                                                                 VerticalAlignment="Center"
                                                                 Visibility="{Binding IsFastest, Converter={StaticResource BoolToVis}}">
-                                                            <TextBlock Text="EN HIZLI" FontSize="{StaticResource Font.Micro}" FontWeight="Bold" Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+                                                            <TextBlock Text="EN HIZLI" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
                                                         </Border>
                                                     </Grid>
                                                 </Border>
@@ -1345,7 +1345,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Bakım Tarafından Eklenen Güvenlik Duvarı Kuralları" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Bakım Tarafından Eklenen Güvenlik Duvarı Kuralları" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Bakım üzerinden engellenen programların güvenlik duvarı kurallarını inceleyin ve dilediğiniz engeli tek tıkla kaldırın." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <ui:Button Grid.Column="1" 

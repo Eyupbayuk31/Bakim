@@ -68,7 +68,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding AppName}"
                                    FontSize="{StaticResource Font.Subtitle}"
-                                   FontWeight="Bold"
+                                   FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    TextTrimming="CharacterEllipsis"
                                    MaxWidth="450"/>
@@ -162,7 +162,7 @@
                             CornerRadius="{StaticResource Radius.SM}"
                             Padding="8,3">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Bold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text="/" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text="{Binding TotalCount}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text=" Kalıntı" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
@@ -325,7 +325,7 @@
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     <TextBlock Text="{Binding FormattedSelectedSize}"
                                FontSize="{StaticResource Font.Caption}"
-                               FontWeight="Bold"
+                               FontWeight="SemiBold"
                                Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                 </StackPanel>
             </Grid>
