@@ -14,7 +14,7 @@ using Bakım.ViewModels;
 
 namespace Bakım.Views.Dialogs
 {
-    public partial class InstallationDeltaInspectionDialog : Window
+    public partial class InstallationDeltaInspectionDialog : Wpf.Ui.Controls.FluentWindow
     {
         private readonly SetupDeltaReport _report;
         private readonly List<FileItemDisplay> _allFiles = new();

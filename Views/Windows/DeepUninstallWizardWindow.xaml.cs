@@ -4,7 +4,7 @@ using Bakım.ViewModels;
 
 namespace Bakım.Views.Windows
 {
-    public partial class DeepUninstallWizardWindow : Window
+    public partial class DeepUninstallWizardWindow : Wpf.Ui.Controls.FluentWindow
     {
         public DeepUninstallWizardViewModel ViewModel { get; }
 
