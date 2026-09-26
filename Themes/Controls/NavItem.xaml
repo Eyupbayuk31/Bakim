@@ -8,11 +8,11 @@
       • Seçili öğede solda 3×16 vurgu çubuğu (AccentFillColorDefault).
       • Köşe yarıçapı denetim yarıçapıdır (4 px), yükseklik 36 px.
 
-    Kullanım: <Button Style="{StaticResource Nav.ItemButton}"/>
-    DataContext bir NavItem olmalıdır (IsSelected özelliği tetikleyicilerde okunur).
+    Kullanım: <Button Style="{StaticResource Nav.ItemButton}" helpers:NavSelection.IsSelected="{Binding IsSelected}"/>
 -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:helpers="clr-namespace:Bakım.Helpers">
 
     <Style x:Key="Nav.ItemButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
@@ -53,17 +53,17 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                         </Trigger>
-                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                        <Trigger Property="helpers:NavSelection.IsSelected" Value="True">
                             <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                             <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
-                        </DataTrigger>
-                        <MultiDataTrigger>
-                            <MultiDataTrigger.Conditions>
-                                <Condition Binding="{Binding IsSelected}" Value="True"/>
-                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
-                            </MultiDataTrigger.Conditions>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="helpers:NavSelection.IsSelected" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
                             <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
-                        </MultiDataTrigger>
+                        </MultiTrigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SubtleFillColorTertiaryBrush}"/>
                         </Trigger>

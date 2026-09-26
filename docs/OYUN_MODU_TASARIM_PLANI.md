@@ -10,6 +10,25 @@
 
 ---
 
+## Uygulama durumu (26.09.2026)
+
+Tüm fazlar `claude/awesome-pascal-am378r` dalında uygulandı. Linux'ta derleme (EnableWindowsTargeting),
+`verify-tokens`, `verify-symbols`, `verify-design-debt` ve Core testleri (462) geçiyor. WPF testleri ve
+görsel doğrulama Windows'ta yapılmalıdır.
+
+| Faz | Durum | Not |
+|---|---|---|
+| 0 | Tamam | StringToVis, 0xFFFF üstü simgeler (kök neden WPF-UI `GetString`), Fluent kenar çubuğu, başlık çubuğu |
+| 1a | Tamam | Windows 11 koyu/açık palet varsayılan; Slate isteğe bağlı tema; `ui:Card`/`CardControl` fırçaları da temalı |
+| 1b | Tamam | Tip rampası, 4/8 px yarıçap, Fluent hareket süreleri; Card.Setting, KeyCap, ChipListEditor, StepList |
+| 2–4 | Tamam | Durum kartı, ayar kartları, canlı adım listesi, son oturumlar, dar düzen, metinler |
+| 3 | Kısmen | Durum geçişi ve ölçüm satırı animasyonu var. **Yapılmadı:** adımların servis ilerledikçe tek tek "uygulandı"ya dönmesi (servisten adım olayı gerekir); oturum listesi ve tepsi aynı dili kullanıyor |
+| 5 | Kısmen | Steam + Epic kütüphanesi, çalışanlardan seç, öneriler. **Yapılmadı:** Xbox/Microsoft Store oyunları (paket koruması), Odak Yardımı adımı (Windows'ta belgelenmiş API yok), ortalama CPU/GPU oturum raporu |
+| 6 | Kısmen | Ayarlar sayfası Fluent ayar kartlarına ve kategori menüsüne geçti; komut paleti ve başlık çubuğunda KeyCap. Sayfa içi filtre düğmeleri Fluent ToggleButton kalıbına zaten uyduğu için değiştirilmedi. Veri ağırlıklı sayfalara genişlik sınırı (Layout.Page) bilinçli olarak uygulanmadı |
+| 7 | Tamam | Denetimler, testler; DI testine yeni servisler eklendi |
+
+---
+
 ## 0. Teşhis — sayfa neden "kötü" görünüyor?
 
 ### 0.1 Uygulama geneli bir HATA (en önemli bulgu)

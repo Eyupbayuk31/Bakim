@@ -9,6 +9,7 @@
         xmlns:modules="clr-namespace:Bakım.Views.Modules"
         xmlns:models="clr-namespace:Bakım.Models"
         xmlns:helpers="clr-namespace:Bakım.Helpers"
+        xmlns:c="clr-namespace:Bakım.Controls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="Bakım - Sistem Temizlik ve Optimizasyon" 
@@ -135,13 +136,7 @@
                             <TextBlock Grid.Column="1" Text="Modül veya komut ara" VerticalAlignment="Center"
                                        FontSize="{StaticResource Font.Caption}" TextTrimming="CharacterEllipsis"
                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <Border Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center"
-                                    Background="{DynamicResource SubtleFillColorSecondaryBrush}"
-                                    BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1"
-                                    CornerRadius="{StaticResource Radius.XS}" Padding="5,1">
-                                <TextBlock Text="Ctrl+K" FontSize="{StaticResource Font.Micro}"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            </Border>
+                            <c:KeyCap Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center" Shortcut="Ctrl+K"/>
                         </Grid>
                     </ui:Button>
 
@@ -364,6 +359,7 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="{x:Type vm:NavItem}">
                                                     <Button Style="{StaticResource Nav.ItemButton}"
+                                                               helpers:NavSelection.IsSelected="{Binding IsSelected}"
                                                                Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                                CommandParameter="{Binding Key}"
                                                                ToolTip="{Binding Tooltip}"
@@ -421,6 +417,7 @@
                         <Border Height="1" Margin="4,0,4,8" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
                         <Button DataContext="{Binding SettingsNavItem}"
                                 Style="{StaticResource Nav.ItemButton}"
+                                helpers:NavSelection.IsSelected="{Binding IsSelected}"
                                 Margin="0,0,4,4"
                                    Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                    CommandParameter="{Binding Key}"
@@ -764,21 +761,11 @@
                                                        Margin="0,3,0,0"/>
                                         </StackPanel>
 
-                                        <!-- ── Keyboard Shortcut Pill ── -->
-                                        <Border Grid.Column="2"
-                                                CornerRadius="{StaticResource Radius.SM}"
-                                                Padding="7,3"
-                                                VerticalAlignment="Center"
-                                                Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                Visibility="{Binding KeyboardShortcut, Converter={StaticResource StringToVis}}">
-                                            <TextBlock Text="{Binding KeyboardShortcut}"
-                                                       FontSize="{StaticResource Font.Micro}"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                       FontFamily="Consolas"/>
-                                        </Border>
+                                        <!-- ── Klavye kısayolu (tuş kapakları) ── -->
+                                        <c:KeyCap Grid.Column="2"
+                                                  VerticalAlignment="Center"
+                                                  Shortcut="{Binding KeyboardShortcut}"
+                                                  Visibility="{Binding KeyboardShortcut, Converter={StaticResource StringToVis}}"/>
                                     </Grid>
                                 </Button>
                             </DataTemplate>
@@ -791,7 +778,7 @@
                             BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                             BorderThickness="0,1,0,0"
                             Padding="14,8"
-                            CornerRadius="0,0,12,12">
+                            CornerRadius="0,0,8,8">
                         <Grid>
                             <!-- Left: Keyboard hints -->
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

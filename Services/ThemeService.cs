@@ -189,6 +189,9 @@ namespace Bakım.Services
                     Set(res, "CardBackgroundFillColorDefaultBrush", def.CardBackground);
                     Set(res, "CardBackgroundFillColorSecondaryBrush", def.CardBackgroundAlt);
                     Set(res, "CardStrokeColorDefaultBrush", def.CardStroke);
+                    // ui:Card ve ui:CardControl'ün WPF-UI varsayılan fırçaları: aksi halde kartlar temaya uymaz.
+                    Set(res, "CardBackground", def.CardBackground);
+                    Set(res, "CardBorderBrush", def.CardStroke);
 
                     Set(res, "ControlFillColorDefaultBrush", def.ControlFill);
                     Set(res, "ControlFillColorSecondaryBrush", def.ControlFill);

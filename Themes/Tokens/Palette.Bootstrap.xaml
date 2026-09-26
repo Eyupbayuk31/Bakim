@@ -18,6 +18,8 @@
     <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#2B2B2B"/>
     <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="#272727"/>
     <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="#404040"/>
+    <SolidColorBrush x:Key="CardBackground" Color="#2B2B2B"/>
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#404040"/>
 
     <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="#323232"/>
     <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="#323232"/>
