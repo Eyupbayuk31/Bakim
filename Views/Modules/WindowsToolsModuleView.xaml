@@ -20,214 +20,104 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          Icon="Toolbox24"
-                         HeaderMargin="0,0,0,18"
+                         HeaderMargin="0,0,0,16"
                          Title="Windows Araçları"
-                         Description="Kayıt Defteri Düzenleyicisi, Aygıt Yöneticisi, Görev Zamanlayıcı gibi yerleşik yönetim konsolları ve klasik araçlar tek yerde."/>
+                         Description="Kayıt Defteri Düzenleyicisi, Aygıt Yöneticisi, Görev Zamanlayıcı ve diğer yerleşik araçlar tek yerde."/>
 
-            <ScrollViewer Grid.Row="1"
-                          VerticalScrollBarVisibility="Auto" 
-                          HorizontalScrollBarVisibility="Disabled"
-                          Focusable="False">
-                <StackPanel Margin="0,0,0,20">
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Focusable="False">
+            <StackPanel Margin="0,0,0,20">
 
-                    <!-- HERO BANNER: KLASİK WINDOWS FOTOĞRAF GÖRÜNTÜLEYİCİSİ -->
-                    <Border Margin="0,0,0,16" 
-                            Padding="22,18" 
-                            CornerRadius="{StaticResource Radius.LG}" 
-                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                            BorderThickness="1.5">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                <!-- Klasik fotoğraf görüntüleyicisi: tek ayar kartı -->
+                <ui:CardControl Style="{StaticResource Card.Setting}" Icon="{ui:SymbolIcon Image24}" Margin="{StaticResource Gap.Bottom.MD}">
+                    <ui:CardControl.Header>
+                        <StackPanel>
+                            <TextBlock Text="Windows Fotoğraf Görüntüleyicisi" Style="{StaticResource Text.SettingTitle}"/>
+                            <TextBlock Text="Windows 7'deki hızlı açılan görüntüleyiciyi .jpg, .png, .bmp ve .gif için yeniden kullanılabilir yapar."
+                                       Style="{StaticResource Text.SettingDescription}"/>
+                        </StackPanel>
+                    </ui:CardControl.Header>
+                    <Grid>
+                        <TextBlock Text="Etkin" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Visibility="{Binding IsPhotoViewerActivated, Converter={StaticResource BoolToVis}}"/>
+                        <ui:Button Appearance="Secondary" Content="Etkinleştir"
+                                   Command="{Binding ActivateWindowsPhotoViewerCommand}"
+                                   Visibility="{Binding IsPhotoViewerActivated, Converter={StaticResource InverseBoolToVis}}"/>
+                    </Grid>
+                </ui:CardControl>
 
-                            <Border Grid.Column="0" 
-                                    Background="{DynamicResource Brush.Accent.Subtle}" 
-                                    Width="56" Height="56" 
-                                    CornerRadius="28" 
-                                    Margin="0,0,16,0"
-                                    VerticalAlignment="Center">
-                                <ui:SymbolIcon Symbol="Image24" FontSize="28" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
+                <ui:InfoBar Title="İşlem durumu"
+                            Message="{Binding ToolOperationMessage}"
+                            Severity="{Binding ToolOperationSeverity}"
+                            IsOpen="{Binding IsToolOperationMessageOpen}"
+                            Margin="{StaticResource Gap.Bottom.MD}"/>
 
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <TextBlock Text="Klasik Windows fotoğraf görüntüleyicisi (Photo Viewer)" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    
-                                    <!-- Aktif Rozeti -->
-                                    <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0"
-                                            Visibility="{Binding IsPhotoViewerActivated, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Sistemde aktif (.jpg, .png, .bmp, .gif)" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                                    </Border>
-                                    
-                                    <!-- Pasif Rozeti -->
-                                    <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0"
-                                            Visibility="{Binding IsPhotoViewerActivated, Converter={StaticResource InverseBoolToVis}}">
-                                        <TextBlock Text="Varsayılan UWP / pasif" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    </Border>
-                                </StackPanel>
-                                <TextBlock Text="Windows 10 ve 11'in yavaş açılan 'Fotoğraflar' UWP uygulaması yerine, Windows 7'nin anında açılan ve renkleri doğru veren efsanevi Photo Viewer motorunu tüm formatlar için sisteme geri getirir." 
-                                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
-                            </StackPanel>
+                <!-- Filtre çipleri + arama (kartsız) -->
+                <DockPanel LastChildFill="False" Margin="{StaticResource Gap.Bottom.MD}">
+                    <WrapPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                        <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Tümü'}"
+                                   Command="{Binding SetToolCategoryCommand}" CommandParameter="Tümü"
+                                   Content="Tümü" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Sistem'}"
+                                   Command="{Binding SetToolCategoryCommand}" CommandParameter="Sistem"
+                                   Content="Sistem ve çekirdek" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Donanım &amp; Disk'}"
+                                   Command="{Binding SetToolCategoryCommand}" CommandParameter="Donanım &amp; Disk"
+                                   Content="Donanım ve disk" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Ağ &amp; Güvenlik'}"
+                                   Command="{Binding SetToolCategoryCommand}" CommandParameter="Ağ &amp; Güvenlik"
+                                   Content="Ağ ve güvenlik" Margin="0,0,6,4"/>
+                        <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Hızlı Erişim'}"
+                                   Command="{Binding SetToolCategoryCommand}" CommandParameter="Hızlı Erişim"
+                                   Content="Klasik araçlar" Margin="0,0,6,4"/>
+                    </WrapPanel>
+                    <ui:TextBox DockPanel.Dock="Right"
+                                Text="{Binding ToolSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                PlaceholderText="Araç ara (ör. regedit, aygıt)"
+                                ClearButtonEnabled="True"
+                                Width="260"
+                                Icon="{ui:SymbolIcon Search24}"
+                                AutomationProperties.Name="Araç ara"/>
+                </DockPanel>
 
-                            <ui:Button Grid.Column="2" 
-                                       Appearance="Primary" 
-                                       Command="{Binding ActivateWindowsPhotoViewerCommand}"
-                                       Padding="18,10" 
-                                       VerticalAlignment="Center"
-                                       Icon="{ui:SymbolIcon CheckmarkCircle24}">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Fotoğraf görüntüleyicisini sisteme tanımla ve aç" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
-                                </StackPanel>
-                            </ui:Button>
-                        </Grid>
-                    </Border>
-
-                    <!-- OPERATION RESULT INFOBAR -->
-                    <ui:InfoBar Title="İşlem durumu" 
-                                Message="{Binding ToolOperationMessage}" 
-                                Severity="{Binding ToolOperationSeverity}" 
-                                IsOpen="{Binding IsToolOperationMessageOpen}" 
-                                Margin="0,0,0,14"/>
-
-                    <!-- FILTERS & SEARCH RIBBON -->
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="{StaticResource Radius.LG}"
-                            Padding="12,10"
-                            Margin="0,0,0,14">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <!-- Category Pills -->
-                            <WrapPanel Grid.Column="0" VerticalAlignment="Center">
-                                <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Tümü'}"
-                                           Command="{Binding SetToolCategoryCommand}" CommandParameter="Tümü"
-                                           Margin="0,0,6,0" Padding="12,6">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="Grid24" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Tümü (24)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                <!-- Araç kutucukları (Windows 11 "Windows Araçları" gibi): tüm kutucuk tıklanabilir -->
+                <ItemsControl ItemsSource="{Binding DisplayClassicTools}" Focusable="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="3"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:ClassicAppItem}">
+                            <ui:CardAction IsChevronVisible="False" Margin="0,0,4,4" Padding="16,14"
+                                           VerticalContentAlignment="Top"
+                                           Command="{Binding DataContext.LaunchClassicToolCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                           CommandParameter="{Binding}"
+                                           AutomationProperties.Name="{Binding Title}"
+                                           ToolTip="{Binding Description}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ui:SymbolIcon Grid.Column="0" Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}"
+                                                   FontSize="28" Margin="0,0,14,0" VerticalAlignment="Top"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Title}" Style="{StaticResource Text.SettingTitle}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+                                        <TextBlock Text="{Binding Description}" Style="{StaticResource Text.SettingDescription}"
+                                                   TextTrimming="CharacterEllipsis" MaxHeight="34"/>
+                                        <TextBlock Text="{Binding ExecutablePath}" FontSize="{StaticResource Font.Caption}" Margin="0,4,0,0"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis"/>
                                     </StackPanel>
-                                </ui:Button>
-
-                                <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Sistem'}"
-                                           Command="{Binding SetToolCategoryCommand}" CommandParameter="Sistem"
-                                           Margin="0,0,6,0" Padding="12,6">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Sistem ve çekirdek (6)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ui:Button>
-
-                                <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Donanım &amp; Disk'}"
-                                           Command="{Binding SetToolCategoryCommand}" CommandParameter="Donanım &amp; Disk"
-                                           Margin="0,0,6,0" Padding="12,6">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="HardDrive20" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Donanım ve disk (4)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ui:Button>
-
-                                <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Ağ &amp; Güvenlik'}"
-                                           Command="{Binding SetToolCategoryCommand}" CommandParameter="Ağ &amp; Güvenlik"
-                                           Margin="0,0,6,0" Padding="12,6">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="ShieldKeyhole24" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Ağ ve güvenlik (5)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ui:Button>
-
-                                <ui:Button Appearance="{Binding SelectedToolCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Hızlı Erişim'}"
-                                           Command="{Binding SetToolCategoryCommand}" CommandParameter="Hızlı Erişim"
-                                           Margin="0,0,6,0" Padding="12,6">
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="Flash24" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Hızlı erişim ve klasik araçlar (9)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
-                                    </StackPanel>
-                                </ui:Button>
-                            </WrapPanel>
-
-                            <!-- Tool Search Box -->
-                            <ui:TextBox Grid.Column="1" 
-                                        Text="{Binding ToolSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        PlaceholderText="Konsol veya araç ara (Örn: regedit, aygıt, disk)..."
-                                        VerticalContentAlignment="Center"
-                                        ClearButtonEnabled="True"
-                                        Width="300"
-                                        Padding="10,6"
-                                        Icon="{ui:SymbolIcon Search24}"
-                                        AutomationProperties.Name="Konsol veya araç ara"/>
-                        </Grid>
-                    </Border>
-
-                    <!-- CONSOLES & TOOLS GRID (2 COLUMNS) -->
-                    <ItemsControl ItemsSource="{Binding DisplayClassicTools}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="2"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type models:ClassicAppItem}">
-                                <ui:Card Padding="14" Margin="4,4,4,8" Style="{StaticResource InteractiveCard}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/> <!-- Icon -->
-                                            <ColumnDefinition Width="*"/>    <!-- Title + Category + Description -->
-                                            <ColumnDefinition Width="Auto"/> <!-- Action Button -->
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Icon Box -->
-                                        <Border Grid.Column="0" 
-                                                Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
-                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                Width="44" Height="44" 
-                                                CornerRadius="{StaticResource Radius.LG}" 
-                                                Margin="0,0,12,0"
-                                                VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
-                                                           FontSize="22" 
-                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
-                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-
-                                        <!-- Title + Category + Description -->
-                                        <StackPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                                                <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="5,1" Margin="0,0,6,0">
-                                                    <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                                </Border>
-                                                <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="5,1">
-                                                    <TextBlock Text="{Binding ExecutablePath}" FontSize="{StaticResource Font.Micro}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                                </Border>
-                                            </StackPanel>
-                                            <TextBlock Text="{Binding Description}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,3,0,0" MaxHeight="30" TextTrimming="CharacterEllipsis"/>
-                                        </StackPanel>
-
-                                        <!-- Action Button -->
-                                        <ui:Button Grid.Column="2" 
-                                                   Appearance="Secondary"
-                                                   Content="Başlat"
-                                                   Icon="{ui:SymbolIcon Play20}"
-                                                   Command="{Binding DataContext.LaunchClassicToolCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                   CommandParameter="{Binding}"
-                                                   VerticalAlignment="Center"
-                                                   Padding="12,6"/>
-                                    </Grid>
-                                </ui:Card>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </ScrollViewer>
+                                </Grid>
+                            </ui:CardAction>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

@@ -21,7 +21,7 @@ ROOT = Path(__file__).parent.parent
 ATTRS = ("Text", "Content", "Title", "Header", "Description", "PlaceholderText", "ToolTip", "Label", "Caption", "Heading", "OnContent", "OffContent")
 
 PROTECTED = [
-    "Kayıt Defteri Düzenleyicisi", "Geri Dönüşüm Kutusu", "Olay Görüntüleyicisi", "Aygıt Yöneticisi", "Disk Yönetimi",
+    "Kayıt Defteri Düzenleyicisi", "Geri Dönüşüm Kutusu", "Olay Görüntüleyicisi", "Aygıt Yöneticisi", "Disk Yönetimi", "Windows Fotoğraf Görüntüleyicisi",
     "Görev Yöneticisi", "Görev Zamanlayıcı", "Görev Zamanlayıcısı", "Kurulum Nöbetçisi", "Etkinlik Merkezi",
     "Kontrol Paneli", "Denetim Masası", "Oyun Modu", "Hızlı Bakım", "Kayıt Defteri", "Disk Haritası",
     "Güvenlik Duvarı", "Dosya Gezgini", "Başlat Menüsü", "Görev Çubuğu", "Hızlı Ayarlar", "Ağ İzleyici",
