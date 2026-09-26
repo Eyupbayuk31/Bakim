@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:helpers="clr-namespace:Bakım.Helpers"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              xmlns:c="clr-namespace:Bakım.Controls"
@@ -124,23 +125,17 @@
                 Margin="{StaticResource Gap.Bottom.MD}">
             <StackPanel Orientation="Horizontal">
                 <ui:Button Content="Tarama"
-                           Icon="{ui:SymbolIcon ShieldTask20}"
-                           Appearance="{Binding IsScanTab, Converter={StaticResource BoolToNavAppearance}}"
-                           Command="{Binding SwitchTabCommand}" CommandParameter="Scan"
-                           Padding="14,6" Margin="{StaticResource Gap.Right.XS}"/>
-                <ui:Button Icon="{ui:SymbolIcon History20}"
-                           Appearance="{Binding IsHistoryTab, Converter={StaticResource BoolToNavAppearance}}"
-                           Command="{Binding SwitchTabCommand}" CommandParameter="History"
-                           Padding="14,6" Margin="{StaticResource Gap.Right.XS}"
+                           Icon="{ui:SymbolIcon ShieldTask20}" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding IsScanTab}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="Scan" Margin="{StaticResource Gap.Right.XS}"/>
+                <ui:Button Icon="{ui:SymbolIcon History20}" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding IsHistoryTab}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="History" Margin="{StaticResource Gap.Right.XS}"
                            AutomationProperties.Name="Analizör geçmişi">
                     <TextBlock>
                         <Run Text="Geçmiş ("/><Run Text="{Binding History.TotalCount, Mode=OneWay}"/><Run Text=")"/>
                     </TextBlock>
                 </ui:Button>
-                <ui:Button Icon="{ui:SymbolIcon BranchCompare20}"
-                           Appearance="{Binding IsChangesTab, Converter={StaticResource BoolToNavAppearance}}"
+                <ui:Button Icon="{ui:SymbolIcon BranchCompare20}" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding IsChangesTab}"
                            Command="{Binding SwitchTabCommand}" CommandParameter="Changes"
-                           Padding="14,6"
                            AutomationProperties.Name="Taramalar arası değişiklikler">
                     <TextBlock>
                         <Run Text="Değişiklikler ("/><Run Text="{Binding History.PendingChangesCount, Mode=OneWay}"/><Run Text=")"/>

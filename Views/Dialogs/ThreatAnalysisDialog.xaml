@@ -4,6 +4,7 @@
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:helpers="clr-namespace:Bakım.Helpers"
                  xmlns:models="clr-namespace:Bakım.Models"
                  xmlns:vm="clr-namespace:Bakım.ViewModels"
                  xmlns:c="clr-namespace:Bakım.Controls"
@@ -336,30 +337,22 @@
                 Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
             <UniformGrid Rows="1">
-                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="0"
-                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=0}"
-                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="0" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=0}" Margin="2"
                            Icon="{ui:SymbolIcon ShieldTask24}"
                            Content="Genel Bakış"
                            AutomationProperties.Name="Genel bakış sekmesi"/>
 
-                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="1"
-                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=1}"
-                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="1" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=1}" Margin="2"
                            Icon="{ui:SymbolIcon Layer24}"
                            Content="PE &amp; Kalkanlar"
                            AutomationProperties.Name="PE ikili yapı ve güvenlik kalkanları sekmesi"/>
 
-                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="2"
-                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=2}"
-                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="2" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=2}" Margin="2"
                            Icon="{ui:SymbolIcon Code24}"
                            Content="API Çağrıları"
                            AutomationProperties.Name="İçe aktarılan API çağrıları sekmesi"/>
 
-                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="3"
-                           Appearance="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=3}"
-                           HorizontalAlignment="Stretch" Padding="8,7" Margin="2"
+                <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="3" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=3}" Margin="2"
                            Icon="{ui:SymbolIcon Fingerprint24}"
                            Content="Kimlik &amp; Hash"
                            AutomationProperties.Name="Kriptografik kimlik ve VirusTotal sekmesi"/>

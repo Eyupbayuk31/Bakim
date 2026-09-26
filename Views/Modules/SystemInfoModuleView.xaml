@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:helpers="clr-namespace:Bakım.Helpers"
              xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
@@ -31,10 +32,9 @@
                             Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
                             <!-- Tab 1: Hardware -->
-                            <ui:Button Appearance="{Binding IsHardwareTab, Converter={StaticResource BoolToNavAppearance}}"
+                            <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding IsHardwareTab}"
                                        Command="{Binding SwitchSubTabCommand}"
                                        CommandParameter="Hardware"
-                                       Padding="12,6"
                                        Margin="0,0,4,0">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="16" Margin="0,0,6,0"/>
@@ -43,10 +43,9 @@
                             </ui:Button>
 
                             <!-- Tab 2: S.M.A.R.T. -->
-                            <ui:Button Appearance="{Binding IsSmartTab, Converter={StaticResource BoolToNavAppearance}}"
+                            <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding IsSmartTab}"
                                        Command="{Binding SwitchSubTabCommand}"
-                                       CommandParameter="Smart"
-                                       Padding="12,6">
+                                       CommandParameter="Smart">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="16" Margin="0,0,6,0"/>
                                     <TextBlock Text="S.M.A.R.T." VerticalAlignment="Center"/>
@@ -419,7 +418,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding FormattedFree}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,12,0"/>
+                                            <TextBlock Text="{Binding FormattedFree, StringFormat='{}{0} boş'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,12,0"/>
                                             <TextBlock Text="{Binding FormattedTotal, StringFormat='Toplam Kapasite: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         </StackPanel>
 

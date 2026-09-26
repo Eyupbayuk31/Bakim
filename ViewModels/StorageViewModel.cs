@@ -51,6 +51,12 @@ namespace Bakım.ViewModels
             catch (IOException) { }
             catch (UnauthorizedAccessException) { }
 
+            // Disk Haritası hedefi boş başlamasın: sistem sürücüsü (yoksa ilk sabit sürücü) seçili gelir.
+            string systemRoot = Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.Windows)) ?? "C:\\";
+            _diskMapTarget = AvailableDrives.FirstOrDefault(d => string.Equals(d, systemRoot, StringComparison.OrdinalIgnoreCase))
+                             ?? AvailableDrives.FirstOrDefault(d => d != "Tüm Sürücüler")
+                             ?? string.Empty;
+
             UpdateSelectedDriveSummary();
         }
 
@@ -1385,8 +1391,9 @@ namespace Bakım.ViewModels
         private CancellationTokenSource? _diskMapCts;
         private double _mapWidth, _mapHeight;
 
-        /// <summary>Harita için seçilebilir hedefler: sabit sürücüler.</summary>
-        public IEnumerable<string> DiskMapTargets => AvailableDrives.Where(d => d != "Tüm Sürücüler");
+        /// <summary>Harita için seçilebilir hedefler: sabit sürücüler (liste bir kez oluşturulur; ComboBox seçimi korunur).</summary>
+        public IReadOnlyList<string> DiskMapTargets => _diskMapTargets ??= AvailableDrives.Where(d => d != "Tüm Sürücüler").ToList();
+        private IReadOnlyList<string>? _diskMapTargets;
 
         [RelayCommand]
         private async Task ScanDiskMapAsync()

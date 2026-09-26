@@ -178,6 +178,12 @@ namespace Bakım.Services
                         def.IsDark ? ApplicationTheme.Dark : ApplicationTheme.Light,
                         updateAccent: false);
 
+                    // 1b) WPF-UI denetimlerinin vurgusu (birincil düğme, onay kutusu, anahtar, seçim)
+                    //     temanın vurgusuyla aynı olmalı; aksi halde metinler bir renk, düğmeler
+                    //     Windows'un varsayılan mavisi olur. Koyu temada dolgu = "secondary",
+                    //     açık temada = "primary" rengi kullanılır; ikisi de def.Primary verilir.
+                    ApplicationAccentColorManager.Apply(def.Primary, def.Primary, def.Primary, def.Accent);
+
                     var res = app.Resources;
 
                     // 2) WPF-UI anlamsal fırçalarını geçersiz kıl.

@@ -65,7 +65,7 @@ namespace Bakım.Models
         public bool IsAvailable { get; set; } = true;
 
         public string FormattedTotal => IsAvailable ? $"{TotalGb:F1} GB" : "—";
-        public string FormattedFree => IsAvailable ? $"{FreeGb:F1} GB Boş" : "Okunamadı";
+        public string FormattedFree => IsAvailable ? $"{FreeGb:F1} GB" : "Okunamadı";
     }
 
     public class SystemHardwareStats
