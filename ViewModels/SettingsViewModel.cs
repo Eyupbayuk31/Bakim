@@ -1064,13 +1064,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v430 = new ReleaseChangelogItem
+            {
+                Version = "v4.3.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Modüler Depolama & Ağ Panelleri, Oyun Kütüphanesi & Fluent Tasarım Revizyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Modüler Depolama Mimarisi: Disk Haritası, Yinelenen Dosyalar, Büyük Dosyalar ve Boş Klasörler panelleri dikey ayrık kullanıcı kontrollerine (StorageDiskMapPanel, StorageDuplicatesPanel vb.) dönüştürüldü.",
+                    "Modüler Ağ İzleyici: Ağ Bağdaştırıcıları, Aktif Bağlantılar, Tanılama Araçları, Dinlenen Portlar ve Hız Testi bağımsız paneller halinde yeniden yapılandırıldı.",
+                    "Akıllı Oyun Kütüphanesi: Steam (VDF kütüphane ayrıştırıcı), Epic Games ve GOG kurulu oyunları tespit edilerek Oyun Modu profil planına kusursuz entegre edildi.",
+                    "Yeni Fluent Kontrolleri: Çoklu seçim penceresi (PickListDialog), klavye kısayol rozeti (KeyCap), adım listesi (StepList), özet bilgi şeridi (SummaryStrip) ve yumuşak kaydırma kenar solması (ScrollFade) eklendi.",
+                    "Kenar Çubuğu & Cümle Düzeni: 5 mantıksal gruba ayrılmış kenar çubuğu gezintisi, Windows 11 yerel cümle düzeni dil revizyonu ve Fluent komut paleti senkronizasyonu sağlandı."
+                }
+            };
+
             var v424 = new ReleaseChangelogItem
             {
                 Version = "v4.2.4",
                 ReleaseDate = "Eylül 2026",
                 Title = "CI/CD Doğrulama Kararlılığı & Birim Test İzolasyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "CI Doğrulama Kararlılığı: Windows GitHub Actions ortamındaki Türkçe karakter kaynaklı charmap (UnicodeEncodeError) kodlama hatası giderildi; UTF-8 akış yapılandırmaları uygulandı.",
@@ -1955,8 +1972,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v424;
+            LatestRelease = v430;
 
+            ReleaseHistory.Add(v430);
             ReleaseHistory.Add(v424);
             ReleaseHistory.Add(v423);
             ReleaseHistory.Add(v422);
