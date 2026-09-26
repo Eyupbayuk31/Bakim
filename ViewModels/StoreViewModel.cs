@@ -142,7 +142,7 @@ namespace Bakım.ViewModels
         private int _selectedAppsCount;
 
         [ObservableProperty]
-        private string _selectedAppsText = "0 Paket";
+        private string _selectedAppsText = "Seçilenleri kur";
 
         #endregion
 
@@ -290,7 +290,7 @@ namespace Bakım.ViewModels
         {
             var selected = _masterCatalog.Where(a => a.IsSelected).ToList();
             SelectedAppsCount = selected.Count;
-            SelectedAppsText = $"{SelectedAppsCount} Paket Seçildi";
+            SelectedAppsText = SelectedAppsCount == 0 ? "Seçilenleri kur" : $"{SelectedAppsCount} uygulamayı kur";
         }
 
         #endregion

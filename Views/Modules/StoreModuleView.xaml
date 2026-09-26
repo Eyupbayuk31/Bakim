@@ -27,21 +27,20 @@
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
                          Title="Mağaza"
-                         Description="Sık kullanılan yazılımları ve çalışma zamanı paketlerini (VC++, DirectX) sessizce kurun.">
+                         Description="Sık kullanılan uygulamaları ve çalışma zamanı paketlerini winget ile sessizce kurar ve günceller.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Appearance="Primary"
                                Command="{Binding InstallSelectedBatchCommand}"
                                Content="{Binding SelectedAppsText}"
-                               Icon="{ui:SymbolIcon ArrowDownload24}"
                                Padding="14,8"
                                Margin="0,0,8,0"
-                               ToolTip="Seçili tüm uygulamaları sırayla arka planda sessizce kur."/>
+                               ToolTip="Seçili uygulamaları sırayla, arka planda kurar."/>
 
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ToggleQueueDrawerCommand}"
-                               Content="İlerleme ve konsol"
-                               Icon="{ui:SymbolIcon WindowConsole20}"
+                               Content="İndirmeler"
+                               Icon="{ui:SymbolIcon ArrowDownload24}"
                                Padding="12,8"
                                Margin="0,0,8,0"
                                ToolTip="Canlı indirme kuyruğunu ve log akışını aç/kapat."/>
@@ -56,102 +55,24 @@
             </c:SectionHeader.Actions>
         </c:SectionHeader>
 
-        <!-- ========================================================================= -->
-        <!-- ROW 1: INTEGRATED NAVIGATION SWITCHER & LIVE METRICS RIBBON               -->
-        <!-- ========================================================================= -->
-        <Grid Grid.Row="1" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/> <!-- Segmented Tab Switcher -->
-                <ColumnDefinition Width="*"/>    <!-- Spacer -->
-                <ColumnDefinition Width="Auto"/> <!-- Live Metrics Ribbon -->
-            </Grid.ColumnDefinitions>
-
-            <!-- Segmented Mode Switcher (Katalog vs Hazır Paketler) -->
-            <Border Grid.Column="0" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="3">
-                <StackPanel Orientation="Horizontal">
-                    <!-- Sekme 1: Uygulama Kataloğu -->
-                    <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=0}"
-                               Command="{Binding SwitchToCatalogCommand}"
-                               Margin="0,0,4,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="Apps24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Uygulama kataloğu" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
-                            <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="6,1" Margin="8,0,0,0">
-                                <TextBlock Text="{Binding TotalAppsCount, StringFormat='{}{0} Yazılım'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </Border>
-                        </StackPanel>
-                    </ui:Button>
-
-                    <!-- Sekme 2: Hazır Paketler & Format Kurtarıcı -->
-                    <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=1}"
-                               Command="{Binding SwitchToPresetsCommand}"
-                               Margin="0,0,4,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Hazır paketler ve format kurtarıcı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
-                            <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.MD}" Padding="6,1" Margin="8,0,0,0">
-                                <TextBlock Text="4 set + VC++" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            </Border>
-                        </StackPanel>
-                    </ui:Button>
-
-                    <!-- Sekme 3: Güncellemeler (winget upgrade) -->
-                    <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=2}"
-                               Command="{Binding SwitchToUpdatesCommand}"
-                               Margin="0,0,4,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Güncellemeler" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
-                        </StackPanel>
-                    </ui:Button>
-                </StackPanel>
-            </Border>
-
-            <!-- Live Metrics Ribbon (Tek Satır Modern Metrik Barı) -->
-            <Border Grid.Column="2" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="12,5"
-                    VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Toplam Katalog -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Katalogdaki toplam paket ve kütüphane">
-                        <ui:SymbolIcon Symbol="Apps20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,5,0"/>
-                        <TextBlock Text="Katalog: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding TotalAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    </StackPanel>
-
-                    <!-- Kurulu -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Sisteminizde halihazırda kurulu ve kullanıma hazır olanlar">
-                        <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,5,0"/>
-                        <TextBlock Text="Kurulu: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding InstalledAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                    </StackPanel>
-
-                    <!-- Kurulabilir / Eksik -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip="Henüz kurulmamış, indirilmeye hazır uygulamalar">
-                        <ui:SymbolIcon Symbol="ArrowDownload20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,5,0"/>
-                        <TextBlock Text="Eksik: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding AvailableAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    </StackPanel>
-
-                    <!-- Seçili Kurulum -->
-                    <Border Background="{DynamicResource Brush.Caution.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="8,3" Margin="2,0,0,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" ToolTip="Toplu kuruluma eklenen uygulamalar">
-                            <ui:SymbolIcon Symbol="CheckboxChecked20" FontSize="13" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0"/>
-                            <TextBlock Text="{Binding SelectedAppsCount, StringFormat='{}{0} Seçili'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Border>
-        </Grid>
+        <!-- ROW 1: Sekmeler (SelectorBar) ve sade sayımlar -->
+        <DockPanel Grid.Row="1" LastChildFill="False" Margin="{StaticResource Gap.Bottom.MD}">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                <ui:Button Style="{StaticResource Tab.Item}" Content="Katalog"
+                           helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=0}"
+                           Command="{Binding SwitchToCatalogCommand}"/>
+                <ui:Button Style="{StaticResource Tab.Item}" Content="Hazır paketler"
+                           helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=1}"
+                           Command="{Binding SwitchToPresetsCommand}"/>
+                <ui:Button Style="{StaticResource Tab.Item}" Content="Güncellemeler"
+                           helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=2}"
+                           Command="{Binding SwitchToUpdatesCommand}"/>
+            </StackPanel>
+            <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center"
+                       FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                <Run Text="{Binding TotalAppsCount, Mode=OneWay}"/><Run Text=" uygulama · "/><Run Text="{Binding InstalledAppsCount, Mode=OneWay}"/><Run Text=" kurulu · "/><Run Text="{Binding SelectedAppsCount, Mode=OneWay}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/><Run Text=" seçili"/>
+            </TextBlock>
+        </DockPanel>
 
         <!-- ========================================================================= -->
         <!-- ROW 2: ACTIVE TAB WORKSPACE                                               -->
@@ -187,7 +108,7 @@
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Runtimes" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Runtimes ve sistem" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                <TextBlock Text="Çalışma zamanları" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Gaming'}" 
@@ -246,7 +167,7 @@
 
                         <ui:TextBox Grid.Column="0" 
                                     Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" 
-                                    PlaceholderText="Uygulama adı, açıklama veya yayıncı ara..." 
+                                    PlaceholderText="Uygulama veya yayıncı ara" 
                                     Icon="{ui:SymbolIcon Search24}"
                                     Margin="0,0,12,0"
                                     VerticalContentAlignment="Center"
@@ -321,24 +242,22 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StoreAppItem}">
                                 <Border Width="360" Margin="0,0,16,16" Padding="16,14"
-                                        CornerRadius="{StaticResource Radius.LG}"
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        CornerRadius="{StaticResource Radius.MD}"
                                         BorderThickness="1">
                                     <Border.Style>
                                         <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                                             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
-                                                    <Setter Property="BorderThickness" Value="1.5"/>
-                                                    <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
                                                 </DataTrigger>
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
                                                         <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
                                                         <Condition Binding="{Binding IsSelected}" Value="False"/>
                                                     </MultiDataTrigger.Conditions>
-                                                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                                    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
                                                 </MultiDataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -472,7 +391,7 @@
                                                 <!-- State 1: INSTALLED -> Soft Green Status Badge + Quick Reinstall / Repair Icon Button -->
                                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" 
                                                             Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
-                                                    <Border Background="{DynamicResource Brush.Success.Subtle}" 
+                                                    <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                             BorderBrush="{DynamicResource Brush.Success}"
                                                             BorderThickness="1" 
                                                             CornerRadius="{StaticResource Radius.SM}" 
@@ -480,7 +399,7 @@
                                                             Margin="0,0,6,0">
                                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                             <ui:SymbolIcon Symbol="Checkmark20" FontSize="12" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
-                                                            <TextBlock Text="Kurulu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                            <TextBlock Text="Kurulu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                         </StackPanel>
                                                     </Border>
 
@@ -550,16 +469,14 @@
                                         <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
-                                                <Setter Property="BorderThickness" Value="1.5"/>
-                                                <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
                                             </DataTrigger>
                                             <MultiDataTrigger>
                                                 <MultiDataTrigger.Conditions>
                                                     <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
                                                     <Condition Binding="{Binding IsSelected}" Value="False"/>
                                                 </MultiDataTrigger.Conditions>
-                                                <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                                <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
                                             </MultiDataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -630,7 +547,7 @@
 
                                     <!-- Column 5: Status Badge -->
                                     <StackPanel Grid.Column="5" VerticalAlignment="Center" Margin="0,0,14,0">
-                                        <Border Background="{DynamicResource Brush.Success.Subtle}" 
+                                        <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                 BorderBrush="{DynamicResource Brush.Success}"
                                                 BorderThickness="1" 
                                                 CornerRadius="{StaticResource Radius.SM}" 
@@ -638,7 +555,7 @@
                                                 Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="Checkmark20" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0"/>
-                                                <TextBlock Text="Kurulu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                <TextBlock Text="Kurulu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             </StackPanel>
                                         </Border>
                                         <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
@@ -695,10 +612,10 @@
                     <!-- HERO BANNER: ALL-IN-ONE RUNTIMES (BURAYA TAŞINDI) -->
                     <Border Margin="0,0,0,20" 
                             Padding="22,18" 
-                            CornerRadius="{StaticResource Radius.LG}" 
+                            CornerRadius="{StaticResource Radius.MD}" 
                             Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                            BorderThickness="1.5">
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -707,9 +624,9 @@
                             </Grid.ColumnDefinitions>
 
                             <Border Grid.Column="0" 
-                                    Background="{DynamicResource Brush.Accent.Subtle}" 
-                                    Width="56" Height="56" 
-                                    CornerRadius="28" 
+                                    Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                    Width="48" Height="48" 
+                                    CornerRadius="{StaticResource Radius.MD}" 
                                     Margin="0,0,16,0"
                                     VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Flash24" FontSize="28" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -717,12 +634,9 @@
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <TextBlock Text="Format sonrası can kurtaran: All-in-One runtimes paketi" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0">
-                                        <TextBlock Text="Oyun ve yazılım garantili" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                                    </Border>
+                                    <TextBlock Text="Temel çalışma zamanları" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
-                                <TextBlock Text="Resmi Gigabit CDN üzerinden Visual C++ (2005-2022 x86/x64) tüm kütüphanelerini, DirectX Web Setup ve .NET Desktop çalışma ortamlarını tek tuşla otomatik indirip sessizce kurar." 
+                                <TextBlock Text="Visual C++ 2005–2022 (x86/x64), DirectX ve .NET masaüstü çalışma zamanlarını sırayla indirip sessizce kurar. Temiz kurulumdan sonra oyun ve uygulamaların açılması için gerekir." 
                                            FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                             </StackPanel>
 
@@ -731,9 +645,9 @@
                                        Command="{Binding InstallAllRuntimesCommand}"
                                        Padding="18,10" 
                                        VerticalAlignment="Center"
-                                       Icon="{ui:SymbolIcon TopSpeed24}">
+                                       Icon="{ui:SymbolIcon ArrowDownload24}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Tüm runtimes'ları kur" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                    <TextBlock Text="Hepsini kur"/>
                                 </StackPanel>
                             </ui:Button>
                         </Grid>
@@ -747,8 +661,8 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Özenle hazırlanmış akıllı kurulum setleri" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Kullanım senaryonuza göre optimize edilmiş paketleri seçip tüm yazılımları sırayla arka planda kurabilirsiniz." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Kurulum setleri" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Bir set seçin; içindeki uygulamalar sırayla arka planda kurulur." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
 
                         <ui:Button Grid.Column="1"
@@ -770,15 +684,15 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StorePresetItem}">
                                 <Border Width="550" Margin="0,0,16,16" Padding="18" 
-                                        CornerRadius="{StaticResource Radius.LG}"
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        CornerRadius="{StaticResource Radius.MD}"
                                         BorderThickness="1">
                                     <Border.Style>
                                         <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
                                             <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
                                             <Style.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                                    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
                                                 </Trigger>
                                             </Style.Triggers>
                                         </Style>
@@ -803,9 +717,9 @@
 
                                             <!-- Icon Box -->
                                             <Border Grid.Column="0" 
-                                                    Background="{DynamicResource Brush.Accent.Subtle}" 
+                                                    Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
                                                     Width="48" Height="48" 
-                                                    CornerRadius="{StaticResource Radius.LG}" 
+                                                    CornerRadius="{StaticResource Radius.MD}" 
                                                     Margin="0,0,12,0"
                                                     VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="{Binding IconSymbol}" 
@@ -848,7 +762,7 @@
 
                                         <!-- Included Apps Badges -->
                                         <StackPanel Grid.Row="2" Margin="0,0,0,12">
-                                            <TextBlock Text="Pakete dahil uygulamalar:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,6"/>
+                                            <TextBlock Text="İçindekiler" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,6"/>
                                             <ItemsControl ItemsSource="{Binding IncludedApps}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -1010,7 +924,7 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Canlı kurulum kuyruğu: " FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="İndirmeler " FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="{Binding CurrentAppName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="4,0,0,0"/>
                         <TextBlock Text=" (" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding QueueProgressSummary}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
@@ -1048,7 +962,7 @@
                     <!-- Left: Terminal Badge & Auto-scroll Toggle -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,10,0">
-                            <TextBlock Text="Canlı çıktı ve log konsolu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Çıktı" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
 
                         <CheckBox IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}" 
