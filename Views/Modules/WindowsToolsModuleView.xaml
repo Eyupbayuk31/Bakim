@@ -11,18 +11,14 @@
              d:DataContext="{d:DesignInstance Type=vm:WindowsToolsViewModel}"
              d:DesignHeight="850" d:DesignWidth="1100">
 
-    <Grid Margin="24">
+    <c:ModulePage Title="Windows Araçları"
+                  Subtitle="Kayıt Defteri Düzenleyicisi, Aygıt Yöneticisi, Görev Zamanlayıcı ve diğer yerleşik araçlar tek yerde."
+                  IsScrollable="False">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         Icon="Toolbox24"
-                         HeaderMargin="0,0,0,16"
-                         Title="Windows Araçları"
-                         Description="Kayıt Defteri Düzenleyicisi, Aygıt Yöneticisi, Görev Zamanlayıcı ve diğer yerleşik araçlar tek yerde."/>
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
@@ -120,4 +116,5 @@
             </StackPanel>
         </ScrollViewer>
     </Grid>
+    </c:ModulePage>
 </UserControl>

@@ -13,22 +13,10 @@
              d:DataContext="{d:DesignInstance Type=vm:WindowsTweakerViewModel}"
              d:DesignHeight="850" d:DesignWidth="1100">
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Header & Top Actions -->
-            <RowDefinition Height="Auto"/> <!-- 1: Result Banner -->
-            <RowDefinition Height="Auto"/> <!-- 2: (boş) -->
-            <RowDefinition Height="*"/>    <!-- 3: Master-Detail Workspace -->
-        </Grid.RowDefinitions>
-
-        <!-- 0. Header & Top Action Buttons -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,16"
-                         Title="Windows Ayarları"
-                         Description="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Windows Ayarları"
+                  Subtitle="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Appearance="Secondary"
                                Content="Gezgini yeniden başlat"
@@ -62,8 +50,16 @@
                         </ui:DropDownButton.Flyout>
                     </ui:DropDownButton>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Header & Top Actions -->
+            <RowDefinition Height="Auto"/> <!-- 1: Result Banner -->
+            <RowDefinition Height="Auto"/> <!-- 2: (boş) -->
+            <RowDefinition Height="*"/>    <!-- 3: Master-Detail Workspace -->
+        </Grid.RowDefinitions>
 
         <!-- 1. Result InfoBar -->
         <ui:InfoBar Grid.Row="1" 
@@ -793,4 +789,5 @@
             </Grid>
         </Grid>
     </Grid>
+    </c:ModulePage>
 </UserControl>

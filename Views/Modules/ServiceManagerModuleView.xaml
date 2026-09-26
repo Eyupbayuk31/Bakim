@@ -41,24 +41,10 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Title & Top Controls -->
-            <RowDefinition Height="Auto"/> <!-- Metric Cards -->
-            <RowDefinition Height="Auto"/> <!-- Önerilen profiller (§5.7) -->
-            <RowDefinition Height="Auto"/> <!-- Search & Filters -->
-            <RowDefinition Height="*"/>    <!-- Active Content (Services or Drivers Table) -->
-            <RowDefinition Height="Auto"/> <!-- Bottom Status Bar -->
-        </Grid.RowDefinitions>
-
-        <!-- 1. Header Section -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
-                         Title="Hizmetler ve sürücüler"
-                         Description="Windows arka plan servisleri, güvenlik analizi ve donanım sürücüleri.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Hizmetler ve sürücüler"
+                  Subtitle="Windows arka plan servisleri, güvenlik analizi ve donanım sürücüleri."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <!-- Sub-Tab Switcher & Refresh Button -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
@@ -76,8 +62,18 @@
                 Content="Yenile"
                 Icon="{ui:SymbolIcon ArrowClockwise24}"/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title & Top Controls -->
+            <RowDefinition Height="Auto"/> <!-- Metric Cards -->
+            <RowDefinition Height="Auto"/> <!-- Önerilen profiller (§5.7) -->
+            <RowDefinition Height="Auto"/> <!-- Search & Filters -->
+            <RowDefinition Height="*"/>    <!-- Active Content (Services or Drivers Table) -->
+            <RowDefinition Height="Auto"/> <!-- Bottom Status Bar -->
+        </Grid.RowDefinitions>
 
         <!-- 2. Metric Overview Cards -->
         <Grid Grid.Row="1" Margin="0,0,0,18">
@@ -701,4 +697,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>

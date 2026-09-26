@@ -13,21 +13,10 @@
              d:DataContext="{d:DesignInstance Type=vm:NetworkMonitorViewModel}"
              d:DesignHeight="850" d:DesignWidth="1150">
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Title & Global Actions -->
-            <RowDefinition Height="Auto"/> <!-- 4 Quick Metric Cards -->
-            <RowDefinition Height="Auto"/> <!-- 5-Tab Segmented Switcher -->
-            <RowDefinition Height="*"/>    <!-- Tab Content Area -->
-        </Grid.RowDefinitions>
-
-        <!-- 1. Header Section -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,12"
-                         Title="Ağ İzleyici"
-                         Description="Etkin bağlantılar, dinleyen portlar, ağ bağdaştırıcıları ve hız testi.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Ağ İzleyici"
+                  Subtitle="Etkin bağlantılar, dinleyen portlar, ağ bağdaştırıcıları ve hız testi."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:ToggleSwitch Content="Otomatik yenile"
                                      IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}"
@@ -40,9 +29,16 @@
                                Content="Yenile"
                                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title & Global Actions -->
+            <RowDefinition Height="Auto"/> <!-- 4 Quick Metric Cards -->
+            <RowDefinition Height="Auto"/> <!-- 5-Tab Segmented Switcher -->
+            <RowDefinition Height="*"/>    <!-- Tab Content Area -->
+        </Grid.RowDefinitions>
 
         <!-- 2. Özet şeridi -->
         <c:SummaryStrip Grid.Row="1">
@@ -81,4 +77,5 @@
             <local:NetworkDiagnosticsPanel Visibility="{Binding SelectedTab, Converter={StaticResource StringToVis}, ConverterParameter=Diagnostics}"/>
         </Grid>
     </Grid>
+    </c:ModulePage>
 </UserControl>

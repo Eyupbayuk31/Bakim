@@ -9,21 +9,10 @@
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:OptimizerViewModel}"
              d:DesignHeight="900" d:DesignWidth="1100">
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Header -->
-            <RowDefinition Height="Auto"/> <!-- Result Banner -->
-            <RowDefinition Height="Auto"/> <!-- RAM Architecture Card -->
-            <RowDefinition Height="*"/>    <!-- Process Grid + Right Drawer -->
-        </Grid.RowDefinitions>
-
-        <!-- Top Header -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,16"
-                         Title="Süreçler"
-                         Description="Çalışan süreçler ve bellek dağılımı; kullanılmayan belleği Windows'a geri verme.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Süreçler"
+                  Subtitle="Çalışan süreçler ve bellek dağılımı; kullanılmayan belleği Windows'a geri verme."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" 
                                      AutomationProperties.Name="Canlı izlemeyi aç veya kapat"
@@ -49,8 +38,16 @@
                                AutomationProperties.Name="Bekleme belleğini boşalt"
                                Icon="{ui:SymbolIcon Shield20}"/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Header -->
+            <RowDefinition Height="Auto"/> <!-- Result Banner -->
+            <RowDefinition Height="Auto"/> <!-- RAM Architecture Card -->
+            <RowDefinition Height="*"/>    <!-- Process Grid + Right Drawer -->
+        </Grid.RowDefinitions>
 
         <!-- Result InfoBar -->
         <ui:InfoBar Grid.Row="1" 
@@ -682,4 +679,5 @@
             </Border>
         </Grid>
     </Grid>
+    </c:ModulePage>
 </UserControl>

@@ -9,23 +9,10 @@
               mc:Ignorable="d" 
               d:DataContext="{d:DesignInstance Type=vm:CleanerViewModel}"
               d:DesignHeight="850" d:DesignWidth="1100">
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Row 0: Başlık ve özet -->
-            <RowDefinition Height="Auto"/> <!-- Row 1: InfoBar Operation Result -->
-            <RowDefinition Height="Auto"/> <!-- Row 2: Cleaning Targets & Toolbar -->
-            <RowDefinition Height="Auto"/> <!-- Row 3: Realtime Progress & Status -->
-            <RowDefinition Height="*"/>    <!-- Row 4: Virtualized Scanned Files & Drawer -->
-        </Grid.RowDefinitions>
-
-        <!-- ROW 0: Sayfa başlığı (tek birincil eylem: Temizle) + özet şeridi -->
-        <StackPanel Grid.Row="0">
-            <c:SectionHeader IsPageTitle="True"
-                             Icon="Broom24"
-                             HeaderMargin="0,0,0,20"
-                             Title="Temizleyici"
-                             Description="Geçici dosyaları, önbellekleri ve uygulama kalıntılarını bulur. Silinenler Etkinlik Merkezi'ne kaydedilir.">
-                <c:SectionHeader.Actions>
+    <c:ModulePage Title="Temizleyici"
+                  Subtitle="Geçici dosyaları, önbellekleri ve uygulama kalıntılarını bulur. Silinenler Etkinlik Merkezi'ne kaydedilir."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                     <StackPanel Orientation="Horizontal">
                         <ui:Button Appearance="Secondary"
                                    Content="İptal"
@@ -47,9 +34,20 @@
                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
                                    AutomationProperties.Name="Seçili hedefleri güvenle temizle"/>
                     </StackPanel>
-                </c:SectionHeader.Actions>
-            </c:SectionHeader>
+                
+    </c:ModulePage.Actions>
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Row 0: Başlık ve özet -->
+            <RowDefinition Height="Auto"/> <!-- Row 1: InfoBar Operation Result -->
+            <RowDefinition Height="Auto"/> <!-- Row 2: Cleaning Targets & Toolbar -->
+            <RowDefinition Height="Auto"/> <!-- Row 3: Realtime Progress & Status -->
+            <RowDefinition Height="*"/>    <!-- Row 4: Virtualized Scanned Files & Drawer -->
+        </Grid.RowDefinitions>
+
+        <!-- ROW 0: Sayfa başlığı (tek birincil eylem: Temizle) + özet şeridi -->
+        <StackPanel Grid.Row="0">
             <c:SummaryStrip>
                 <c:StatCard Icon="Broom24"
                             Label="Temizlenebilir"
@@ -653,4 +651,5 @@
             </Border>
         </Grid>
     </Grid>
+    </c:ModulePage>
 </UserControl>

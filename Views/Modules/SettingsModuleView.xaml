@@ -12,19 +12,10 @@
              d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
              d:DesignHeight="850" d:DesignWidth="1050">
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Page Title & Top Actions -->
-            <RowDefinition Height="*"/>    <!-- 1: 2-Column Settings Workspace (Categories + Active Pane) -->
-        </Grid.RowDefinitions>
-
-        <!-- 0. Header Area with Quick Tools -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
-                         Title="Ayarlar"
-                         Description="Görünüm teması, sistem performansı, başlangıç davranışı, güvenlik ve modül ayarları.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Ayarlar"
+                  Subtitle="Görünüm teması, sistem performansı, başlangıç davranışı, güvenlik ve modül ayarları."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ExportSettingsCommand}"
@@ -47,8 +38,14 @@
                                Icon="{ui:SymbolIcon ArrowClockwise24}"
                                ToolTip="Varsayılan fabrika ayarlarına dön"/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Page Title & Top Actions -->
+            <RowDefinition Height="*"/>    <!-- 1: 2-Column Settings Workspace (Categories + Active Pane) -->
+        </Grid.RowDefinitions>
 
         <!-- 1. Main Workspace: Category Navigation Rail + Active Card Content -->
         <Grid Grid.Row="1">
@@ -1419,4 +1416,5 @@
             </ScrollViewer>
         </Grid>
     </Grid>
+    </c:ModulePage>
 </UserControl>

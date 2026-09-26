@@ -11,23 +11,10 @@
              d:DataContext="{d:DesignInstance Type=vm:UninstallerViewModel}"
              d:DesignHeight="780" d:DesignWidth="1050">
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Header -->
-            <RowDefinition Height="Auto"/> <!-- 1: KPI Metrics -->
-            <RowDefinition Height="Auto"/> <!-- 2: Toolbar / Actions -->
-            <RowDefinition Height="*"/>    <!-- 3: Content (App List or Leftovers) -->
-            <RowDefinition Height="Auto"/> <!-- 4: Status Bar -->
-        </Grid.RowDefinitions>
-
-        <!-- 0. Header -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,16"
-                         Title="Kaldırıcı"
-                         Description="Programı resmi kaldırıcısıyla kaldırır; kaldırma doğrulanınca geride kalan dosya, kayıt, hizmet ve görevleri kanıtıyla listeler.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Kaldırıcı"
+                  Subtitle="Programı resmi kaldırıcısıyla kaldırır; kaldırma doğrulanınca geride kalan dosya, kayıt, hizmet ve görevleri kanıtıyla listeler."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Appearance="Secondary"
                                Command="{Binding LaunchHunterModeCommand}"
@@ -53,8 +40,17 @@
                         </ui:DropDownButton.Flyout>
                     </ui:DropDownButton>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Header -->
+            <RowDefinition Height="Auto"/> <!-- 1: KPI Metrics -->
+            <RowDefinition Height="Auto"/> <!-- 2: Toolbar / Actions -->
+            <RowDefinition Height="*"/>    <!-- 3: Content (App List or Leftovers) -->
+            <RowDefinition Height="Auto"/> <!-- 4: Status Bar -->
+        </Grid.RowDefinitions>
 
         <!-- 2. Modern 2-Katmanlı Toolbar: Segment Filtreleri, Sıralama & Arama -->
         <Grid Grid.Row="2" Margin="0,0,0,14"
@@ -615,4 +611,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>

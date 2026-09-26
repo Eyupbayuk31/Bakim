@@ -12,7 +12,18 @@
              d:DataContext="{d:DesignInstance Type=vm:CrashAnalyzerViewModel}"
              d:DesignHeight="780" d:DesignWidth="1050">
 
-    <Grid Margin="28">
+    <c:ModulePage Title="Olaylar ve çökmeler"
+                  Subtitle="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
+                <ui:Button Appearance="Secondary"
+                           Command="{Binding RefreshAllCommand}"
+                           Content="Yenile"
+                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Header & Navigation -->
             <RowDefinition Height="Auto"/> <!-- 1: KPI Metric Cards -->
@@ -20,21 +31,6 @@
             <RowDefinition Height="*"/>    <!-- 3: Active Viewport Content -->
             <RowDefinition Height="Auto"/> <!-- 4: Bottom Status Bar -->
         </Grid.RowDefinitions>
-
-        <!-- 0. Header Section -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
-                         Title="Olaylar ve çökmeler"
-                         Description="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı.">
-            <c:SectionHeader.Actions>
-                <ui:Button Appearance="Secondary"
-                           Command="{Binding RefreshAllCommand}"
-                           Content="Yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
 
         <!-- 1. Güvenilirlik kartı + sekmeler (SelectorBar) -->
         <StackPanel Grid.Row="1">
@@ -543,4 +539,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>
