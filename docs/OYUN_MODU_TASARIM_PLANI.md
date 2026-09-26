@@ -71,6 +71,36 @@ Bu tek hata, tüm uygulamayı "boş ve yarım" gösteriyor. **Faz 0'ın ilk işi
 6. **Dürüst dil.** Ölçülmeyen fayda vaat edilmez ("FPS artar" yok); ölçülen sonuç gösterilir.
 7. **Sistem önce.** Her yeni görsel parça önce `Controls/` veya `Themes/Tokens/` altında bileşen/token olur, sonra sayfada kullanılır.
 
+### 1.1 Windows 11 Fluent uyum kuralları (bağlayıcı)
+
+Plan, WinUI 3 / Windows 11 Ayarlar uygulamasının tasarım dilini hedefler. Uygulama zaten WPF-UI 4.3
+(`ui:FluentWindow`, Mica, Fluent System Icons) kullanıyor; eksik olan, özel token'ların Fluent
+ölçülerinden sapması.
+
+| Konu | Fluent (Win11) kuralı | Bakım'da şimdi | Karar |
+|---|---|---|---|
+| Tip ölçeği (Segoe UI Variable) | Caption 12 · Body 14 · Body Strong 14 SB · Body Large 18 · Subtitle 20 SB · Title 28 SB · Title Large 40 SB · Display 68 SB | BodyLarge 15, Subtitle 16, SectionTitle 18, Title 20, TitleLarge 28 **Bold**, Display 40 | `Typography.xaml` Fluent ölçeğine geçer; sayfa başlığı **Title 28 SemiBold** (Bold değil). Göç `Tools/migrate-font-sizes.py` ile. |
+| Köşe yarıçapı | Denetim ve ayar kartı 4 px; açılır pencere / iletişim kutusu 8 px | Kartlar 8, haplar 999, `Radius.LG` 12 | Ayar kartları ve düğmeler 4, büyük yüzeyler 8; hap yarıçapı yalnızca rozetlerde. |
+| Ayar satırı | SettingsCard: ayrı kart, MinHeight 68, Padding 16, kartlar arası 4 px | Tek kart içinde Grid'ler | `ui:CardControl` / `ui:CardExpander`. |
+| Bölüm başlığı | Body Strong, büyük harf yok | 11 px, büyük harf, üçüncül gri | `Text.SectionLabel` = Body Strong. |
+| Gezinme | NavigationView: seçili olmayan şeffaf; seçili `SubtleFillColorSecondary` + 3×16 vurgu çubuğu; seçili simge `Filled` | Her öğe dolu `Secondary` düğme, seçili tam dolu `Primary` | Faz 0.4 ile Fluent'e döner. |
+| Düğmeler | Tek birincil eylem `Accent`, diğerleri `Standard`; kırmızı yalnızca yıkıcı eylemde | Uyumlu | Kapat = Standard. |
+| Durum bildirimi | `InfoBar`, `InfoBadge`, `ProgressRing`; renk tek başına anlam taşımaz | Özel rozetler | `StatusBadge` Fluent InfoBadge görünümüne yaklaşır. |
+| Hareket | 83 / 167 / 250 / 333 ms, "fast out slow in"; hareket işlevseldir, dekoratif döngü yok | 120/200/300 ms; `InteractiveCard` hover'da kalkıyor ve vurgu çerçevesi alıyor | Süreler güncellenir; kart kalkma efekti kaldırılır (Fluent'te kartlar hover'da yalnızca zemin tonunu değiştirir). |
+| Malzeme | Pencere zemini Mica; kartlar yarı saydam katman (`CardBackgroundFillColorDefault` ≈ %5 beyaz) | Slate paleti (#0F172A / #1E293B) WPF-UI fırçalarını **opak** renklerle eziyor, Mica görünmüyor | **Açık karar**, aşağıda. |
+| Simgeler | Fluent System Icons, 16/20/24 px | Uyumlu, ama 13, 15, 18 gibi ara boyutlar var | `Icon.*` ölçeği 12/16/20/24/32/48'e iner. |
+
+**Açık karar — renk paleti:** Bugünkü "Slate Dark" (Tailwind'in lacivert-gri tonları) v4.1'in
+kimliği, ama gerçek Windows 11 görünümü değil. İki yol var:
+
+1. **Tam Fluent:** Varsayılan tema WPF-UI'nın yerel Mica + nötr gri fırçalarını kullanır; Slate Dark
+   isteğe bağlı tema olarak kalır. Windows 11 uygulamalarıyla birebir aynı görünür.
+2. **Fluent yapı, Slate renk:** Ölçüler, yerleşim ve bileşenler Fluent; renkler Slate. Marka kimliği
+   korunur ama Mica ve saydamlık hissi olmaz.
+
+Öneri: 1. yol. Mica zaten açık (`WindowBackdropType="Mica"`), ama opak renkler yüzünden boşa gidiyor.
+
+
 ---
 
 ## 2. Hedef düzen
@@ -114,8 +144,8 @@ Bu tek hata, tüm uygulamayı "boş ve yarım" gösteriyor. **Faz 0'ın ilk işi
 ```
 ╔═══════════════════════════════════════════════════════════════════════════════════════╗
 ║ ┌──────┐  ● AÇIK · 00:42:13                                         ┌────────────────┐ ║
-║ │ 🎮 ◌ │  Oyun Modu çalışıyor                                        │ ■ Oyun Modunu  │ ║
-║ │ nabız│  cs2 algılandı · otomatik açıldı                            │   kapat        │ ║
+║ │  🎮  │  Oyun Modu çalışıyor                                        │ ■ Oyun Modunu  │ ║
+║ │      │  cs2 algılandı · otomatik açıldı                            │   kapat        │ ║
 ║ └──────┘                                                            └────────────────┘ ║
 ║ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐               ║
 ║ │ Güç planı     │ │ Serbest bellek│ │ Askıda        │ │ Bakım işleri  │               ║
@@ -124,8 +154,8 @@ Bu tek hata, tüm uygulamayı "boş ve yarım" gösteriyor. **Faz 0'ın ilk işi
 ╚═══════════════════════════════════════════════════════════════════════════════════════╝
 ```
 
-- Kart zemini: `Status.Success.Subtle` üzerine 1 px `Status.Success.Border`; sol üstte yumuşak vurgu parıltısı (`Brush.Glow.Soft`, yalnızca açıkken).
-- Simge kutusu: 64×64, `Radius.LG`, açıkken yavaş nabız halkası (2,4 sn, `Ease.Gentle`; "Animasyonları azalt" açıksa sabit halka).
+- Kart zemini Fluent kartı olarak **düz** kalır (`CardBackgroundFillColorDefaultBrush`, `CardStrokeColorDefaultBrush`); parıltı, gradyan ve renkli zemin yok. Açık durum; simgenin vurgu rengine geçmesi (`Filled`), yeşil durum noktası ve metinle anlatılır.
+- Simge kutusu: 48×48, `Radius.MD` (8), `SubtleFillColorSecondaryBrush` zemin. Sürekli (dekoratif) animasyon yok; Fluent'te hareket yalnızca durum değişimini anlatır.
 - Durum hapı: nokta + büyük harf etiket + canlı süre (`mm:ss` → `sa dk`), rakamlar `Tabular`.
 - Düğme: kapalıyken `Primary` "Oyun Modunu başlat" (Play24), açıkken `Secondary` "Oyun Modunu kapat" (Stop24). Kapatmak yıkıcı değil, bu yüzden kırmızı değil.
 - Açıkken ayarlar kartı üstünde bilgi şeridi: "Değişiklikler bir sonraki açılışta uygulanır."
@@ -148,10 +178,10 @@ Bu tek hata, tüm uygulamayı "boş ve yarım" gösteriyor. **Faz 0'ın ilk işi
 | 0.2 Birim testi | `Tests/` | 6 durum: boş/dolu × param yok/var × Invert. |
 | 0.3 Görsel regresyon turu | 20 modül | Açıklamaları görünür olan başlıklar artık 1-2 satır ekliyor; taşan/çok uzun açıklamaları kısalt (özellikle sayfa başlıklarında tek cümle kuralı). |
 | 0.4 Kenar çubuğu görünümü | `ValueConverters.cs:241`, `MainWindow.xaml:348-402` | Seçili değil → `Transparent`; seçili → `Transparent` + `Surface.Selected` zemin + sol vurgu çubuğu + SemiBold metin. Hover: `Surface.Hover`. Yani özel bir `NavItemButton` stili (`Themes/Controls/NavItem.xaml`), `BoolToNavAppearance` kaldırılır. |
-| 0.5 Grup başlığı kırpılması | `MainWindow.xaml:296, :336` | Marka bloğu alt boşluğu 14 → 8; ilk grup başlığının üst boşluğu 4; başlık 11 px SemiBold, harf aralığı +0.4 (Typography: `Text.NavGroup` stili). |
+| 0.5 Grup başlığı kırpılması | `MainWindow.xaml:296, :336` | Marka bloğu alt boşluğu 14 → 8; ilk grup başlığının üst boşluğu 4; başlık Fluent NavigationView gibi `Body Strong` (14 SemiBold), büyük harf değil, `Text.Secondary` (Typography: `Text.NavGroup` stili). |
 | 0.6 Depolama simgesi | `ViewModels/Navigation.cs:71` | `python Tools/verify-symbols.py` ile doğrula; font'ta yoksa `Storage24` / `HardDrive20`'ye geç. `verify-symbols.py` CI'ya bağlanır. |
 | 0.7 Kaydırma kenar solması | `MainWindow.xaml:327` | Nav `ScrollViewer`'a alt/üst `OpacityMask` (LinearGradient) — kesik öğe "devamı var" gibi okunur. |
-| 0.8 Başlık çubuğu hap dili | `MainWindow.xaml:111-236` | Tüm haplar tek stil: `TitleBarPill` (Height 32, `Radius.Pill`, `Surface.Raised`, `Border.Subtle`). Oyun Modu hapı: kapalıyken nötr, açıkken yeşil nokta + "Oyun Modu · 42 dk" — renk değil nokta+metin ile durum. |
+| 0.8 Başlık çubuğu hap dili | `MainWindow.xaml:111-236` | Tüm haplar tek stil: `TitleBarButton` (Height 32, `Radius.XS` = 4 — Fluent denetim yarıçapı, hap değil; şeffaf zemin, çerçevesiz, hover'da `SubtleFillColorSecondary`). Oyun Modu hapı: kapalıyken nötr, açıkken yeşil nokta + "Oyun Modu · 42 dk" — renk değil nokta+metin ile durum. |
 
 **Kabul:** Oyun Modu başlığının altında açıklama ve simge görünüyor; kenar çubuğunda seçili olmayan öğelerin zemini yok; hiçbir sayfada boş rozet/boş çip kalmadı.
 
@@ -161,17 +191,18 @@ Bu tek hata, tüm uygulamayı "boş ve yarım" gösteriyor. **Faz 0'ın ilk işi
 
 | Bileşen / token | Yer | Amaç |
 |---|---|---|
+| **Fluent tip ölçeği ve yarıçap göçü** | `Typography.xaml`, `Spacing.xaml`, `Tools/migrate-*.py` | §1.1 tablosundaki değerler. Anahtar adları korunur, yalnızca değerler değişir; `Font.SectionTitle` → Subtitle 20, `Font.Title` → 28 SemiBold vb. `InteractiveCard` kalkma efekti kaldırılır. |
 | `Style Card.Surface` (Border) | `Themes/Tokens/Surfaces.xaml` (yeni) | Sayfalarda 6 satırlık tekrar eden `Background/BorderBrush/Thickness/CornerRadius/Padding` bloğunu tek stile indirir. `Card.Hero`, `Card.Hero.Active`, `Card.Inset` türevleri. |
-| `c:SettingRow` | `Controls/SettingRow.xaml` (yeni) | Fluent ayar satırı: `Icon`, `Header`, `Description`, sağda `Content` (denetim), altta isteğe bağlı `Footer` (genişletilmiş içerik). `ShowDivider`. MinHeight 64, `Pad.Row` 16,12. Açıklama `MaxWidth=560` → satır uzunluğu sorunu (S3) biter. |
-| `c:SettingGroup` | `Controls/SettingGroup.xaml` (yeni) | Başlıklı `Card.Surface` + `ItemsControl`; satırlar arasında otomatik ayraç (S8). |
-| `Text.SectionLabel` | `Typography.xaml` | 12 px SemiBold, `Text.Secondary`, harf aralığı +0.3, üst boşluk 24 / alt 8 (S7). `Text.Label` yalnızca form etiketi kalır. |
+| **`ui:CardControl` / `ui:CardExpander`** (WPF-UI 4.3'te hazır) | `Themes/Controls/SettingsCard.xaml` (yalnızca stil) | Windows 11 Ayarlar'daki SettingsCard / SettingsExpander'ın WPF-UI karşılığı. Özel bileşen **yazılmaz**; yerleşik olanlar Fluent ölçüleriyle stillenir: MinHeight 68, Padding 16, `Radius.XS` (4), simge 20 px, başlık `Body` 14, açıklama `Caption` 12 `Text.Secondary`. Açıklama `MaxWidth=560` → satır uzunluğu sorunu (S3) biter. |
+| Ayar grubu düzeni | `Themes/Tokens/Spacing.xaml` | Win11 Ayarlar kalıbı: her ayar **ayrı kart**, kartlar arası 4 px, grup başlığı kartların üstünde. Tek büyük kart içinde ayraçlı satır kullanılmaz (S8). |
+| `Text.SectionLabel` | `Typography.xaml` | Fluent bölüm başlığı: `Body Strong` (14 SemiBold), `Text.Primary`, büyük harf yok, Margin `1,30,0,6` (WinUI Ayarlar örneği) (S7). `Text.Label` yalnızca form etiketi kalır. |
 | `c:ChipListEditor` | `Controls/ChipListEditor.xaml` (yeni) | Öğeler kaldırılabilir çip (`×`), sonda "+ Ekle" giriş kutusu (Enter/virgül ile ekler, Backspace ile son çipi siler), yinelenen ve geçersiz adı reddeder, `.exe` uzantısını otomatik temizler. `ItemsSource` = `ObservableCollection<string>`. Erişilebilirlik: her çip `AutomationProperties.Name="{0} öğesini kaldır"`. (S6) |
 | `c:KeyCap` | `Controls/KeyCap.xaml` (yeni) | "Ctrl" "Shift" "G" tuş kapakları; başlık çubuğu arama hapı ve komut paleti de bunu kullanır (S9). |
 | `c:StatusPill` genişletme | `Controls/` | Nokta + etiket + isteğe bağlı canlı alt metin (süre). MASTER_PLAN'daki `StatusPill` varsa genişletilir, yoksa `StatusBadge`'e `Size=Large` eklenir. |
 | `c:StepList` | `Controls/StepList.xaml` (yeni) | Durumlu adım listesi: `Pending` (boş halka), `WillApply` (✓ vurgu), `Skipped` (– üçüncül, üstü çizili değil), `Applied` (✓ yeşil), `Failed` (! kırmızı). Hem "Açınca ne olacak" hem açık-durum metrikleri için. |
 | `c:PageContainer` / `Layout.Page` stili | `Themes/Tokens/Spacing.xaml` | `MaxWidth=1180`, `HorizontalAlignment=Center`, `Pad.Module 32,24`. Tüm modüller kademeli geçer; ilk kullanıcı Oyun Modu. |
-| Boşluk ritmi | `Spacing.xaml` | `Gap.Section` (32), `Gap.Block` (16), `Gap.Inline` (8): başlık→ilk blok 24, bloklar arası 16, bölüm arası 32 (K7). |
-| Motion | `Motion.xaml` | `Motion.Pulse` (2.4 sn), `Motion.StateChange` (0.25 sn renk/zemin geçişi); `MotionPolicy` ile sıfırlanır. |
+| Boşluk ritmi | `Spacing.xaml` | Fluent 4 px ızgarası: `Gap.Card` (4, ayar kartları arası), `Gap.Block` (16), `Gap.Section` (30, bölüm başlığı üstü). Sayfa başlığı → ilk blok 24 (K7). |
+| Motion | `Motion.xaml` | Fluent süreleri: `Motion.Fast` 83 ms, `Motion.Normal` 167 ms, `Motion.Slow` 250 ms, `Motion.Slower` 333 ms (şu an 120/200/300). Eğri "fast out, slow in" (`cubic-bezier(0,0,0,1)` ≈ `ExponentialEase EaseOut`). `MotionPolicy` ile sıfırlanır. |
 
 Her bileşen için: tasarım zamanı örneği (`d:`), açık/koyu/Yüksek Kontrast kontrolü, `AutomationProperties`. `verify-design-debt.py` sayaçları artmamalı (sabit renk/FontSize/CornerRadius yok).
 
@@ -184,12 +215,12 @@ Her bileşen için: tasarım zamanı örneği (`d:`), açık/koyu/Yüksek Kontra
 1. Kök: `ScrollViewer` → `PageContainer` → `StackPanel`.
 2. `SectionHeader` (açıklama kısaltılır, bkz. Faz 4).
 3. **Hero kartı** (`Card.Hero` / `Card.Hero.Active`, `DataTrigger IsActive`):
-   - Sol: 64 px simge kutusu (`Radius.LG`, `Brush.Accent.Subtle` / `Status.Success.Subtle`), açıkken nabız halkası.
-   - Orta: `StatusPill` (KAPALI / AÇIK · süre), başlık (`Text.SectionTitle` 18 → hero için 22 SemiBold `Font.HeroTitle` yeni token), tek satır alt metin.
+   - Sol: 48 px simge kutusu (`Radius.MD`, `SubtleFillColorSecondaryBrush`); açıkken simge `Filled` + vurgu rengi.
+   - Orta: `StatusPill` (KAPALI / AÇIK · süre), başlık Fluent `Subtitle` (20 SemiBold), tek satır alt metin.
    - Sağ: büyük düğme (MinWidth 200, Height 44) + altında `KeyCap` kısayol; meşgulken düğme içinde `ProgressRing` ve metin "Açılıyor…/Kapatılıyor…", düğme devre dışı (şu an halka düğmenin yanında, düğme tıklanabilir kalıyor).
    - Alt (yalnızca açıkken, `Expander` benzeri yumuşak açılma): 4 metrik kutusu (`StatCard` compact).
 4. **İki sütunlu gövde** (`Grid` 62* / 38*, 16 px ara; dar modda tek sütun):
-   - Sol: üç `SettingGroup` — **Performans** (Güç planı, Bellek kırpma), **Arka plan uygulamaları** (ChipListEditor + "Çalışanlardan seç"), **Otomatik başlatma** (anahtar + ChipListEditor; kapalıyken liste gizlenmez, üstünde "Anahtarı açınca bu oyunlar izlenir" satırı ile soluk).
+   - Sol: üç ayar grubu (`ui:CardControl` kartları) — **Performans** (Güç planı, Bellek kırpma), **Arka plan uygulamaları** (ChipListEditor + "Çalışanlardan seç"), **Otomatik başlatma** (anahtar + ChipListEditor; kapalıyken liste gizlenmez, üstünde "Anahtarı açınca bu oyunlar izlenir" satırı ile soluk).
    - Sağ: **"Açınca ne olacak"** `StepList` (canlı, profilden) + altında "Kapatınca: önceki güç planı geri yüklenir, askıdaki uygulamalar devam eder." tek satırı. Altında **Son oturumlar** (en fazla 5, "Tümünü Etkinlik Merkezi'nde gör →" bağlantısı; boşsa `EmptyState` küçük boy).
 5. `InfoBar "Son işlem"` kaldırılır: sonuç, hero'nun alt metnine ve oturum listesinin ilk satırına taşınır (tekrarı önler). Hata olursa hero içinde `Severity=Error` şerit.
 
@@ -233,7 +264,7 @@ GameModeSessionInfo? CurrentSession { get; }
 ### Faz 3 — Canlılık ve mikro etkileşimler
 
 1. Kapalı → Açık geçişi: hero zemini/çerçevesi `Motion.StateChange` ile renk geçişi; metrik satırı yukarıdan 8 px kayarak belirir; adım listesindeki ✓'ler sırayla (40 ms arayla) `Applied` olur — **servis gerçekten adımı uyguladıkça** (servis olayı: `StepCompleted`), sahte animasyon değil.
-2. Nabız halkası yalnızca açıkken; "Animasyonları azalt" açıksa kapalı.
+2. Sürekli animasyon yok (nabız, parıltı vb.); yalnızca durum geçişlerinde tek seferlik hareket.
 3. Çip ekleme/silme: 120 ms ölçek+opaklık.
 4. Kısayol ile (Ctrl+Shift+G) başka sayfadayken açılınca: sağ alt toast "Oyun Modu açıldı · Ctrl+Shift+G ile kapat" (mevcut toast altyapısı).
 5. Tepsi menüsü (`TrayFlyoutWindow.xaml`) ve Kontrol Paneli kartı aynı `StatusPill` + süreyi kullanır — üç yerde tek görsel dil.
@@ -262,7 +293,7 @@ GameModeSessionInfo? CurrentSession { get; }
 1. **Oyun kütüphanesi bulucu:** Steam (`libraryfolders.vdf` + `appmanifest_*.acf`), Epic (`%ProgramData%\Epic\EpicGamesLauncher\Data\Manifests\*.item`), Xbox/MS Store (`GamingServices` paketleri) → "Kütüphaneden ekle" diyaloğu, kapak yerine exe simgesi. `Services/GameLibraryService.cs` (yeni, salt okuma).
 2. **Çalışanlardan seç** diyaloğu (Faz 2'de tanımlı) — arama kutusu, simge, süreç adı, bellek kullanımı.
 3. **Önerilen askıya alma adayları:** o an çalışan ve bilinen arka plan uygulamaları (OneDrive, Teams, Dropbox, Adobe güncelleyicileri…) çip önerisi olarak "+ OneDrive" biçiminde soluk görünür; tıklayınca eklenir. Liste JSON'da, sabit kod değil.
-4. **Odak Yardımı / Rahatsız Etmeyin** adımı (MASTER_PLAN §5.5 madde 1) — ayrı `SettingRow` ve `StepList` adımı.
+4. **Odak Yardımı / Rahatsız Etmeyin** adımı (MASTER_PLAN §5.5 madde 1) — ayrı `ui:CardControl` ve `StepList` adımı.
 5. **Oturum raporu:** ortalama CPU/GPU yükü (TelemetryHub), Etkinlik Merkezi'nde ayrıntı paneli.
 
 > Faz 5 tasarımdan bağımsız sürümlenebilir; Faz 0-4 bunlar olmadan tamamlanmış sayılır.
@@ -273,7 +304,7 @@ GameModeSessionInfo? CurrentSession { get; }
 
 | Hedef | Kullanılacak bileşen |
 |---|---|
-| Ayarlar sayfası | `SettingGroup` + `SettingRow` (en büyük kazanç: şu an serbest Grid'ler) |
+| Ayarlar sayfası | `ui:CardControl` / `ui:CardExpander` + Win11 Ayarlar düzeni (en büyük kazanç: şu an serbest Grid'ler) |
 | Kurulum Nöbetçisi, Ağ İzleyici | Hero kartı kalıbı (durum + tek eylem) |
 | Kontrol Paneli Oyun Modu kartı | `StatusPill` + süre + "Sayfaya git" |
 | Tüm modüller | `PageContainer` (MaxWidth), `Text.SectionLabel`, `Card.Surface` stili → XAML satır sayısında ~%15 azalma beklenir |
@@ -315,7 +346,7 @@ Her geçiş ayrı küçük commit; `verify-design-debt.py --update` ile eşik d�
 `Converters/ValueConverters.cs`, `MainWindow.xaml`, `ViewModels/Navigation.cs`,
 `Themes/Tokens/{Typography,Spacing,Motion}.xaml`, `Themes/Tokens/Surfaces.xaml` (yeni),
 `Themes/Controls/NavItem.xaml` (yeni), `App.xaml`,
-`Controls/{SettingRow,SettingGroup,ChipListEditor,KeyCap,StepList}.xaml(.cs)` (yeni),
+`Themes/Controls/SettingsCard.xaml` (yeni, stil), `Controls/{ChipListEditor,KeyCap,StepList}.xaml(.cs)` (yeni),
 `Controls/StatusBadge.xaml`, `Views/Modules/GameModeModuleView.xaml`,
 `ViewModels/GameModeViewModel.cs`, `Services/{IGameModeService,GameModeService}.cs`,
 `Views/Windows/TrayFlyoutWindow.xaml`, `Views/Modules/DashboardModuleView.xaml`, `Tests/`.
