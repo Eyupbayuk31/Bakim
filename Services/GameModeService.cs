@@ -44,6 +44,8 @@ namespace Bakım.Services
 
         public string LastActionSummary { get; private set; } = string.Empty;
 
+        public Core.GameMode.GameModeSessionInfo? CurrentSession { get; private set; }
+
         private const string HighPerformanceScheme = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c";
         private const string BalancedScheme = "381b4222-f694-41f0-9685-ff5bb260df2e";
 
@@ -52,7 +54,10 @@ namespace Bakım.Services
 
         private sealed record GameModeState(string? PreviousScheme, DateTime ActivatedAtUtc);
 
-        public async Task<long> EnableGameModeAsync()
+        public Task<long> EnableGameModeAsync() => EnableGameModeAsync(triggerGame: null);
+
+        /// <param name="triggerGame">Otomatik tetiklemede oyunun süreç adı; elle açılışta null.</param>
+        private async Task<long> EnableGameModeAsync(string? triggerGame)
         {
             if (_isGameModeActive) return 0;
 
@@ -68,6 +73,8 @@ namespace Bakım.Services
             var profile = _settings?.Current;
             string planChoice = profile?.GameModePowerPlan ?? "HighPerformance";
             string planText;
+            string? appliedPlanName = null;
+            bool planFailed = false;
             if (string.Equals(planChoice, "Keep", StringComparison.OrdinalIgnoreCase))
             {
                 planText = "Güç planına dokunulmadı. ";
@@ -82,30 +89,37 @@ namespace Bakım.Services
                     // Nihai Performans planı çoğu cihazda gizli/yoktur: Yüksek Performans'a düşülür.
                     applied = TrySetPowerScheme(HighPerformanceScheme);
                     planText = applied ? "Nihai Performans planı yok; Yüksek Performans etkin. " : "Performans güç planı uygulanamadı. ";
+                    appliedPlanName = applied ? "Yüksek Performans" : null;
                 }
                 else
                 {
                     planText = applied
                         ? (ultimate ? "Nihai Performans güç planı etkin. " : "Yüksek Performans güç planı etkin. ")
                         : "Yüksek Performans güç planı bu cihazda yok ya da uygulanamadı. ";
+                    appliedPlanName = applied ? (ultimate ? "Nihai Performans" : "Yüksek Performans") : null;
                 }
+                planFailed = !applied;
             }
 
             // Kullanıcının seçtiği arka plan uygulamaları askıya alınır (defter sayesinde her koşulda devam ettirilir).
             int suspended = 0;
+            var suspendedApps = new List<string>();
             foreach (var name in ParseProcessList(profile?.GameModeSuspendApps))
             {
                 var processes = Process.GetProcessesByName(name);
                 try
                 {
+                    bool any = false;
                     foreach (var p in processes)
                     {
                         if (await _cleanService.SuspendProcessAsync(p.Id))
                         {
                             lock (_suspendedByGameMode) _suspendedByGameMode.Add(p.Id);
                             suspended++;
+                            any = true;
                         }
                     }
+                    if (any) suspendedApps.Add(name);
                 }
                 finally
                 {
@@ -130,6 +144,10 @@ namespace Bakım.Services
                 "Bakım'ın arka plan işleri duraklatıldı. " +
                 (suspended > 0 ? $"{suspended} arka plan süreci askıya alındı. " : "") +
                 (profile?.GameModeTrimMemory ?? true ? Bakım.Core.Text.MemoryResultText.Describe(freedBytes) : "");
+
+            CurrentSession = new Core.GameMode.GameModeSessionInfo(
+                DateTime.UtcNow, triggerGame, appliedPlanName, planFailed,
+                (profile?.GameModeTrimMemory ?? true) ? freedBytes : 0, suspendedApps, suspended);
 
             _log.Info("Oyun Modu açıldı: " + LastActionSummary, nameof(GameModeService));
             GameModeChanged?.Invoke(true);
@@ -173,7 +191,8 @@ namespace Bakım.Services
                 : "Önceki güç planı geri yüklenemedi; Windows güç ayarlarından kontrol edin.") +
                 (pids.Count > 0 ? $" {resumed}/{pids.Count} askıya alınan süreç devam ettirildi." : "");
 
-            RecordSession(state?.ActivatedAtUtc, restored);
+            RecordSession(state?.ActivatedAtUtc, restored, CurrentSession);
+            CurrentSession = null;
 
             _log.Info("Oyun Modu kapatıldı: " + LastActionSummary, nameof(GameModeService));
             GameModeChanged?.Invoke(false);
@@ -190,15 +209,23 @@ namespace Bakım.Services
             DeleteState();
         }
 
-        /// <summary>Oturumu Etkinlik Merkezi'ne yazar: süre ve güç planının geri gelip gelmediği.</summary>
-        private static void RecordSession(DateTime? activatedAtUtc, bool planRestored)
+        /// <summary>
+        /// Oturumu Etkinlik Merkezi'ne yazar: süre, tetikleyen oyun, boşaltılan bellek,
+        /// askıya alınan uygulama sayısı ve güç planının geri gelip gelmediği.
+        /// </summary>
+        private static void RecordSession(DateTime? activatedAtUtc, bool planRestored, Core.GameMode.GameModeSessionInfo? session)
         {
             var activity = App.TryGetService<Activity.IActivityService>();
             if (activity == null) return;
 
             string duration = activatedAtUtc is { } start ? Core.Text.DurationText.Describe(DateTime.UtcNow - start) : "süre bilinmiyor";
+            var parts = new List<string> { duration };
+            if (session?.FreedBytes > 0) parts.Add($"{Core.Text.ByteFormatter.Format(session.FreedBytes)} bellek");
+            if (session?.SuspendedApps.Count > 0) parts.Add($"{session.SuspendedApps.Count} uygulama askıdaydı");
+            parts.Add(planRestored ? "önceki güç planı geri yüklendi" : "güç planı geri yüklenemedi");
+            string title = session?.TriggerGame is { } game ? $"Oyun Modu oturumu · {game}" : "Oyun Modu oturumu";
             Activity.ActivityRecording.RecordSimple(activity, Core.Activity.ActivityKind.GameModeSession, "Oyun Modu",
-                "Oyun Modu oturumu", $"{duration} · " + (planRestored ? "önceki güç planı geri yüklendi" : "güç planı geri yüklenemedi"),
+                title, string.Join(" · ", parts),
                 planRestored ? Core.Activity.ActivityOutcome.Succeeded : Core.Activity.ActivityOutcome.PartiallySucceeded,
                 deepLink: "GameMode");
         }
@@ -223,18 +250,19 @@ namespace Bakım.Services
                 var games = ParseProcessList(profile.GameModeAutoStartExes);
                 if (games.Count == 0) return;
 
-                bool anyRunning = games.Any(name =>
+                string? runningGame = games.FirstOrDefault(name =>
                 {
                     var ps = Process.GetProcessesByName(name);
                     try { return ps.Length > 0; }
                     finally { foreach (var p in ps) p.Dispose(); }
                 });
+                bool anyRunning = runningGame != null;
 
                 if (anyRunning && !_isGameModeActive)
                 {
                     _autoEnabled = true;
-                    _log.Info("Listedeki oyun başladı; Oyun Modu otomatik açılıyor.", nameof(GameModeService));
-                    await EnableGameModeAsync();
+                    _log.Info($"Listedeki oyun başladı ({runningGame}); Oyun Modu otomatik açılıyor.", nameof(GameModeService));
+                    await EnableGameModeAsync(runningGame);
                 }
                 else if (!anyRunning && _isGameModeActive && _autoEnabled)
                 {

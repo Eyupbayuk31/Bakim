@@ -57,6 +57,11 @@
                         AutomationProperties.Name="{Binding InputAutomationName, ElementName=Root}"/>
         </WrapPanel>
 
+        <!-- Reddedilen adlar için geri bildirim -->
+        <TextBlock x:Name="Feedback" Visibility="Collapsed" TextWrapping="Wrap" Margin="0,0,0,6"
+                   FontSize="{StaticResource Font.Caption}"
+                   Foreground="{DynamicResource Brush.Critical.Text}"/>
+
         <!-- Öneriler -->
         <WrapPanel x:Name="SuggestionPanel" Margin="0,2,0,0">
             <TextBlock Text="Öneriler:" VerticalAlignment="Center" Margin="0,0,8,6"

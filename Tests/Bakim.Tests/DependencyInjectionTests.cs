@@ -115,6 +115,8 @@ public class DependencyInjectionTests
     [InlineData(typeof(IFileThreatAnalyzerService))]
     [InlineData(typeof(Bakım.Services.History.IAnalysisHistoryService))]
     [InlineData(typeof(INavigationService))]
+    [InlineData(typeof(IGameLibraryService))]
+    [InlineData(typeof(IGameModeService))]
     [InlineData(typeof(ITrayIconService))]
     [InlineData(typeof(IBackgroundMaintenanceService))]
     [InlineData(typeof(IExitCleanupService))]

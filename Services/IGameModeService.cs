@@ -15,6 +15,12 @@ namespace Bakım.Services
         string LastActionSummary { get; }
 
         /// <summary>
+        /// Etkin oturumda gerçekte ne yapıldığı (başlangıç, tetikleyen oyun, uygulanan plan,
+        /// boşaltılan bellek, askıya alınan uygulamalar). Oyun Modu kapalıyken null.
+        /// </summary>
+        Core.GameMode.GameModeSessionInfo? CurrentSession { get; }
+
+        /// <summary>
         /// Bakım Oyun Modu açıkken kapandıysa/çöktüyse önceki güç planını geri yükler.
         /// Uygulama açılışında bir kez çağrılır.
         /// </summary>

@@ -38,6 +38,7 @@
   <ItemGroup>
     <!-- Veri tabanlı ince ayar kataloğu (MASTER_PLAN §5.16): "tweaks/{dosya}.json" adıyla gömülür. -->
     <EmbeddedResource Include="Assets\tweaks\*.json" LogicalName="tweaks/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Assets\gamemode\*.json" LogicalName="gamemode/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

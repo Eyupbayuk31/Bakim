@@ -512,6 +512,7 @@ namespace Bakım
             // Otomasyon & Yaşam Döngüsü Servisleri
             services.AddSingleton<IBackgroundMaintenanceService, BackgroundMaintenanceService>();
             services.AddSingleton<IGameModeService, GameModeService>();
+            services.AddSingleton<IGameLibraryService, GameLibraryService>();
             services.AddSingleton<IExitCleanupService, ExitCleanupService>();
             services.AddSingleton<ITrayIconService, TrayIconService>();
 

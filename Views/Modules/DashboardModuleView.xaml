@@ -230,14 +230,15 @@
                         <ui:SymbolIcon Symbol="Games24" FontSize="{StaticResource Icon.LG}" Filled="{Binding IsGameModeActive}"
                                        Margin="{StaticResource Gap.Right.SM}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Oyun Modu" Style="{StaticResource Text.CardTitle}" VerticalAlignment="Center"/>
-                        <c:StatusBadge Text="Açık" Intent="Success" Margin="8,0,0,0"
+                        <c:StatusBadge Text="Açık" Intent="Success" Margin="8,0,0,0" VerticalAlignment="Center"
                                        Visibility="{Binding IsGameModeActive, Converter={StaticResource BoolToVis}}"/>
                     </StackPanel>
-                    <TextBlock Text="Performans güç planı ve Bakım'ın arka plan işlerini duraklatma. Kapatınca her şey geri döner."
+                    <TextBlock Text="{Binding GameModeDetail}"
                                FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     <WrapPanel Margin="{StaticResource Gap.Top.SM}">
-                        <ui:Button Appearance="{Binding IsGameModeActive, Converter={StaticResource BoolToNavAppearance}}"
+                        <!-- Fluent: başlatmak birincil eylemdir (vurgu), kapatmak standart düğmedir. -->
+                        <ui:Button Appearance="{Binding IsGameModeActive, Converter={StaticResource InverseBoolToNavAppearance}}"
                                    Command="{Binding ToggleGameModeCommand}"
                                    Padding="{StaticResource Pad.Control}" Margin="0,0,8,0"
                                    Content="{Binding GameModeButtonText}"/>

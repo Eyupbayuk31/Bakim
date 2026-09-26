@@ -8,211 +8,392 @@
              xmlns:c="clr-namespace:Bakım.Controls"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:GameModeViewModel}"
-             d:DesignHeight="800" d:DesignWidth="1100">
+             d:DesignHeight="900" d:DesignWidth="1200">
+
+    <!--
+        Oyun Modu (docs/OYUN_MODU_TASARIM_PLANI.md, Faz 2-4). Windows 11 Ayarlar düzeni:
+          1) Durum kartı: KAPALI/AÇIK + süre, tek birincil eylem, kısayol; açıkken ölçümler.
+          2) Solda Fluent ayar kartları (her ayar ayrı kart, gruplar Body Strong başlıklı).
+          3) Sağda profilden canlı üretilen "Açınca ne olacak" listesi ve son oturumlar.
+        Dar pencerede (code-behind) sağ sütun alta iner.
+    -->
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="24">
+        <StackPanel Style="{StaticResource Layout.Page}">
             <c:SectionHeader IsPageTitle="True"
                              Icon="Games24"
-                             HeaderMargin="0,0,0,18"
+                             HeaderMargin="0,0,0,24"
                              Title="Oyun Modu"
                              Description="Oyun sırasında güç planını yükseltir ve arka plan yükünü azaltır. Kapatınca her şey geri alınır."/>
 
-            <!-- Durum kartı -->
-            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="{StaticResource Pad.Card}"
-                    Margin="{StaticResource Gap.Bottom.MD}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <ui:SymbolIcon Grid.Column="0" Symbol="Games24" FontSize="40" Filled="{Binding IsActive}"
-                                   Margin="{StaticResource Gap.Right.MD}" VerticalAlignment="Center"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding StatusTitle}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="{Binding StatusDetail}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                                   Margin="{StaticResource Gap.Top.XS}"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:ProgressRing IsIndeterminate="True" Width="18" Height="18" Margin="{StaticResource Gap.Right.SM}"
-                                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
-                        <ui:Button Appearance="Primary"
-                                   Padding="18,10"
-                                   Icon="{ui:SymbolIcon Games24}"
-                                   Content="{Binding ButtonText}"
-                                   Command="{Binding ToggleCommand}"
-                                   ToolTip="Kısayol: Ctrl+Shift+G"
-                                   AutomationProperties.Name="Oyun Modunu aç veya kapat"/>
-                    </StackPanel>
-                </Grid>
+            <!-- ============ 1) DURUM KARTI ============ -->
+            <Border Style="{StaticResource Card.Surface}" Padding="20">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Simge kutusu -->
+                        <Border VerticalAlignment="Center" Margin="0,0,16,0">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource Card.IconTile}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <ui:SymbolIcon Symbol="Games24" FontSize="24" Filled="{Binding IsActive}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <ui:SymbolIcon.Style>
+                                    <Style TargetType="ui:SymbolIcon">
+                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ui:SymbolIcon.Style>
+                            </ui:SymbolIcon>
+                        </Border>
+
+                        <!-- Durum metni -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center"
+                                    AutomationProperties.LiveSetting="Polite"
+                                    AutomationProperties.Name="{Binding StatusTitle}"
+                                    AutomationProperties.HelpText="{Binding StatusDetail}">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,6,0">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <Setter Property="Fill" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Fill" Value="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <TextBlock Text="{Binding StatusCaption}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Typography.NumeralAlignment="Tabular"
+                                           Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}">
+                                    <Run Text=" · "/><Run Text="{Binding ElapsedText, Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
+                            <TextBlock Text="{Binding StatusTitle}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                       FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{Binding StatusDetail}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                       FontSize="{StaticResource Font.Body}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <!-- Tek birincil eylem + kısayol -->
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="16,0,0,0" MinWidth="200">
+                            <Grid>
+                                <ui:Button Appearance="Primary"
+                                           HorizontalAlignment="Stretch" Height="40"
+                                           Icon="{ui:SymbolIcon Play24, FontSize=16}"
+                                           Content="Oyun Modunu başlat"
+                                           Command="{Binding ToggleCommand}"
+                                           AutomationProperties.Name="Oyun Modunu başlat"
+                                           Visibility="{Binding IsActive, Converter={StaticResource InverseBoolToVis}}"/>
+                                <ui:Button HorizontalAlignment="Stretch" Height="40"
+                                           Icon="{ui:SymbolIcon Stop24, FontSize=16}"
+                                           Content="Oyun Modunu kapat"
+                                           Command="{Binding ToggleCommand}"
+                                           AutomationProperties.Name="Oyun Modunu kapat"
+                                           Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}"/>
+                                <!-- Meşgulken düğmenin yerini alır; ikinci tıklama olmaz -->
+                                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="0,0,8,0"/>
+                                        <TextBlock Text="{Binding BusyText}" VerticalAlignment="Center"
+                                                   FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                                <TextBlock Text="Kısayol" VerticalAlignment="Center" Margin="0,0,8,0"
+                                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <c:KeyCap Shortcut="{Binding ShortcutText}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Açık oturum ölçümleri: durum değişince bir kez belirir -->
+                    <UniformGrid x:Name="MetricsRow" Columns="4" Margin="0,20,0,0"
+                                 Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}">
+                        <UniformGrid.Style>
+                            <Style TargetType="UniformGrid">
+                                <Setter Property="Opacity" Value="1"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1"
+                                                                     Duration="{StaticResource Motion.Slow}"
+                                                                     EasingFunction="{StaticResource Ease.Standard}"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </UniformGrid.Style>
+                        <Border Style="{StaticResource Card.Inset}" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Güç planı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding PowerPlanMetric}" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card.Inset}" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Boşaltılan bellek" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding FreedMemoryMetric}" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card.Inset}" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Askıdaki uygulamalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding SuspendedMetric}" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card.Inset}">
+                            <StackPanel>
+                                <TextBlock Text="Bakım'ın arka plan işleri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="Duraklatıldı" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+
+                    <ui:InfoBar Title="İşlem tamamlanamadı"
+                                Message="{Binding ErrorMessage}"
+                                IsOpen="{Binding HasError, Mode=OneWay}"
+                                IsClosable="False"
+                                Severity="Error"
+                                Margin="0,16,0,0"/>
+                </StackPanel>
             </Border>
 
-            <!-- Son işlem -->
-            <ui:InfoBar Title="Son işlem"
-                        Message="{Binding LastSummary}"
-                        IsOpen="{Binding HasLastSummary, Mode=OneWay}"
+            <ui:InfoBar Title="Oyun Modu açık"
+                        Message="Aşağıdaki değişiklikler bir sonraki açılışta uygulanır."
+                        IsOpen="{Binding IsActive, Mode=OneWay}"
                         IsClosable="False"
                         Severity="Informational"
-                        Margin="{StaticResource Gap.Bottom.MD}"/>
+                        Margin="0,16,0,0"/>
 
-            <!-- Profil (§5.5) -->
-            <TextBlock Text="Profil" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Bottom.SM}"/>
-            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="{StaticResource Pad.Card}"
-                    Margin="{StaticResource Gap.Bottom.MD}">
-                <StackPanel>
-                    <Grid Margin="{StaticResource Gap.Bottom.MD}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Güç planı" Style="{StaticResource Text.BodyStrong}"/>
-                            <TextBlock Text="Kapatınca her zaman önceki plan geri yüklenir." Style="{StaticResource Text.BodySecondary}"/>
-                        </StackPanel>
-                        <ComboBox Grid.Column="1" MinWidth="260" VerticalAlignment="Center"
+            <!-- ============ 2-3) AYARLAR + ÖZET ============ -->
+            <Grid x:Name="BodyGrid" Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition x:Name="MainColumn" Width="3*"/>
+                    <ColumnDefinition x:Name="GutterColumn" Width="24"/>
+                    <ColumnDefinition x:Name="SideColumn" Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Sol: ayar kartları -->
+                <StackPanel x:Name="SettingsColumn" Grid.Column="0">
+
+                    <TextBlock Text="Performans" Style="{StaticResource Text.SectionLabel}" Margin="{StaticResource Gap.SectionHeader}"/>
+
+                    <ui:CardControl Style="{StaticResource Card.Setting}" Icon="{ui:SymbolIcon TopSpeed24, FontSize=20}">
+                        <ui:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock Text="Güç planı" Style="{StaticResource Text.SettingTitle}"/>
+                                <TextBlock Text="{Binding PowerPlanDescription}" Style="{StaticResource Text.SettingDescription}"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ComboBox MinWidth="200"
                                   ItemsSource="{Binding PowerPlanOptions}"
-                                  DisplayMemberPath="Value" SelectedValuePath="Key"
+                                  DisplayMemberPath="Title" SelectedValuePath="Key"
                                   SelectedValue="{Binding PowerPlan}"
                                   AutomationProperties.Name="Oyun Modu güç planı"/>
-                    </Grid>
+                    </ui:CardControl>
 
-                    <Grid Margin="{StaticResource Gap.Bottom.MD}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Çalışma kümelerini kırp" Style="{StaticResource Text.BodyStrong}"/>
-                            <TextBlock Text="Arka plandaki süreçlerin kullanmadığı belleği Windows'a geri verir. Etkisi geçicidir." Style="{StaticResource Text.BodySecondary}"/>
-                        </StackPanel>
-                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding TrimMemory}" VerticalAlignment="Center"
-                                         AutomationProperties.Name="Çalışma kümelerini kırp"/>
-                    </Grid>
+                    <ui:CardControl Style="{StaticResource Card.Setting}" Icon="{ui:SymbolIcon Ram20, FontSize=20}">
+                        <ui:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock Text="Arka plan belleğini boşalt" Style="{StaticResource Text.SettingTitle}"/>
+                                <TextBlock Text="Arka plandaki uygulamaların kullanmadığı belleği Windows'a geri verir. Etkisi geçicidir."
+                                           Style="{StaticResource Text.SettingDescription}"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ui:ToggleSwitch IsChecked="{Binding TrimMemory}" AutomationProperties.Name="Arka plan belleğini boşalt"/>
+                    </ui:CardControl>
 
-                    <TextBlock Text="Askıya alınacak arka plan uygulamaları" Style="{StaticResource Text.BodyStrong}"/>
-                    <TextBlock Text="Süreç adları, virgülle (ör. OneDrive, Teams). Oyun Modu kapanınca, Bakım kapanınca ya da çökse bile bir sonraki açılışta devam ettirilir. Windows'un kritik süreçleri askıya alınmaz."
-                               Style="{StaticResource Text.BodySecondary}" Margin="{StaticResource Gap.Bottom.XS}"/>
-                    <ui:TextBox Text="{Binding SuspendApps, UpdateSourceTrigger=LostFocus}"
-                                PlaceholderText="OneDrive, Teams"
-                                AutomationProperties.Name="Askıya alınacak uygulamalar"/>
-                    <TextBlock Text="{Binding SuspendAppsPreview}" FontSize="{StaticResource Font.Caption}"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="{StaticResource Gap.Top.XS}"/>
+                    <TextBlock Text="Arka plan uygulamaları" Style="{StaticResource Text.SectionLabel}"/>
 
-                    <Border Height="1" Background="{DynamicResource CardStrokeColorDefaultBrush}" Margin="0,14"/>
-
-                    <Grid Margin="{StaticResource Gap.Bottom.SM}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Oyun başlayınca otomatik aç" Style="{StaticResource Text.BodyStrong}"/>
-                            <TextBlock Text="Listedeki bir oyun çalışınca Oyun Modu açılır; hepsi kapanınca kapanır. Elle açtıysanız otomatik kapatılmaz."
-                                       Style="{StaticResource Text.BodySecondary}"/>
-                        </StackPanel>
-                        <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoStart}" VerticalAlignment="Center"
-                                         AutomationProperties.Name="Oyun başlayınca Oyun Modunu otomatik aç"/>
-                    </Grid>
-                    <ui:TextBox Text="{Binding AutoStartExes, UpdateSourceTrigger=LostFocus}"
-                                PlaceholderText="cs2, valorant, eldenring"
-                                IsEnabled="{Binding AutoStart}"
-                                AutomationProperties.Name="Otomatik tetikleyen oyunlar"/>
-                    <TextBlock Text="{Binding AutoStartPreview}" FontSize="{StaticResource Font.Caption}"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="{StaticResource Gap.Top.XS}"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Ne yapılır -->
-            <TextBlock Text="Açıldığında" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Bottom.SM}"/>
-            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="{StaticResource Pad.Card}"
-                    Margin="{StaticResource Gap.Bottom.MD}">
-                <StackPanel>
-                    <DockPanel Margin="{StaticResource Gap.Bottom.SM}">
-                        <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Margin="{StaticResource Gap.Right.SM}" VerticalAlignment="Top"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    <Border Style="{StaticResource Card.Surface}" CornerRadius="{StaticResource Radius.XS}" Padding="16">
                         <StackPanel>
-                            <TextBlock Text="Seçili güç planı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="O anki plan kaydedilir; kapatınca birebir geri gelir. Bakım kapanır ya da çökerse bir sonraki açılışta onarılır."
-                                       FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <DockPanel Margin="{StaticResource Gap.Bottom.SM}">
-                        <ui:SymbolIcon Symbol="Pause24" FontSize="20" Margin="{StaticResource Gap.Right.SM}" VerticalAlignment="Top"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <StackPanel>
-                            <TextBlock Text="Bakım'ın arka plan işleri duraklatılır" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Otomatik bellek temizliği ve bakım denetimleri oyun sırasında çalışmaz."
-                                       FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                    </DockPanel>
-                    <DockPanel>
-                        <ui:SymbolIcon Symbol="Ram20" FontSize="20" Margin="{StaticResource Gap.Right.SM}" VerticalAlignment="Top"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                        <StackPanel>
-                            <TextBlock Text="Çalışma kümeleri kırpılır" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Arka plandaki süreçlerin kullanmadığı bellek Windows'a geri verilir. Etkisi geçicidir; ölçülen sonuç işlemden sonra gösterilir."
-                                       FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                    </DockPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Son oturumlar -->
-            <TextBlock Text="Son oturumlar" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Bottom.SM}"/>
-            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="{StaticResource Pad.CardCompact}">
-                <Grid>
-                    <ItemsControl ItemsSource="{Binding Sessions}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:ActivityRow}">
-                                <Grid Margin="4,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="{Binding DateText}" MinWidth="160"
-                                               FontSize="{StaticResource Font.Body}"
-                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Summary}" FontSize="{StaticResource Font.Body}"
-                                               TextTrimming="CharacterEllipsis"
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Symbol="PauseCircle24" FontSize="20" VerticalAlignment="Center" Margin="0,0,14,0"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <c:StatusBadge Grid.Column="2" Text="{Binding OutcomeText}" Intent="{Binding OutcomeIntent}"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Text="Henüz kayıtlı oturum yok. Oyun Modunu kapattığınızda oturum süresi ve sonucu burada görünür."
-                               FontSize="{StaticResource Font.Body}" TextWrapping="Wrap" Margin="4,6"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                               Visibility="{Binding HasSessions, Converter={StaticResource InverseBoolToVis}}"/>
-                </Grid>
-            </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Askıya alınacak uygulamalar" Style="{StaticResource Text.SettingTitle}"/>
+                                    <TextBlock Text="Oyun süresince duraklatılır, Oyun Modu kapanınca devam eder. Windows'un kritik süreçleri eklenemez."
+                                               Style="{StaticResource Text.SettingDescription}"
+                                               ToolTip="Bakım kapanırsa ya da çökerse, askıdaki uygulamalar bir sonraki açılışta devam ettirilir."/>
+                                </StackPanel>
+                                <ui:Button Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center"
+                                           Icon="{ui:SymbolIcon AppsAddIn24, FontSize=16}"
+                                           Content="Çalışanlardan seç"
+                                           Command="{Binding PickRunningAppsCommand}"
+                                           AutomationProperties.Name="Çalışan uygulamalardan seç"/>
+                            </Grid>
+                            <c:ChipListEditor Margin="34,14,0,0"
+                                              Items="{Binding SuspendAppItems}"
+                                              Suggestions="{Binding SuspendSuggestions}"
+                                              RejectCriticalProcesses="True"
+                                              PlaceholderText="Uygulama adı (ör. OneDrive), Enter"
+                                              InputAutomationName="Askıya alınacak uygulama ekle"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Otomatik başlatma" Style="{StaticResource Text.SectionLabel}"/>
+
+                    <Border Style="{StaticResource Card.Surface}" CornerRadius="{StaticResource Radius.XS}" Padding="16">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Symbol="Play24" FontSize="20" VerticalAlignment="Center" Margin="0,0,14,0"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="Oyun açılınca otomatik başlat" Style="{StaticResource Text.SettingTitle}"/>
+                                    <TextBlock Text="Listedeki bir oyun açılınca başlar, hepsi kapanınca durur. Elle başlattıysanız otomatik kapanmaz."
+                                               Style="{StaticResource Text.SettingDescription}"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                 IsChecked="{Binding AutoStart}"
+                                                 AutomationProperties.Name="Oyun açılınca Oyun Modunu otomatik başlat"/>
+                            </Grid>
+
+                            <Border Height="1" Margin="-16,16,-16,14" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
+
+                            <Grid Margin="34,0,0,0">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AutoStart}" Value="False">
+                                                <Setter Property="Opacity" Value="0.55"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="İzlenen oyunlar" Style="{StaticResource Text.SettingTitle}"/>
+                                    <TextBlock Text="{Binding AutoStartHint}" Style="{StaticResource Text.SettingDescription}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                                    <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="0,0,8,0"
+                                                     Visibility="{Binding IsScanningLibrary, Converter={StaticResource BoolToVis}}"/>
+                                    <ui:Button Icon="{ui:SymbolIcon Library24, FontSize=16}"
+                                               Content="Kütüphaneden seç"
+                                               Command="{Binding PickFromLibraryCommand}"
+                                               AutomationProperties.Name="Steam ve Epic kütüphanesinden oyun seç"/>
+                                </StackPanel>
+                                <c:ChipListEditor Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,0"
+                                                  Items="{Binding AutoStartGameItems}"
+                                                  Suggestions="{Binding GameSuggestions}"
+                                                  PlaceholderText="Oyun süreç adı (ör. cs2), Enter"
+                                                  InputAutomationName="Otomatik tetikleyen oyun ekle"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Sağ: canlı özet + son oturumlar -->
+                <StackPanel x:Name="SummaryColumn" Grid.Column="2">
+                    <TextBlock Text="{Binding StepsHeader}" Style="{StaticResource Text.SectionLabel}"/>
+                    <Border Style="{StaticResource Card.Surface}" Padding="16,16,16,4">
+                        <StackPanel>
+                            <c:StepList Steps="{Binding Steps}"/>
+                            <Border Height="1" Margin="-16,0,-16,12" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Symbol="ArrowUndo20" FontSize="16" VerticalAlignment="Top" Margin="2,1,14,0"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="{StaticResource Font.Caption}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Text="Kapatınca önceki güç planı geri yüklenir ve askıdaki uygulamalar devam eder. Bakım kapanır ya da çökerse bir sonraki açılışta onarılır."/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Son oturumlar" Style="{StaticResource Text.SectionLabel}"/>
+                    <Border Style="{StaticResource Card.Surface}" Padding="0"
+                            Visibility="{Binding HasSessions, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <ItemsControl ItemsSource="{Binding Sessions}" Focusable="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:GameSessionRow}">
+                                        <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="16,12">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding WhenText}" FontSize="{StaticResource Font.Caption}"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                    <TextBlock Text="{Binding Title}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
+                                                               FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding Summary}" Margin="0,2,0,0" TextWrapping="Wrap"
+                                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                </StackPanel>
+                                                <c:StatusBadge Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Top"
+                                                               Text="{Binding OutcomeText}" Intent="{Binding OutcomeIntent}"
+                                                               Visibility="{Binding ShowOutcome, Converter={StaticResource BoolToVis}}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <ui:Button Appearance="Transparent" HorizontalAlignment="Left" Margin="8,6,8,8"
+                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Content="Tümünü Etkinlik Merkezi'nde gör"
+                                       Command="{Binding OpenSessionHistoryCommand}"/>
+                        </StackPanel>
+                    </Border>
+                    <c:EmptyState Icon="History24"
+                                  Title="Henüz oturum yok"
+                                  Description="İlk oturumdan sonra süre, boşaltılan bellek ve sonuç burada görünür."
+                                  Visibility="{Binding HasSessions, Converter={StaticResource InverseBoolToVis}}"/>
+                </StackPanel>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

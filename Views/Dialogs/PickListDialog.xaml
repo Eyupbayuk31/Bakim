@@ -1,0 +1,98 @@
+<ui:FluentWindow x:Class="Bakım.Views.Dialogs.PickListDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:local="clr-namespace:Bakım.Views.Dialogs"
+                 x:Name="Root"
+                 Width="520" Height="600"
+                 MinWidth="420" MinHeight="420"
+                 WindowStartupLocation="CenterOwner"
+                 WindowBackdropType="Mica"
+                 ExtendsContentIntoTitleBar="True"
+                 ShowInTaskbar="False"
+                 ResizeMode="CanResize">
+
+    <!--
+        Çoklu seçim diyaloğu (Fluent ContentDialog düzeni): başlık, açıklama, arama kutusu,
+        onay kutulu liste ve altta sağa yaslı "Ekle" (birincil) / "İptal" düğmeleri.
+    -->
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="{Binding Title, ElementName=Root}" ShowMaximize="False" ShowMinimize="False"/>
+
+        <StackPanel Grid.Row="1" Margin="24,8,24,12">
+            <TextBlock Text="{Binding Heading, ElementName=Root}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+            <TextBlock Text="{Binding Description, ElementName=Root}" Margin="0,4,0,12" TextWrapping="Wrap"
+                       FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+            <ui:TextBox x:Name="SearchBox" PlaceholderText="Ara" Icon="{ui:SymbolIcon Search20}"
+                        TextChanged="OnSearchChanged" AutomationProperties.Name="Listede ara"/>
+        </StackPanel>
+
+        <Grid Grid.Row="2" Margin="24,0,24,0">
+            <ListBox x:Name="List"
+                     ItemsSource="{Binding View, ElementName=Root}"
+                     Background="Transparent" BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     AutomationProperties.Name="{Binding Heading, ElementName=Root}">
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                        <Setter Property="Padding" Value="8,6"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:PickItem}">
+                        <CheckBox IsChecked="{Binding IsSelected}" HorizontalContentAlignment="Stretch"
+                                  AutomationProperties.Name="{Binding Title}">
+                            <Grid Margin="4,0,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                               FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding Subtitle}" TextTrimming="CharacterEllipsis"
+                                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding Meta}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            </Grid>
+                        </CheckBox>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <TextBlock x:Name="EmptyText" Visibility="Collapsed" TextWrapping="Wrap" Margin="4,8"
+                       Text="{Binding EmptyMessage, ElementName=Root}"
+                       FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+        </Grid>
+
+        <!-- Fluent ContentDialog alt şeridi -->
+        <Border Grid.Row="3" Margin="0,12,0,0" Padding="24,16"
+                Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="CountText" VerticalAlignment="Center"
+                           FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <ui:Button x:Name="AcceptButton" Grid.Column="1" Appearance="Primary" MinWidth="120" Margin="0,0,8,0"
+                           Content="Ekle" IsDefault="True" Click="OnAccept"/>
+                <ui:Button Grid.Column="2" MinWidth="120" Content="İptal" IsCancel="True"/>
+            </Grid>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

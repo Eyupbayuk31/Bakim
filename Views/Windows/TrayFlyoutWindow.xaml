@@ -105,7 +105,7 @@
             <!-- Quick Actions -->
             <StackPanel Grid.Row="3" Margin="14,12">
                 <ui:Button x:Name="BtnQuickBoost" Appearance="Primary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon Broom24}" Content="Hızlı Bakım" ToolTip="Geçici dosyalar, tarayıcı önbellekleri ve DNS önbelleği (Temizleyici'deki güvenli kurallarla)" Click="BtnQuickBoost_Click"/>
-                <ui:Button x:Name="BtnGameMode" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon TopSpeed24}" Content="Oyun Modunu Aç" Click="BtnGameMode_Click"/>
+                <ui:Button x:Name="BtnGameMode" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon Games24}" Content="Oyun Modunu başlat" Click="BtnGameMode_Click"/>
                 <ui:Button x:Name="BtnShowMainWindow" Appearance="Secondary" HorizontalAlignment="Stretch" Margin="0,0,0,6" Padding="10,8" Icon="{ui:SymbolIcon Desktop24}" Content="Ana Ekranı Aç" Click="BtnShowMainWindow_Click"/>
                 <ui:Button x:Name="BtnSettings" Appearance="Secondary" HorizontalAlignment="Stretch" Padding="10,8" Icon="{ui:SymbolIcon Settings24}" Content="Ayarlar" Click="BtnSettings_Click"/>
             </StackPanel>

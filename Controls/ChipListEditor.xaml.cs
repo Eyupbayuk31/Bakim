@@ -59,6 +59,17 @@ namespace Bakım.Controls
             set => SetValue(PlaceholderTextProperty, value);
         }
 
+        /// <summary>True ise Windows'un kritik süreçleri (explorer, csrss…) eklenmez (askıya alma listesi).</summary>
+        public static readonly DependencyProperty RejectCriticalProcessesProperty =
+            DependencyProperty.Register(nameof(RejectCriticalProcesses), typeof(bool), typeof(ChipListEditor),
+                new PropertyMetadata(false));
+
+        public bool RejectCriticalProcesses
+        {
+            get => (bool)GetValue(RejectCriticalProcessesProperty);
+            set => SetValue(RejectCriticalProcessesProperty, value);
+        }
+
         public static readonly DependencyProperty InputAutomationNameProperty =
             DependencyProperty.Register(nameof(InputAutomationName), typeof(string), typeof(ChipListEditor),
                 new PropertyMetadata("Yeni ad ekle"));
@@ -102,8 +113,26 @@ namespace Bakım.Controls
         private void Commit()
         {
             if (Items == null || string.IsNullOrWhiteSpace(Input.Text)) return;
-            ProcessNameList.AddTo(Items, Input.Text);
+            Add(Input.Text);
             Input.Text = string.Empty;
+        }
+
+        /// <summary>Adları ekler; reddedilenleri (kritik süreç, geçersiz ad) kullanıcıya bildirir.</summary>
+        private void Add(string text)
+        {
+            if (Items == null) return;
+            var names = ProcessNameList.Parse(text);
+            var rejected = RejectCriticalProcesses
+                ? names.Where(n => Core.Safety.CriticalProcessPolicy.IsCriticalName(n)).ToList()
+                : new List<string>();
+            foreach (var name in names.Except(rejected, StringComparer.OrdinalIgnoreCase))
+                ProcessNameList.AddTo(Items, name);
+
+            bool invalid = names.Count == 0 && !string.IsNullOrWhiteSpace(text);
+            Feedback.Text = rejected.Count > 0
+                ? $"{string.Join(", ", rejected)} eklenmedi: Windows'un kritik süreçleri askıya alınamaz."
+                : invalid ? "Geçerli bir süreç adı yazın (ör. OneDrive); yol ya da joker karakter kullanılamaz." : string.Empty;
+            Feedback.Visibility = Feedback.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void OnInputKeyDown(object sender, KeyEventArgs e)
@@ -133,8 +162,7 @@ namespace Bakım.Controls
 
         private void OnSuggestionClick(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement { Tag: string name } && Items != null)
-                ProcessNameList.AddTo(Items, name);
+            if (sender is FrameworkElement { Tag: string name }) Add(name);
         }
     }
 }
