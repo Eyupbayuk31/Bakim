@@ -49,12 +49,12 @@
                         </Border>
                         <StackPanel VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Kurulum Nöbetçisi Devrede" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Kurulum Nöbetçisi devrede" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <Border x:Name="FlyoutProtectionBadge" Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock x:Name="FlyoutProtectionText" Text="Tam Koruma" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                    <TextBlock x:Name="FlyoutProtectionText" Text="Tam koruma" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                 </Border>
                             </StackPanel>
-                            <TextBlock x:Name="MonitoringAppNameText" Text="Yeni Yazılım Kurulumu İzleniyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="MonitoringAppNameText" Text="Yeni yazılım kurulumu izleniyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -62,7 +62,7 @@
                                Appearance="Transparent"
                                Padding="6"
                                Click="OnDismissClicked"
-                               ToolTip="Arka Plana Al"
+                               ToolTip="Arka plana al"
                                VerticalAlignment="Top">
                         <ui:SymbolIcon Symbol="Dismiss24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </ui:Button>
@@ -82,7 +82,7 @@
                 <!-- Bottom Status -->
                 <Grid Grid.Row="2">
                     <TextBlock x:Name="MonitoringStatusDetailText" Text="Canlı dosya sistemi ve kayıt defteri nöbetçisi aktif" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
-                    <ui:Button Appearance="Secondary" Content="Arka Planda İzle" HorizontalAlignment="Right" Padding="12,6" Click="OnDismissClicked"/>
+                    <ui:Button Appearance="Secondary" Content="Arka planda izle" HorizontalAlignment="Right" Padding="12,6" Click="OnDismissClicked"/>
                 </Grid>
             </Grid>
 
@@ -109,8 +109,8 @@
                             <ui:SymbolIcon Symbol="Shield24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Kurulum Tamamlandı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock x:Name="FinishedAppNameText" Text="Uygulama Adı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            <TextBlock Text="Kurulum tamamlandı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock x:Name="FinishedAppNameText" Text="Uygulama adı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -214,7 +214,7 @@
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <ui:Button Appearance="Secondary"
-                                   Content="Raporu Kaydet"
+                                   Content="Raporu kaydet"
                                    Padding="10,6"
                                    Margin="0,0,8,0"
                                    Click="OnSaveReportClicked"/>

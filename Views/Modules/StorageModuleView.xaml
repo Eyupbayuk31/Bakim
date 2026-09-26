@@ -50,7 +50,7 @@
                                        Margin="0,0,4,0">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="FolderZip20" FontSize="16" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Büyük Dosyalar" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Büyük dosyalar" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </ui:Button>
 
@@ -60,7 +60,7 @@
                                        CommandParameter="Duplicates">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="Copy20" FontSize="16" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Yinelenen &amp; Boş Klasörler" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Yinelenen ve boş klasörler" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </ui:Button>
                     </StackPanel>
@@ -253,7 +253,7 @@
                         <!-- Left: Drive Selector -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="HardDrive20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="Hedef Sürücü:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Hedef sürücü:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox ItemsSource="{Binding AvailableDrives}" AutomationProperties.Name="Sürücü filtresi" 
                                       SelectedItem="{Binding SelectedDriveFilter, Mode=TwoWay}"
                                       MinWidth="140"
@@ -263,14 +263,14 @@
                         <!-- Right: Scan & Stop Buttons -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:Button Appearance="Primary" 
-                                       Content="Büyük Dosyaları Tara" 
+                                       Content="Büyük dosyaları tara" 
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding ScanLargeFilesCommand}"
                                        IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBool}}"
                                        Padding="14,7" 
                                        Margin="0,0,8,0"/>
 
-                            <ui:Button Appearance="Danger" 
+                            <ui:Button Appearance="Secondary" 
                                        Content="Durdur" 
                                        Icon="{ui:SymbolIcon Dismiss24}"
                                        Command="{Binding CancelScanCommand}"
@@ -286,7 +286,7 @@
                     <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
                         <!-- Boyut Eşiği Grubu -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,6">
-                            <TextBlock Text="Boyut Eşiği:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Boyut eşiği:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ui:Button Content="100 MB+" 
                                        Appearance="{Binding IsThreshold100Mb, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetThresholdCommand}" 
@@ -317,7 +317,7 @@
 
                         <!-- Tür Filtresi Grubu -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
-                            <TextBlock Text="Tür Filtresi:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Tür filtresi:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ui:Button Content="Tümü" 
                                        Appearance="{Binding IsCategoryAll, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
@@ -328,7 +328,7 @@
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Video" 
                                        Padding="9,4" Margin="0,0,4,0"/>
-                            <ui:Button Content="Disk İmajları" 
+                            <ui:Button Content="Disk imajları" 
                                        Appearance="{Binding IsCategoryDiskImage, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Disk İmajı" 
@@ -338,7 +338,7 @@
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Arşiv" 
                                        Padding="9,4" Margin="0,0,4,0"/>
-                            <ui:Button Content="Kurulum / Oyun" 
+                            <ui:Button Content="Kurulum / oyun" 
                                        Appearance="{Binding IsCategoryInstaller, Converter={StaticResource BoolToNavAppearance}}"
                                        Command="{Binding SetCategoryFilterCommand}" 
                                        CommandParameter="Kurulum / Oyun" 
@@ -396,7 +396,7 @@
                         </Border>
                     </Grid>
 
-                    <!-- Row 4: Scan Progress & Radar Beam -->
+                    <!-- Row 4: Tarama ilerlemesi -->
                     <Grid Grid.Row="4">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -422,42 +422,9 @@
 
                         <!-- Indeterminate progress bar -->
                         <ProgressBar Grid.Row="1"
-                                     IsIndeterminate="{Binding IsScanning}"
-                                     Height="4"
+                                     Style="{StaticResource Progress.Header}"
                                      Margin="0,0,0,4"
-                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                      Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}"/>
-
-                        <!-- Animated radar scan beam -->
-                        <Border Grid.Row="2"
-                                Height="2"
-                                ClipToBounds="True"
-                                Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}">
-                            <Rectangle HorizontalAlignment="Left" Width="180" Height="2">
-                                <Rectangle.Fill>
-                                    <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
-                                        <GradientStop Color="{DynamicResource Color.Accent.Glow}" Offset="0.5"/>
-                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Rectangle.Fill>
-                                <Rectangle.RenderTransform>
-                                    <TranslateTransform x:Name="LargeFileScanBeam"/>
-                                </Rectangle.RenderTransform>
-                                <Rectangle.Triggers>
-                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                        <BeginStoryboard>
-                                            <Storyboard RepeatBehavior="Forever">
-                                                <DoubleAnimation Storyboard.TargetName="LargeFileScanBeam"
-                                                                 Storyboard.TargetProperty="X"
-                                                                 From="-180" To="1400"
-                                                                 Duration="0:0:1.3"/>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </EventTrigger>
-                                </Rectangle.Triggers>
-                            </Rectangle>
-                        </Border>
                     </Grid>
                 </Grid>
             </ui:Card>
@@ -521,7 +488,7 @@
                                     <!-- Metric 1: Total Capacity -->
                                     <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,10">
                                         <StackPanel>
-                                            <TextBlock Text="Toplam Kapasite" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="Toplam kapasite" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             <TextBlock FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0">
                                                 <Run Text="{Binding SelectedDriveTotalGb}"/><Run Text=" GB"/>
                                             </TextBlock>
@@ -531,7 +498,7 @@
                                     <!-- Metric 2: Used Space -->
                                     <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,10">
                                         <StackPanel>
-                                            <TextBlock Text="Kullanılan Alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="Kullanılan alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             <TextBlock FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0">
                                                 <Run Text="{Binding SelectedDriveUsedGb}"/><Run Text=" GB"/>
                                             </TextBlock>
@@ -541,7 +508,7 @@
                                     <!-- Metric 3: Free Space -->
                                     <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,10">
                                         <StackPanel>
-                                            <TextBlock Text="Boş Alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="Boş alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             <TextBlock FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0">
                                                 <Run Text="{Binding SelectedDriveFreeGb}"/><Run Text=" GB"/>
                                             </TextBlock>
@@ -575,7 +542,7 @@
                                         <ui:SymbolIcon Symbol="Video24" FontSize="18" Foreground="{DynamicResource Chart.Series4}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Büyük Videolar &amp; Kayıtlar" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Büyük videolar ve kayıtlar" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="MP4, MKV, AVI, TS. 4K ekran ve oyun kayıtları diskin en büyük kısmını kaplayabilir." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -592,7 +559,7 @@
                                         <ui:SymbolIcon Symbol="HardDrive20" FontSize="18" Foreground="{DynamicResource Chart.Series1}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Sanal Diskler &amp; İmajlar" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Sanal diskler ve imajlar" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="ISO, VMDK, VHDX, IMG. Kurulum kalıpları ve sanal makineler tek başına onlarca gigabayt yer kaplar." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -609,7 +576,7 @@
                                         <ui:SymbolIcon Symbol="FolderZip24" FontSize="18" Foreground="{DynamicResource Chart.Series2}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Arşiv &amp; Sıkıştırılmış Paketler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Arşiv ve sıkıştırılmış paketler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="ZIP, RAR, 7Z, TAR. İndirilip açıldıktan sonra unutulan büyük yedek arşivleri." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -626,7 +593,7 @@
                                         <ui:SymbolIcon Symbol="AppGeneric24" FontSize="18" Foreground="{DynamicResource Chart.Series3}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="Kurulum &amp; Oyun Paketleri" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="Kurulum ve oyun paketleri" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="EXE, MSI, PAK, DAT. Büyük oyun yükleyicileri ve artık gereksiz kurulum paketleri." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Grid>
@@ -642,7 +609,7 @@
                                            HorizontalAlignment="Center"
                                            Margin="0,0,0,12"/>
                                 <ui:Button Appearance="Primary"
-                                           Content="Büyük Dosya Taramasını Başlat"
+                                           Content="Büyük dosya taramasını başlat"
                                            Icon="{ui:SymbolIcon Search24}"
                                            Command="{Binding ScanLargeFilesCommand}"
                                            Padding="22,10"
@@ -662,7 +629,7 @@
                          Visibility="{Binding HasNoResultsAfterScan, Converter={StaticResource BoolToVis}}">
                     <StackPanel HorizontalAlignment="Center">
                         <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="42" Foreground="{DynamicResource Chart.Series3}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                        <TextBlock Text="Eşik Değerinin Üzerinde Dosya Bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                        <TextBlock Text="Eşik değerinin üzerinde dosya bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                         <TextBlock Text="Seçili sürücüde belirlenen boyut eşiğini aşan herhangi bir dosya tespit edilmedi. Daha düşük boyutlu dosyaları listelemek için aşağıdaki seçenekleri deneyebilirsiniz:" 
                                    FontSize="{StaticResource Font.Caption}" 
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
@@ -711,7 +678,7 @@
                             <Border Background="{DynamicResource Chart.Series1.Subtle}" BorderBrush="{DynamicResource Chart.Series1}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="8,3" Margin="0,0,8,4">
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="HardDrive20" FontSize="14" Foreground="{DynamicResource Chart.Series1}" Margin="0,0,6,0"/>
-                                    <TextBlock Text="Disk İmajı: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="Disk imajı: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     <TextBlock Text="{Binding CategoryStats.DiskImageFormatted}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource Chart.Series1}"/>
                                 </StackPanel>
                             </Border>
@@ -752,7 +719,7 @@
                         <!-- Left: CheckBox & Selected Count Badge -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <CheckBox IsChecked="{Binding IsAllSelected, Mode=TwoWay}"
-                                      Content="Tümünü Seç"
+                                      Content="Tümünü seç"
                                       FontSize="{StaticResource Font.Caption}"
                                       FontWeight="Medium"
                                       VerticalAlignment="Center"
@@ -775,15 +742,15 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:Button Appearance="Secondary"
                                        Icon="{ui:SymbolIcon Delete20}"
-                                       Content="Geri Dönüşüme Taşı"
+                                       Content="Geri dönüşüme taşı"
                                        Command="{Binding RecycleSelectedFilesCommand}"
                                        IsEnabled="{Binding HasSelectedFiles}"
                                        Padding="12,6"
                                        Margin="0,0,8,0"
                                        ToolTip="Seçili dosyaları güvenle Geri Dönüşüm Kutusuna gönderir"/>
-                            <ui:Button Appearance="Danger"
+                            <ui:Button Appearance="Secondary"
                                        Icon="{ui:SymbolIcon Dismiss20}"
-                                       Content="Kalıcı Olarak Sil"
+                                       Content="Kalıcı olarak sil"
                                        Command="{Binding DeleteSelectedFilesCommand}"
                                        IsEnabled="{Binding HasSelectedFiles}"
                                        Padding="12,6"
@@ -886,7 +853,7 @@
                                                        Icon="{ui:SymbolIcon Copy20}"
                                                        Command="{Binding DataContext.CopyFilePathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
-                                                       ToolTip="Dosya Yolunu Panoya Kopyala"
+                                                       ToolTip="Dosya yolunu panoya kopyala"
                                                        Padding="8,6" 
                                                        Margin="0,0,6,0" 
                                                        AutomationProperties.Name="Dosya Yolunu Panoya Kopyala"/>
@@ -895,7 +862,7 @@
                                                        Icon="{ui:SymbolIcon Delete20}"
                                                        Command="{Binding DataContext.SendToRecycleBinCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
-                                                       ToolTip="Geri Dönüşüm Kutusuna Taşı (Güvenli Silme)"
+                                                       ToolTip="Geri Dönüşüm Kutusuna taşı (güvenli silme)"
                                                        Padding="8,6" 
                                                        Margin="0,0,6,0" 
                                                        AutomationProperties.Name="Geri Dönüşüm Kutusuna Taşı"/>
@@ -904,17 +871,17 @@
                                                        Icon="{ui:SymbolIcon FolderOpen20}"
                                                        Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
-                                                       ToolTip="Klasörde Göster"
+                                                       ToolTip="Klasörde göster"
                                                        Padding="8,6" 
                                                        Margin="0,0,6,0" 
                                                        AutomationProperties.Name="Klasörde Göster"/>
 
-                                            <ui:Button Appearance="Danger" 
+                                            <ui:Button Appearance="Secondary" 
                                                        Icon="{ui:SymbolIcon Dismiss20}"
                                                        Command="{Binding DataContext.DeleteLargeFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
                                                        IsEnabled="{Binding IsDeleting, Converter={StaticResource InverseBool}}"
-                                                       ToolTip="Kalıcı Olarak Sil"
+                                                       ToolTip="Kalıcı olarak sil"
                                                        Padding="8,6" 
                                                        AutomationProperties.Name="Kalıcı Olarak Sil"/>
                                         </StackPanel>
@@ -959,7 +926,7 @@
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock Text="{Binding TotalWastedFormatted}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Gereksiz İşgal Edilen Alan" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Gereksiz işgal edilen alan" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                             <TextBlock Text="{Binding TotalDuplicateCount, StringFormat='{}{0} Adet Kopya Dosya'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource Status.Critical.Solid}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Grid>
@@ -977,8 +944,8 @@
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock Text="{Binding DuplicateGroups.Count}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Yinelenen Dosya Grubu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
-                            <TextBlock Text="SHA-256 İçerik Doğrulama" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource Chart.Series1}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Yinelenen dosya grubu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="SHA-256 içerik doğrulama" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource Chart.Series1}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Grid>
                 </ui:Card>
@@ -995,8 +962,8 @@
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock Text="{Binding TotalEmptyFolderCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Sahipsiz Boş Klasör" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
-                            <TextBlock Text="0 Bayt Kalıntı Dizinler" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource Chart.Series4}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Sahipsiz boş klasör" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="0 bayt kalıntı dizinler" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource Chart.Series4}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Grid>
                 </ui:Card>
@@ -1013,7 +980,7 @@
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock Text="{Binding SelectedDuplicateBytesFormatted}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="Temizlenecek Alan" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Temizlenecek alan" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                             <TextBlock Text="{Binding SelectedDuplicateCount, StringFormat='{}{0} Kopya Dosya Seçili'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource Chart.Series3}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Grid>
@@ -1055,7 +1022,7 @@
                                            Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="Copy20" FontSize="15" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Yinelenen Dosyalar" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Yinelenen dosyalar" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </ui:Button>
 
@@ -1064,7 +1031,7 @@
                                            CommandParameter="EmptyFolders">
                                     <StackPanel Orientation="Horizontal">
                                         <ui:SymbolIcon Symbol="Folder20" FontSize="15" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Boş Klasörler" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Boş klasörler" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </ui:Button>
                             </StackPanel>
@@ -1081,7 +1048,7 @@
                                       IsEnabled="{Binding IsCustomFolderActive, Converter={StaticResource InverseBool}}"/>
 
                             <ui:Button Appearance="Secondary"
-                                       Content="Özel Klasör..."
+                                       Content="Özel klasör..."
                                        Icon="{ui:SymbolIcon FolderOpen20}"
                                        Command="{Binding BrowseCustomFolderCommand}"
                                        Padding="10,5"
@@ -1100,7 +1067,7 @@
                                     <ui:Button Appearance="Transparent"
                                                Icon="{ui:SymbolIcon Dismiss20}"
                                                Command="{Binding ClearCustomFolderCommand}"
-                                               ToolTip="Özel Klasörü Kaldır"
+                                               ToolTip="Özel klasörü kaldır"
                                                Padding="4,2"
                                                Margin="4,0,0,0"/>
                                 </StackPanel>
@@ -1111,7 +1078,7 @@
                         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- Yinelenen Taraması Başlat Butonu -->
                             <ui:Button Appearance="Primary"
-                                       Content="Yinelenenleri Tara"
+                                       Content="Yinelenenleri tara"
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding StartDuplicateScanCommand}"
                                        Visibility="{Binding IsShowingDuplicates, Converter={StaticResource BoolToVis}}"
@@ -1121,7 +1088,7 @@
 
                             <!-- Boş Klasör Taraması Başlat Butonu -->
                             <ui:Button Appearance="Primary"
-                                       Content="Boş Klasörleri Tara"
+                                       Content="Boş klasörleri tara"
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding StartEmptyFolderScanCommand}"
                                        Visibility="{Binding IsShowingEmptyFolders, Converter={StaticResource BoolToVis}}"
@@ -1130,7 +1097,7 @@
                                        Margin="0,0,8,0"/>
 
                             <!-- Durdur Butonu -->
-                            <ui:Button Appearance="Danger"
+                            <ui:Button Appearance="Secondary"
                                        Content="Durdur"
                                        Icon="{ui:SymbolIcon Dismiss24}"
                                        Command="{Binding CancelDuplicateScanCommand}"
@@ -1160,7 +1127,7 @@
 
                                 <!-- Kategori Çipleri -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Tür Filtresi:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="Tür filtresi:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <ui:Button Content="Tümü" Appearance="{Binding IsDuplicateFilterAll, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="All" Padding="8,4" Margin="0,0,4,0"/>
                                     <ui:Button Content="Resimler" Appearance="{Binding IsDuplicateFilterImages, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="Images" Padding="8,4" Margin="0,0,4,0"/>
                                     <ui:Button Content="Videolar" Appearance="{Binding IsDuplicateFilterVideos, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="Videos" Padding="8,4" Margin="0,0,4,0"/>
@@ -1189,24 +1156,24 @@
 
                                 <!-- Akıllı Seçim Butonları -->
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="Akıllı Seçim:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                    <ui:Button Content="Kopyaları Otomatik Seç"
+                                    <TextBlock Text="Akıllı seçim:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <ui:Button Content="Kopyaları otomatik seç"
                                                Icon="{ui:SymbolIcon SelectAllOn20}"
                                                Command="{Binding SelectAllDuplicatesExceptOneCommand}"
                                                ToolTip="Her grupta en eski orijinal dosyayı korur, diğer kopyaları temizlemek üzere seçer"
                                                Padding="8,4"
                                                Margin="0,0,4,0"/>
-                                    <ui:Button Content="En Yenileri Seç"
+                                    <ui:Button Content="En yenileri seç"
                                                Command="{Binding SelectNewestDuplicatesCommand}"
                                                ToolTip="Her grupta eski dosyaları korur, en yenileri seçer"
                                                Padding="8,4"
                                                Margin="0,0,4,0"/>
-                                    <ui:Button Content="En Eskileri Seç"
+                                    <ui:Button Content="En eskileri seç"
                                                Command="{Binding SelectOldestDuplicatesCommand}"
                                                ToolTip="Her grupta yeni dosyaları korur, en eskileri seçer"
                                                Padding="8,4"
                                                Margin="0,0,4,0"/>
-                                    <ui:Button Content="Seçimi Temizle"
+                                    <ui:Button Content="Seçimi temizle"
                                                Appearance="Transparent"
                                                Command="{Binding ClearDuplicateSelectionCommand}"
                                                Padding="8,4"/>
@@ -1215,12 +1182,12 @@
                                 <!-- Güvenli Silme Seçeneği ve Silme Butonu -->
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                     <CheckBox IsChecked="{Binding DeletePermanently, Mode=TwoWay}"
-                                              Content="Kalıcı Sil (Geri Dönüşümü Atla)"
+                                              Content="Kalıcı sil (geri dönüşümü atla)"
                                               VerticalAlignment="Center"
                                               Margin="0,0,14,0"/>
 
-                                    <ui:Button Appearance="Danger"
-                                               Content="Seçilen Kopyaları Sil"
+                                    <ui:Button Appearance="Secondary"
+                                               Content="Seçilen kopyaları sil"
                                                Icon="{ui:SymbolIcon Delete24}"
                                                Command="{Binding DeleteSelectedDuplicatesCommand}"
                                                IsEnabled="{Binding SelectedDuplicateCount, Converter={StaticResource IntToVis}}"
@@ -1238,13 +1205,13 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Boş Klasör Seçimi:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <ui:Button Content="Tümünü Seç"
+                                <TextBlock Text="Boş klasör seçimi:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ui:Button Content="Tümünü seç"
                                            Command="{Binding ToggleSelectAllEmptyFoldersCommand}"
                                            CommandParameter="True"
                                            Padding="8,4"
                                            Margin="0,0,4,0"/>
-                                <ui:Button Content="Seçimi Kaldır"
+                                <ui:Button Content="Seçimi kaldır"
                                            Appearance="Transparent"
                                            Command="{Binding ToggleSelectAllEmptyFoldersCommand}"
                                            CommandParameter="False"
@@ -1260,8 +1227,8 @@
                                         Padding="8,5"/>
 
                             <ui:Button Grid.Column="2"
-                                       Appearance="Danger"
-                                       Content="Seçili Boş Klasörleri Temizle"
+                                       Appearance="Secondary"
+                                       Content="Seçili boş klasörleri temizle"
                                        Icon="{ui:SymbolIcon Delete24}"
                                        Command="{Binding DeleteSelectedEmptyFoldersCommand}"
                                        IsEnabled="{Binding SelectedEmptyFolderCount, Converter={StaticResource IntToVis}}"
@@ -1305,11 +1272,11 @@
                             <Border Background="{DynamicResource Chart.Series1.Subtle}" CornerRadius="{StaticResource Radius.XL}" Width="72" Height="72" HorizontalAlignment="Center" Margin="0,0,0,16">
                                 <ui:SymbolIcon Symbol="DocumentCopy24" FontSize="36" Foreground="{DynamicResource Chart.Series1}"/>
                             </Border>
-                            <TextBlock Text="Yinelenen Dosya Avcısı" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock Text="Yinelenen dosya avcısı" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                             <TextBlock Text="Diskinizdeki veya seçtiğiniz klasördeki birebir aynı içeriğe sahip (SHA-256 hash eşleşmeli) kopya dosyaları milisaniyeler içinde tespit edin. Güvenli akıllı seçim sayesinde orijinal dosyalarınız korunur, kopyalar güvenle Geri Dönüşüm Kutusu'na taşınır."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Margin="0,0,0,20"/>
                             <ui:Button Appearance="Primary"
-                                       Content="Yinelenen Dosyaları Taramaya Başla"
+                                       Content="Yinelenen dosyaları taramaya başla"
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding StartDuplicateScanCommand}"
                                        HorizontalAlignment="Center"
@@ -1322,7 +1289,7 @@
                              Visibility="{Binding FilteredDuplicateGroups.Count, Converter={StaticResource IntEqualsToVis}, ConverterParameter=0}">
                         <StackPanel HorizontalAlignment="Center" Visibility="{Binding HasDuplicateScanned, Converter={StaticResource BoolToVis}}">
                             <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="36" Foreground="{DynamicResource Chart.Series3}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                            <TextBlock Text="Harika! Hiçbir Yinelenen Dosya Bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="Harika! Hiçbir yinelenen dosya bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                             <TextBlock Text="Belirtilen konumda aynı içeriğe sahip mükerrer dosya bulunmuyor veya arama kriterinizle eşleşen grup yok."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center"/>
                         </StackPanel>
@@ -1445,7 +1412,7 @@
                                                                        Icon="{ui:SymbolIcon FolderOpen20}"
                                                                        Command="{Binding DataContext.OpenDuplicateFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                                        CommandParameter="{Binding FilePath}"
-                                                                       ToolTip="Dosyayı Klasörde Göster"
+                                                                       ToolTip="Dosyayı klasörde göster"
                                                                        Padding="6,4"/>
                                                         </Grid>
                                                     </Border>
@@ -1468,11 +1435,11 @@
                             <Border Background="{DynamicResource Chart.Series4.Subtle}" CornerRadius="{StaticResource Radius.XL}" Width="72" Height="72" HorizontalAlignment="Center" Margin="0,0,0,16">
                                 <ui:SymbolIcon Symbol="Folder24" FontSize="36" Foreground="{DynamicResource Chart.Series4}"/>
                             </Border>
-                            <TextBlock Text="Sahipsiz Boş Klasör Temizleyici" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                            <TextBlock Text="Sahipsiz boş klasör temizleyici" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                             <TextBlock Text="Kaldırılmış yazılımlardan, eski güncellemelerden ve taşınmış dizinlerden arta kalan 0 baytlık boş klasörleri derinlemesine tarayın. Windows ve sistem güvenlik klasörleri otomatik filtrelenir ve korunur."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Margin="0,0,0,20"/>
                             <ui:Button Appearance="Primary"
-                                       Content="Boş Klasörleri Taramaya Başla"
+                                       Content="Boş klasörleri taramaya başla"
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding StartEmptyFolderScanCommand}"
                                        HorizontalAlignment="Center"
@@ -1485,7 +1452,7 @@
                              Visibility="{Binding FilteredEmptyFolders.Count, Converter={StaticResource IntEqualsToVis}, ConverterParameter=0}">
                         <StackPanel HorizontalAlignment="Center" Visibility="{Binding HasEmptyFolderScanned, Converter={StaticResource BoolToVis}}">
                             <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="36" Foreground="{DynamicResource Chart.Series3}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
-                            <TextBlock Text="Sisteminiz Temiz! Boş Klasör Bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                            <TextBlock Text="Sisteminiz temiz! Boş klasör bulunamadı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                             <TextBlock Text="Belirtilen konumda temizlenecek sahipsiz boş klasör bulunmuyor."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center"/>
                         </StackPanel>
@@ -1538,7 +1505,7 @@
                                                    Icon="{ui:SymbolIcon FolderOpen20}"
                                                    Command="{Binding DataContext.OpenFolderLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding FolderPath}"
-                                                   ToolTip="Klasörü Aç"
+                                                   ToolTip="Klasörü aç"
                                                    Padding="6,4"/>
                                     </Grid>
                                 </ui:Card>

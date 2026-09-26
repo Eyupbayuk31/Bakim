@@ -26,7 +26,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
-                         Title="Yazılım &amp; Runtimes Mağazası"
+                         Title="Yazılım ve runtimes mağazası"
                          Description="Sık kullanılan yazılımları ve çalışma zamanı paketlerini (VC++, DirectX) sessizce kurun.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -40,7 +40,7 @@
 
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ToggleQueueDrawerCommand}"
-                               Content="İlerleme &amp; Konsol"
+                               Content="İlerleme ve konsol"
                                Icon="{ui:SymbolIcon WindowConsole20}"
                                Padding="12,8"
                                Margin="0,0,8,0"
@@ -80,7 +80,7 @@
                                Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Apps24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Uygulama Kataloğu" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="Uygulama kataloğu" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
                             <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="6,1" Margin="8,0,0,0">
                                 <TextBlock Text="{Binding TotalAppsCount, StringFormat='{}{0} Yazılım'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </Border>
@@ -93,9 +93,9 @@
                                Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Hazır Paketler &amp; Format Kurtarıcı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="Hazır paketler ve format kurtarıcı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
                             <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.MD}" Padding="6,1" Margin="8,0,0,0">
-                                <TextBlock Text="4 Set + VC++" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                <TextBlock Text="4 set + VC++" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             </Border>
                         </StackPanel>
                     </ui:Button>
@@ -122,7 +122,7 @@
                     VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Toplam Katalog -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Katalogdaki toplam paket &amp; kütüphane">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0" ToolTip="Katalogdaki toplam paket ve kütüphane">
                         <ui:SymbolIcon Symbol="Apps20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,5,0"/>
                         <TextBlock Text="Katalog: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding TotalAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -187,7 +187,7 @@
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Runtimes" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Runtimes &amp; Sistem" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                <TextBlock Text="Runtimes ve sistem" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Gaming'}" 
@@ -201,14 +201,14 @@
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Music" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="MusicNote224" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Müzik &amp; Medya" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                <TextBlock Text="Müzik ve medya" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Software'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Software" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Wrench24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Yazılım &amp; Araçlar" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                <TextBlock Text="Yazılım ve araçlar" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Browsers'}" 
@@ -222,7 +222,7 @@
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Social" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Chat24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="İletişim &amp; Sosyal" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                <TextBlock Text="İletişim ve sosyal" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Developer'}" 
@@ -255,7 +255,7 @@
 
                         <CheckBox Grid.Column="1" 
                                   IsChecked="{Binding OnlyUninstalled, Mode=TwoWay}" 
-                                  Content="Yalnızca Kurulu Olmayanlar" 
+                                  Content="Yalnızca kurulu olmayanlar" 
                                   VerticalAlignment="Center" 
                                   Margin="0,0,12,0"
                                   AutomationProperties.Name="Yalnızca Kurulu Olmayanlar"/>
@@ -263,7 +263,7 @@
                         <ui:Button Grid.Column="2" 
                                    Appearance="Secondary" 
                                    Command="{Binding SelectAllVisibleCommand}" 
-                                   Content="Görünenleri Seç" 
+                                   Content="Görünenleri seç" 
                                    Icon="{ui:SymbolIcon CheckboxChecked24}"
                                    Margin="0,0,8,0"
                                    Padding="12,6"/>
@@ -271,7 +271,7 @@
                         <ui:Button Grid.Column="3" 
                                    Appearance="Secondary" 
                                    Command="{Binding ClearSelectionCommand}" 
-                                   Content="Seçimi Temizle" 
+                                   Content="Seçimi temizle" 
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Padding="12,6"
                                    Margin="0,0,12,0"
@@ -290,13 +290,13 @@
                                            Appearance="{Binding IsGridView, Converter={StaticResource BoolToNavAppearance}}"
                                            Padding="8,5" 
                                            Margin="0,0,2,0"
-                                           ToolTip="Kart (Izgara) Görünümü">
+                                           ToolTip="Kart (Izgara) görünümü">
                                     <ui:SymbolIcon Symbol="Grid20" FontSize="14"/>
                                 </ui:Button>
                                 <ui:Button Command="{Binding SetListViewCommand}" 
                                            Appearance="{Binding IsGridView, Converter={StaticResource InverseBoolToNavAppearance}}"
                                            Padding="8,5" 
-                                           ToolTip="Kompakt Liste Görünümü">
+                                           ToolTip="Kompakt liste görünümü">
                                     <ui:SymbolIcon Symbol="List20" FontSize="14"/>
                                 </ui:Button>
                             </StackPanel>
@@ -647,7 +647,7 @@
                                                 CornerRadius="{StaticResource Radius.SM}" 
                                                 Padding="8,3"
                                                 Visibility="{Binding IsInstalled, Converter={StaticResource InverseBoolToVis}}">
-                                            <TextBlock Text="Yüklü Değil" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                            <TextBlock Text="Yüklü değil" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         </Border>
                                     </StackPanel>
 
@@ -668,7 +668,7 @@
                                                    Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}"
                                                    Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
-                                                   Content="Yeniden Kur"
+                                                   Content="Yeniden kur"
                                                    Icon="{ui:SymbolIcon ArrowClockwise16}"
                                                    Padding="10,3"
                                                    Height="28"
@@ -717,9 +717,9 @@
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <TextBlock Text="Format Sonrası Can Kurtaran: All-in-One Runtimes Paketi" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Format sonrası can kurtaran: All-in-One runtimes paketi" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0">
-                                        <TextBlock Text="Oyun &amp; Yazılım Garantili" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                        <TextBlock Text="Oyun ve yazılım garantili" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                     </Border>
                                 </StackPanel>
                                 <TextBlock Text="Resmi Gigabit CDN üzerinden Visual C++ (2005-2022 x86/x64) tüm kütüphanelerini, DirectX Web Setup ve .NET Desktop çalışma ortamlarını tek tuşla otomatik indirip sessizce kurar." 
@@ -733,7 +733,7 @@
                                        VerticalAlignment="Center"
                                        Icon="{ui:SymbolIcon TopSpeed24}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Tüm Runtimes'ları Kur" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                    <TextBlock Text="Tüm runtimes'ları kur" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                                 </StackPanel>
                             </ui:Button>
                         </Grid>
@@ -747,7 +747,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Özenle Hazırlanmış Akıllı Kurulum Setleri" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Özenle hazırlanmış akıllı kurulum setleri" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="Kullanım senaryonuza göre optimize edilmiş paketleri tek tıkla seçip tüm yazılımları sırayla arka planda kurabilirsiniz." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
 
@@ -755,7 +755,7 @@
                                    Appearance="Secondary"
                                    Command="{Binding SwitchToCatalogCommand}"
                                    Icon="{ui:SymbolIcon ArrowLeft24}"
-                                   Content="Kataloğa Dön"
+                                   Content="Kataloğa dön"
                                    Padding="14,8"
                                    VerticalAlignment="Center"/>
                     </Grid>
@@ -848,7 +848,7 @@
 
                                         <!-- Included Apps Badges -->
                                         <StackPanel Grid.Row="2" Margin="0,0,0,12">
-                                            <TextBlock Text="Pakete Dahil Uygulamalar:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Pakete dahil uygulamalar:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,6"/>
                                             <ItemsControl ItemsSource="{Binding IncludedApps}">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
@@ -888,7 +888,7 @@
                                                        Appearance="Secondary"
                                                        Command="{Binding DataContext.ApplyPresetCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
-                                                       Content="Bu Paketi Seç"
+                                                       Content="Bu paketi seç"
                                                        Icon="{ui:SymbolIcon CheckboxChecked24}"
                                                        HorizontalAlignment="Stretch"
                                                        HorizontalContentAlignment="Center"
@@ -900,7 +900,7 @@
                                                        Appearance="Secondary"
                                                        Command="{Binding DataContext.ApplyPresetAndSwitchToCatalogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
-                                                       Content="Seç &amp; Kataloğa Git"
+                                                       Content="Seç ve kataloğa git"
                                                        Icon="{ui:SymbolIcon Apps24}"
                                                        Margin="0,0,8,0"
                                                        Padding="12,7"
@@ -910,7 +910,7 @@
                                                        Appearance="Primary"
                                                        Command="{Binding DataContext.InstallPresetImmediatelyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
-                                                       Content="Hemen Kur"
+                                                       Content="Hemen kur"
                                                        Icon="{ui:SymbolIcon ArrowDownload24}"
                                                        Padding="14,7"
                                                        ToolTip="Paketi seç ve doğrudan arka planda toplu kuruluma başla."/>
@@ -1010,7 +1010,7 @@
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Canlı Kurulum Kuyruğu: " FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Canlı kurulum kuyruğu: " FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="{Binding CurrentAppName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"/>
                         <TextBlock Text=" (" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding QueueProgressSummary}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
@@ -1048,11 +1048,11 @@
                     <!-- Left: Terminal Badge & Auto-scroll Toggle -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,10,0">
-                            <TextBlock Text="Canlı Çıktı &amp; Log Konsolu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Canlı çıktı ve log konsolu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
 
                         <CheckBox IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}" 
-                                  Content="Otomatik Kaydır" 
+                                  Content="Otomatik kaydır" 
                                   FontSize="{StaticResource Font.Caption}" 
                                   VerticalAlignment="Center"/>
                     </StackPanel>

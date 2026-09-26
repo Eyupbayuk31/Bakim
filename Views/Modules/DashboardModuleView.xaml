@@ -31,10 +31,10 @@
         <!-- 0. Header — tasarım sistemi bileşeni (önceki 38 satırlık elle yazım yerine) -->
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
-                         Title="Genel Bakış"
+                         Title="Genel bakış"
                          Description="Sistem durumu, donanım sensörleri ve hızlı bakım eylemleri.">
             <c:SectionHeader.TitleAdornment>
-                <c:StatusBadge Text="Canlı Telemetri Aktif" Intent="Success"/>
+                <c:StatusBadge Text="Canlı telemetri aktif" Intent="Success"/>
             </c:SectionHeader.TitleAdornment>
             <c:SectionHeader.Actions>
                 <ui:Button Appearance="Secondary"
@@ -397,7 +397,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Ağ Trafiği" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Ağ trafiği" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
                             <TextBlock Text="Aktif" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
@@ -420,7 +420,7 @@
 
                     <!-- Bottom Interface Status -->
                     <TextBlock Grid.Row="4" 
-                               Text="Ethernet / Wi-Fi Bağlantısı" 
+                               Text="Ethernet / Wi-Fi bağlantısı" 
                                FontSize="{StaticResource Font.Micro}" 
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                 </Grid>
@@ -445,7 +445,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="HardDrive20" FontSize="16" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Disk Hızı &amp; C:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="Disk hızı ve C:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
                             <TextBlock Text="{Binding Metrics.SystemDriveUsedPercentage, StringFormat='%{0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
@@ -498,7 +498,7 @@
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
                         <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Donanım Özeti &amp; Sensörler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Donanım özeti ve sensörler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Details Rows -->
@@ -511,7 +511,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="İşlemci Modeli" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="İşlemci modeli" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     <TextBlock Text="{Binding Metrics.CpuName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" VerticalAlignment="Center">
@@ -530,7 +530,7 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Text="Grafik Kartı (GPU)" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <TextBlock Text="Grafik kartı (GPU)" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                 BorderThickness="1" 
@@ -556,7 +556,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Sistem Termal Durumu" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="Sistem termal durumu" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     <TextBlock Text="{Binding Metrics.ThermalStatus, StringFormat='Termal Durum: {0}'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" VerticalAlignment="Center">
@@ -572,7 +572,7 @@
                                Command="{Binding GoToCleanerCommand}"
                                HorizontalAlignment="Left"
                                Padding="14,7"
-                               Content="Sistem Temizliğini Aç"
+                               Content="Sistem temizliğini aç"
                                Icon="{ui:SymbolIcon ArrowRight24}"/>
                 </Grid>
             </ui:Card>
@@ -593,9 +593,9 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="TopSpeed24" FontSize="18" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="En Çok Bellek Tüketen Süreçler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="En çok bellek tüketen süreçler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </StackPanel>
-                        <TextBlock Grid.Column="1" Text="İlk 3 Süreç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="İlk 3 süreç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Items Control for Top 3 Hogs -->
@@ -627,12 +627,12 @@
 
                                         <!-- Quick Kill Task Button -->
                                         <ui:Button Grid.Column="2" 
-                                                   Appearance="Danger" 
+                                                   Appearance="Secondary" 
                                                    Padding="6,4"
                                                    Command="{Binding DataContext.KillHogProcessCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                    CommandParameter="{Binding}"
                                                    Icon="{ui:SymbolIcon Dismiss20}"
-                                                   ToolTip="Görevi Sonlandır" AutomationProperties.Name="Görevi Sonlandır"/>
+                                                   ToolTip="Görevi sonlandır" AutomationProperties.Name="Görevi Sonlandır"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

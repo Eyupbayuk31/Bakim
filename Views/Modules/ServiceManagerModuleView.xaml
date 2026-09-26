@@ -56,7 +56,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Hizmetler &amp; Sürücü Yönetimi"
+                         Title="Hizmetler ve sürücü yönetimi"
                          Description="Windows arka plan servisleri, güvenlik analizi ve donanım sürücüleri.">
             <c:SectionHeader.Actions>
                 <!-- Sub-Tab Switcher & Refresh Button -->
@@ -100,7 +100,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Toplam Hizmet" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="Toplam hizmet" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.TotalServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Server24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
@@ -114,7 +114,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Çalışan Hizmetler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="Çalışan hizmetler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.RunningServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Play24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
@@ -128,7 +128,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Güvenli Kapatılabilir" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="Güvenli kapatılabilir" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.OptimizableServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="TopSpeed24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
@@ -169,7 +169,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Toplam Donanım Sürücüsü" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="Toplam donanım sürücüsü" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.TotalDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Desktop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
@@ -183,7 +183,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Dijital İmzalı Sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="Dijital imzalı sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.SignedDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Checkmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
@@ -197,7 +197,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="İmzasız / Şüpheli Sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="İmzasız / şüpheli sürücüler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.ProblematicDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Warning24" FontSize="22" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
@@ -211,8 +211,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Sistem Entegrasyonu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="PnP Çekirdek Aktif" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Sistem entegrasyonu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="PnP çekirdek aktif" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Laptop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
@@ -223,7 +223,7 @@
         <!-- 2b. Güvenli önerilen profiller: önizleme + tek onay + Etkinlik Merkezi'nden geri alma -->
         <StackPanel Grid.Row="2" Margin="0,0,0,14"
                     Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Services}">
-            <TextBlock Text="ÖNERİLEN PROFİLLER" Style="{StaticResource Text.Label}" Margin="0,0,0,8"/>
+            <TextBlock Text="Önerilen profiller" Style="{StaticResource Text.Label}" Margin="0,0,0,8"/>
             <ItemsControl ItemsSource="{Binding Profiles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -278,14 +278,14 @@
                 <ui:Button Appearance="Secondary" Content="Tümü" Command="{Binding SetServiceFilterCommand}" CommandParameter="All" Padding="12,8" Margin="0,0,6,0"/>
                 <ui:Button Appearance="Secondary" Content="Çalışanlar" Command="{Binding SetServiceFilterCommand}" CommandParameter="Running" Padding="12,8" Margin="0,0,6,0"/>
                 <ui:Button Appearance="Secondary" Content="Durdurulanlar" Command="{Binding SetServiceFilterCommand}" CommandParameter="Stopped" Padding="12,8" Margin="0,0,6,0"/>
-                <ui:Button Appearance="Secondary" Content="Güvenli Kapatılabilir" Command="{Binding SetServiceFilterCommand}" CommandParameter="Optimizable" Padding="12,8"/>
+                <ui:Button Appearance="Secondary" Content="Güvenli kapatılabilir" Command="{Binding SetServiceFilterCommand}" CommandParameter="Optimizable" Padding="12,8"/>
             </StackPanel>
 
             <!-- Driver Filters -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Drivers}">
                 <ui:Button Appearance="Secondary" Content="Tümü" Command="{Binding SetDriverFilterCommand}" CommandParameter="All" Padding="12,8" Margin="0,0,6,0"/>
-                <ui:Button Appearance="Secondary" Content="İmzalı Sürücüler" Command="{Binding SetDriverFilterCommand}" CommandParameter="Signed" Padding="12,8" Margin="0,0,6,0"/>
-                <ui:Button Appearance="Secondary" Content="İmzasız / Şüpheli" Command="{Binding SetDriverFilterCommand}" CommandParameter="Unsigned" Padding="12,8"/>
+                <ui:Button Appearance="Secondary" Content="İmzalı sürücüler" Command="{Binding SetDriverFilterCommand}" CommandParameter="Signed" Padding="12,8" Margin="0,0,6,0"/>
+                <ui:Button Appearance="Secondary" Content="İmzasız / şüpheli" Command="{Binding SetDriverFilterCommand}" CommandParameter="Unsigned" Padding="12,8"/>
             </StackPanel>
         </Grid>
 
@@ -314,11 +314,11 @@
                         <ColumnDefinition Width="Auto" SharedSizeGroup="SvcActionCol"/>  <!-- Actions -->
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Hizmet Adı &amp; Açıklama" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="0" Text="Hizmet adı ve açıklama" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
                     <TextBlock Grid.Column="1" Text="Durum" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
                     <TextBlock Grid.Column="2" Text="Başlangıç" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
                     <TextBlock Grid.Column="3" Text="Hesap / PID" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="4" Text="Güvenlik Sınıfı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="4" Text="Güvenlik sınıfı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
                     <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
                 </Grid>
             </Border>
@@ -371,17 +371,17 @@
                             <!-- Context Menu -->
                             <Grid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Hizmeti Başlat" 
+                                    <MenuItem Header="Hizmeti başlat" 
                                               Command="{Binding DataContext.StartServiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="Hizmeti Durdur" 
+                                    <MenuItem Header="Hizmeti durdur" 
                                               Command="{Binding DataContext.StopServiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="Hizmeti Yeniden Başlat" 
+                                    <MenuItem Header="Hizmeti yeniden başlat" 
                                               Command="{Binding DataContext.RestartServiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
                                     <Separator/>
-                                    <MenuItem Header="Dosya Konumunu Aç" 
+                                    <MenuItem Header="Dosya konumunu aç" 
                                               Command="{Binding DataContext.OpenServiceLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
                                 </ContextMenu>
@@ -474,16 +474,16 @@
                                 <ui:Button Appearance="Secondary" 
                                            Padding="6,4" 
                                            Margin="0,0,4,0" 
-                                           ToolTip="Hizmeti Başlat"
+                                           ToolTip="Hizmeti başlat"
                                            Command="{Binding DataContext.StartServiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                            CommandParameter="{Binding}"
                                            Icon="{ui:SymbolIcon Play20}" AutomationProperties.Name="Hizmeti Başlat"/>
 
                                 <!-- Stop Button -->
-                                <ui:Button Appearance="Danger" 
+                                <ui:Button Appearance="Secondary" 
                                            Padding="6,4" 
                                            Margin="0,0,4,0" 
-                                           ToolTip="Hizmeti Durdur"
+                                           ToolTip="Hizmeti durdur"
                                            Command="{Binding DataContext.StopServiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                            CommandParameter="{Binding}"
                                            Icon="{ui:SymbolIcon Stop20}" AutomationProperties.Name="Hizmeti Durdur"/>
@@ -492,7 +492,7 @@
                                 <ui:Button Appearance="Secondary" 
                                            Padding="6,4" 
                                            Margin="0,0,4,0" 
-                                           ToolTip="Yeniden Başlat"
+                                           ToolTip="Yeniden başlat"
                                            Command="{Binding DataContext.RestartServiceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                            CommandParameter="{Binding}"
                                            Icon="{ui:SymbolIcon ArrowClockwise20}" AutomationProperties.Name="Yeniden Başlat"/>
@@ -500,7 +500,7 @@
                                 <!-- Open Location -->
                                 <ui:Button Appearance="Secondary" 
                                            Padding="6,4" 
-                                           ToolTip="Dosya Konumunu Aç"
+                                           ToolTip="Dosya konumunu aç"
                                            Command="{Binding DataContext.OpenServiceLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                            CommandParameter="{Binding}"
                                            Icon="{ui:SymbolIcon FolderOpen20}" AutomationProperties.Name="Dosya Konumunu Aç"/>
@@ -535,11 +535,11 @@
                         <ColumnDefinition Width="Auto" SharedSizeGroup="DrvActionCol"/>   <!-- Actions -->
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Grid.Column="0" Text="Aygıt &amp; Sürücü Adı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="Aygıt Sınıfı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="2" Text="Üretici / Sağlayıcı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="3" Text="Sürüm / Tarih" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
-                    <TextBlock Grid.Column="4" Text="Dijital İmza" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="0" Text="Aygıt ve sürücü adı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="Aygıt sınıfı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="2" Text="Üretici / sağlayıcı" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="3" Text="Sürüm / tarih" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
+                    <TextBlock Grid.Column="4" Text="Dijital imza" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,14,0"/>
                     <TextBlock Grid.Column="5" Text="Eylemler" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextAlignment="Center"/>
                 </Grid>
             </Border>
@@ -592,7 +592,7 @@
                             <!-- Context Menu -->
                             <Grid.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Aygıt Kimliğini (Device ID) Kopyala" 
+                                    <MenuItem Header="Aygıt kimliğini (Device ID) kopyala" 
                                               Command="{Binding DataContext.CopyDeviceIdCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
                                 </ContextMenu>
@@ -674,7 +674,7 @@
                                 <!-- Copy Device ID -->
                                 <ui:Button Appearance="Secondary" 
                                            Padding="6,4" 
-                                           ToolTip="Aygıt Kimliğini Kopyala"
+                                           ToolTip="Aygıt kimliğini kopyala"
                                            Command="{Binding DataContext.CopyDeviceIdCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                            CommandParameter="{Binding}"
                                            Icon="{ui:SymbolIcon Copy20}" AutomationProperties.Name="Aygıt Kimliğini Kopyala"/>
@@ -704,7 +704,7 @@
                 </StackPanel>
 
                 <TextBlock Grid.Column="1" 
-                           Text="Sağ Tık: Hizmet Başlat / Durdur, Aygıt Kimliği Kopyalama" 
+                           Text="Sağ tık: Hizmet başlat / durdur, aygıt kimliği kopyalama" 
                            FontSize="{StaticResource Font.Caption}" 
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                            VerticalAlignment="Center"/>

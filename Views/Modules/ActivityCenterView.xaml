@@ -54,12 +54,12 @@
         </c:SectionHeader>
 
         <!-- 1. Özet -->
-        <UniformGrid Grid.Row="1" Rows="1" Columns="4" Margin="{StaticResource Gap.Bottom.MD}">
-            <c:StatCard Icon="History24" Label="Toplam kayıt" Value="{Binding TotalCount}" Intent="Neutral" Margin="{StaticResource Gap.Right.SM}"/>
-            <c:StatCard Icon="CalendarLtr24" Label="Bugün" Value="{Binding TodayCount}" Intent="Accent" Margin="{StaticResource Gap.Right.SM}"/>
-            <c:StatCard Icon="ArrowUndo20" Label="Geri alınabilir" Value="{Binding UndoableCount}" Intent="Success" Margin="{StaticResource Gap.Right.SM}"/>
+        <c:SummaryStrip Grid.Row="1" Margin="{StaticResource Gap.Bottom.MD}">
+            <c:StatCard Icon="History24" Label="Toplam kayıt" Value="{Binding TotalCount}" Intent="Neutral"/>
+            <c:StatCard Icon="CalendarLtr24" Label="Bugün" Value="{Binding TodayCount}" Intent="Accent"/>
+            <c:StatCard Icon="ArrowUndo20" Label="Geri alınabilir" Value="{Binding UndoableCount}" Intent="Success"/>
             <c:StatCard Icon="ErrorCircle24" Label="Başarısız" Value="{Binding FailedCount}" Intent="Critical"/>
-        </UniformGrid>
+        </c:SummaryStrip>
 
         <!-- 2. Filtre çubuğu -->
         <Border Grid.Row="2"

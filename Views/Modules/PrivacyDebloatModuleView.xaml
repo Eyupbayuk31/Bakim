@@ -22,49 +22,40 @@
         </Grid.RowDefinitions>
 
         <!-- 0. Metric Overview Cards -->
-        <Grid Grid.Row="0" Margin="0,0,0,14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <c:SummaryStrip Grid.Row="0" Margin="0,0,0,14">
 
             <!-- Card 1: Privacy Score -->
-            <c:StatCard Grid.Column="0"
+            <c:StatCard
                         Icon="ShieldCheckmark24"
-                        Label="Gizlilik Koruma Skoru"
+                        Label="Gizlilik koruma skoru"
                         Value="{Binding Stats.ProtectionPercentage, StringFormat='%{0}'}"
                         Caption="Windows telemetri koruması"
                         Intent="Success"/>
 
             <!-- Card 2: Active Tweaks -->
-            <c:StatCard Grid.Column="2"
+            <c:StatCard
                         Icon="CheckmarkCircle24"
-                        Label="Aktif Koruma Kuralı"
+                        Label="Aktif koruma kuralı"
                         Value="{Binding Stats.ActiveTweaksCount}"
                         Caption="{Binding Stats.TotalTweaksCount, StringFormat='Toplam {0} kuraldan'}"
                         Intent="Accent"/>
 
             <!-- Card 3: Recommended Tweaks Active -->
-            <c:StatCard Grid.Column="4"
+            <c:StatCard
                         Icon="Star24"
-                        Label="Önerilen Korumalar"
+                        Label="Önerilen korumalar"
                         Value="{Binding Stats.RecommendedActiveCount}"
                         Caption="Önerilen aktif korumalar"
                         Intent="Caution"/>
 
             <!-- Card 4: Installed Bloatware -->
-            <c:StatCard Grid.Column="6"
+            <c:StatCard
                         Icon="Apps24"
-                        Label="Yüklü Bloatware"
+                        Label="Yüklü bloatware"
                         Value="{Binding Stats.InstalledBloatwareCount}"
                         Caption="Kaldırılabilir gereksiz uygulama"
                         Intent="Critical"/>
-        </Grid>
+        </c:SummaryStrip>
 
         <!-- 1. Action Toolbar & Segmented Switcher -->
         <Grid Grid.Row="1" Margin="0,0,0,12">
@@ -79,13 +70,13 @@
                     Style="{StaticResource FluentSegmentedContainer}">
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding IsPrivacyTab}"
-                               Content="Gizlilik &amp; Telemetri"
+                               Content="Gizlilik ve telemetri"
                                Icon="{ui:SymbolIcon ShieldCheckmark20}"
                                Command="{Binding SwitchSubTabCommand}"
                                CommandParameter="Privacy"
                                Margin="0,0,4,0"/>
                     <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding IsDebloatTab}"
-                               Content="Bloatware Kaldırıcı"
+                               Content="Bloatware kaldırıcı"
                                Icon="{ui:SymbolIcon Delete20}"
                                Command="{Binding SwitchSubTabCommand}"
                                CommandParameter="Debloat"/>
@@ -113,31 +104,31 @@
                                Command="{Binding ApplyRecommendedCommand}"
                                Padding="12,6"
                                Margin="0,0,6,0"
-                               Content="Önerilenleri Koru"
+                               Content="Önerilenleri koru"
                                Icon="{ui:SymbolIcon ShieldCheckmark20}"/>
 
                     <ui:Button Appearance="Secondary"
                                Command="{Binding CreateRestorePointCommand}"
                                Padding="10,6"
                                Margin="0,0,6,0"
-                               Content="Geri Yükleme Noktası"
+                               Content="Geri yükleme noktası"
                                Icon="{ui:SymbolIcon History20}"/>
 
                     <ui:Button Appearance="Secondary"
                                Command="{Binding RestoreDefaultsCommand}"
                                Padding="10,6"
                                Margin="0,0,6,0"
-                               Content="Varsayılanlara Dön"
+                               Content="Varsayılanlara dön"
                                Icon="{ui:SymbolIcon ArrowCounterclockwise20}"/>
                 </StackPanel>
 
                 <!-- Debloat Tab Actions -->
                 <StackPanel Orientation="Horizontal" Visibility="{Binding IsDebloatTab, Converter={StaticResource BoolToVis}}">
-                    <ui:Button Appearance="Danger"
+                    <ui:Button Appearance="Secondary"
                                Command="{Binding RemoveAllSafeBloatwareCommand}"
                                Padding="12,6"
                                Margin="0,0,6,0"
-                               Content="Tüm Güvenli Bloatware'leri Kaldır"
+                               Content="Tüm güvenli bloatware'leri kaldır"
                                Icon="{ui:SymbolIcon Delete20}"/>
                 </StackPanel>
 
@@ -176,7 +167,7 @@
                            Margin="0,0,6,4">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Telemetri &amp; Tanılama" FontSize="{StaticResource Font.Caption}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Telemetri ve tanılama" FontSize="{StaticResource Font.Caption}" VerticalAlignment="Center"/>
                         <Border CornerRadius="{StaticResource Radius.MD}" Padding="5,1" Background="{DynamicResource SubtleFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding TelemetryCount}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"/>
                         </Border>
@@ -190,7 +181,7 @@
                            Margin="0,0,6,4">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Megaphone20" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Reklamlar &amp; Öneriler" FontSize="{StaticResource Font.Caption}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Reklamlar ve öneriler" FontSize="{StaticResource Font.Caption}" VerticalAlignment="Center"/>
                         <Border CornerRadius="{StaticResource Radius.MD}" Padding="5,1" Background="{DynamicResource SubtleFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding AdsCount}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"/>
                         </Border>
@@ -204,7 +195,7 @@
                            Margin="0,0,6,4">
                     <StackPanel Orientation="Horizontal">
                         <ui:SymbolIcon Symbol="Location20" FontSize="14" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="Konum &amp; İzinler" FontSize="{StaticResource Font.Caption}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Konum ve izinler" FontSize="{StaticResource Font.Caption}" VerticalAlignment="Center"/>
                         <Border CornerRadius="{StaticResource Radius.MD}" Padding="5,1" Background="{DynamicResource SubtleFillColorTertiaryBrush}" Margin="6,0,0,0" VerticalAlignment="Center">
                             <TextBlock Text="{Binding LocationCount}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"/>
                         </Border>
@@ -337,7 +328,7 @@
                                                 </Border.Style>
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon Symbol="Checkmark16" FontSize="11" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Önerilen Koruma" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                                    <TextBlock Text="Önerilen koruma" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                                 </StackPanel>
                                             </Border>
 
@@ -359,7 +350,7 @@
                                                 </Border.Style>
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon Symbol="Warning16" FontSize="11" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Gelişmiş Kural" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                                                    <TextBlock Text="Gelişmiş kural" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
                                                 </StackPanel>
                                             </Border>
 
@@ -380,7 +371,7 @@
                                                 </Border.Style>
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon Symbol="Info16" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="İsteğe Bağlı" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Text="İsteğe bağlı" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
@@ -422,7 +413,7 @@
 
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="Info16" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="Kayıt Defteri &amp; Servis Düzeyi Müdahale • Anında Etkili" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="Kayıt Defteri ve servis düzeyi müdahale • Anında etkili" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
                                     </StackPanel>
 
                                     <!-- Active State Indicator -->
@@ -580,7 +571,7 @@
                                                     Visibility="{Binding IsEssential, Converter={StaticResource BoolToVis}}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <ui:SymbolIcon Symbol="LockClosed16" FontSize="11" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="Temel Sistem Bileşeni" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                                                    <TextBlock Text="Temel sistem bileşeni" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
@@ -607,7 +598,7 @@
                                         </Border>
 
                                         <!-- Uninstall Button -->
-                                        <ui:Button Appearance="Danger" 
+                                        <ui:Button Appearance="Secondary" 
                                                    Content="Kaldır" 
                                                    Icon="{ui:SymbolIcon Delete20}"
                                                    Command="{Binding DataContext.RemoveBloatwareCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"

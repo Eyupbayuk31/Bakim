@@ -24,13 +24,13 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
-                         Title="Başlangıç Uygulamaları &amp; Açılış Optimizasyonu"
+                         Title="Başlangıç uygulamaları ve açılış optimizasyonu"
                          Description="Windows oturumu açılırken otomatik başlatılan tüm uygulama, servis ve kayıt defteri ögelerini yönetin.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Appearance="Primary"
                                Command="{Binding OptimizeBootCommand}"
-                               Content="Açılışı Hızlandır"
+                               Content="Açılışı hızlandır"
                                Icon="{ui:SymbolIcon TopSpeed24}"
                                Padding="14,8"
                                Margin="0,0,8,0"
@@ -38,7 +38,7 @@
 
                     <ui:Button Appearance="Secondary"
                                Command="{Binding AddNewStartupProgramCommand}"
-                               Content="Uygulama Ekle"
+                               Content="Uygulama ekle"
                                Icon="{ui:SymbolIcon Add24}"
                                Padding="14,8"
                                Margin="0,0,8,0"
@@ -71,7 +71,7 @@
             <!-- Card 1: Toplam Başlangıç Ögesi -->
             <c:StatCard Grid.Column="0" 
                         Icon="Apps24" 
-                        Label="Toplam Başlatıcı" 
+                        Label="Toplam başlatıcı" 
                         Value="{Binding Stats.TotalCount, FallbackValue='0'}" 
                         Caption="Kayıtlı açılış ögesi" 
                         Intent="Accent" 
@@ -80,7 +80,7 @@
             <!-- Card 2: Etkin Başlatıcılar -->
             <c:StatCard Grid.Column="2" 
                         Icon="CheckmarkCircle24" 
-                        Label="Etkin Uygulamalar" 
+                        Label="Etkin uygulamalar" 
                         Value="{Binding Stats.EnabledCount, FallbackValue='0'}" 
                         Caption="Açılışta otomatik çalışan" 
                         Intent="Success" 
@@ -89,7 +89,7 @@
             <!-- Card 3: Devre Dışı Ögeler -->
             <c:StatCard Grid.Column="4" 
                         Icon="DismissCircle24" 
-                        Label="Devre Dışı" 
+                        Label="Devre dışı" 
                         Value="{Binding Stats.DisabledCount, FallbackValue='0'}" 
                         Caption="Sistemi yormayan pasif" 
                         Intent="Neutral" 
@@ -154,7 +154,7 @@
 
                     <ui:Button Appearance="{Binding IsDisabledFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="Disabled"
-                               Content="Devre Dışı" Padding="12,6" Margin="0,0,6,4"/>
+                               Content="Devre dışı" Padding="12,6" Margin="0,0,6,4"/>
 
                     <ui:Button Appearance="{Binding IsHighImpactFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="HighImpact"
@@ -166,7 +166,7 @@
 
                     <ui:Button Appearance="{Binding IsFolderFilter, Converter={StaticResource BoolToNavAppearance}}"
                                Command="{Binding SetFilterCommand}" CommandParameter="Folder"
-                               Content="Başlangıç Klasörü" Padding="12,6" Margin="0,0,0,4"/>
+                               Content="Başlangıç klasörü" Padding="12,6" Margin="0,0,0,4"/>
                 </WrapPanel>
 
                 <!-- Right: Search Box -->
@@ -216,9 +216,9 @@
                                 <ColumnDefinition Width="110"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="Uygulama &amp; Yayıncı" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="1" Text="Açılış Etkisi &amp; Gecikme" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
-                            <TextBlock Grid.Column="2" Text="Kayıt Konumu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            <TextBlock Grid.Column="0" Text="Uygulama ve yayıncı" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="Açılış etkisi ve gecikme" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                            <TextBlock Grid.Column="2" Text="Kayıt konumu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                             <TextBlock Grid.Column="3" Text="Durum" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                             <TextBlock Grid.Column="4" Text="İşlemler" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Center"/>
                         </Grid>
@@ -344,7 +344,7 @@
                                                      CommandParameter="{Binding}"
                                                      IsEnabled="{Binding IsActionBusy, Converter={StaticResource InverseBool}}"
                                                      OnContent="Etkin" 
-                                                     OffContent="Devre Dışı"
+                                                     OffContent="Devre dışı"
                                                      VerticalAlignment="Center"
                                                      Margin="12,0,12,0"/>
 
@@ -355,7 +355,7 @@
                                                    CommandParameter="{Binding}"
                                                    Padding="5" 
                                                    Margin="0,0,4,0"
-                                                   ToolTip="Dosya Konumunu Gezginde Aç" 
+                                                   ToolTip="Dosya konumunu gezginde aç" 
                                                    Icon="{ui:SymbolIcon FolderOpen20}"/>
 
                                         <ui:Button Appearance="Transparent" 
@@ -363,14 +363,14 @@
                                                    CommandParameter="{Binding}"
                                                    Padding="5" 
                                                    Margin="0,0,4,0"
-                                                   ToolTip="Kayıt Konumunu Kopyala" 
+                                                   ToolTip="Kayıt konumunu kopyala" 
                                                    Icon="{ui:SymbolIcon Copy20}"/>
 
                                         <ui:Button Appearance="Transparent" 
                                                    Command="{Binding DataContext.DeleteProgramCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
                                                    Padding="5" 
-                                                   ToolTip="Başlangıçtan Tamamen Kaldır" 
+                                                   ToolTip="Başlangıçtan tamamen kaldır" 
                                                    Icon="{ui:SymbolIcon Delete20}"/>
                                     </StackPanel>
                                 </Grid>
@@ -414,7 +414,7 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Başlatıcı Röntgeni" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Başlatıcı röntgeni" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="Ayrıntılı dosya ve kayıt denetimi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </StackPanel>
 
@@ -422,7 +422,7 @@
                                    Appearance="Secondary" 
                                    Padding="6,4" 
                                    Command="{Binding DataContext.CloseDrawerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" 
-                                   ToolTip="Paneli Kapat"
+                                   ToolTip="Paneli kapat"
                                    Icon="{ui:SymbolIcon Dismiss20}"/>
                     </Grid>
 
@@ -461,18 +461,18 @@
                     <!-- 3. Technical Metadata List -->
                     <StackPanel Grid.Row="2">
                         <!-- File Path -->
-                        <TextBlock Text="Dosya Yolu / Komut" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Dosya yolu / komut" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,10">
                             <TextBlock Text="{Binding FilePath}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
                         </Border>
 
                         <!-- Clean Path & File Status -->
-                        <TextBlock Text="Hedef Çalıştırılabilir (.exe)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Hedef çalıştırılabilir (.exe)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,10">
                             <StackPanel>
                                 <TextBlock Text="{Binding CleanExePath}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                    <TextBlock Text="Dosya Durumu: " FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="Dosya durumu: " FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     <TextBlock Text="Disk üzerinde mevcut" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Visibility="{Binding FileExists, Converter={StaticResource BoolToVis}}"/>
                                     <TextBlock Text="Dosya bulunamadı (Bozuk kayıt)" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Visibility="{Binding FileExists, Converter={StaticResource InverseBoolToVis}}"/>
                                 </StackPanel>
@@ -480,7 +480,7 @@
                         </Border>
 
                         <!-- Registry / Folder Location -->
-                        <TextBlock Text="Kayıt Konumu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Kayıt konumu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,14">
                             <TextBlock Text="{Binding RegistryPath}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                         </Border>
@@ -492,7 +492,7 @@
                                    HorizontalAlignment="Stretch"
                                    Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    CommandParameter="{Binding}"
-                                   Content="Dosya Konumunu Aç" 
+                                   Content="Dosya konumunu aç" 
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Padding="12,8" 
                                    Margin="0,0,0,6"/>
@@ -501,16 +501,16 @@
                                    HorizontalAlignment="Stretch"
                                    Command="{Binding DataContext.CopyRegistryPathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    CommandParameter="{Binding}"
-                                   Content="Kayıt Yolunu Kopyala" 
+                                   Content="Kayıt yolunu kopyala" 
                                    Icon="{ui:SymbolIcon Copy24}"
                                    Padding="12,8" 
                                    Margin="0,0,0,6"/>
 
-                        <ui:Button Appearance="Danger" 
+                        <ui:Button Appearance="Secondary" 
                                    HorizontalAlignment="Stretch"
                                    Command="{Binding DataContext.DeleteProgramCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    CommandParameter="{Binding}"
-                                   Content="Başlangıçtan Tamamen Kaldır" 
+                                   Content="Başlangıçtan tamamen kaldır" 
                                    Icon="{ui:SymbolIcon Delete24}"
                                    Padding="12,8"/>
                     </StackPanel>

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:models="clr-namespace:Bakım.Models"
-        Title="Kalıntı Temizleme Asistanı"
+        Title="Kalıntı temizleme asistanı"
         Width="740" Height="620"
         MinWidth="650" MinHeight="520"
         WindowStartupLocation="CenterScreen"
@@ -72,7 +72,7 @@
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    TextTrimming="CharacterEllipsis"
                                    MaxWidth="450"/>
-                        <TextBlock Text=" • Kalıntı Temizleyici"
+                        <TextBlock Text=" • Kalıntı temizleyici"
                                    FontSize="{StaticResource Font.Subtitle}"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
@@ -114,7 +114,7 @@
                               VerticalAlignment="Center"
                               Margin="0,0,16,0"
                               Cursor="Hand">
-                        <TextBlock Text="Tümünü Seç / Kaldır"
+                        <TextBlock Text="Tümünü seç / kaldır"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    FontSize="{StaticResource Font.Caption}"
                                    FontWeight="Medium"
@@ -222,11 +222,11 @@
                                 <!-- Context Menu -->
                                 <Grid.ContextMenu>
                                     <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                                        <MenuItem Header="Dosya Gezgininde Göster"
+                                        <MenuItem Header="Dosya Gezgininde göster"
                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                   Command="{Binding DataContext.OpenLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   CommandParameter="{Binding}"/>
-                                        <MenuItem Header="Yolu Panoya Kopyala"
+                                        <MenuItem Header="Yolu panoya kopyala"
                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                   Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   CommandParameter="{Binding}"/>
@@ -320,7 +320,7 @@
 
                 <!-- Selected Total Size Footprint -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
-                    <TextBlock Text="Temizlenecek Alan: "
+                    <TextBlock Text="Temizlenecek alan: "
                                FontSize="{StaticResource Font.Caption}"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     <TextBlock Text="{Binding FormattedSelectedSize}"
@@ -355,7 +355,7 @@
                                Padding="16,8"
                                Margin="0,0,10,0"/>
 
-                    <ui:Button Content="Seçilenleri Temizle"
+                    <ui:Button Content="Seçilenleri temizle"
                                Appearance="Primary"
                                Icon="{ui:SymbolIcon Delete20}"
                                Command="{Binding CleanSelectedCommand}"

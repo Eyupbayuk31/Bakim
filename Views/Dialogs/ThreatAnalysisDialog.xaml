@@ -10,7 +10,7 @@
                  xmlns:c="clr-namespace:Bakım.Controls"
                  mc:Ignorable="d"
                  d:DataContext="{d:DesignInstance Type=vm:ThreatAnalysisViewModel}"
-                 Title="Analizör — Dosya Röntgeni"
+                 Title="Analizör — Dosya röntgeni"
                  Width="940" Height="780"
                  MinWidth="820" MinHeight="640"
                  WindowStartupLocation="CenterOwner"
@@ -158,7 +158,7 @@
 
         <!-- ============ 0. BAŞLIK ÇUBUĞU ============ -->
         <ui:TitleBar Grid.Row="0"
-                     Title="Analizör — Dosya Röntgeni"
+                     Title="Analizör — Dosya röntgeni"
                      ShowMaximize="True"
                      ShowMinimize="False"
                      Icon="{ui:SymbolIcon ShieldTask24}"/>
@@ -339,22 +339,22 @@
             <UniformGrid Rows="1">
                 <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="0" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=0}" Margin="2"
                            Icon="{ui:SymbolIcon ShieldTask24}"
-                           Content="Genel Bakış"
+                           Content="Genel bakış"
                            AutomationProperties.Name="Genel bakış sekmesi"/>
 
                 <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="1" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=1}" Margin="2"
                            Icon="{ui:SymbolIcon Layer24}"
-                           Content="PE &amp; Kalkanlar"
+                           Content="PE ve kalkanlar"
                            AutomationProperties.Name="PE ikili yapı ve güvenlik kalkanları sekmesi"/>
 
                 <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="2" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=2}" Margin="2"
                            Icon="{ui:SymbolIcon Code24}"
-                           Content="API Çağrıları"
+                           Content="API çağrıları"
                            AutomationProperties.Name="İçe aktarılan API çağrıları sekmesi"/>
 
                 <ui:Button Command="{Binding SelectTabCommand}" CommandParameter="3" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=3}" Margin="2"
                            Icon="{ui:SymbolIcon Fingerprint24}"
-                           Content="Kimlik &amp; Hash"
+                           Content="Kimlik ve hash"
                            AutomationProperties.Name="Kriptografik kimlik ve VirusTotal sekmesi"/>
             </UniformGrid>
         </Border>
@@ -395,7 +395,7 @@
                                 <TextBlock FontSize="{StaticResource Font.Caption}"
                                            Margin="{StaticResource Gap.Top.XS}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}">
-                                    <Run Text="Süreç Kimliği (PID):"/>
+                                    <Run Text="Süreç kimliği (PID):"/>
                                     <Run Text="{Binding ActiveProcessId, Mode=OneWay}" FontWeight="SemiBold"/>
                                     <Run Text="  •  Bellek:"/>
                                     <Run Text="{Binding ActiveProcessMemory, Mode=OneWay}" FontWeight="SemiBold"/>
@@ -407,7 +407,7 @@
                                        Padding="{StaticResource Pad.Control}"
                                        VerticalAlignment="Center"
                                        Icon="{ui:SymbolIcon Dismiss24}"
-                                       Content="Süreci Sonlandır"
+                                       Content="Süreci sonlandır"
                                        AutomationProperties.Name="Çalışan süreci sonlandır"/>
                         </Grid>
                     </Border>
@@ -416,7 +416,7 @@
                     <UniformGrid Columns="2" Margin="{StaticResource Gap.Bottom.MD}">
                         <Border Style="{StaticResource MetaCard}" Margin="0,0,6,6">
                             <StackPanel>
-                                <TextBlock Text="Dijital Sertifika" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="Dijital sertifika" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Text="{Binding Result.DigitalSignatureText}" Style="{StaticResource FieldValue}"
                                            ToolTip="{Binding Result.SignatureCatalogPath}"/>
                                 <TextBlock Text="{Binding Result.SignatureSourceText}"
@@ -428,21 +428,21 @@
 
                         <Border Style="{StaticResource MetaCard}" Margin="6,0,0,6">
                             <StackPanel>
-                                <TextBlock Text="VirusTotal Taraması" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="VirusTotal taraması" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Text="{Binding Result.VirusTotalSummary}" Style="{StaticResource FieldValue}"/>
                             </StackPanel>
                         </Border>
 
                         <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
                             <StackPanel>
-                                <TextBlock Text="Shannon Entropi" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="Shannon entropi" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Text="{Binding Result.EntropyText}" Style="{StaticResource FieldValue}"/>
                             </StackPanel>
                         </Border>
 
                         <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
                             <StackPanel>
-                                <TextBlock Text="Boyut &amp; Mimari" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="Boyut ve mimari" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Style="{StaticResource FieldValue}">
                                     <Run Text="{Binding Result.FileSizeFormatted, Mode=OneWay}"/>
                                     <Run Text="{Binding PeHeader.MachineArchitecture, Mode=OneWay}"
@@ -460,7 +460,7 @@
                                 <ui:SymbolIcon Symbol="Globe24" FontSize="{StaticResource Icon.XS}"
                                                Margin="{StaticResource Gap.IconText}"
                                                Foreground="{DynamicResource Brush.Caution.Text}"/>
-                                <TextBlock Text="İnternetten İndirilmiş (Mark-of-the-Web)" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="İnternetten indirilmiş (Mark-of-the-Web)" Style="{StaticResource FieldLabel}"/>
                             </StackPanel>
                             <TextBlock Text="{Binding Result.ZoneSourceUrl}" Style="{StaticResource MonoValue}"
                                        TextWrapping="Wrap"/>
@@ -468,7 +468,7 @@
                     </Border>
 
                     <!-- Tespit edilen faktörler -->
-                    <TextBlock Text="Neden Tehdit Olabilir? (Tespit Edilen Güvenlik Faktörleri)"
+                    <TextBlock Text="Neden tehdit olabilir? (tespit edilen güvenlik faktörleri)"
                                FontSize="{StaticResource Font.SectionTitle}"
                                FontWeight="SemiBold"
                                Margin="0,6,0,10"
@@ -542,7 +542,7 @@
                                            Margin="0,1,10,0" VerticalAlignment="Top"
                                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             <StackPanel>
-                                <TextBlock Text="Sistem Güvenlik Tavsiyesi"
+                                <TextBlock Text="Sistem güvenlik tavsiyesi"
                                            FontSize="{StaticResource Font.BodyLarge}"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
@@ -570,7 +570,7 @@
                     <StackPanel Visibility="{Binding HasPeAnalysis, Converter={StaticResource BoolToVis}}">
 
                         <!-- PE başlık röntgeni -->
-                        <TextBlock Text="PE Başlık Bilgisi"
+                        <TextBlock Text="PE başlık bilgisi"
                                    FontSize="{StaticResource Font.SectionTitle}"
                                    FontWeight="SemiBold"
                                    Margin="{StaticResource Gap.Bottom.SM}"
@@ -585,31 +585,31 @@
                             </Border>
                             <Border Style="{StaticResource MetaCard}" Margin="6,0,6,6">
                                 <StackPanel>
-                                    <TextBlock Text="Alt Sistem" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="Alt sistem" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.Subsystem}" Style="{StaticResource FieldValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetaCard}" Margin="6,0,0,6">
                                 <StackPanel>
-                                    <TextBlock Text="Derleme Zamanı (UTC)" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="Derleme zamanı (UTC)" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.CompileTimeUtc}" Style="{StaticResource FieldValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
                                 <StackPanel>
-                                    <TextBlock Text="Giriş Noktası (RVA)" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="Giriş noktası (RVA)" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.EntryPointHex}" Style="{StaticResource MonoValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetaCard}" Margin="6,6,6,0">
                                 <StackPanel>
-                                    <TextBlock Text="Image Base" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="Image base" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.ImageBaseHex}" Style="{StaticResource MonoValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
                                 <StackPanel>
-                                    <TextBlock Text="Bölüm Sayısı" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="Bölüm sayısı" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.SectionCount}" Style="{StaticResource FieldValue}"/>
                                 </StackPanel>
                             </Border>
@@ -622,7 +622,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0" Text="Bellek Koruma Kalkanları (Exploit Mitigations)"
+                            <TextBlock Grid.Column="0" Text="Bellek koruma kalkanları (Exploit Mitigations)"
                                        FontSize="{StaticResource Font.SectionTitle}"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"
@@ -706,7 +706,7 @@
                                                 </Style>
                                             </ui:SymbolIcon.Style>
                                         </ui:SymbolIcon>
-                                        <TextBlock Text="DEP / NX" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                        <TextBlock Text="Dep / nx" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="Veride kod yürütme engeli" FontSize="{StaticResource Font.Micro}"
@@ -758,7 +758,7 @@
                                                 </Style>
                                             </ui:SymbolIcon.Style>
                                         </ui:SymbolIcon>
-                                        <TextBlock Text="High Entropy VA" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                        <TextBlock Text="High entropy VA" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="64-bit geniş adres alanı" FontSize="{StaticResource Font.Micro}"
@@ -799,7 +799,7 @@
                         </UniformGrid>
 
                         <!-- Bölüm tablosu -->
-                        <TextBlock Text="Bölümler (Sections) &amp; Bölüm Başına Entropi"
+                        <TextBlock Text="Bölümler (Sections) ve bölüm başına entropi"
                                    FontSize="{StaticResource Font.SectionTitle}"
                                    FontWeight="SemiBold"
                                    Margin="{StaticResource Gap.Bottom.SM}"
@@ -1023,7 +1023,7 @@
                           Visibility="{Binding SelectedTabIndex, Converter={StaticResource IntEqualsToVis}, ConverterParameter=3}">
                 <StackPanel>
 
-                    <TextBlock Text="Kriptografik Parmak İzleri"
+                    <TextBlock Text="Kriptografik parmak izleri"
                                FontSize="{StaticResource Font.SectionTitle}"
                                FontWeight="SemiBold"
                                Margin="{StaticResource Gap.Bottom.SM}"
@@ -1091,7 +1091,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="ImpHash (İçe Aktarma Tablosu Parmak İzi)" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="ImpHash (içe aktarma tablosu parmak izi)" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Text="{Binding ImpHash}" Style="{StaticResource MonoValue}" TextWrapping="Wrap"/>
                             </StackPanel>
                             <ui:Button Grid.Column="1" Appearance="Secondary" Padding="10,6" Margin="10,0,0,0"
@@ -1103,7 +1103,7 @@
                     </Border>
 
                     <!-- İmza ayrıntısı -->
-                    <TextBlock Text="İmza Ayrıntısı"
+                    <TextBlock Text="İmza ayrıntısı"
                                FontSize="{StaticResource Font.SectionTitle}"
                                FontWeight="SemiBold"
                                Margin="0,10,0,8"
@@ -1118,20 +1118,20 @@
                         </Border>
                         <Border Style="{StaticResource MetaCard}" Margin="6,0,0,6">
                             <StackPanel>
-                                <TextBlock Text="İmza Kaynağı" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="İmza kaynağı" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Text="{Binding Result.SignatureSourceText}" Style="{StaticResource FieldValue}"/>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
                             <StackPanel>
-                                <TextBlock Text="Sertifika Bitişi" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="Sertifika bitişi" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Text="{Binding Result.CertificateExpiry, StringFormat='{}{0:dd.MM.yyyy}', TargetNullValue='—'}"
                                            Style="{StaticResource FieldValue}"/>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
                             <StackPanel>
-                                <TextBlock Text="Ürün / Sürüm" Style="{StaticResource FieldLabel}"/>
+                                <TextBlock Text="Ürün / sürüm" Style="{StaticResource FieldLabel}"/>
                                 <TextBlock Style="{StaticResource FieldValue}">
                                     <Run Text="{Binding Result.ProductName, Mode=OneWay}"/>
                                     <Run Text="{Binding Result.FileVersion, Mode=OneWay}"
@@ -1162,7 +1162,7 @@
                                        Padding="{StaticResource Pad.Control}"
                                        VerticalAlignment="Center"
                                        Icon="{ui:SymbolIcon Globe20}"
-                                       Content="Tarayıcıda Aç"
+                                       Content="Tarayıcıda aç"
                                        AutomationProperties.Name="VirusTotal analiz sayfasını tarayıcıda aç"/>
                         </Grid>
                     </Border>
@@ -1194,29 +1194,29 @@
                                    Appearance="Secondary"
                                    Padding="{StaticResource Pad.Control}"
                                    Icon="{ui:SymbolIcon MoreHorizontal24}"
-                                   Content="Daha Fazla"
+                                   Content="Daha fazla"
                                    AutomationProperties.Name="Ek inceleme eylemleri">
                     <ui:DropDownButton.Flyout>
                         <ContextMenu>
-                            <MenuItem Header="Dosya Konumunu Aç"
+                            <MenuItem Header="Dosya konumunu aç"
                                       Command="{Binding OpenLocationCommand}"
                                       Icon="{ui:SymbolIcon FolderOpen20}"/>
-                            <MenuItem Header="Teknik Raporu Kopyala"
+                            <MenuItem Header="Teknik raporu kopyala"
                                       Command="{Binding CopyReportCommand}"
                                       Icon="{ui:SymbolIcon DocumentCopy20}"/>
-                            <MenuItem Header="Tüm Hash'leri Kopyala"
+                            <MenuItem Header="Tüm hash'leri kopyala"
                                       Command="{Binding CopyAllHashesCommand}"
                                       Icon="{ui:SymbolIcon Fingerprint20}"/>
                             <Separator/>
-                            <MenuItem Header="Başlangıçtan Kaldır"
+                            <MenuItem Header="Başlangıçtan kaldır"
                                       Command="{Binding DisableStartupCommand}"
                                       IsEnabled="{Binding CanDisableStartup}"
                                       Icon="{ui:SymbolIcon PlugDisconnected20}"/>
-                            <MenuItem Header="Güvenli Olarak İşaretle"
+                            <MenuItem Header="Güvenli olarak işaretle"
                                       Command="{Binding WhitelistCommand}"
                                       Icon="{ui:SymbolIcon ShieldCheckmark20}"/>
                             <Separator Visibility="{Binding CanLaunchInSandbox, Converter={StaticResource BoolToVis}}"/>
-                            <MenuItem Header="Windows Sandbox'ta Önizle"
+                            <MenuItem Header="Windows Sandbox'ta önizle"
                                       Command="{Binding LaunchInSandboxCommand}"
                                       Visibility="{Binding CanLaunchInSandbox, Converter={StaticResource BoolToVis}}"
                                       Icon="{ui:SymbolIcon Desktop20}"/>
@@ -1232,7 +1232,7 @@
                                Padding="{StaticResource Pad.Control}"
                                Margin="{StaticResource Gap.Right.SM}"
                                Icon="{ui:SymbolIcon Desktop20}"
-                               Content="Sandbox'ta Önizle"
+                               Content="Sandbox'ta önizle"
                                ToolTip="Windows Sandbox yalıtılmış ortamında ana sisteme dokunmadan çalıştırır."
                                AutomationProperties.Name="Windows Sandbox ile güvenli önizleme"/>
 
@@ -1251,7 +1251,7 @@
                                Padding="{StaticResource Pad.Control}"
                                Margin="{StaticResource Gap.Right.SM}"
                                Icon="{ui:SymbolIcon Delete24}"
-                               Content="Dosyayı Kaldır"
+                               Content="Dosyayı kaldır"
                                ToolTip="Geri Dönüşüm Kutusu'na taşır; kullanımdaysa yeniden başlatmada siler."
                                AutomationProperties.Name="Dosyayı Geri Dönüşüm Kutusu'na taşı"/>
 

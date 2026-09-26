@@ -10,9 +10,6 @@
     -->
 
     <Border x:Name="CardBorder"
-            BorderThickness="{StaticResource Stroke.Thin}"
-            CornerRadius="{StaticResource Radius.MD}"
-            Padding="{StaticResource Pad.CardCompact}"
             RenderTransformOrigin="0.5,0.5">
 
         <!--
@@ -24,7 +21,25 @@
             <Style TargetType="Border">
                 <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
                 <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+                <Setter Property="CornerRadius" Value="{StaticResource Radius.MD}"/>
+                <Setter Property="Padding" Value="{StaticResource Pad.CardCompact}"/>
                 <Style.Triggers>
+                    <!-- Özet şeridi içinde: zemin ve çerçeve şeridin, burada yalnızca sol ayırıcı -->
+                    <DataTrigger Binding="{Binding IsEmbedded, ElementName=Root}" Value="True">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="1,0,0,0"/>
+                        <Setter Property="CornerRadius" Value="{StaticResource Radius.None}"/>
+                        <Setter Property="Padding" Value="20,2,16,2"/>
+                    </DataTrigger>
+                    <MultiDataTrigger>
+                        <MultiDataTrigger.Conditions>
+                            <Condition Binding="{Binding IsEmbedded, ElementName=Root}" Value="True"/>
+                            <Condition Binding="{Binding ShowDivider, ElementName=Root}" Value="False"/>
+                        </MultiDataTrigger.Conditions>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="4,2,16,2"/>
+                    </MultiDataTrigger>
                     <DataTrigger Binding="{Binding IsInteractive, ElementName=Root}" Value="True">
                         <Setter Property="Cursor" Value="Hand"/>
                     </DataTrigger>

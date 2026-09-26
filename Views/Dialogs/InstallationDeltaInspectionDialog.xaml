@@ -6,7 +6,7 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:c="clr-namespace:Bakım.Controls"
         mc:Ignorable="d"
-        Title="Kurulum Değişiklikleri Raporu"
+        Title="Kurulum değişiklikleri raporu"
         Width="900" Height="640"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -48,9 +48,9 @@
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock x:Name="DialogTitleText" Text="Kurulum Değişiklikleri Raporu" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock x:Name="DialogTitleText" Text="Kurulum değişiklikleri raporu" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <Border x:Name="ProtectionStatusBadge" Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
-                                <TextBlock x:Name="ProtectionStatusText" Text="Tam Koruma Modu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                <TextBlock x:Name="ProtectionStatusText" Text="Tam koruma modu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             </Border>
                         </StackPanel>
                         <TextBlock x:Name="DialogSubtitleText" Text="Sistem izleme detayları" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
@@ -79,7 +79,7 @@
                 <!-- Files Card -->
                 <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="Eklenen Dosyalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Eklenen dosyalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock x:Name="KpiFilesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
@@ -95,7 +95,7 @@
                 <!-- Registry Card -->
                 <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="Kayıt Defteri Girdileri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Kayıt Defteri girdileri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock x:Name="KpiRegistryText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
@@ -103,7 +103,7 @@
                 <!-- Services Card -->
                 <Border Grid.Column="3" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10">
                     <StackPanel>
-                        <TextBlock Text="Servis &amp; Başlangıç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Servis ve başlangıç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock x:Name="KpiServicesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
@@ -185,7 +185,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
 
-                            <TextBlock Text="KURULUM DOSYASI" Style="{StaticResource Text.Label}" Margin="0,14,0,6"/>
+                            <TextBlock Text="Kurulum dosyası" Style="{StaticResource Text.Label}" Margin="0,14,0,6"/>
                             <TextBlock x:Name="InstallerInfoText" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
@@ -193,7 +193,7 @@
                 </TabItem>
 
                 <!-- Tab 1: Added Files -->
-                <TabItem Header="Eklenen Dosyalar">
+                <TabItem Header="Eklenen dosyalar">
                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
@@ -231,7 +231,7 @@
                                                 <ui:Button Appearance="Secondary"
                                                            Padding="8,4"
                                                            Margin="0,0,6,0"
-                                                           ToolTip="Dosya Konumunu Aç"
+                                                           ToolTip="Dosya konumunu aç"
                                                            Tag="{Binding FullPath}"
                                                            Click="OnOpenFolderForFileClicked">
                                                     <ui:SymbolIcon Symbol="Folder24" FontSize="14"/>
@@ -244,7 +244,7 @@
                                                            Click="OnAnalyzeSingleFileClicked">
                                                     <StackPanel Orientation="Horizontal">
                                                         <ui:SymbolIcon Symbol="Shield24" FontSize="14" Margin="0,0,4,0"/>
-                                                        <TextBlock Text="Analiz Et" FontSize="{StaticResource Font.Caption}"/>
+                                                        <TextBlock Text="Analiz et" FontSize="{StaticResource Font.Caption}"/>
                                                     </StackPanel>
                                                 </ui:Button>
                                             </StackPanel>
@@ -297,7 +297,7 @@
                 </TabItem>
 
                 <!-- Tab 3: Services & Autorun -->
-                <TabItem Header="Servisler &amp; Başlangıç">
+                <TabItem Header="Servisler ve başlangıç">
                     <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
@@ -365,7 +365,7 @@
                                Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Desktop24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Sandbox'ta Önizle" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="Sandbox'ta önizle" FontSize="{StaticResource Font.Caption}"/>
                         </StackPanel>
                     </ui:Button>
 
@@ -375,7 +375,7 @@
                                Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Save24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="JSON Olarak Dışa Aktar" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="JSON olarak dışa aktar" FontSize="{StaticResource Font.Caption}"/>
                         </StackPanel>
                     </ui:Button>
 
@@ -384,7 +384,7 @@
                                Padding="12,7">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Folder24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Klasörde Göster" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="Klasörde göster" FontSize="{StaticResource Font.Caption}"/>
                         </StackPanel>
                     </ui:Button>
                 </StackPanel>
@@ -396,7 +396,7 @@
                                Margin="0,0,8,0">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Shield24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="Tüm Yürütülebilirleri Analizörde Tara" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                            <TextBlock Text="Tüm yürütülebilirleri Analizörde tara" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                         </StackPanel>
                     </ui:Button>
 

@@ -3,5 +3,11 @@
   "xaml_font_sizes": 1,
   "xaml_corner_radius": 11,
   "code_hex_colors": 16,
-  "empty_catch": 227
+  "empty_catch": 227,
+  "danger_in_pages": 0,
+  "non_fluent_button": 0,
+  "infinite_animation": 0,
+  "gradient_brush": 2,
+  "title_case_text": 27,
+  "ampersand_text": 0
 }

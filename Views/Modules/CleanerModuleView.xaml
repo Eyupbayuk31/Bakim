@@ -35,7 +35,7 @@
             <!-- Card 1: Total Found Bytes -->
             <c:StatCard Grid.Column="0" 
                         Icon="Broom24" 
-                        Label="Temizlenebilir Boyut" 
+                        Label="Temizlenebilir boyut" 
                         Value="{Binding FormattedFoundBytes}" 
                         Caption="{Binding TotalFilesFound, StringFormat='{}{0} adet dosya tespit edildi'}" 
                         Intent="Caution" 
@@ -44,7 +44,7 @@
             <!-- Card 2: Total Freed Size -->
             <c:StatCard Grid.Column="2" 
                         Icon="CheckmarkCircle24" 
-                        Label="Kazanılan Toplam Alan" 
+                        Label="Kazanılan toplam alan" 
                         Value="{Binding FormattedFreedBytes}" 
                         Caption="{Binding TotalFilesCleaned, StringFormat='{}{0} dosya güvenle temizlendi'}" 
                         Intent="Success" 
@@ -53,9 +53,9 @@
             <!-- Card 3: Security Whitelist Protection Info -->
             <c:StatCard Grid.Column="4" 
                         Icon="ShieldCheckmark24" 
-                        Label="Sistem Koruması" 
+                        Label="Sistem koruması" 
                         Value="Kalkan Aktif" 
-                        Caption="System32 &amp; Çekirdek korumalı" 
+                        Caption="System32 ve Çekirdek korumalı" 
                         Intent="Success" 
                         IsInteractive="True"/>
 
@@ -119,7 +119,7 @@
         <ui:InfoBar Grid.Row="1" 
                     IsOpen="{Binding HasResultBanner}" 
                     Severity="Success" 
-                    Title="Operasyon Tamamlandı" 
+                    Title="Operasyon tamamlandı" 
                     Message="{Binding OperationResultBanner}" 
                     Margin="0,0,0,14"/>
 
@@ -130,7 +130,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- Title & Toolbar -->
-                    <RowDefinition Height="Auto"/> <!-- Cyber Scan Beam Line -->
+                    <RowDefinition Height="Auto"/> <!-- Tarama ilerlemesi -->
                     <RowDefinition Height="Auto"/> <!-- Category Filter Pills & Presets -->
                     <RowDefinition Height="Auto"/> <!-- Categories Grid -->
                 </Grid.RowDefinitions>
@@ -144,7 +144,7 @@
 
                     <!-- Left: Title & Subtitle -->
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock Text="Temizlik Hedefleri (20 Kategori)" 
+                        <TextBlock Text="Temizlik hedefleri (20 kategori)" 
                                    FontSize="{StaticResource Font.Subtitle}" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -156,7 +156,7 @@
 
                     <!-- Right: Main Action Buttons -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:Button Content="Analiz Et (Tara)" 
+                        <ui:Button Content="Analiz et (tara)" 
                                    Appearance="Primary"
                                    Icon="{ui:SymbolIcon Search24}"
                                    Command="{Binding ScanCommand}"
@@ -164,8 +164,8 @@
                                    Padding="14,8"
                                    Margin="0,0,8,0"/>
 
-                        <ui:Button Content="Güvenle Temizle" 
-                                   Appearance="Success"
+                        <ui:Button Content="Güvenle temizle" 
+                                   Appearance="Primary"
                                    Icon="{ui:SymbolIcon Broom24}"
                                    Command="{Binding CleanCommand}"
                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
@@ -173,7 +173,7 @@
                                    Margin="0,0,8,0"/>
 
                         <ui:Button Content="İptal" 
-                                   Appearance="Danger"
+                                   Appearance="Secondary"
                                    Icon="{ui:SymbolIcon Dismiss24}"
                                    Command="{Binding CancelCommand}"
                                    IsEnabled="{Binding IsBusy}"
@@ -181,38 +181,10 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Row 1: Cyber Scan Beam Line -->
-                <Border Grid.Row="1" Height="2" 
-                        ClipToBounds="True" 
-                        CornerRadius="{StaticResource Radius.XS}"
-                        Background="{DynamicResource SubtleFillColorSecondaryBrush}"
-                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
-                        Margin="0,0,0,12">
-                    <Rectangle Width="260" HorizontalAlignment="Left">
-                        <Rectangle.Fill>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="0"/>
-                                <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.5"/>
-                                <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Rectangle.Fill>
-                        <Rectangle.RenderTransform>
-                            <TranslateTransform x:Name="ScanBeam1"/>
-                        </Rectangle.RenderTransform>
-                        <Rectangle.Triggers>
-                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard RepeatBehavior="Forever">
-                                        <DoubleAnimation Storyboard.TargetName="ScanBeam1"
-                                                         Storyboard.TargetProperty="X"
-                                                         From="-260" To="1400"
-                                                         Duration="0:0:1.3"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Rectangle.Triggers>
-                    </Rectangle>
-                </Border>
+                <!-- Row 1: Tarama ilerlemesi (Fluent ProgressBar) -->
+                <ProgressBar Grid.Row="1"
+                             Style="{StaticResource Progress.Header}"
+                             Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
 
                 <!-- Row 2: Category Filter Pills & Quick Presets (Responsive WrapPanel Layout) -->
                 <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
@@ -222,13 +194,13 @@
                             <ui:Button Content="Tümü" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Tümü}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Tümü"/>
 
-                            <ui:Button Content="Windows &amp; Sistem" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Windows &amp; Sistem'}" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Windows ve sistem" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Windows &amp; Sistem'}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Windows &amp; Sistem"/>
 
-                            <ui:Button Content="Web Tarayıcıları" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Web Tarayıcıları'}" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Web tarayıcıları" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Web Tarayıcıları'}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Web Tarayıcıları"/>
 
-                            <ui:Button Content="Oyunlar &amp; Medya" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Oyunlar &amp; Medya'}" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Oyunlar ve medya" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Oyunlar &amp; Medya'}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Oyunlar &amp; Medya"/>
 
                             <ui:Button Content="Geliştirici" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Geliştirici}" Padding="10,4"
@@ -244,19 +216,19 @@
 
                     <Border Style="{StaticResource FluentSegmentedContainer}" Margin="0,0,0,6">
                         <StackPanel Orientation="Horizontal">
-                            <ui:Button Content="Hızlı &amp; Güvenli" Icon="{ui:SymbolIcon ShieldCheckmark20}" Appearance="Secondary" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Hızlı ve güvenli" Icon="{ui:SymbolIcon ShieldCheckmark20}" Appearance="Secondary" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding ApplyPresetCommand}" CommandParameter="quick"
                                        ToolTip="Risksiz genel temp ve tarayıcı önbelleklerini seçer."/>
 
-                            <ui:Button Content="Kapsamlı Derin" Icon="{ui:SymbolIcon TopSpeed20}" Appearance="Secondary" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Kapsamlı derin" Icon="{ui:SymbolIcon TopSpeed20}" Appearance="Secondary" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding ApplyPresetCommand}" CommandParameter="deep"
                                        ToolTip="Prefetch, loglar, shader ve güncelleme önbellekleri dahil tüm hedefleri seçer."/>
 
-                            <ui:Button Content="Oyun &amp; Medya" Icon="{ui:SymbolIcon Games20}" Appearance="Secondary" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Oyun ve medya" Icon="{ui:SymbolIcon Games20}" Appearance="Secondary" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding ApplyPresetCommand}" CommandParameter="gaming"
                                        ToolTip="Steam, Spotify, Epic ve Shader önbelleklerini odaklar."/>
 
-                            <ui:Button Content="Tümünü Seç" Appearance="Secondary" Padding="8,4" Margin="0,0,2,0"
+                            <ui:Button Content="Tümünü seç" Appearance="Secondary" Padding="8,4" Margin="0,0,2,0"
                                        Command="{Binding SelectAllCategoriesCommand}"/>
 
                             <ui:Button Content="Temizle" Appearance="Secondary" Padding="8,4"
@@ -652,7 +624,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" 
-                                   Text="Dosya Teftiş Röntgeni" 
+                                   Text="Dosya teftiş röntgeni" 
                                    FontSize="{StaticResource Font.Body}" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -710,25 +682,25 @@
                     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,0,0,14">
                         <StackPanel>
                             <!-- Full Path -->
-                            <TextBlock Text="Tam Dosya Yolu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Tam dosya yolu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,10">
                                 <TextBlock Text="{Binding FilePath}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
                             </Border>
 
                             <!-- Directory Path -->
-                            <TextBlock Text="Bulunduğu Dizin" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Bulunduğu dizin" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,10">
                                 <TextBlock Text="{Binding DirectoryPath}" FontSize="{StaticResource Font.Caption}" FontFamily="Consolas" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                             </Border>
 
                             <!-- Last Modified -->
-                            <TextBlock Text="Son Değiştirilme Tarihi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Son değiştirilme tarihi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,10">
                                 <TextBlock Text="{Binding LastModified, StringFormat='{}{0:dd.MM.yyyy HH:mm:ss}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </Border>
 
                             <!-- Exclusion Status -->
-                            <TextBlock Text="Temizlik Durumu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Temizlik durumu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8">
                                 <StackPanel>
                                     <TextBlock Text="{Binding Status}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
@@ -745,7 +717,7 @@
                                    HorizontalAlignment="Stretch"
                                    Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    CommandParameter="{Binding}"
-                                   Content="Dosya Konumunu Aç" 
+                                   Content="Dosya konumunu aç" 
                                    Icon="{ui:SymbolIcon FolderOpen24}"
                                    Padding="12,8" 
                                    Margin="0,0,0,6"/>
@@ -754,16 +726,16 @@
                                    HorizontalAlignment="Stretch"
                                    Command="{Binding DataContext.CopyFilePathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    CommandParameter="{Binding}"
-                                   Content="Dosya Yolunu Kopyala" 
+                                   Content="Dosya yolunu kopyala" 
                                    Icon="{ui:SymbolIcon Copy24}"
                                    Padding="12,8" 
                                    Margin="0,0,0,6"/>
 
-                        <ui:Button Appearance="Danger" 
+                        <ui:Button Appearance="Secondary" 
                                    HorizontalAlignment="Stretch"
                                    Command="{Binding DataContext.ExcludeFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                    CommandParameter="{Binding}"
-                                   Content="Temizlikten Muaf Tut / Dahil Et" 
+                                   Content="Temizlikten muaf tut / dahil et" 
                                    Icon="{ui:SymbolIcon ShieldDismiss24}"
                                    Padding="12,8"/>
                     </StackPanel>

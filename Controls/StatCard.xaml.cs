@@ -103,6 +103,31 @@ namespace Bakım.Controls
         }
 
         /// <summary>Tıklama komutu (filtreleme veya detay açma).</summary>
+        /// <summary>
+        /// Özet şeridi (SummaryStrip) içinde: kendi zemini/kenarlığı yok, solda ince ayırıcı.
+        /// SummaryStrip bunu örtük stille kendisi ayarlar.
+        /// </summary>
+        public static readonly DependencyProperty IsEmbeddedProperty =
+            DependencyProperty.Register(nameof(IsEmbedded), typeof(bool), typeof(StatCard),
+                new PropertyMetadata(false));
+
+        public bool IsEmbedded
+        {
+            get => (bool)GetValue(IsEmbeddedProperty);
+            set => SetValue(IsEmbeddedProperty, value);
+        }
+
+        /// <summary>Şeritte ilk öğe değilse solda ayırıcı çizgi.</summary>
+        public static readonly DependencyProperty ShowDividerProperty =
+            DependencyProperty.Register(nameof(ShowDivider), typeof(bool), typeof(StatCard),
+                new PropertyMetadata(true));
+
+        public bool ShowDivider
+        {
+            get => (bool)GetValue(ShowDividerProperty);
+            set => SetValue(ShowDividerProperty, value);
+        }
+
         public static readonly DependencyProperty ClickCommandProperty =
             DependencyProperty.Register(nameof(ClickCommand), typeof(ICommand), typeof(StatCard),
                 new PropertyMetadata(null));
