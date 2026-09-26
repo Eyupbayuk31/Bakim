@@ -29,65 +29,40 @@
                          Title="Olaylar ve çökmeler"
                          Description="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı.">
             <c:SectionHeader.Actions>
-                <!-- Sub-Tab Switcher & Refresh Button -->
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Style="{StaticResource FluentSegmentedContainer}"
-                            Margin="0,0,12,0">
-                        <StackPanel Orientation="Horizontal">
-                            <ui:Button Content="Mavi ekran (BSOD)" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Bsod}"
-                                       Icon="{ui:SymbolIcon DismissCircle20}"
-                                       Command="{Binding SwitchTabCommand}"
-                                       CommandParameter="Bsod"
-                                       Margin="0,0,2,0"/>
-                            <ui:Button Content="Kritik günlükler" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Events}"
-                                       Icon="{ui:SymbolIcon Warning20}"
-                                       Command="{Binding SwitchTabCommand}"
-                                       CommandParameter="Events"
-                                       Margin="0,0,2,0"/>
-                            <ui:Button Content="Sistem onarımı" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Repair}"
-                                       Icon="{ui:SymbolIcon Wrench20}"
-                                       Command="{Binding SwitchTabCommand}"
-                                       CommandParameter="Repair"/>
-                        </StackPanel>
-                    </Border>
-
-                    <ui:Button Appearance="Secondary"
-                               Command="{Binding RefreshAllCommand}"
-                               Padding="12,8"
-                               Content="Yenile"
-                               Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-                </StackPanel>
+                <ui:Button Appearance="Secondary"
+                           Command="{Binding RefreshAllCommand}"
+                           Content="Yenile"
+                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
             </c:SectionHeader.Actions>
         </c:SectionHeader>
 
-        <!-- 1. Top KPI Metric Cards -->
-        <Grid Grid.Row="1" Margin="0,0,0,18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Card 1: Health Score -->
-            <ui:Card Grid.Column="0" Style="{StaticResource InteractiveCard}" Padding="16,14">
+        <!-- 1. Güvenilirlik kartı + sekmeler (SelectorBar) -->
+        <StackPanel Grid.Row="1">
+            <Border Style="{StaticResource Card.Surface}" Margin="{StaticResource Gap.Bottom.MD}">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Sistem sağlık skoru" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="%" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            <TextBlock Text="{Binding Stats.HealthScore}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            <TextBlock Text="{Binding Stats.HealthStatusText, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
-                        </StackPanel>
-                        <!-- Windows Güvenilirlik İzleyicisi: son 30 günün günlük en düşük endeksi (§5.10.4) -->
-                        <ItemsControl ItemsSource="{Binding ReliabilityBars}" Height="36" Margin="0,8,0,0"
+
+                    <Border Grid.Column="0" Style="{StaticResource Card.IconTile}" VerticalAlignment="Top" Margin="0,0,16,0">
+                        <ui:SymbolIcon Symbol="HeartPulse24" FontSize="24" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,32,0" MinWidth="160">
+                        <TextBlock Text="Sistem sağlığı" Style="{StaticResource Text.SettingDescription}" Margin="0"/>
+                        <TextBlock FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2">
+                            <Run Text="%"/><Run Text="{Binding Stats.HealthScore, Mode=OneWay}"/>
+                        </TextBlock>
+                        <TextBlock Text="{Binding Stats.HealthStatusText}" Style="{StaticResource Text.SettingDescription}"/>
+                    </StackPanel>
+
+                    <!-- Windows Güvenilirlik İzleyicisi: son 30 günün günlük en düşük endeksi -->
+                    <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,24,0">
+                        <ItemsControl ItemsSource="{Binding ReliabilityBars}" Height="40"
                                       Visibility="{Binding HasReliability, Converter={StaticResource BoolToVis}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -96,45 +71,50 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Width="5" Height="{Binding Height}" Margin="0,0,2,0" VerticalAlignment="Bottom"
+                                    <Border Width="8" Height="{Binding Height}" Margin="0,0,3,0" VerticalAlignment="Bottom"
                                             CornerRadius="{StaticResource Radius.XS}" Background="{Binding Brush}" ToolTip="{Binding Tooltip}"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <TextBlock Text="{Binding ReliabilityText}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                        <TextBlock Text="{Binding ReliabilityText}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="ShieldCheckmark24" FontSize="24" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
+
+                    <Border Grid.Column="3" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1,0,0,0"
+                            Padding="20,0,0,0" VerticalAlignment="Center">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Mavi ekran" Style="{StaticResource Text.SettingDescription}" Margin="0,0,24,4"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Stats.TotalCrashesCount}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Kritik olay (7 gün)" Style="{StaticResource Text.SettingDescription}" Margin="0,0,24,4"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Stats.CriticalEvents7DaysCount}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Hata (7 gün)" Style="{StaticResource Text.SettingDescription}" Margin="0,0,24,0"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Stats.ErrorEvents7DaysCount}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        </Grid>
+                    </Border>
                 </Grid>
-            </ui:Card>
+            </Border>
 
-            <!-- Card 2: Total Crashes -->
-            <c:StatCard Grid.Column="2" 
-                        Icon="DismissCircle24" 
-                        Label="Mavi ekran / çökme" 
-                        Value="{Binding Stats.TotalCrashesCount}" 
-                        Caption="adet döküm kaydı" 
-                        Intent="Critical" 
-                        IsInteractive="True"/>
-
-            <!-- Card 3: Critical Events (7 Days) -->
-            <c:StatCard Grid.Column="4" 
-                        Icon="Warning24" 
-                        Label="Kritik olaylar (7 gün)" 
-                        Value="{Binding Stats.CriticalEvents7DaysCount}" 
-                        Caption="kritik hata tespit edildi" 
-                        Intent="Caution" 
-                        IsInteractive="True"/>
-
-            <!-- Card 4: Error Logs -->
-            <c:StatCard Grid.Column="6" 
-                        Icon="DocumentBulletList24" 
-                        Label="Hata günlükleri (7 gün)" 
-                        Value="{Binding Stats.ErrorEvents7DaysCount}" 
-                        Caption="hata günlüğü kaydı" 
-                        Intent="Accent" 
-                        IsInteractive="True"/>
-        </Grid>
+            <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Bottom.MD}">
+                <ui:Button Content="Mavi ekranlar" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Bsod}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="Bsod"/>
+                <ui:Button Content="Olaylar" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Events}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="Events"/>
+                <ui:Button Content="Onarım" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Repair}"
+                           Command="{Binding SwitchTabCommand}" CommandParameter="Repair"/>
+            </StackPanel>
+        </StackPanel>
 
         <!-- 2. Sub-tab Filter / Search Bar (Only for Events Tab) -->
         <Grid Grid.Row="2" Margin="0,0,0,14" 
@@ -153,26 +133,31 @@
                 <ui:Button Content="Tümü" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="All"
+                           Appearance="{Binding SelectedEventLevel, Converter={StaticResource StringToNavAppearance}, ConverterParameter=All}"
                            Padding="12,6" 
                            Margin="0,0,6,4"/>
                 <ui:Button Content="Yalnızca kritik" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="Kritik"
+                           Appearance="{Binding SelectedEventLevel, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Kritik}"
                            Padding="12,6" 
                            Margin="0,0,6,4"/>
                 <ui:Button Content="Hatalar" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="Hata"
+                           Appearance="{Binding SelectedEventLevel, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Hata}"
                            Padding="12,6" 
                            Margin="0,0,6,4"/>
                 <ui:Button Content="Kernel-Power" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="Kernel"
+                           Appearance="{Binding SelectedEventLevel, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Kernel}"
                            Padding="12,6" 
                            Margin="0,0,6,4"/>
                 <ui:Button Content="Uygulama çökmeleri" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="App"
+                           Appearance="{Binding SelectedEventLevel, Converter={StaticResource StringToNavAppearance}, ConverterParameter=App}"
                            Padding="12,6"
                            Margin="0,0,0,4"/>
             </WrapPanel>
@@ -209,7 +194,7 @@
                          Visibility="{Binding Stats.TotalCrashesCount, Converter={StaticResource IntToVis}, ConverterParameter=0}">
                     <StackPanel HorizontalAlignment="Center">
                         <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="48" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Mavi ekran (BSOD) çökmesi bulunamadı!" 
+                        <TextBlock Text="Mavi ekran kaydı yok" 
                                    FontSize="{StaticResource Font.Subtitle}" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" 

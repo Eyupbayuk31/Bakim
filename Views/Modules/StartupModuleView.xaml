@@ -34,7 +34,7 @@
                                Icon="{ui:SymbolIcon TopSpeed24}"
                                Padding="14,8"
                                Margin="0,0,8,0"
-                               ToolTip="Windows açılışını geciktiren yüksek etkili gereksiz başlatıcıları analiz edip tek tıkla optimize edin."/>
+                               ToolTip="Windows ölçümüne göre açılışı en çok geciktiren uygulamaları listeler ve devre dışı bırakmayı önerir."/>
 
                     <ui:Button Appearance="Secondary"
                                Command="{Binding AddNewStartupProgramCommand}"
@@ -55,87 +55,86 @@
         </c:SectionHeader>
 
         <!-- ========================================================================= -->
-        <!-- ROW 1: 4 ADET İNTERAKTİF KPI METRİK KARTI                                 -->
+        <!-- ROW 1: AÇILIŞ SÜRESİ KARTI (Windows ölçümü — sayfanın tek anlamlı sayısı)  -->
         <!-- ========================================================================= -->
-        <Grid Grid.Row="1" Margin="0,0,0,16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <Border Grid.Row="1" Style="{StaticResource Card.Surface}" Margin="{StaticResource Gap.Bottom.LG}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Card 1: Toplam Başlangıç Ögesi -->
-            <c:StatCard Grid.Column="0" 
-                        Icon="Apps24" 
-                        Label="Toplam başlatıcı" 
-                        Value="{Binding Stats.TotalCount, FallbackValue='0'}" 
-                        Caption="Kayıtlı açılış ögesi" 
-                        Intent="Accent" 
-                        IsInteractive="True"/>
+                <Border Grid.Column="0" Style="{StaticResource Card.IconTile}" VerticalAlignment="Top" Margin="0,0,16,0">
+                    <ui:SymbolIcon Symbol="TopSpeed24" FontSize="24" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
 
-            <!-- Card 2: Etkin Başlatıcılar -->
-            <c:StatCard Grid.Column="2" 
-                        Icon="CheckmarkCircle24" 
-                        Label="Etkin uygulamalar" 
-                        Value="{Binding Stats.EnabledCount, FallbackValue='0'}" 
-                        Caption="Açılışta otomatik çalışan" 
-                        Intent="Success" 
-                        IsInteractive="True"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,24,0">
+                    <TextBlock Text="{Binding Stats.BootDetail, FallbackValue='Son açılış'}" Style="{StaticResource Text.SettingDescription}" Margin="0"/>
+                    <TextBlock Text="{Binding Stats.FormattedBootDelay, FallbackValue='Ölçüm yok'}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
+                    <TextBlock Text="{Binding Stats.HighImpactCount, StringFormat='{}{0} uygulama açılışı 1 saniyeden fazla geciktiriyor'}"
+                               Style="{StaticResource Text.SettingDescription}"
+                               Visibility="{Binding Stats.HighImpactCount, Converter={StaticResource InverseIntEqualsToVis}, ConverterParameter=0}"/>
+                    <TextBlock Text="{Binding BootMeasurementNote}" Style="{StaticResource Text.SettingDescription}"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               Visibility="{Binding BootMeasurementNote, Converter={StaticResource StringToVis}}"/>
+                </StackPanel>
 
-            <!-- Card 3: Devre Dışı Ögeler -->
-            <c:StatCard Grid.Column="4" 
-                        Icon="DismissCircle24" 
-                        Label="Devre dışı" 
-                        Value="{Binding Stats.DisabledCount, FallbackValue='0'}" 
-                        Caption="Sistemi yormayan pasif" 
-                        Intent="Neutral" 
-                        IsInteractive="True"/>
+                <!-- Son açılışlar: düz çubuk grafik -->
+                <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,24,0"
+                            Visibility="{Binding HasBootHistory, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl ItemsSource="{Binding BootHistory}" Height="56">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="12" Height="{Binding Height}" Margin="0,0,4,0" VerticalAlignment="Bottom"
+                                        CornerRadius="{StaticResource Radius.XS}" Background="{DynamicResource Chart.Series1}"
+                                        ToolTip="{Binding Tooltip}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Son açılışlar" FontSize="{StaticResource Font.Caption}" Margin="0,6,0,0"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                </StackPanel>
 
-            <!-- Card 4: Son açılış (Windows ölçümü) -->
-            <ui:Card Grid.Column="6" Padding="14" Style="{StaticResource InteractiveCard}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="{Binding Stats.BootDetail, FallbackValue='Son açılış'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.FormattedBootDelay, FallbackValue='Ölçüm yok'}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2"/>
-                        <TextBlock Text="{Binding Stats.HighImpactCount, StringFormat='{}{0} uygulama açılışı yavaşlatıyor'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                        <!-- Son açılışlar (Windows ölçümü) -->
-                        <ItemsControl ItemsSource="{Binding BootHistory}" Height="64" Margin="0,8,0,0"
-                                      Visibility="{Binding HasBootHistory, Converter={StaticResource BoolToVis}}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Width="10" Height="{Binding Height}" Margin="0,0,3,0" VerticalAlignment="Bottom"
-                                            CornerRadius="{StaticResource Radius.XS}" Background="{DynamicResource AccentFillColorDefaultBrush}"
-                                            ToolTip="{Binding Tooltip}"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="{Binding BootMeasurementNote}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                    </StackPanel>
-                    <Border Grid.Column="1" Background="{DynamicResource Brush.Caution.Subtle}" Width="40" Height="40" CornerRadius="20" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource SystemFillColorCautionBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                </Grid>
-            </ui:Card>
-        </Grid>
+                <!-- Sayımlar: ayrı KPI kartları yerine tek sütunda sade satırlar -->
+                <Border Grid.Column="3" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1,0,0,0"
+                        Padding="20,0,0,0" VerticalAlignment="Center">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Etkin" Style="{StaticResource Text.SettingDescription}" Margin="0,0,24,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Stats.EnabledCount, FallbackValue='0'}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Devre dışı" Style="{StaticResource Text.SettingDescription}" Margin="0,0,24,4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Stats.DisabledCount, FallbackValue='0'}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Toplam" Style="{StaticResource Text.SettingDescription}" Margin="0,0,24,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Stats.TotalCount, FallbackValue='0'}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
 
         <!-- ========================================================================= -->
         <!-- ROW 2: FİLTRE ÇİPLERİ VE ARAMA ÇUBUĞU                                     -->
         <!-- ========================================================================= -->
-        <ui:Card Grid.Row="2" Padding="14,10" Margin="0,0,0,16">
+        <Border Grid.Row="2" Margin="{StaticResource Gap.Bottom.MD}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -181,7 +180,7 @@
                             VerticalAlignment="Center"
                             AutomationProperties.Name="Arama"/>
             </Grid>
-        </ui:Card>
+        </Border>
 
         <!-- ========================================================================= -->
         <!-- ROW 3: LİSTE VE AYRINTILI TEFTİŞ ÇEKMECESİ                                -->
@@ -297,17 +296,14 @@
 
                                         <!-- Text -->
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                             <TextBlock Text="{Binding Publisher}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                         </StackPanel>
                                     </Grid>
 
                                     <!-- Col 1: Impact Badge -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="12,0,12,0">
-                                        <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                BorderThickness="1" 
-                                                CornerRadius="{StaticResource Radius.SM}" 
+                                        <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" 
                                                 Padding="8,3" 
                                                 HorizontalAlignment="Left">
                                             <TextBlock Text="{Binding ImpactText}" 
@@ -321,10 +317,7 @@
 
                                     <!-- Col 2: Location Badge -->
                                     <Border Grid.Column="2" 
-                                            Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                            BorderThickness="1" 
-                                            CornerRadius="{StaticResource Radius.SM}" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" 
                                             Padding="8,4" 
                                             Margin="12,0,12,0" 
                                             HorizontalAlignment="Left" 
