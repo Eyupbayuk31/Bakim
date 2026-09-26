@@ -40,6 +40,7 @@ public sealed class DesignSystemV2Tests
     [InlineData(AppThemeKind.AmoledBlack)]
     [InlineData(AppThemeKind.CyberpunkPurple)]
     [InlineData(AppThemeKind.FluentLight)]
+    [InlineData(AppThemeKind.SlateDark)]
     public void StatusText_IsReadable_OnRaisedSurface(AppThemeKind kind)
     {
         var def = ThemeService.GetDefinition(kind);
