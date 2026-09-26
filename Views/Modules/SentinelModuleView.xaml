@@ -42,11 +42,7 @@
 
         <!-- 1. Durum -->
         <Border Grid.Row="1"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="{StaticResource Radius.MD}"
-                Padding="{StaticResource Pad.Card}"
+                Style="{StaticResource Card.Surface.Hero}"
                 Margin="{StaticResource Gap.Bottom.MD}">
             <Grid>
                 <Grid.ColumnDefinitions>

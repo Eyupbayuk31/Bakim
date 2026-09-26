@@ -192,4 +192,49 @@
     <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#E560CDFF"/>
     <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#CC60CDFF"/>
     <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="#B3000000"/>
+
+    <!-- ============ CAM VE MALZEME SİSTEMİ (docs/WIN11_CAM_TASARIM_PLANI.md §2) ============ -->
+    <SolidColorBrush x:Key="Surface.WindowTint" Color="#00202020"/>
+    <SolidColorBrush x:Key="Layer.Fill" Color="#0AFFFFFF"/>
+    <SolidColorBrush x:Key="Layer.Stroke" Color="#14FFFFFF"/>
+    <SolidColorBrush x:Key="Card.Fill" Color="#0DFFFFFF"/>
+    <SolidColorBrush x:Key="Card.Fill.Secondary" Color="#08FFFFFF"/>
+    <SolidColorBrush x:Key="Card.Fill.Hover" Color="#12FFFFFF"/>
+    <SolidColorBrush x:Key="Control.Fill" Color="#0FFFFFFF"/>
+    <SolidColorBrush x:Key="Control.Fill.Secondary" Color="#08FFFFFF"/>
+    <SolidColorBrush x:Key="Subtle.Fill.Hover" Color="#0FFFFFFF"/>
+    <SolidColorBrush x:Key="Subtle.Fill.Selected" Color="#0FFFFFFF"/>
+    <SolidColorBrush x:Key="Divider.Stroke" Color="#0FFFFFFF"/>
+    <SolidColorBrush x:Key="Acrylic.Fill" Color="#D92C2C2C"/>
+    <SolidColorBrush x:Key="Smoke.Fill" Color="#4D000000"/>
+
+    <LinearGradientBrush x:Key="Card.Stroke.Glass" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#24FFFFFF" Offset="0.0"/>
+        <GradientStop Color="#0AFFFFFF" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Control.Stroke.Elevation" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#18FFFFFF" Offset="0.0"/>
+        <GradientStop Color="#0AFFFFFF" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Card.Surface.Hero.Fill" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#2460CDFF" Offset="0.0"/>
+        <GradientStop Color="#0DFFFFFF" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="Card.Surface.Hero.Stroke" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#4DFFFFFF" Offset="0.0"/>
+        <GradientStop Color="#0AFFFFFF" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="Surface.AmbientLight" Center="1,0" GradientOrigin="1,0" RadiusX="1.2" RadiusY="1.2">
+        <GradientStop Color="#1A60CDFF" Offset="0.0"/>
+        <GradientStop Color="#0060CDFF" Offset="1.0"/>
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="Surface.AmbientSecondary" Center="0,1" GradientOrigin="0,1" RadiusX="1.2" RadiusY="1.2">
+        <GradientStop Color="#0F99EBFF" Offset="0.0"/>
+        <GradientStop Color="#0099EBFF" Offset="1.0"/>
+    </RadialGradientBrush>
 </ResourceDictionary>

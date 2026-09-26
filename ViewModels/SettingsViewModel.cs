@@ -1064,13 +1064,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v450 = new ReleaseChangelogItem
+            {
+                Version = "v4.5.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Windows 11 Cam (Mica + Glassmorphism) Malzeme Sistemi & Saydam Gezinme Bölmesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Windows 11 Malzeme Modeli (Mica + Glassmorphism): Saydam başlık ve kenar çubuğu, tonlu taban (Surface.WindowTint), yarı saydam içerik katmanı (Layer.Fill) ve ışıklı cam kenarlıkları (Card.Stroke.Glass) entegre edildi.",
+                    "Hafif Ortam Işığı (Ambient Lighting): İçerik katmanı arkasına sıfır GPU ek yüküyle çalışan, donmuş radyal degrade ortam ışıkları (Surface.AmbientLight, Surface.AmbientSecondary) yerleştirildi.",
+                    "Zarif Cam Kartlar & Kahraman Malzemesi: Card.Surface ve Card.Surface.Hero stilleri yarı saydam dolgular ve ışıklı üst kenarlıklarla donatıldı; Kontrol Paneli, Oyun Modu ve Sistem Bilgisi kahraman kartları cam görünümüne kavuşturuldu.",
+                    "Saydam Sol Menü & İnce Sis Seçim Katmanı: Kenar çubuğundaki hantal opak seçim blokları kaldırıldı; Windows 11 yerel ince sis (%6 Subtle.Fill.Selected/Hover) ve 3x16 dikey vurgu çubuğu uygulandı.",
+                    "Sıfır Bulanıklık Kuralı & Üstün Performans: GPU kasan BlurEffect/VisualBrush hilelerinden kaçınılarak DWM Mica ve donmuş fırçalarla 60+ FPS saf Fluent 2 akıcılığı korundu.",
+                    "Sıkı Doğrulama & %100 Test Başarısı: 177 tasarım token'ı, sıfır tanımsız sembol, sıfır tasarım borcu ve 783 birim testin tümü yeşil teyit edildi."
+                }
+            };
+
             var v440 = new ReleaseChangelogItem
             {
                 Version = "v4.4.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Fluent v2 Yerleşim Sistemi, Birleşik Sayfa Kabuğu (ModulePage) & Canlı Tema Önizleme",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Fluent v2 Yerleşim Mimarisi: Controls/Layout altında AdaptiveGrid, CardHeader, ListCard, MetricTile, ModulePage, Section, SelectionBar, StatusGlyph ve ThemePreview kontrolleri sıfırdan inşa edildi.",
@@ -1990,8 +2008,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v440;
+            LatestRelease = v450;
 
+            ReleaseHistory.Add(v450);
             ReleaseHistory.Add(v440);
             ReleaseHistory.Add(v430);
             ReleaseHistory.Add(v424);

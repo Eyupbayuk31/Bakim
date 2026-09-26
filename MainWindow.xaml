@@ -100,7 +100,7 @@
         </DataTemplate>
     </Window.Resources>
 
-    <Grid>
+    <Grid Background="{DynamicResource Surface.WindowTint}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- TitleBar -->
             <RowDefinition Height="*"/>    <!-- Main Body (Sidebar + Content Viewport) -->
@@ -117,9 +117,13 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0">
                     <!-- Arama / komut paleti (Ctrl+K) -->
                     <ui:Button Appearance="Secondary"
+                               Background="{DynamicResource Control.Fill}"
+                               BorderBrush="{DynamicResource Control.Stroke.Elevation}"
+                               BorderThickness="1"
                                Padding="12,0"
                                Height="32"
                                MinWidth="280"
+                               MaxWidth="420"
                                HorizontalContentAlignment="Stretch"
                                Command="{Binding OpenCommandPaletteCommand}"
                                Margin="0,0,8,0"
@@ -304,18 +308,18 @@
                                         </TextBlock>
                                         <!-- Ayırıcı (dar) -->
                                         <Border Height="1" Margin="8,8"
-                                                Background="{DynamicResource CardStrokeColorDefaultBrush}"
+                                                Background="{DynamicResource Divider.Stroke}"
                                                 Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolToVis}}"/>
                                         <ItemsControl ItemsSource="{Binding Items}" Focusable="False">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="{x:Type vm:NavItem}">
                                                     <Button Style="{StaticResource Nav.ItemButton}"
-                                                               helpers:NavSelection.IsSelected="{Binding IsSelected}"
-                                                               Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                               CommandParameter="{Binding Key}"
-                                                               ToolTip="{Binding Tooltip}"
-                                                               AutomationProperties.Name="{Binding Label}"
-                                                               AutomationProperties.HelpText="{Binding Tooltip}">
+                                                                helpers:NavSelection.IsSelected="{Binding IsSelected}"
+                                                                Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding Key}"
+                                                                ToolTip="{Binding Tooltip}"
+                                                                AutomationProperties.Name="{Binding Label}"
+                                                                AutomationProperties.HelpText="{Binding Tooltip}">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="Auto"/>
@@ -365,7 +369,7 @@
 
                     <!-- Alt: Ayarlar + Nöbetçi durumu -->
                     <StackPanel Grid.Row="2" Margin="0,8,0,0">
-                        <Border Height="1" Margin="4,0,4,8" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                        <Border Height="1" Margin="4,0,4,8" Background="{DynamicResource Divider.Stroke}"/>
                         <Button DataContext="{Binding SettingsNavItem}"
                                 Style="{StaticResource Nav.ItemButton}"
                                 helpers:NavSelection.IsSelected="{Binding IsSelected}"
@@ -409,13 +413,29 @@
                 yuvarlatılmış, pencere zemininden bir ton açık yüzey. Kartlar bu katmandan açıktır.
             -->
             <Border Grid.Column="1"
-                    Background="{DynamicResource Surface.Layer}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    Background="{DynamicResource Layer.Fill}"
+                    BorderBrush="{DynamicResource Layer.Stroke}"
                     BorderThickness="1,1,0,0"
-                    CornerRadius="{StaticResource Radius.ContentLayer}">
-                <ContentControl Content="{Binding CurrentView}" 
-                                HorizontalContentAlignment="Stretch" 
-                                VerticalContentAlignment="Stretch"/>
+                    CornerRadius="{StaticResource Radius.ContentLayer}"
+                    ClipToBounds="True">
+                <Grid>
+                    <!-- Statik Ortam Işıkları (docs/WIN11_CAM_TASARIM_PLANI.md §2.3) -->
+                    <!-- Sağ üst köşe radyal ortam ışığı (vurgu rengi) -->
+                    <Rectangle HorizontalAlignment="Right" VerticalAlignment="Top"
+                               Width="900" Height="600"
+                               Fill="{DynamicResource Surface.AmbientLight}"
+                               IsHitTestVisible="False"/>
+
+                    <!-- Sol alt köşe radyal ortam ışığı (ikincil renk) -->
+                    <Rectangle HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                               Width="700" Height="500"
+                               Fill="{DynamicResource Surface.AmbientSecondary}"
+                               IsHitTestVisible="False"/>
+
+                    <ContentControl Content="{Binding CurrentView}" 
+                                    HorizontalContentAlignment="Stretch" 
+                                    VerticalContentAlignment="Stretch"/>
+                </Grid>
             </Border>
 
             <!-- Floating Toast Notifications Host (Bottom-Right) -->

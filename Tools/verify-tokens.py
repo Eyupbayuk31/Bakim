@@ -33,6 +33,7 @@ OWNED_PREFIXES = (
     "Gap.", "Radius.", "Stroke.", "Duration.", "Ease.", "Time.", "Text.",
     "Surface.", "Border.", "Status.", "Risk.", "Chart.", "Motion.",
     "Layout.", "Card.", "Nav.",
+    "Layer.", "Control.", "Subtle.", "Divider.", "Acrylic.", "Smoke.",
 )
 
 KEY_USE = re.compile(r'\{(?:Dynamic|Static)Resource\s+([A-Za-z0-9_.]+)\s*\}')

@@ -1,47 +1,54 @@
-# Bakım v4.4.0 - Sürüm Notları
+# Bakım v4.5.0 - Sürüm Notları
 
-## Fluent v2 Yerleşim Sistemi, Birleşik Sayfa Kabuğu (ModulePage) & Canlı Tema Önizleme
+## Windows 11 Cam (Mica + Glassmorphism) Malzeme Sistemi & Saydam Gezinme Bölmesi
 
-Bakım v4.4.0 sürümü; tüm uygulama sayfalarını birleşik bir Fluent v2 yerleşim sistemine (`ModulePage`) kavuşturmakta, Kontrol Paneli'ni referans mimariyle yeniden dizayn etmekte, Windows 11 Kişiselleştirme tarzı canlı tema seçim kutucuklarını entegre etmekte ve otomatik ekran görüntüsü doğrulama hattını devreye almaktadır.
-
----
-
-### 1. Fluent v2 Yerleşim Mimarisi (Layout Controls)
-- **Yeni Yerleşim Bileşenleri (`Controls/Layout/`):**
-  - `AdaptiveGrid`: Pencere boyutuna ve ekran çözünürlüğüne göre sütun sayılarını otomatik hesaplayan akıcı ızgara.
-  - `CardHeader`: Başlık, açıklama ve durum gliflerini standart Windows 11 hiyerarşisinde sunan kart başlığı.
-  - `ListCard`: Liste görünümündeki öğeler için sınır ve dolgu standartlarını belirleyen liste kartı.
-  - `MetricTile`: Donanım ve sistem ölçümlerini net sayı ve trend göstergeleriyle özetleyen metrik kutusu.
-  - `ModulePage`: Sayfa başlığı, birincil eylemler, alt seçim çubuğu ve kaydırma alanını standartlaştıran birleşik sayfa kabuğu.
-  - `Section`: Mantıksal bölümleri başlık ve boşluklarıyla gruplayan bölüm yapısı.
-  - `SelectionBar`: Windows 11 Fluent alt seçim çubuğu kontrolü.
-  - `StatusGlyph`: Sistem durumu ve önem derecesini nötr ve zarif gliflerle belirten durum simgesi.
-  - `ThemePreview`: Canlı tema ve renk önizleme bileşeni.
+Bakım v4.5.0 sürümü; Windows 11'in yerel tasarım felsefesini (Mica, Akrilik, katman ve cam malzeme modeli) uygulamanın tüm görsel omurgasına entegre etmekte; kenar çubuğu, başlık çubuğu ve içerik alanını tek bir uyumlu cam yüzeyin katmanlarına dönüştürmektedir.
 
 ---
 
-### 2. Birleşik Sayfa Kabuğu (`ModulePage`) Dönüşümü
-- **Tüm Sayfalarda Standart Düzen:**
-  - **Kontrol Paneli (Dashboard):** Referans sayfa olarak sıfırdan dizayn edildi; CPU, RAM ve Disk ölçümleri `MetricTile` ve donmuş grafik noktalarıyla yeniden kurgulandı.
-  - **Temizleyici, Başlangıç & Sistem Bilgisi:** Kart içinde kart kalabalığı arındırıldı; `ModulePage` kabuğunda duyarlı ızgaraya geçirildi.
-  - **Ağ İzleyici, Mağaza & Kaldırıcı:** Alt seçim çubuğu (`SelectionBar`) ve duyarlı kutucuk ızgarasıyla zenginleştirildi.
-  - **Çökme Analizcisi:** Güvenilirlik kahramanı ve zaman çizelgesi yeni düzene adapte edildi.
-  - **Windows Tweaker:** 12 kategori ayar kartı yeni layout mimarisine uyarlandı.
+### 1. Windows 11 Malzeme Modeli & Tonlu Mica Tabanı
+- **Tek Yüzey Bütünlüğü:**
+  - Kenar çubuğu ve başlık çubuğunun opak arka planları kaldırılarak tamamen saydam hale getirildi; altındaki yerel Windows 11 Mica tabanıyla doğrudan bütünleşmesi sağlandı.
+  - Kök zemin için `Surface.WindowTint` token'ı tanımlandı. 6 temanın tamamında (MicaDark, SlateDark, AmoledBlack, CyberpunkPurple, HighContrast, FluentLight) pencere tabanına temanın kimliğini yansıtan yarı saydam bir örtü katmanı serildi.
+- **Katmanlı Yüzey Hiyerarşisi:**
+  - `Layer.Fill` ve `Layer.Stroke`: İçerik katmanı, pencere tabanından yumuşak yarı saydam bir örtü ve sol/üst 1 px ince cam kenarlıkla ayrıldı.
+  - Sol üst köşesi yuvarlatılmış (`Radius.ContentLayer`, 8 px) içerik katmanı sayesinde Windows 11 Ayarlar uygulaması hissiyatı eksiksiz yakalandı.
 
 ---
 
-### 3. Windows 11 Canlı Tema Önizleme Kutucukları (`ThemePreview`)
-- **Windows 11 Kişiselleştirme Deneyimi:** Ayarlar sayfasındaki tema butonları yerine; pencere tabanı, katman rengi, kart dolgusu ve vurgu rengini birebir yansıtan interaktif `ThemePreview` kutucukları getirildi.
-- **Tek Vurgu ve Katman Derinliği:** Koyu ve açık mod renk kontrastları, yüzey derinlikleri ve sınır çizgileri WCAG ve Fluent standartlarına tam uyarlandı.
+### 2. Hafif Glassmorphism & Statik Ortam Işığı (Ambient Lighting)
+- **Sıfır GPU Maliyeti ile Cam Derinliği:**
+  - Arayüzü yavaşlatan ve GPU'yu tüketen yapay `BlurEffect` / `VisualBrush` hileleri yerine, WPF'in donmuş fırça (Frozen Brushes) mimarisiyle çalışan statik radyal degradeler kurgulandı.
+  - İçerik katmanının sağ üst köşesine temanın vurgu renginde geniş bir ortam ışığı (`Surface.AmbientLight`), sol alt köşesine ise ikincil temanın yumuşak ışıltısı (`Surface.AmbientSecondary`) yerleştirildi.
+  - Sayfa içerikleri kaydırılırken cam kartlar bu ışığın üzerinden geçerek gerçekçi bir derinlik ve saydamlık sunar.
 
 ---
 
-### 4. Otomatik Ekran Görüntüsü Hattı (Screenshots Pipeline)
-- **UI Duman Testi Entegrasyonu (`Screenshots.cs`):** Tüm modüllerin ve temaların pencereleri izole ortamda ayağa kaldırılarak ekran görüntüleri test hattında yakalanır.
-- **GitHub Actions İş Akışı (`screenshots.yml`):** Dağıtım ve PR süreçlerinde arayüzün piksel bazında bozulmadığını garanti altına alan otomatik CI hattı kuruldu.
+### 3. Zarif Cam Kartlar & Kahraman Malzemesi (`Card.Surface.Hero`)
+- **Cam Kenar Işığı (`Card.Stroke.Glass`):**
+  - Standart kartlar (`Card.Surface`), yarı saydam dolgu (`Card.Fill`) ve yukarıdan aşağıya sönen degrade cam kenarlıkla donatıldı.
+  - Kart içi ikincil bölgeler `Card.Fill.Secondary` ve `Divider.Stroke` ile yapılandırıldı.
+- **Kahraman Kart Malzemesi (`Card.Surface.Hero`):**
+  - Sayfa başı ana odak kartları için (Kontrol Paneli Sağlık Kartı, Oyun Modu Durum Kartı, Sistem Bilgisi Cihaz Kartı) vurgu rengi tonlu cam dolgu ve belirgin cam kenar ışığı uygulandı.
 
 ---
 
-### 5. Sıfır Hata Güvencesi & Test Başarısı
-- **Sıkılaştırılmış Tasarım Cırcırları:** Çıplak `ui:Card`, durum dolgulu haplar ve eski sayfa başlığı sayaçları sıfır toleransla denetlendi; `verify-design-debt.py` ve `verify-tokens.py` kontrolleri %100 yeşil tamamlandı.
-- **783 Birim Test & UI Duman Testi:** 462 çekirdek iş mantığı ve 321 WPF/UI testi olmak üzere 783 testin tamamı sıfır hatayla geçti.
+### 4. Saydam Kenar Çubuğu (Gezinme Bölmesi) & İnce Sis Seçimi
+- **Doğal Windows 11 Seçim Katmanı:**
+  - Kenar çubuğundaki hantal ve opak gri seçim blokları kaldırıldı.
+  - Windows 11 standartlarına uygun, hafif beyaz sis (%6 opaklıkta `Subtle.Fill.Hover` ve `Subtle.Fill.Selected`) katmanı uygulandı.
+  - Seçili öğe için sol kenarda 3×16 px yuvarlatılmış Fluent vurgu çubuğu (Indicator) konumlandırıldı.
+  - Menü ayırıcıları `Divider.Stroke` yarı saydam çizgileriyle modernize edildi.
+
+---
+
+### 5. Başlık Çubuğu & Arama Alanı Fluent Entegrasyonu
+- **Saydam Başlık Alanı:** Pencere başlık çubuğu Mica zeminine açıldı; yapay kutu sınırları temizlendi.
+- **Hızlı Arama Alanı:** `Control.Fill` ve ışıklı alt kenarlık (`Control.Stroke.Elevation`) ile 420 px genişliğinde zarif bir arama çubuğuna dönüştürüldü.
+
+---
+
+### 6. Sıkı Doğrulama, Sıfır Tasarım Borcu & %100 Test Başarısı
+- **177 Tasarım Token'ı:** `ThemeService` ve `Palette.Bootstrap.xaml` arasındaki 177 semantik anahtar %100 birebir senkronize edildi.
+- **Sıfır Geçersiz Sembol & Tasarım Borcu:** Tüm XAML dosyalarında `SymbolRegular` sembolleri, renk token'ları ve cırcır (ratchet) limitleri doğrulandı.
+- **783 Birim Test & UI Duman Testi:** 462 çekirdek iş mantığı, 321 UI/WPF testi ve 20 modül UI duman testinin tamamı başarıyla geçti.

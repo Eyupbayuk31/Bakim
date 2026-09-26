@@ -68,7 +68,7 @@
                       Visibility="{Binding IsHardwareTab, Converter={StaticResource BoolToVis}}">
             <StackPanel Margin="0,0,0,16">
                 <!-- Cihaz kartı (Windows 11 Ayarlar > Sistem > Hakkında) -->
-                <Border Style="{StaticResource Card.Surface}" Margin="{StaticResource Gap.Bottom.LG}">
+                <Border Style="{StaticResource Card.Surface.Hero}" Margin="{StaticResource Gap.Bottom.LG}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>

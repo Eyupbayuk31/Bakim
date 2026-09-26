@@ -23,7 +23,7 @@
                   IsScrollable="True">
     <StackPanel>
             <!-- ============ 1) DURUM KARTI ============ -->
-            <Border Style="{StaticResource Card.Surface}">
+            <Border Style="{StaticResource Card.Surface.Hero}">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>

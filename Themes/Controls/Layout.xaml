@@ -206,8 +206,8 @@
     <Style TargetType="{x:Type c:MetricTile}">
         <Setter Property="Height" Value="{StaticResource Layout.TileHeight}"/>
         <Setter Property="Padding" Value="{StaticResource Pad.CardCompact}"/>
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource Card.Fill}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
         <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -298,8 +298,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type c:ListCard}">
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    <Border Background="{DynamicResource Card.Fill}"
+                            BorderBrush="{DynamicResource Card.Stroke.Glass}"
                             BorderThickness="{StaticResource Stroke.Thin}"
                             CornerRadius="{StaticResource Radius.MD}">
                         <DockPanel>
@@ -337,7 +337,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type c:ListCardItem}">
                     <Border x:Name="Row" Background="{TemplateBinding Background}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+                            BorderBrush="{DynamicResource Divider.Stroke}" BorderThickness="0,1,0,0">
                         <ContentPresenter Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
                     </Border>
@@ -346,7 +346,7 @@
                             <Setter TargetName="Row" Property="BorderThickness" Value="0"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Row" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                            <Setter TargetName="Row" Property="Background" Value="{DynamicResource Subtle.Fill.Hover}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -410,8 +410,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type c:SelectionBar}">
-                    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0"
+                    <Border Background="{DynamicResource Acrylic.Fill}"
+                            BorderBrush="{DynamicResource Divider.Stroke}" BorderThickness="0,1,0,0"
                             Padding="36,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -486,18 +486,18 @@
     <!-- Tema kutucuğu: önizleme + ad; seçili olanda 2 px vurgu çerçevesi -->
     <Style x:Key="Theme.Tile" TargetType="Button">
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource Card.Fill}"/>
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="Frame" Background="{TemplateBinding Background}" CornerRadius="{StaticResource Radius.MD}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="{StaticResource Stroke.Thin}" Padding="8">
+                            BorderBrush="{DynamicResource Card.Stroke.Glass}" BorderThickness="{StaticResource Stroke.Thin}" Padding="8">
                         <ContentPresenter/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Frame" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                            <Setter TargetName="Frame" Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
                         </Trigger>
                         <Trigger Property="helpers:NavSelection.IsSelected" Value="True">
                             <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
