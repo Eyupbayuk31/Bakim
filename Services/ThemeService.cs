@@ -26,8 +26,11 @@ namespace Bakım.Services
         public required string DisplayName { get; init; }
         public required bool IsDark { get; init; }
 
-        // Yüzeyler
+        // Yüzeyler — katman sırası (Windows 11): pencere < içerik katmanı < kart.
+        // Kart her temada içerik katmanından açık olmalı; aksi halde kartlar "delik" gibi görünür.
         public required Color WindowBackground { get; init; }
+        /// <summary>Kenar çubuğunun sağındaki yuvarlak köşeli içerik katmanı (LayerFillColorDefault karşılığı).</summary>
+        public required Color ContentLayer { get; init; }
         public required Color CardBackground { get; init; }
         public required Color CardBackgroundAlt { get; init; }
         public required Color CardStroke { get; init; }
@@ -217,6 +220,17 @@ namespace Bakım.Services
                     var onAccent = TextOnAccent(def.Primary);
                     Set(res, "TextOnAccentFillColorPrimaryBrush", onAccent);
                     Set(res, "TextOnAccentFillColorSecondaryBrush", WithAlpha(onAccent, 0xB3));
+
+                    // Vurgu: WPF-UI'ın kendi sözlüğündeki vurgu fırçaları rengi yüklenişte bir kez
+                    // çözüyor (birleştirilmiş sözlükteki Freezable + DynamicResource). Bu yüzden
+                    // birincil düğme, anahtar, ilerleme çubuğu Windows mavisinde kalıyor, bizim
+                    // fırçalarımız ise tema renginde oluyordu (iki vurgu rengi). Hepsini burada
+                    // uygulama düzeyinde tek kaynaktan yazıyoruz.
+                    PublishAccent(res, def);
+
+                    // Katmanlar
+                    Set(res, "LayerFillColorDefaultBrush", def.ContentLayer);
+                    Set(res, "Surface.Layer", def.ContentLayer);
 
                     Set(res, "SystemFillColorSuccessBrush", def.Success);
                     Set(res, "SystemFillColorCautionBrush", def.Caution);
@@ -490,13 +504,70 @@ namespace Bakım.Services
             return new ThemeDefinition
             {
                 Kind = def.Kind, DisplayName = def.DisplayName, IsDark = def.IsDark,
-                WindowBackground = def.WindowBackground, CardBackground = def.CardBackground, CardBackgroundAlt = def.CardBackgroundAlt,
+                WindowBackground = def.WindowBackground, ContentLayer = def.ContentLayer,
+                CardBackground = def.CardBackground, CardBackgroundAlt = def.CardBackgroundAlt,
                 CardStroke = def.CardStroke, ControlFill = def.ControlFill, ControlFillAlt = def.ControlFillAlt,
                 ControlStroke = def.ControlStroke, SubtleHover = def.SubtleHover, SubtlePressed = def.SubtlePressed,
                 TextPrimary = def.TextPrimary, TextSecondary = def.TextSecondary, TextTertiary = def.TextTertiary,
                 Accent = accentText, Primary = accent,
                 Success = def.Success, Caution = def.Caution, Critical = def.Critical
             };
+        }
+
+        /// <summary>WPF-UI denetimlerinin vurgu fırçalarını tema vurgusundan üretir (tek vurgu tonu).</summary>
+        private static void PublishAccent(ResourceDictionary res, ThemeDefinition def)
+        {
+            var fill = def.Primary;
+            var fill2 = WithAlpha(fill, 0xE5);
+            var fill3 = WithAlpha(fill, 0xCC);
+            var onAccent = TextOnAccent(fill);
+
+            SetColor(res, "SystemAccentColor", fill);
+            SetColor(res, "SystemAccentColorPrimary", fill);
+            SetColor(res, "SystemAccentColorSecondary", fill);
+            SetColor(res, "SystemAccentColorTertiary", def.Accent);
+            SetColor(res, "AccentFillColorDefault", fill);
+            SetColor(res, "AccentFillColorSecondary", fill2);
+            SetColor(res, "AccentFillColorTertiary", fill3);
+            SetColor(res, "TextOnAccentFillColorPrimary", onAccent);
+
+            Set(res, "SystemAccentBrush", fill);
+            Set(res, "AccentFillColorSecondaryBrush", fill2);
+            Set(res, "AccentFillColorTertiaryBrush", fill3);
+
+            foreach (var key in new[]
+            {
+                "AccentButtonBackground", "BadgeBackground", "CalendarViewSelectedBackground",
+                "CalendarViewSelectedBorderBrush", "CalendarViewTodayBackground", "CheckBoxCheckBackgroundFillChecked",
+                "ComboBoxItemPillFillBrush", "InfoBarInformationalSeverityIconBackground",
+                "ListBoxItemSelectedBackgroundThemeBrush", "ListViewItemPillFillBrush",
+                "NavigationViewSelectionIndicatorForeground", "ProgressBarForeground", "ProgressRingForegroundThemeBrush",
+                "RadioButtonOuterEllipseCheckedStroke", "RatingControlSelectedForeground", "SliderThumbBackground",
+                "TextControlFocusedBorderBrush", "ThumbRateForeground", "ToggleButtonBackgroundChecked",
+                "ToggleSwitchStrokeOn", "ToggleSwitchFillOn", "TreeViewItemSelectionIndicatorForeground",
+                "ComboBoxBorderBrushFocused"
+            }) Set(res, key, fill);
+
+            foreach (var key in new[]
+            {
+                "AccentButtonBackgroundPointerOver", "CalendarViewSelectedBackgroundPointerOver",
+                "CheckBoxCheckBackgroundFillCheckedPointerOver", "SliderThumbBackgroundPointerOver",
+                "ToggleSwitchStrokeOnPointerOver", "ToggleSwitchFillOnPointerOver", "ToggleButtonForegroundCheckedPointerOver"
+            }) Set(res, key, fill2);
+
+            foreach (var key in new[]
+            {
+                "AccentButtonBackgroundPressed", "CheckBoxCheckBackgroundFillCheckedPressed",
+                "RadioButtonOuterEllipseCheckedStrokePointerOver", "ToggleButtonBackgroundCheckedPressed",
+                "ToggleSwitchStrokeOnPressed", "ToggleSwitchFillOnPressed"
+            }) Set(res, key, fill3);
+
+            foreach (var key in new[] { "AccentButtonForeground", "AccentButtonForegroundPointerOver" })
+                Set(res, key, onAccent);
+            Set(res, "AccentButtonForegroundPressed", WithAlpha(onAccent, 0xB3));
+
+            foreach (var key in new[] { "HyperlinkButtonForeground", "HyperlinkButtonForegroundPointerOver", "HyperlinkButtonForegroundPressed" })
+                Set(res, key, def.Accent);
         }
 
         private static void Set(ResourceDictionary res, string key, Color color)
@@ -552,9 +623,10 @@ namespace Bakım.Services
                 DisplayName = "Windows 11 Koyu",
                 IsDark = true,
                 WindowBackground = Hex("#202020"),
-                CardBackground = Hex("#2B2B2B"),
-                CardBackgroundAlt = Hex("#272727"),
-                CardStroke = Hex("#404040"),
+                ContentLayer = Hex("#272727"),
+                CardBackground = Hex("#2E2E2E"),
+                CardBackgroundAlt = Hex("#292929"),
+                CardStroke = Hex("#434343"),
                 ControlFill = Hex("#323232"),
                 ControlFillAlt = Hex("#282828"),
                 ControlStroke = Hex("#3D3D3D"),
@@ -575,10 +647,11 @@ namespace Bakım.Services
                 Kind = AppThemeKind.SlateDark,
                 DisplayName = "Slate Koyu",
                 IsDark = true,
-                WindowBackground = Hex("#0F172A"),
-                CardBackground = Hex("#1E293B"),
-                CardBackgroundAlt = Hex("#172033"),
-                CardStroke = Hex("#334155"),
+                WindowBackground = Hex("#0B1220"),
+                ContentLayer = Hex("#111A2C"),
+                CardBackground = Hex("#18233A"),
+                CardBackgroundAlt = Hex("#141E31"),
+                CardStroke = Hex("#2F3D59"),
                 ControlFill = Hex("#273549"),
                 ControlFillAlt = Hex("#1E293B"),
                 ControlStroke = Hex("#3A4A63"),
@@ -587,7 +660,7 @@ namespace Bakım.Services
                 TextPrimary = Hex("#F8FAFC"),
                 TextSecondary = Hex("#CBD5E1"),
                 TextTertiary = Hex("#94A3B8"),
-                Accent = Hex("#56CCF8"),
+                Accent = Hex("#60A5FA"),
                 Primary = Hex("#2563EB"),
                 Success = Hex("#34D399"),
                 Caution = Hex("#FBBF24"),
@@ -600,9 +673,10 @@ namespace Bakım.Services
                 DisplayName = "AMOLED Saf Siyah",
                 IsDark = true,
                 WindowBackground = Hex("#000000"),
-                CardBackground = Hex("#0D0E12"),
-                CardBackgroundAlt = Hex("#121317"),
-                CardStroke = Hex("#3F3F46"), // 1.29:1 -> 1.85:1 (kart zemininden ayrilabilir)
+                ContentLayer = Hex("#08080B"),
+                CardBackground = Hex("#121216"),
+                CardBackgroundAlt = Hex("#0D0D10"),
+                CardStroke = Hex("#2E2E36"), // 1.29:1 -> 1.85:1 (kart zemininden ayrilabilir)
                 ControlFill = Hex("#18181B"),
                 ControlFillAlt = Hex("#0D0E12"),
                 ControlStroke = Hex("#3F3F46"),
@@ -624,9 +698,10 @@ namespace Bakım.Services
                 DisplayName = "Cyberpunk Neon Mor",
                 IsDark = true,
                 WindowBackground = Hex("#090514"),
-                CardBackground = Hex("#150D2A"),
-                CardBackgroundAlt = Hex("#1B1136"),
-                CardStroke = Hex("#3B1A62"),
+                ContentLayer = Hex("#0F0920"),
+                CardBackground = Hex("#180F30"),
+                CardBackgroundAlt = Hex("#130B27"),
+                CardStroke = Hex("#3B2266"),
                 ControlFill = Hex("#221340"),
                 ControlFillAlt = Hex("#150D2A"),
                 ControlStroke = Hex("#4C2183"),
@@ -635,7 +710,7 @@ namespace Bakım.Services
                 TextPrimary = Hex("#F5F3FF"),
                 TextSecondary = Hex("#DDD6FE"),
                 TextTertiary = Hex("#A78BFA"),
-                Accent = Hex("#FB7185"),
+                Accent = Hex("#A78BFA"),
                 Primary = Hex("#8B5CF6"),
                 Success = Hex("#34D399"),
                 Caution = Hex("#FBBF24"),
@@ -662,6 +737,7 @@ namespace Bakım.Services
                         DisplayName = "Yüksek Kontrast (Windows)",
                         IsDark = dark,
                         WindowBackground = window,
+                        ContentLayer = window,
                         CardBackground = window,
                         CardBackgroundAlt = window,
                         CardStroke = text,
@@ -692,9 +768,10 @@ namespace Bakım.Services
                 DisplayName = "Windows 11 Açık",
                 IsDark = false,
                 WindowBackground = Hex("#F3F3F3"),
-                CardBackground = Hex("#FBFBFB"),
-                CardBackgroundAlt = Hex("#F6F6F6"),
-                CardStroke = Hex("#DADADA"),
+                ContentLayer = Hex("#F9F9F9"),
+                CardBackground = Hex("#FFFFFF"),
+                CardBackgroundAlt = Hex("#F7F7F7"),
+                CardStroke = Hex("#D6D6D6"),
                 ControlFill = Hex("#FDFDFD"),
                 ControlFillAlt = Hex("#F5F5F5"),
                 ControlStroke = Hex("#D1D1D1"),

@@ -51,8 +51,16 @@ internal static class Program
     private static readonly List<string> Failures = new();
 
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
+        // Görsel doğrulama kipi: her sayfanın PNG görüntüsü (CI yapıtı olarak yüklenir).
+        int shotIndex = Array.IndexOf(args, "--screenshots");
+        if (shotIndex >= 0)
+        {
+            string dir = shotIndex + 1 < args.Length ? args[shotIndex + 1] : "screenshots";
+            return Screenshots.Run(dir);
+        }
+
         Console.WriteLine($"Kaynak derlemesi: {Application.ResourceAssembly?.GetName().Name ?? "(yok)"}");
         Console.WriteLine();
 

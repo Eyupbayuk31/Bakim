@@ -132,16 +132,16 @@ namespace Bakım.ViewModels
         private TelemetryMetrics _metrics = new();
 
         [ObservableProperty]
-        private PointCollection _cpuSparklinePoints = new();
+        private PointCollection _cpuSparklinePoints = FrozenPoints();
 
         [ObservableProperty]
-        private PointCollection _cpuSparklinePolygonPoints = new();
+        private PointCollection _cpuSparklinePolygonPoints = FrozenPoints();
 
         [ObservableProperty]
-        private PointCollection _ramSparklinePoints = new();
+        private PointCollection _ramSparklinePoints = FrozenPoints();
 
         [ObservableProperty]
-        private PointCollection _ramSparklinePolygonPoints = new();
+        private PointCollection _ramSparklinePolygonPoints = FrozenPoints();
 
         [ObservableProperty]
         private bool _isBusy;
@@ -238,6 +238,20 @@ namespace Bakım.ViewModels
 
         public ObservableCollection<HealthRow> HealthRows { get; } = new();
 
+        /// <summary>Puanı düşüren ya da durumu bilinmeyen bileşenler (hero kartta hep açık).</summary>
+        public ObservableCollection<HealthRow> IssueRows { get; } = new();
+
+        /// <summary>İyi durumdaki bileşenler (hero kartta tek satıra katlanır).</summary>
+        public ObservableCollection<HealthRow> HealthyRows { get; } = new();
+
+        [ObservableProperty] private bool _showHealthyRows;
+        [ObservableProperty] private string _healthyRowsText = string.Empty;
+        public bool HasHealthyRows => HealthyRows.Count > 0;
+        public bool HasIssueRows => IssueRows.Count > 0;
+
+        [RelayCommand]
+        private void ToggleHealthyRows() => ShowHealthyRows = !ShowHealthyRows;
+
         [ObservableProperty] private int _healthScoreValue = 100;
         [ObservableProperty] private string _healthTitle = "Sağlık denetleniyor…";
         [ObservableProperty] private string _healthSummary = string.Empty;
@@ -262,8 +276,17 @@ namespace Bakım.ViewModels
                 };
                 HealthRows.Clear();
                 // Önce puanı düşürenler, sonra iyi ve bilinmeyenler.
+                IssueRows.Clear();
+                HealthyRows.Clear();
                 foreach (var c in report.Components.OrderByDescending(c => c.Deduction).ThenBy(c => c.Level == HealthLevel.Unknown))
-                    HealthRows.Add(new HealthRow(c));
+                {
+                    var row = new HealthRow(c);
+                    HealthRows.Add(row);
+                    (c.Level == HealthLevel.Good ? HealthyRows : IssueRows).Add(row);
+                }
+                HealthyRowsText = HealthyRows.Count == 1 ? "1 bileşen iyi durumda" : $"{HealthyRows.Count} bileşen iyi durumda";
+                OnPropertyChanged(nameof(HasHealthyRows));
+                OnPropertyChanged(nameof(HasIssueRows));
             }
             catch (Exception ex)
             {
@@ -323,6 +346,9 @@ namespace Bakım.ViewModels
         [RelayCommand]
         private void OpenGameModePage() => _navigation.Navigate("GameMode");
 
+        [RelayCommand]
+        private void OpenSystemInfoPage() => _navigation.Navigate("SystemInfo");
+
         #endregion
 
         private async Task OnTelemetryTickAsync()
@@ -353,6 +379,13 @@ namespace Bakım.ViewModels
             catch { }
         }
 
+        private static PointCollection FrozenPoints()
+        {
+            var points = new PointCollection();
+            points.Freeze();
+            return points;
+        }
+
         private void UpdateSparklineCollections()
         {
             const double width = 160.0;
@@ -377,6 +410,10 @@ namespace Bakım.ViewModels
             }
             cpuPoly.Add(new(width, height));
 
+            // Donmuş koleksiyon: grafik bağlaması hangi iş parçacığında atanırsa atansın güvenli
+            // (dondurulmamış PointCollection başka iş parçacığında oluşunca WPF bağlaması çöküyordu).
+            cpuLine.Freeze();
+            cpuPoly.Freeze();
             CpuSparklinePoints = cpuLine;
             CpuSparklinePolygonPoints = cpuPoly;
 
@@ -398,6 +435,8 @@ namespace Bakım.ViewModels
             }
             ramPoly.Add(new(width, height));
 
+            ramLine.Freeze();
+            ramPoly.Freeze();
             RamSparklinePoints = ramLine;
             RamSparklinePolygonPoints = ramPoly;
         }

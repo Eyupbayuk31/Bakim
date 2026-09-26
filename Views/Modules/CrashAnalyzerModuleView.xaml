@@ -12,7 +12,18 @@
              d:DataContext="{d:DesignInstance Type=vm:CrashAnalyzerViewModel}"
              d:DesignHeight="780" d:DesignWidth="1050">
 
-    <Grid Margin="28">
+    <c:ModulePage Title="Olaylar ve çökmeler"
+                  Subtitle="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
+                <ui:Button Appearance="Secondary"
+                           Command="{Binding RefreshAllCommand}"
+                           Content="Yenile"
+                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Header & Navigation -->
             <RowDefinition Height="Auto"/> <!-- 1: KPI Metric Cards -->
@@ -21,24 +32,9 @@
             <RowDefinition Height="Auto"/> <!-- 4: Bottom Status Bar -->
         </Grid.RowDefinitions>
 
-        <!-- 0. Header Section -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
-                         Title="Olaylar ve çökmeler"
-                         Description="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı.">
-            <c:SectionHeader.Actions>
-                <ui:Button Appearance="Secondary"
-                           Command="{Binding RefreshAllCommand}"
-                           Content="Yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
-
         <!-- 1. Güvenilirlik kartı + sekmeler (SelectorBar) -->
         <StackPanel Grid.Row="1">
-            <Border Style="{StaticResource Card.Surface}" Margin="{StaticResource Gap.Bottom.MD}">
+            <Border Style="{StaticResource Card.Surface.Hero}" Margin="{StaticResource Gap.Bottom.MD}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -54,7 +50,7 @@
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,32,0" MinWidth="160">
                         <TextBlock Text="Sistem sağlığı" Style="{StaticResource Text.SettingDescription}" Margin="0"/>
-                        <TextBlock FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2">
+                        <TextBlock FontSize="{StaticResource Font.TitleLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2">
                             <Run Text="%"/><Run Text="{Binding Stats.HealthScore, Mode=OneWay}"/>
                         </TextBlock>
                         <TextBlock Text="{Binding Stats.HealthStatusText}" Style="{StaticResource Text.SettingDescription}"/>
@@ -62,7 +58,7 @@
 
                     <!-- Windows Güvenilirlik İzleyicisi: son 30 günün günlük en düşük endeksi -->
                     <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,24,0">
-                        <ItemsControl ItemsSource="{Binding ReliabilityBars}" Height="40"
+                        <ItemsControl ItemsSource="{Binding ReliabilityBars}" Height="56"
                                       Visibility="{Binding HasReliability, Converter={StaticResource BoolToVis}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -187,7 +183,7 @@
             <!-- VIEW 1: BSOD & Crashes -->
             <Grid Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Bsod}">
                 <!-- Empty State (No Crashes Found) -->
-                <ui:Card Padding="24" 
+                <Border Style="{StaticResource Card.Surface}" 
                          VerticalAlignment="Center" 
                          HorizontalAlignment="Center" 
                          MaxWidth="560"
@@ -206,7 +202,7 @@
                                    TextWrapping="Wrap" 
                                    TextAlignment="Center"/>
                     </StackPanel>
-                </ui:Card>
+                </Border>
 
                 <!-- Crashes List -->
                 <ListView ItemsSource="{Binding Crashes}"
@@ -233,7 +229,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:BsodCrashItem}">
-                            <ui:Card Padding="18,14" Margin="0,0,0,8" ClipToBounds="False">
+                            <Border Style="{StaticResource Card.Surface}" Margin="0,0,0,8" ClipToBounds="False">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -300,7 +296,7 @@
                                                    Padding="12,8"/>
                                     </StackPanel>
                                 </Grid>
-                            </ui:Card>
+                            </Border>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -333,7 +329,7 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:SystemEventItem}">
-                            <ui:Card Padding="14,10" Margin="0,0,0,6" ClipToBounds="False">
+                            <Border Style="{StaticResource Card.Surface.Compact}" Margin="0,0,0,6" ClipToBounds="False">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" SharedSizeGroup="CrashEventLevelCol"/>
@@ -382,7 +378,7 @@
                                                Margin="8,0,0,0"
                                                Visibility="{Binding FormattedTime, Converter={StaticResource NullToVisibilityConverter}}"/>
                                 </Grid>
-                            </ui:Card>
+                            </Border>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
@@ -404,7 +400,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- SFC Action Card -->
-                    <ui:Card Grid.Column="0" Padding="18,14">
+                    <Border Style="{StaticResource Card.Surface}" Grid.Column="0">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -432,10 +428,10 @@
                                        Content="SFC taramasını başlat"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}"/>
                         </Grid>
-                    </ui:Card>
+                    </Border>
 
                     <!-- DISM Action Card -->
-                    <ui:Card Grid.Column="2" Padding="18,14">
+                    <Border Style="{StaticResource Card.Surface}" Grid.Column="2">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -463,11 +459,11 @@
                                        Content="DISM onarımını başlat"
                                        Icon="{ui:SymbolIcon ArrowClockwise24}"/>
                         </Grid>
-                    </ui:Card>
+                    </Border>
                 </Grid>
 
                 <!-- Live Terminal Console Card -->
-                <ui:Card Grid.Row="1" Padding="16">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="1">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -513,7 +509,7 @@
                             </ScrollViewer>
                         </Border>
                     </Grid>
-                </ui:Card>
+                </Border>
             </Grid>
         </Grid>
 
@@ -543,4 +539,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>

@@ -25,6 +25,7 @@
                 <ResourceDictionary Source="Themes/Tokens/SegmentedControl.xaml"/>
                 <ResourceDictionary Source="Themes/Controls/NavItem.xaml"/>
                 <ResourceDictionary Source="Themes/Controls/Fluent.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/Layout.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->
@@ -59,20 +60,6 @@
                 Anlamsal fırçalar artık Themes/Tokens/Palette.Bootstrap.xaml içinde
                 tanımlanır ve çalışma zamanında ThemeService tarafından yönetilir.
             -->
-
-            <!--
-                Tıklanabilir kart (ui:Card). Fluent'te kartlar üzerine gelince yükselmez ve
-                vurgu çerçevesi almaz; yalnızca zemin bir ton açılır (SettingsCard davranışı).
-            -->
-            <Style x:Key="InteractiveCard" TargetType="{x:Type ui:Card}" BasedOn="{StaticResource {x:Type ui:Card}}">
-                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
 
             <!-- Global FadeInSlideLeft Page Transition Storyboard -->
             <Storyboard x:Key="FadeInSlideLeft">

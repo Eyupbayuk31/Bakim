@@ -41,24 +41,10 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Title & Top Controls -->
-            <RowDefinition Height="Auto"/> <!-- Metric Cards -->
-            <RowDefinition Height="Auto"/> <!-- Önerilen profiller (§5.7) -->
-            <RowDefinition Height="Auto"/> <!-- Search & Filters -->
-            <RowDefinition Height="*"/>    <!-- Active Content (Services or Drivers Table) -->
-            <RowDefinition Height="Auto"/> <!-- Bottom Status Bar -->
-        </Grid.RowDefinitions>
-
-        <!-- 1. Header Section -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
-                         Title="Hizmetler ve sürücüler"
-                         Description="Windows arka plan servisleri, güvenlik analizi ve donanım sürücüleri.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Hizmetler ve sürücüler"
+                  Subtitle="Windows arka plan servisleri, güvenlik analizi ve donanım sürücüleri."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <!-- Sub-Tab Switcher & Refresh Button -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Margin="0,0,12,0">
@@ -76,8 +62,18 @@
                 Content="Yenile"
                 Icon="{ui:SymbolIcon ArrowClockwise24}"/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Title & Top Controls -->
+            <RowDefinition Height="Auto"/> <!-- Metric Cards -->
+            <RowDefinition Height="Auto"/> <!-- Önerilen profiller (§5.7) -->
+            <RowDefinition Height="Auto"/> <!-- Search & Filters -->
+            <RowDefinition Height="*"/>    <!-- Active Content (Services or Drivers Table) -->
+            <RowDefinition Height="Auto"/> <!-- Bottom Status Bar -->
+        </Grid.RowDefinitions>
 
         <!-- 2. Metric Overview Cards -->
         <Grid Grid.Row="1" Margin="0,0,0,18">
@@ -93,7 +89,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <ui:Card Grid.Column="0" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -105,9 +101,9 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Server24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
-                <ui:Card Grid.Column="2" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="2">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -119,9 +115,9 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Play24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
-                <ui:Card Grid.Column="4" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="4">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -133,9 +129,9 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="TopSpeed24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
-                <ui:Card Grid.Column="6" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="6">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -147,7 +143,7 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Stop24" FontSize="22" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
             </Grid>
 
             <!-- Drivers Overview Cards -->
@@ -162,7 +158,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <ui:Card Grid.Column="0" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -174,9 +170,9 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Desktop24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
-                <ui:Card Grid.Column="2" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="2">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -188,9 +184,9 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Checkmark24" FontSize="22" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
-                <ui:Card Grid.Column="4" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="4">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -202,9 +198,9 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Warning24" FontSize="22" Foreground="{DynamicResource SystemFillColorCriticalBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
-                <ui:Card Grid.Column="6" Padding="16,14">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="6">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -216,7 +212,7 @@
                         </StackPanel>
                         <ui:SymbolIcon Grid.Column="1" Symbol="Laptop24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
-                </ui:Card>
+                </Border>
             </Grid>
         </Grid>
 
@@ -232,7 +228,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ui:Card Width="260" Padding="12" Margin="0,0,10,10">
+                        <Border Style="{StaticResource Card.Surface.Compact}" Width="260" Margin="0,0,10,10">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="{Binding Icon}" FontSize="18" Margin="0,0,8,0"
@@ -250,7 +246,7 @@
                                            CommandParameter="{Binding}"
                                            AutomationProperties.Name="{Binding Title}"/>
                             </StackPanel>
-                        </ui:Card>
+                        </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -701,4 +697,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>

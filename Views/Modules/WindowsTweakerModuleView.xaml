@@ -13,22 +13,11 @@
              d:DataContext="{d:DesignInstance Type=vm:WindowsTweakerViewModel}"
              d:DesignHeight="850" d:DesignWidth="1100">
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Header & Top Actions -->
-            <RowDefinition Height="Auto"/> <!-- 1: Result Banner -->
-            <RowDefinition Height="Auto"/> <!-- 2: (boş) -->
-            <RowDefinition Height="*"/>    <!-- 3: Master-Detail Workspace -->
-        </Grid.RowDefinitions>
-
-        <!-- 0. Header & Top Action Buttons -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,16"
-                         Title="Windows Ayarları"
-                         Description="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Windows Ayarları"
+                  Subtitle="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar."
+                  MaxContentWidth="{StaticResource Layout.PageMaxWidth.Narrow}"
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Appearance="Secondary"
                                Content="Gezgini yeniden başlat"
@@ -62,8 +51,16 @@
                         </ui:DropDownButton.Flyout>
                     </ui:DropDownButton>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Header & Top Actions -->
+            <RowDefinition Height="Auto"/> <!-- 1: Result Banner -->
+            <RowDefinition Height="Auto"/> <!-- 2: (boş) -->
+            <RowDefinition Height="*"/>    <!-- 3: Master-Detail Workspace -->
+        </Grid.RowDefinitions>
 
         <!-- 1. Result InfoBar -->
         <ui:InfoBar Grid.Row="1" 
@@ -233,12 +230,12 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:SystemTweakItem}">
-                    <ui:Card Padding="{StaticResource Pad.SettingsCard}" ClipToBounds="False"
+                    <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" ClipToBounds="False"
                              ToolTipService.InitialShowDelay="200"
                              ToolTipService.ShowDuration="30000"
                              ToolTipService.BetweenShowDelay="100">
                         <!-- Rich Hover Card for Tweak (Human-readable, No registry jargon) -->
-                        <ui:Card.ToolTip>
+                        <Border.ToolTip>
                             <ToolTip Background="{DynamicResource Brush.Surface.Background}"
                                      BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                      BorderThickness="1"
@@ -303,7 +300,7 @@
                                     </Grid>
                                 </StackPanel>
                             </ToolTip>
-                        </ui:Card.ToolTip>
+                        </Border.ToolTip>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -352,20 +349,12 @@
                                     </Border>
 
                                     <!-- Güvenlik etkisi rozetleri (S-16) -->
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1"
-                                            Background="{DynamicResource Status.Critical.Subtle}"
-                                            Margin="0,0,6,4"
-                                            ToolTip="{Binding SecurityWarning}"
-                                            Visibility="{Binding ReducesSecurity, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Güvenliği azaltır" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1"
-                                            Background="{DynamicResource Status.Caution.Subtle}"
-                                            Margin="0,0,6,4"
-                                            ToolTip="{Binding SecurityWarning}"
-                                            Visibility="{Binding AffectsSecurity, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Güvenliği etkiler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
+                                    <c:StatusGlyph Intent="Critical" Text="Güvenliği azaltır" Margin="0,0,12,4"
+                                                   ToolTip="{Binding SecurityWarning}"
+                                                   Visibility="{Binding ReducesSecurity, Converter={StaticResource BoolToVis}}"/>
+                                    <c:StatusGlyph Intent="Caution" Text="Güvenliği etkiler" Margin="0,0,12,4"
+                                                   ToolTip="{Binding SecurityWarning}"
+                                                   Visibility="{Binding AffectsSecurity, Converter={StaticResource BoolToVis}}"/>
                                 </WrapPanel>
 
                                 <!-- Neyi değiştirir? (veri tabanlı ayarlar: gerçek kayıt yolları, §5.16 şeffaflık) -->
@@ -419,7 +408,7 @@
                                            Visibility="{Binding IsAction, Converter={StaticResource BoolToVis}}"/>
                             </StackPanel>
                         </Grid>
-                    </ui:Card>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
@@ -431,7 +420,7 @@
                       Visibility="{Binding IsToolsTabVisible, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <!-- Tool 1: Reset Cache Engine -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -454,10 +443,10 @@
                                    VerticalAlignment="Center"
                                    Padding="16,8"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 2: Run as TrustedInstaller -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -490,10 +479,10 @@
                                        Padding="16,8"/>
                         </Grid>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 3: Elevated Shortcut Creator -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -533,10 +522,10 @@
                                        Padding="16,8"/>
                         </Grid>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 4: OEM & Registered Owner Editor -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -594,10 +583,10 @@
                                    HorizontalAlignment="Right"
                                    Padding="18,8"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 5: Reset Local Group Policy -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -620,7 +609,7 @@
                                    VerticalAlignment="Center"
                                    Padding="16,8"/>
                     </Grid>
-                </ui:Card>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
@@ -631,7 +620,7 @@
                       Visibility="{Binding IsAdvancedAppearanceTabVisible, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <!-- Hero Info Card -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Bottom.MD}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Bottom.MD}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -659,7 +648,7 @@
                                        Padding="14,10"/>
                         </StackPanel>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Grid with 2 Configuration Cards -->
                 <Grid Margin="0,0,0,16">
@@ -670,7 +659,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Card: Desktop Icons & Scrollbars -->
-                    <ui:Card Grid.Column="0" Padding="{StaticResource Pad.Card}">
+                    <Border Style="{StaticResource Card.Surface}" Grid.Column="0" Padding="{StaticResource Pad.Card}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <ui:SymbolIcon Symbol="Desktop24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
@@ -710,10 +699,10 @@
                                 <TextBlock Grid.Column="1" Text="{Binding Metrics.ScrollWidth, StringFormat='{}{0} px'}" FontWeight="SemiBold" Width="55" TextAlignment="Right"/>
                             </Grid>
                         </StackPanel>
-                    </ui:Card>
+                    </Border>
 
                     <!-- Right Card: Borders & Title Bars -->
-                    <ui:Card Grid.Column="2" Padding="{StaticResource Pad.Card}">
+                    <Border Style="{StaticResource Card.Surface}" Grid.Column="2" Padding="{StaticResource Pad.Card}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <ui:SymbolIcon Symbol="Window24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
@@ -753,11 +742,11 @@
                                 <TextBlock Grid.Column="1" Text="{Binding Metrics.CaptionHeight, StringFormat='{}{0} px'}" FontWeight="SemiBold" Width="55" TextAlignment="Right"/>
                             </Grid>
                         </StackPanel>
-                    </ui:Card>
+                    </Border>
                 </Grid>
 
                 <!-- Color & Aero Lite Card -->
-                <ui:Card Padding="18">
+                <Border Style="{StaticResource Card.Surface}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -779,7 +768,7 @@
                                        Padding="16,8"/>
                         </StackPanel>
                     </Grid>
-                </ui:Card>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
@@ -793,4 +782,5 @@
             </Grid>
         </Grid>
     </Grid>
+    </c:ModulePage>
 </UserControl>

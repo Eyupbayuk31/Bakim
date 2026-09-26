@@ -22,7 +22,7 @@
                             Margin="{StaticResource Gap.Bottom.MD}"/>
 
                 <!-- Main Speed Gauge Card -->
-                <Border Style="{StaticResource Card.Surface}" Padding="24" Margin="{StaticResource Gap.Bottom.MD}">
+                <Border Style="{StaticResource Card.Surface}" Margin="{StaticResource Gap.Bottom.MD}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/> <!-- Title & Intro -->

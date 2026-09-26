@@ -11,23 +11,10 @@
              d:DataContext="{d:DesignInstance Type=vm:UninstallerViewModel}"
              d:DesignHeight="780" d:DesignWidth="1050">
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Header -->
-            <RowDefinition Height="Auto"/> <!-- 1: KPI Metrics -->
-            <RowDefinition Height="Auto"/> <!-- 2: Toolbar / Actions -->
-            <RowDefinition Height="*"/>    <!-- 3: Content (App List or Leftovers) -->
-            <RowDefinition Height="Auto"/> <!-- 4: Status Bar -->
-        </Grid.RowDefinitions>
-
-        <!-- 0. Header -->
-                <!-- Sayfa basligi — tasarim sistemi bileseni -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,16"
-                         Title="Kaldırıcı"
-                         Description="Programı resmi kaldırıcısıyla kaldırır; kaldırma doğrulanınca geride kalan dosya, kayıt, hizmet ve görevleri kanıtıyla listeler.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Kaldırıcı"
+                  Subtitle="Programı resmi kaldırıcısıyla kaldırır; kaldırma doğrulanınca geride kalan dosya, kayıt, hizmet ve görevleri kanıtıyla listeler."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Appearance="Secondary"
                                Command="{Binding LaunchHunterModeCommand}"
@@ -53,8 +40,34 @@
                         </ui:DropDownButton.Flyout>
                     </ui:DropDownButton>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+    <c:ModulePage.Footer>
+        <c:SelectionBar Summary="{Binding SelectedAppsCount, StringFormat='{}{0} uygulama seçildi'}"
+                        Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}">
+            <StackPanel Orientation="Horizontal">
+                <ui:Button Appearance="Secondary"
+                           Content="Seçimi temizle"
+                           Command="{Binding SelectAllAppsCommand}"
+                           CommandParameter="false"
+                           Margin="0,0,8,0"/>
+                <ui:Button Appearance="Primary"
+                           Content="Seçilenleri kaldır"
+                           Icon="{ui:SymbolIcon Delete24}"
+                           Command="{Binding BatchUninstallCommand}"/>
+            </StackPanel>
+        </c:SelectionBar>
+    </c:ModulePage.Footer>
+
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Header -->
+            <RowDefinition Height="Auto"/> <!-- 1: KPI Metrics -->
+            <RowDefinition Height="Auto"/> <!-- 2: Toolbar / Actions -->
+            <RowDefinition Height="*"/>    <!-- 3: Content (App List or Leftovers) -->
+            <RowDefinition Height="Auto"/> <!-- 4: Status Bar -->
+        </Grid.RowDefinitions>
 
         <!-- 2. Modern 2-Katmanlı Toolbar: Segment Filtreleri, Sıralama & Arama -->
         <Grid Grid.Row="2" Margin="0,0,0,14"
@@ -171,23 +184,7 @@
                                Command="{Binding SelectAllAppsCommand}"
                                CommandParameter="true"
                                Padding="10,5"
-                               Margin="0,0,4,4"/>
-                    <ui:Button Appearance="Secondary"
-                               Content="Seçimi kaldır"
-                               Command="{Binding SelectAllAppsCommand}"
-                               CommandParameter="false"
-                               Padding="10,5"
-                               Margin="0,0,8,4"
-                               Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}"/>
-
-                    <!-- Batch Silent Uninstall Button -->
-                    <ui:Button Appearance="Secondary"
-                               Content="{Binding SelectedAppsCount, StringFormat='Seçilenleri kaldır ({0})'}"
-                               Icon="{ui:SymbolIcon Delete24}"
-                               Command="{Binding BatchUninstallCommand}"
-                               Padding="12,5"
-                               Margin="0,0,0,4"
-                               Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}"/>
+                               Margin="0,0,0,4"/>
                 </WrapPanel>
             </Grid>
         </Grid>
@@ -203,9 +200,9 @@
                 </Grid.RowDefinitions>
 
                 <!-- Batch Progress Banner -->
-                <ui:Card Grid.Row="0"
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="0"
                          Margin="0,0,0,10" 
-                         Padding="14,10" 
+                         
                          Background="{DynamicResource ControlFillColorSecondaryBrush}"
                          Visibility="{Binding IsBatchRunning, Converter={StaticResource BoolToVis}}">
                     <Grid>
@@ -219,7 +216,7 @@
                         </StackPanel>
                         <ProgressBar Grid.Row="1" Margin="0,8,0,0" Height="4" Value="{Binding BatchProgress}" Maximum="{Binding BatchProgressMax}"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Korumalı Sistem Katmanı Bilgilendirme Çubuğu -->
                 <ui:InfoBar Grid.Row="1"
@@ -453,7 +450,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Leftovers Action Bar -->
-                <ui:Card Grid.Row="0" Padding="16,14" Margin="0,0,0,12">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="0" Margin="0,0,0,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -497,7 +494,7 @@
                                        Padding="12,8"/>
                         </StackPanel>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Leftovers ListView -->
                 <ListView Grid.Row="1" 
@@ -615,4 +612,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>

@@ -1,0 +1,40 @@
+name: Screenshots (Visual Check)
+
+# Her sayfanın 2 tema × 2 genişlikte PNG görüntüsü. Tasarım değişikliklerini
+# kullanıcı ekran görüntüsü beklemeden incelemek için (docs/FLUENT_DUZEN_PLANI.md §2.7).
+on:
+  push:
+    branches: [ 'claude/**' ]
+    paths-ignore: [ 'docs/**', '**/*.md' ]
+  workflow_dispatch:
+
+concurrency:
+  group: screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screenshots:
+    name: Render pages
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Render screenshots
+        shell: pwsh
+        run: dotnet run --project Tests/Bakim.UiSmokeTests/Bakim.UiSmokeTests.csproj --configuration Release -- --screenshots "${{ github.workspace }}\shots"
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: shots/*.png
+          retention-days: 14

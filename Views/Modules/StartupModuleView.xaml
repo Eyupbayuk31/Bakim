@@ -10,23 +10,10 @@
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=vm:StartupViewModel}"
              d:DesignHeight="850" d:DesignWidth="1100">
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0. Header -->
-            <RowDefinition Height="Auto"/> <!-- 1. KPI Metric Cards -->
-            <RowDefinition Height="Auto"/> <!-- 2. Filter & Search Toolbar -->
-            <RowDefinition Height="*"/>    <!-- 3. Main Content (List + Inspection Drawer) -->
-        </Grid.RowDefinitions>
-
-        <!-- ========================================================================= -->
-        <!-- ROW 0: SAYFA BAŞLIĞI & EYLEMLER                                            -->
-        <!-- ========================================================================= -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,16"
-                         Title="Başlangıç"
-                         Description="Windows oturumu açılırken otomatik başlatılan tüm uygulama, servis ve kayıt defteri ögelerini yönetin.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Başlangıç"
+                  Subtitle="Windows oturumu açılırken otomatik başlatılan tüm uygulama, servis ve kayıt defteri ögelerini yönetin."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Appearance="Primary"
                                Command="{Binding OptimizeBootCommand}"
@@ -51,9 +38,19 @@
                                Padding="12,8"
                                ToolTip="Başlangıç listesini ve kayıt defterini yeniden tara."/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0. Header -->
+            <RowDefinition Height="Auto"/> <!-- 1. KPI Metric Cards -->
+            <RowDefinition Height="Auto"/> <!-- 2. Filter & Search Toolbar -->
+            <RowDefinition Height="*"/>    <!-- 3. Main Content (List + Inspection Drawer) -->
+        </Grid.RowDefinitions>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 0: SAYFA BAŞLIĞI & EYLEMLER                                            -->
         <!-- ========================================================================= -->
         <!-- ROW 1: AÇILIŞ SÜRESİ KARTI (Windows ölçümü — sayfanın tek anlamlı sayısı)  -->
         <!-- ========================================================================= -->
@@ -192,7 +189,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Main Items Card -->
-            <ui:Card Grid.Column="0" Padding="16">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -372,7 +369,7 @@
                         <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     </Border>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- ========================================================================= -->
             <!-- RIGHT SIDE MASTER-DETAIL INSPECTION DRAWER                                -->
@@ -436,12 +433,8 @@
                                 <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding Publisher}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                    <Border Background="{DynamicResource Brush.Accent.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,6,0">
-                                        <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
-                                    <Border Background="{DynamicResource Brush.Caution.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2">
-                                        <TextBlock Text="{Binding EstimatedDelayText, StringFormat='Gecikme {0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                                    </Border>
+                                    <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <c:StatusGlyph Intent="Caution" Text="{Binding EstimatedDelayText, StringFormat='Gecikme {0}'}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
@@ -507,4 +500,5 @@
             </Border>
         </Grid>
     </Grid>
+    </c:ModulePage>
 </UserControl>

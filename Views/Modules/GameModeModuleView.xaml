@@ -18,16 +18,12 @@
         Dar pencerede (code-behind) sağ sütun alta iner.
     -->
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Style="{StaticResource Layout.Page}">
-            <c:SectionHeader IsPageTitle="True"
-                             Icon="Games24"
-                             HeaderMargin="0,0,0,24"
-                             Title="Oyun Modu"
-                             Description="Oyun sırasında güç planını yükseltir ve arka plan yükünü azaltır. Kapatınca her şey geri alınır."/>
-
+    <c:ModulePage Title="Oyun Modu" MaxContentWidth="{StaticResource Layout.PageMaxWidth.Narrow}"
+                  Subtitle="Oyun sırasında güç planını yükseltir ve arka plan yükünü azaltır. Kapatınca her şey geri alınır."
+                  IsScrollable="True">
+    <StackPanel>
             <!-- ============ 1) DURUM KARTI ============ -->
-            <Border Style="{StaticResource Card.Surface}" Padding="20">
+            <Border Style="{StaticResource Card.Surface}">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -237,7 +233,7 @@
 
                     <TextBlock Text="Arka plan uygulamaları" Style="{StaticResource Text.SectionLabel}"/>
 
-                    <Border Style="{StaticResource Card.Surface}" CornerRadius="{StaticResource Radius.XS}" Padding="16">
+                    <Border Style="{StaticResource Card.Surface.Compact}" CornerRadius="{StaticResource Radius.XS}">
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -270,7 +266,7 @@
 
                     <TextBlock Text="Otomatik başlatma" Style="{StaticResource Text.SectionLabel}"/>
 
-                    <Border Style="{StaticResource Card.Surface}" CornerRadius="{StaticResource Radius.XS}" Padding="16">
+                    <Border Style="{StaticResource Card.Surface.Compact}" CornerRadius="{StaticResource Radius.XS}">
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -395,5 +391,5 @@
                 </StackPanel>
             </Grid>
         </StackPanel>
-    </ScrollViewer>
+    </c:ModulePage>
 </UserControl>

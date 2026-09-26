@@ -13,19 +13,15 @@
              d:DataContext="{d:DesignInstance Type=vm:StorageViewModel}"
              d:DesignHeight="950" d:DesignWidth="1100">
 
-    <Grid Margin="28">
+    <c:ModulePage Title="Depolama"
+                  Subtitle="Büyük dosyaları, yinelenen dosyaları ve boş klasörleri bulur. Silinenler varsayılan olarak Geri Dönüşüm Kutusu'na gider."
+                  IsScrollable="False">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Başlık -->
             <RowDefinition Height="Auto"/> <!-- 1: Sekmeler -->
             <RowDefinition Height="*"/>    <!-- 2: Etkin sekme -->
         </Grid.RowDefinitions>
-
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         Icon="HardDrive20"
-                         HeaderMargin="0,0,0,12"
-                         Title="Depolama"
-                         Description="Büyük dosyaları, yinelenen dosyaları ve boş klasörleri bulur. Silinenler varsayılan olarak Geri Dönüşüm Kutusu'na gider."/>
 
         <!-- Sekmeler (Fluent SelectorBar) -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="{StaticResource Gap.Bottom.MD}">
@@ -47,4 +43,5 @@
         <local:StorageLargeFilesPanel Grid.Row="2" Visibility="{Binding IsLargeFilesTab, Converter={StaticResource BoolToVis}}"/>
         <local:StorageDuplicatesPanel Grid.Row="2" Visibility="{Binding IsDuplicatesTab, Converter={StaticResource BoolToVis}}"/>
     </Grid>
+    </c:ModulePage>
 </UserControl>

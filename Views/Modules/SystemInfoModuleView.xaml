@@ -28,21 +28,10 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Başlık -->
-            <RowDefinition Height="Auto"/> <!-- 1: Sekmeler -->
-            <RowDefinition Height="*"/>    <!-- 2: Etkin sekme -->
-        </Grid.RowDefinitions>
-
-        <!-- 0: Header Section & Sub-tab Switcher -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         Icon="Info24"
-                         HeaderMargin="0,0,0,12"
-                         Title="Sistem bilgisi"
-                         Description="Cihazın donanımı, Windows sürümü ve disklerin S.M.A.R.T. sağlık durumu.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Sistem Bilgisi"
+                  Subtitle="Cihazın donanımı, Windows sürümü ve disklerin S.M.A.R.T. sağlık durumu."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <!-- Refresh Button -->
                     <ui:Button Appearance="Secondary"
@@ -51,8 +40,15 @@
                                Content="Yenile"
                                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Başlık -->
+            <RowDefinition Height="Auto"/> <!-- 1: Sekmeler -->
+            <RowDefinition Height="*"/>    <!-- 2: Etkin sekme -->
+        </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="{StaticResource Gap.Bottom.MD}">
             <ui:Button Style="{StaticResource Tab.Item}" Content="Donanım"
@@ -273,7 +269,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource Card.Surface}" Padding="16,12" Margin="{StaticResource Gap.Card}">
+                            <Border Style="{StaticResource Card.Surface.Compact}" Margin="{StaticResource Gap.Card}">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -541,4 +537,5 @@
         </ScrollViewer>
 
     </Grid>
+    </c:ModulePage>
 </UserControl>

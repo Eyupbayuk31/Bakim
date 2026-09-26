@@ -18,23 +18,10 @@
         </CollectionViewSource>
     </UserControl.Resources>
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Başlık -->
-            <RowDefinition Height="Auto"/> <!-- 1: Özet kartları -->
-            <RowDefinition Height="Auto"/> <!-- 2: Filtre çubuğu -->
-            <RowDefinition Height="*"/>    <!-- 3: Zaman çizelgesi + ayrıntı -->
-            <RowDefinition Height="Auto"/> <!-- 4: Durum -->
-        </Grid.RowDefinitions>
-
-        <!-- 0. Başlık -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         Icon="History24"
-                         HeaderMargin="0,0,0,18"
-                         Title="Etkinlik Merkezi"
-                         Description="Bakım'ın sisteminizde yaptığı her değişiklik burada. Yedeği olan işlemler geri alınabilir.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Etkinlik Merkezi"
+                  Subtitle="Bakım'ın sisteminizde yaptığı her değişiklik burada. Yedeği olan işlemler geri alınabilir."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Appearance="Secondary"
                                Padding="{StaticResource Pad.Control}"
@@ -50,16 +37,17 @@
                                Command="{Binding ClearAllCommand}"
                                AutomationProperties.Name="Etkinlik kaydının tamamını sil"/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
 
-        <!-- 1. Özet -->
-        <c:SummaryStrip Grid.Row="1" Margin="{StaticResource Gap.Bottom.MD}">
-            <c:StatCard Icon="History24" Label="Toplam kayıt" Value="{Binding TotalCount}" Intent="Neutral"/>
-            <c:StatCard Icon="CalendarLtr24" Label="Bugün" Value="{Binding TodayCount}" Intent="Accent"/>
-            <c:StatCard Icon="ArrowUndo20" Label="Geri alınabilir" Value="{Binding UndoableCount}" Intent="Success"/>
-            <c:StatCard Icon="ErrorCircle24" Label="Başarısız" Value="{Binding FailedCount}" Intent="Critical"/>
-        </c:SummaryStrip>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0: Başlık -->
+            <RowDefinition Height="Auto"/> <!-- 1: Özet kartları -->
+            <RowDefinition Height="Auto"/> <!-- 2: Filtre çubuğu -->
+            <RowDefinition Height="*"/>    <!-- 3: Zaman çizelgesi + ayrıntı -->
+            <RowDefinition Height="Auto"/> <!-- 4: Durum -->
+        </Grid.RowDefinitions>
 
         <!-- 2. Komut çubuğu: arama ve filtreler tek satırda (çerçevesiz, Fluent) -->
         <Grid Grid.Row="2" Margin="{StaticResource Gap.Bottom.MD}">
@@ -169,7 +157,7 @@
                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                                             <Run Text="{Binding Module, Mode=OneWay}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             <Run Text=" · " Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <Run Text="{Binding Title, Mode=OneWay}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding Title, Mode=OneWay}"/>
                                         </TextBlock>
                                         <TextBlock Text="{Binding Summary}" FontSize="{StaticResource Font.Body}" TextTrimming="CharacterEllipsis"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -310,4 +298,5 @@
                    FontSize="{StaticResource Font.Body}" TextTrimming="CharacterEllipsis"
                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
     </Grid>
+    </c:ModulePage>
 </UserControl>

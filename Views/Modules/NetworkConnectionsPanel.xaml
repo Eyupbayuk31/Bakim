@@ -291,7 +291,7 @@
                         </Grid>
 
                         <!-- Process Overview -->
-                        <ui:Card Grid.Row="1" Padding="12" Margin="0,0,0,12">
+                        <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="1" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="{Binding ProcessName}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,4"/>
@@ -302,10 +302,10 @@
                                 <TextBlock Text="Yürütülebilir dosya:" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,6,0,0"/>
                                 <TextBlock Text="{Binding ProcessPath}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" ToolTip="{Binding ProcessPath}"/>
                             </StackPanel>
-                        </ui:Card>
+                        </Border>
 
                         <!-- Socket Endpoints -->
-                        <ui:Card Grid.Row="2" Padding="12" Margin="0,0,0,12">
+                        <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="2" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="Soket ve protokol detayları" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
                                 
@@ -330,7 +330,7 @@
                                     <TextBlock Text="{Binding RemoteHostName}" HorizontalAlignment="Right" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" MaxWidth="180"/>
                                 </Grid>
                             </StackPanel>
-                        </ui:Card>
+                        </Border>
 
                         <!-- Threat Assessment -->
                         <Border Grid.Row="3" 

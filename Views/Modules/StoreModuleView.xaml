@@ -12,31 +12,11 @@
              d:DataContext="{d:DesignInstance Type=vm:StoreViewModel}"
              d:DesignHeight="950" d:DesignWidth="1200">
 
-    <Grid Margin="24">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0. Section Header -->
-            <RowDefinition Height="Auto"/> <!-- 1. Segmented Mode Switcher (Katalog vs Hazır Paketler) -->
-            <RowDefinition Height="*"/>    <!-- 2. Active Tab Content Workspace -->
-            <RowDefinition Height="Auto"/> <!-- 3. Live Queue & Console Drawer -->
-        </Grid.RowDefinitions>
-
-        <!-- ========================================================================= -->
-        <!-- ROW 0: SECTION HEADER                                                     -->
-        <!-- ========================================================================= -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         HeaderMargin="0,0,0,16"
-                         Title="Mağaza"
-                         Description="Sık kullanılan uygulamaları ve çalışma zamanı paketlerini winget ile sessizce kurar ve günceller.">
-            <c:SectionHeader.Actions>
+    <c:ModulePage Title="Mağaza"
+                  Subtitle="Sık kullanılan uygulamaları ve çalışma zamanı paketlerini winget ile sessizce kurar ve günceller."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button Appearance="Primary"
-                               Command="{Binding InstallSelectedBatchCommand}"
-                               Content="{Binding SelectedAppsText}"
-                               Padding="14,8"
-                               Margin="0,0,8,0"
-                               ToolTip="Seçili uygulamaları sırayla, arka planda kurar."/>
-
                     <ui:Button Appearance="Secondary"
                                Command="{Binding ToggleQueueDrawerCommand}"
                                Content="İndirmeler"
@@ -52,9 +32,36 @@
                                Padding="12,8"
                                ToolTip="Sistemdeki kurulu programları ve kütüphaneleri yeniden tara."/>
                 </StackPanel>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
+            
+    </c:ModulePage.Actions>
+    <c:ModulePage.Footer>
+        <c:SelectionBar Summary="{Binding SelectedAppsCount, StringFormat='{}{0} uygulama seçildi'}"
+                        Visibility="{Binding SelectedAppsCount, Converter={StaticResource IntToVis}}">
+            <StackPanel Orientation="Horizontal">
+                <ui:Button Appearance="Secondary"
+                           Content="Seçimi temizle"
+                           Command="{Binding ClearSelectionCommand}"
+                           Margin="0,0,8,0"/>
+                <ui:Button Appearance="Primary"
+                           Content="Seçilenleri kur"
+                           Icon="{ui:SymbolIcon ArrowDownload24}"
+                           Command="{Binding InstallSelectedBatchCommand}"
+                           ToolTip="Seçili uygulamaları sırayla, arka planda kurar."/>
+            </StackPanel>
+        </c:SelectionBar>
+    </c:ModulePage.Footer>
 
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- 0. Section Header -->
+            <RowDefinition Height="Auto"/> <!-- 1. Segmented Mode Switcher (Katalog vs Hazır Paketler) -->
+            <RowDefinition Height="*"/>    <!-- 2. Active Tab Content Workspace -->
+            <RowDefinition Height="Auto"/> <!-- 3. Live Queue & Console Drawer -->
+        </Grid.RowDefinitions>
+
+        <!-- ========================================================================= -->
+        <!-- ROW 0: SECTION HEADER                                                     -->
         <!-- ROW 1: Sekmeler (SelectorBar) ve sade sayımlar -->
         <DockPanel Grid.Row="1" LastChildFill="False" Margin="{StaticResource Gap.Bottom.MD}">
             <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
@@ -189,16 +196,6 @@
                                    Margin="0,0,8,0"
                                    Padding="12,6"/>
 
-                        <ui:Button Grid.Column="3" 
-                                   Appearance="Secondary" 
-                                   Command="{Binding ClearSelectionCommand}" 
-                                   Content="Seçimi temizle" 
-                                   Icon="{ui:SymbolIcon Dismiss24}"
-                                   Padding="12,6"
-                                   Margin="0,0,12,0"
-                                   Visibility="{Binding SelectedAppsCount, Converter={StaticResource IntToVis}}"
-                                   ToolTip="Tüm uygulama seçimlerini temizle"/>
-
                         <!-- Görünüm Modu Switcher (Kart vs Liste) -->
                         <Border Grid.Column="4" 
                                 Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
@@ -236,12 +233,13 @@
                     <ItemsControl ItemsSource="{Binding DisplayApps}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"/>
+                                <c:AdaptiveGrid MinColumnWidth="320" MaxColumns="4"
+                                                ColumnSpacing="{StaticResource Layout.GridGap}" RowSpacing="{StaticResource Layout.GridGap}"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:StoreAppItem}">
-                                <Border Width="360" Margin="0,0,16,16" Padding="16,14"
+                                <Border Padding="16,14"
                                         CornerRadius="{StaticResource Radius.MD}"
                                         BorderThickness="1">
                                     <Border.Style>
@@ -1033,4 +1031,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>

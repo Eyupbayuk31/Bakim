@@ -16,6 +16,9 @@ Borç sayıları Tools/design-debt-baseline.json'daki eşiği AŞAMAZ; azaldık�
   gradient_brush      Linear/RadialGradientBrush (Mica dışında gradyan yok)
   title_case_text     Her sözcüğü Büyük Harfli kısa sabit metin (Windows 11: cümle düzeni)
   ampersand_text      Görünen metinde "&" (Türkçede "ve")
+  ui_card_raw         Sayfalarda çıplak ui:Card (dikey ortalanıp kayıyor) — Card.Surface / c:ListCard kullanın
+  status_fill_pill    Durum rengiyle dolu hap (Status.*.Subtle zeminli rozet) — c:StatusGlyph kullanın
+  legacy_page_header  Sayfa başlığı için SectionHeader IsPageTitle — c:ModulePage kullanın
 
 Çalıştırma:  python Tools/verify-design-debt.py [--update]
 Çıkış kodu:  0 = eşik aşılmadı, 1 = borç arttı
@@ -66,7 +69,8 @@ def iter_files(roots, pattern):
 def measure():
     counts = {k: 0 for k in ("xaml_hex_colors", "xaml_font_sizes", "xaml_corner_radius", "code_hex_colors", "empty_catch",
                                    "danger_in_pages", "non_fluent_button", "infinite_animation", "gradient_brush",
-                                   "title_case_text", "ampersand_text")}
+                                   "title_case_text", "ampersand_text", "ui_card_raw", "status_fill_pill",
+                                   "legacy_page_header")}
     per_file = {k: {} for k in counts}
 
     def bump(key, path, n):
@@ -95,6 +99,9 @@ def measure():
             return SENTENCE.is_title_case(t) and SENTENCE.convert(t) != t
         bump("title_case_text", path, sum(1 for t in texts if title_case(t)))
         bump("ampersand_text", path, sum(1 for t in texts if " &amp; " in t))
+        bump("ui_card_raw", path, len(re.findall(r"<ui:Card[\s>]", text)))
+        bump("status_fill_pill", path, len(re.findall(r'Background="\{DynamicResource (?:Status\.(?:Success|Caution|Critical)\.Subtle|Brush\.(?:Success|Caution|Critical)\.Subtle)\}"', text)))
+        bump("legacy_page_header", path, len(re.findall(r'IsPageTitle="True"', text)))
 
     for path in iter_files(["Models", "ViewModels", "Services"], "*.cs"):
         # ThemeService paletlerin tek resmi kaynağıdır; oradaki renk sabitleri borç değil tanımdır.

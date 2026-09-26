@@ -18,7 +18,20 @@
         </CollectionViewSource>
     </UserControl.Resources>
 
-    <Grid Margin="24">
+    <c:ModulePage Title="Kurulum Nöbetçisi"
+                  Subtitle="Programlar kurulurken eklenen dosyaları, başlangıç girdilerini ve hizmetleri kaydeder. Her kurulumun raporu burada saklanır."
+                  IsScrollable="False">
+    <c:ModulePage.Actions>
+                <ui:Button Appearance="Secondary"
+                           Padding="{StaticResource Pad.Control}"
+                           Icon="{ui:SymbolIcon ArrowClockwise20}"
+                           Content="Yenile"
+                           Command="{Binding RefreshCommand}"
+                           AutomationProperties.Name="Kurulum geçmişini yenile"/>
+            
+    </c:ModulePage.Actions>
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Başlık -->
             <RowDefinition Height="Auto"/> <!-- 1: Durum kartı -->
@@ -26,22 +39,6 @@
             <RowDefinition Height="Auto"/> <!-- 3: Arama -->
             <RowDefinition Height="*"/>    <!-- 4: Geçmiş -->
         </Grid.RowDefinitions>
-
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         Icon="ShieldCheckmark24"
-                         HeaderMargin="0,0,0,18"
-                         Title="Kurulum Nöbetçisi"
-                         Description="Programlar kurulurken eklenen dosyaları, başlangıç girdilerini ve hizmetleri kaydeder. Her kurulumun raporu burada saklanır.">
-            <c:SectionHeader.Actions>
-                <ui:Button Appearance="Secondary"
-                           Padding="{StaticResource Pad.Control}"
-                           Icon="{ui:SymbolIcon ArrowClockwise20}"
-                           Content="Yenile"
-                           Command="{Binding RefreshCommand}"
-                           AutomationProperties.Name="Kurulum geçmişini yenile"/>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
 
         <!-- 1. Durum -->
         <Border Grid.Row="1"
@@ -188,4 +185,5 @@
             </Grid>
         </Border>
     </Grid>
+    </c:ModulePage>
 </UserControl>
