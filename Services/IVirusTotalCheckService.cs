@@ -23,5 +23,12 @@ namespace Bakım.Services
         void SmartOpenInBrowser(string filePath, string sha256Hash, int totalDetections);
         void SaveApiKey(string apiKey);
         string LoadApiKey();
+
+        /// <summary>Son sorguda "şüpheli" diyen motor sayısı.</summary>
+        int LastSuspicious(string sha256);
+        /// <summary>Hash yanıtı bellekte mi (kota harcamadan döner)?</summary>
+        bool IsCached(string sha256);
+        /// <summary>Hız sınırına göre bekleyen istekler için tahmini süre.</summary>
+        TimeSpan EstimateWait(int pendingRequests);
     }
 }

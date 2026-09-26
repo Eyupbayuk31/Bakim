@@ -12,7 +12,11 @@ namespace Bakım.Models
         WindowsService,
         WmiEventConsumer,
         WinlogonIfeo,
-        ShellExtension
+        ShellExtension,
+        /// <summary>Çekirdek ve dosya sistemi sürücüleri (hizmetlerden ayrı; hiçbir zaman değiştirilemez).</summary>
+        Driver,
+        /// <summary>Kurulum Nöbetçisi ya da kullanıcının incelettiği dosya: başlangıç kaydı değil.</summary>
+        InspectedFile
     }
 
     public enum SignatureStatus
@@ -43,6 +47,37 @@ namespace Bakım.Models
 
         /// <summary>Kayıt defteri girdisinin gerçek değer adı.</summary>
         public string? RegistryValueName { get; set; }
+        /// <summary>Kayıttaki ham komut (çözümlemeden önce).</summary>
+        public string RawCommand { get; set; } = string.Empty;
+        /// <summary>Sarmalayıcı süreç (rundll32, regsvr32, cmd, powershell, wscript, svchost …); <see cref="FilePath"/> asıl yüktür.</summary>
+        public string? HostName { get; set; }
+        public bool HasHost => !string.IsNullOrEmpty(HostName);
+        public string HostDisplay => HostName == null ? string.Empty
+            : InlineScript != null && string.IsNullOrEmpty(FilePath) ? $"{HostName} ile satır içi komut"
+            : $"{HostName} aracılığıyla çalışır";
+        /// <summary>Komut satırına gömülü betik ya da adres (cmd /c, powershell -enc çözülmüş, regsvr32 /i:url).</summary>
+        public string? InlineScript { get; set; }
+        /// <summary>Komut çözümlenip dosya bulundu mu?</summary>
+        public Bakım.Core.Analyzer.TargetResolution Resolution { get; set; } = Bakım.Core.Analyzer.TargetResolution.Resolved;
+        /// <summary>Zamanlanmış görevin tam yolu (\Klasör\Ad).</summary>
+        public string? TaskPath { get; set; }
+        public string? ServiceName { get; set; }
+        /// <summary>Hizmet "Start" değeri (0 Boot … 4 Devre dışı).</summary>
+        public int? ServiceStart { get; set; }
+        public int? ServiceType { get; set; }
+        /// <summary>Hizmet Bakım tarafından kapatıldı (özgün başlangıç türü saklı).</summary>
+        public bool DisabledByBakim { get; set; }
+
+        public Bakım.Core.Analyzer.AutorunFacts Facts => new(
+            Enum.TryParse<Bakım.Core.Analyzer.AutorunCategory>(Category.ToString(), out var c) ? c : Bakım.Core.Analyzer.AutorunCategory.InspectedFile,
+            RegistryKeyPath, SourceFilePath, TaskPath, ServiceName, ServiceStart, ServiceType, DisabledByBakim);
+
+        /// <summary>Açma/kapama güvenli mi (ANL Z1)? Arayüz anahtarı yalnızca bu true iken gösterir.</summary>
+        public bool CanToggle => Bakım.Core.Analyzer.AutorunActionPolicy.CanToggle(Facts).Allowed;
+        public string ToggleLockReason => Bakım.Core.Analyzer.AutorunActionPolicy.CanToggle(Facts).Reason;
+        public bool CanDelete => Bakım.Core.Analyzer.AutorunActionPolicy.CanDelete(Facts).Allowed;
+        public string DeleteLockReason => Bakım.Core.Analyzer.AutorunActionPolicy.CanDelete(Facts).Reason;
+
         public string Publisher { get; set; } = string.Empty;
         public SignatureStatus Signature { get; set; } = SignatureStatus.Unsigned;
         public string SignatureSignerName { get; set; } = string.Empty;
@@ -81,7 +116,34 @@ namespace Bakım.Models
         [ObservableProperty]
         private bool _isBusy;
 
-        public bool HasValidFile => !string.IsNullOrWhiteSpace(FilePath) && System.IO.File.Exists(FilePath);
+        /// <summary>
+        /// Dosya diskte var mı? Tarama sırasında bir kez belirlenir; eskiden her okumada File.Exists
+        /// çağrılıyor, sıralama ve istatistik yüzlerce kez diske gidiyordu (AN-19).
+        /// </summary>
+        public bool HasValidFile
+        {
+            get => _hasValidFile ??= !string.IsNullOrWhiteSpace(FilePath) && System.IO.File.Exists(FilePath);
+            set => _hasValidFile = value;
+        }
+        private bool? _hasValidFile;
+
+        /// <summary>Derin analizin puanı (varsa satır puanı budur: daha fazla kanıta dayanır).</summary>
+        public int? DeepRiskScore { get; set; }
+
+        /// <summary>VirusTotal toplam motor sayısı biliniyorsa uzlaşı tabanı uygulanır.</summary>
+        public int VirusTotalSuspicious { get; set; }
+
+        /// <summary>Risk ve imza özelliklerinin değiştiğini arayüze bildirir (derin analiz, VT sonrası).</summary>
+        public void NotifyRiskChanged()
+        {
+            OnPropertyChanged(nameof(Signature));
+            OnPropertyChanged(nameof(SignatureSignerName));
+            OnPropertyChanged(nameof(RiskScore));
+            OnPropertyChanged(nameof(RiskIntent));
+            OnPropertyChanged(nameof(RiskLabel));
+            OnPropertyChanged(nameof(RiskIconSymbol));
+            OnPropertyChanged(nameof(IsRisk));
+        }
         public bool IsRisk => Signature != SignatureStatus.Verified || MaliciousDetections > 0;
 
         #region Zaman Çizelgesi
@@ -128,6 +190,8 @@ namespace Bakım.Models
         {
             get
             {
+                if (DeepRiskScore is int deep) return IsEnabled ? deep : (int)(deep * 0.4);
+
                 int score = 0;
 
                 score += Signature switch
@@ -137,8 +201,9 @@ namespace Bakım.Models
                     _ => 0
                 };
 
-                if (MaliciousDetections > 0)
-                    score += Math.Min(40, MaliciousDetections * 8);
+                // VirusTotal uzlaşısı baskın kanıttır (ANL Z4): imza bunu düşüremez.
+                var vt = Bakım.Core.Analyzer.VirusTotalRules.Evaluate(Math.Max(0, MaliciousDetections), VirusTotalSuspicious, TotalScanners > 0 ? TotalScanners : 70);
+                if (vt is { } floor) score = Math.Max(score + floor.Impact, floor.MinimumScore);
 
                 // Yüksek değerli kalıcılık vektörleri: meşru yazılım burayı nadiren kullanır
                 score += Category switch

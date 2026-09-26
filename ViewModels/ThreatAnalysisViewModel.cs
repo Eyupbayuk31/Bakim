@@ -71,7 +71,8 @@ namespace Bakım.ViewModels
         public int ActiveProcessId => Result.ActiveProcessId;
         public string ActiveProcessMemory => Result.ActiveProcessMemory;
 
-        public bool CanDisableStartup => Result.OriginAutorunItem != null && !IsStartupDisabled;
+        /// <summary>Yalnızca eylem politikasının izin verdiği girdilerde (sürücü, kritik hizmet, Windows görevi değil).</summary>
+        public bool CanDisableStartup => Result.OriginAutorunItem is { CanToggle: true, IsEnabled: true } && !IsStartupDisabled;
 
         public bool HasVtRecord => Result.VirusTotalTotal > 0;
         public string VtButtonText => IsUploadingToVt ? "Yükleniyor..." : (HasVtRecord ? $"VirusTotal ({Result.VirusTotalMalicious}/{Result.VirusTotalTotal})" : "VT'ye Gönder ve Tara");

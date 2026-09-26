@@ -5,6 +5,7 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bakım.Services
@@ -13,6 +14,58 @@ namespace Bakım.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ConcurrentDictionary<string, (int malicious, int total, string message)> _cache = new();
+        private readonly ConcurrentDictionary<string, int> _suspicious = new(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Ücretsiz VirusTotal anahtarı dakikada 4 istek kabul eder (ANL Z9). Eskiden toplu tarama
+        /// istekler arasında 400 ms bekliyor, 5. dosyadan sonra her şey "VT HTTP 429" oluyordu.
+        /// Tüm ağ istekleri bu kapıdan sırayla geçer; önbellekten gelen yanıtlar beklemez.
+        /// </summary>
+        private static readonly SemaphoreSlim RateGate = new(1, 1);
+        private static DateTime _nextRequestUtc = DateTime.MinValue;
+
+        public TimeSpan RequestInterval => TimeSpan.FromSeconds(60.0 / Math.Clamp(_settings.Current.VirusTotalRequestsPerMinute, 1, 1000));
+
+        /// <summary>Bekleyen <paramref name="pendingRequests"/> istek için tahmini süre.</summary>
+        public TimeSpan EstimateWait(int pendingRequests)
+        {
+            var untilNext = _nextRequestUtc - DateTime.UtcNow;
+            if (untilNext < TimeSpan.Zero) untilNext = TimeSpan.Zero;
+            return pendingRequests <= 0 ? TimeSpan.Zero : untilNext + RequestInterval * (pendingRequests - 1);
+        }
+
+        /// <summary>Son sorguda "şüpheli" diyen motor sayısı (VT uzlaşısında yarım ağırlık).</summary>
+        public int LastSuspicious(string sha256) => _suspicious.TryGetValue(sha256 ?? string.Empty, out int n) ? n : 0;
+
+        public bool IsCached(string sha256) => !string.IsNullOrWhiteSpace(sha256) && _cache.ContainsKey(sha256);
+
+        /// <summary>Hız sınırına uyarak isteği gönderir; 429'da Retry-After kadar bekleyip bir kez yeniden dener.</summary>
+        private async Task<HttpResponseMessage> SendRateLimitedAsync(Func<HttpRequestMessage> create, CancellationToken ct = default)
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                await RateGate.WaitAsync(ct);
+                try
+                {
+                    var wait = _nextRequestUtc - DateTime.UtcNow;
+                    if (wait > TimeSpan.Zero) await Task.Delay(wait, ct);
+                    _nextRequestUtc = DateTime.UtcNow + RequestInterval;
+                }
+                finally
+                {
+                    RateGate.Release();
+                }
+
+                using var request = create();
+                var response = await _httpClient.SendAsync(request, ct);
+                if ((int)response.StatusCode != 429 || attempt > 0) return response;
+
+                var retryAfter = response.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(60);
+                AppLog.Info($"VirusTotal kota sınırı: {retryAfter.TotalSeconds:F0} sn sonra yeniden denenecek.", nameof(VirusTotalCheckService));
+                response.Dispose();
+                _nextRequestUtc = DateTime.UtcNow + retryAfter;
+            }
+        }
 
         public string ApiKey { get; set; } = string.Empty;
         public bool HasApiKey => !string.IsNullOrWhiteSpace(ApiKey);
@@ -104,9 +157,12 @@ namespace Bakım.Services
 
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, "https://www.virustotal.com/api/v3/files/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-                request.Headers.Add("x-apikey", apiKey.Trim());
-                using var response = await _httpClient.SendAsync(request);
+                using var response = await SendRateLimitedAsync(() =>
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, "https://www.virustotal.com/api/v3/files/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+                    request.Headers.Add("x-apikey", apiKey.Trim());
+                    return request;
+                });
                 return response.IsSuccessStatusCode;
             }
             catch
@@ -162,15 +218,22 @@ namespace Bakım.Services
 
             try
             {
-                using var request = new HttpRequestMessage(HttpMethod.Get, $"https://www.virustotal.com/api/v3/files/{sha256Hash}");
-                request.Headers.Add("x-apikey", key.Trim());
-
-                using var response = await _httpClient.SendAsync(request);
+                using var response = await SendRateLimitedAsync(() =>
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, $"https://www.virustotal.com/api/v3/files/{sha256Hash}");
+                    request.Headers.Add("x-apikey", key.Trim());
+                    return request;
+                });
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
                     var notFound = (0, 0, "VT Kaydı Yok");
                     _cache[sha256Hash] = notFound;
                     return notFound;
+                }
+
+                if ((int)response.StatusCode == 429)
+                {
+                    return (-1, -1, "VT kota sınırı (daha sonra yeniden deneyin)");
                 }
 
                 if (!response.IsSuccessStatusCode)
@@ -191,7 +254,10 @@ namespace Bakım.Services
                     int undetected = stats.GetProperty("undetected").GetInt32();
                     int total = malicious + suspicious + harmless + undetected;
 
-                    string msg = malicious > 0 ? $"{malicious}/{total} Zararlı!" : $"{harmless}/{total} Temiz";
+                    _suspicious[sha256Hash] = suspicious;
+                    string msg = malicious > 0
+                        ? $"{malicious}/{total} zararlı" + (suspicious > 0 ? $", {suspicious} şüpheli" : "")
+                        : suspicious > 0 ? $"{suspicious}/{total} şüpheli" : $"{total}/{total} temiz";
                     var result = (malicious, total, msg);
                     _cache[sha256Hash] = result;
                     return result;

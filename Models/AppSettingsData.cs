@@ -95,6 +95,9 @@ namespace Bakım.Models
         /// </summary>
         public bool SentinelWatchBackgroundInstalls { get; set; }
 
+        /// <summary>VirusTotal anahtarının dakikalık istek sınırı (ücretsiz anahtar: 4).</summary>
+        public int VirusTotalRequestsPerMinute { get; set; } = 4;
+
         // --- Gezinme (Faz 4, §2.3) ---
         /// <summary>Açılışta son açık sayfayı yükle (kapalıysa her zaman Kontrol Paneli).</summary>
         public bool OpenLastModuleOnStartup { get; set; } = true;

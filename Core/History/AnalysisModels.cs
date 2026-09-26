@@ -104,7 +104,15 @@ namespace Bakım.Core.History
 
     public sealed record PersistenceSnapshot
     {
+        /// <summary>
+        /// Kalıcılık ayrıştırıcısının sürümü. 2: Analizör v3 (komut satırı çözümleyici, görevler COM,
+        /// sürücüler ayrı). Farklı sürümlerle alınmış iki görüntü karşılaştırılmaz: yol ve anahtar
+        /// biçimi değiştiği için yüzlerce sahte "değişen" girdi çıkardı.
+        /// </summary>
+        public const int CurrentParserVersion = 2;
+
         public int SchemaVersion { get; init; } = 1;
+        public int ParserVersion { get; init; } = 1;
         public string Id { get; init; } = Guid.NewGuid().ToString("N");
         public DateTime TakenAtUtc { get; init; }
         public string Trigger { get; init; } = "Manual";
@@ -112,7 +120,7 @@ namespace Bakım.Core.History
     }
 
     /// <summary>Anlık görüntü listesinde gösterilen başlık (girdiler yüklenmeden).</summary>
-    public sealed record SnapshotHeader(string Id, DateTime TakenAtUtc, string Trigger, int EntryCount, string FileName);
+    public sealed record SnapshotHeader(string Id, DateTime TakenAtUtc, string Trigger, int EntryCount, string FileName, int ParserVersion = 1);
 
     [JsonConverter(typeof(JsonStringEnumConverter<DiffKind>))]
     public enum DiffKind

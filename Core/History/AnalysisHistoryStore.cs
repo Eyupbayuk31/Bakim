@@ -135,7 +135,7 @@ namespace Bakım.Core.History
                     JsonSerializer.Serialize(gzip, snapshot, Json);
                 }
 
-                var header = new SnapshotHeader(snapshot.Id, snapshot.TakenAtUtc, snapshot.Trigger, snapshot.Entries.Count, fileName);
+                var header = new SnapshotHeader(snapshot.Id, snapshot.TakenAtUtc, snapshot.Trigger, snapshot.Entries.Count, fileName, snapshot.ParserVersion);
                 File.AppendAllText(SnapshotIndexPath, JsonSerializer.Serialize(header, Json) + "\n", new UTF8Encoding(false));
                 return header;
             }

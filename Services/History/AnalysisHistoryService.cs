@@ -199,6 +199,7 @@ namespace Bakım.Services.History
                 {
                     TakenAtUtc = DateTime.UtcNow,
                     Trigger = trigger,
+                    ParserVersion = PersistenceSnapshot.CurrentParserVersion,
                     Entries = entries
                 });
                 try { _store.PruneSnapshots(MaxSnapshots); }
@@ -214,7 +215,7 @@ namespace Bakım.Services.History
         {
             var older = _store.LoadSnapshot(olderSnapshotId);
             var newer = _store.LoadSnapshot(newerSnapshotId);
-            if (older == null || newer == null) return Array.Empty<SnapshotDiffItem>();
+            if (older == null || newer == null || older.ParserVersion != newer.ParserVersion) return Array.Empty<SnapshotDiffItem>();
             return SnapshotDiff.Compute(older.Entries, newer.Entries);
         }
 

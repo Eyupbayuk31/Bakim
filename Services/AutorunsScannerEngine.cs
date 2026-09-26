@@ -1,18 +1,20 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
+using Bakım.Core.Analyzer;
 using Bakım.Core.Safety;
 using Bakım.Core.Startup;
 using Bakım.Helpers;
@@ -20,81 +22,24 @@ using Bakım.Models;
 
 namespace Bakım.Services
 {
+    /// <summary>
+    /// Kalıcılık (autorun) tarayıcısı — Analizör v3 Faz 0.
+    ///
+    /// Akış: toplayıcılar ham komutu okur → <see cref="CommandLineResolver"/> Windows'un çözdüğü
+    /// gibi çözer (tırnaksız boşluklu yol, \SystemRoot, göreli ad, sarmalayıcılar) → dosya bilgisi
+    /// paralel ve önbellekli zenginleştirilir (katalog dahil imza) → eylemler
+    /// <see cref="AutorunActionPolicy"/>'den geçer.
+    ///
+    /// Tüm tarama arka plan iş parçacığında yürür (eskiden Run/Başlangıç/Winlogon/Kabuk UI iş
+    /// parçacığında imza + SHA-256 + simge hesaplıyordu).
+    /// </summary>
     public class AutorunsScannerEngine : IAutorunsScannerEngine
     {
         private readonly IVirusTotalCheckService _virusTotalService;
+        private readonly DisabledServiceStore _disabledServices = new();
 
-        #region Win32 WinTrust P/Invoke
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private class WINTRUST_FILE_INFO : IDisposable
-        {
-            public uint cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_FILE_INFO));
-            public IntPtr pcwszFilePath;
-            public IntPtr hFile = IntPtr.Zero;
-            public IntPtr pgKnownSubject = IntPtr.Zero;
-
-            public WINTRUST_FILE_INFO(string filePath)
-            {
-                pcwszFilePath = Marshal.StringToCoTaskMemUni(filePath);
-            }
-
-            public void Dispose()
-            {
-                if (pcwszFilePath != IntPtr.Zero)
-                {
-                    Marshal.FreeCoTaskMem(pcwszFilePath);
-                    pcwszFilePath = IntPtr.Zero;
-                }
-            }
-        }
-
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        private class WINTRUST_DATA : IDisposable
-        {
-            public uint cbStruct = (uint)Marshal.SizeOf(typeof(WINTRUST_DATA));
-            public IntPtr pPolicyCallbackData = IntPtr.Zero;
-            public IntPtr pSIPClientData = IntPtr.Zero;
-            public uint dwUIChoice = 2; // WTD_UI_NONE
-            public uint fdwRevocationChecks = 0;
-            public uint dwUnionChoice = 1; // WTD_CHOICE_FILE
-            public IntPtr pFile;
-            public uint dwStateAction = 0;
-            public IntPtr hWVTStateData = IntPtr.Zero;
-            public IntPtr pwszURLReference = IntPtr.Zero;
-            public uint dwProvFlags = 0x00000040 | 0x00000010;
-            public uint dwUIContext = 0;
-            public IntPtr pSignatureSettings = IntPtr.Zero;
-
-            public WINTRUST_DATA(WINTRUST_FILE_INFO fileInfo)
-            {
-                pFile = Marshal.AllocCoTaskMem(Marshal.SizeOf(typeof(WINTRUST_FILE_INFO)));
-                Marshal.StructureToPtr(fileInfo, pFile, false);
-            }
-
-            public void Dispose()
-            {
-                if (pFile != IntPtr.Zero)
-                {
-                    Marshal.DestroyStructure(pFile, typeof(WINTRUST_FILE_INFO));
-                    Marshal.FreeCoTaskMem(pFile);
-                    pFile = IntPtr.Zero;
-                }
-            }
-        }
-
-        private static readonly Guid WINTRUST_ACTION_GENERIC_VERIFY_V2 = new("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}");
-
-        [DllImport("wintrust.dll", ExactSpelling = true, SetLastError = false, CharSet = CharSet.Unicode)]
-        private static extern uint WinVerifyTrust(
-            IntPtr hwnd,
-            [MarshalAs(UnmanagedType.LPStruct)] Guid pgActionID,
-            WINTRUST_DATA pWVTData);
-
-        [DllImport("gdi32.dll")]
-        private static extern bool DeleteObject(IntPtr hObject);
-
-        #endregion
+        /// <summary>Tek tek hash'lenen en büyük dosya; daha büyükleri istenince (VT, kopyala) hesaplanır.</summary>
+        private const long MaxEagerHashBytes = 100L * 1024 * 1024;
 
         public AutorunsScannerEngine(IVirusTotalCheckService virusTotalService)
         {
@@ -103,145 +48,127 @@ namespace Bakım.Services
 
         public async IAsyncEnumerable<PersistenceItem> ScanAllAsync(IProgress<string>? progress = null)
         {
-            // 1. Registry Run & RunOnce Keys
-            progress?.Report("Kayıt Defteri Başlangıç Anahtarları taranıyor...");
-            await foreach (var item in ScanRegistryRunKeysAsync())
+            var env = ResolverEnvironment.ForCurrentSystem();
+            var collectors = new (string Status, Func<ResolverEnvironment, List<PersistenceItem>> Collect)[]
             {
-                yield return item;
-            }
+                ("Kayıt defteri başlangıç anahtarları taranıyor…", CollectRunKeys),
+                ("Başlangıç klasörleri taranıyor…", CollectStartupFolders),
+                ("Winlogon ve IFEO taranıyor…", CollectWinlogonAndIfeo),
+                ("Zamanlanmış görevler taranıyor…", CollectScheduledTasks),
+                ("Hizmetler ve sürücüler taranıyor…", CollectServicesAndDrivers),
+                ("WMI abonelikleri taranıyor…", CollectWmiConsumers),
+                ("Gezgin eklentileri taranıyor…", CollectShellExtensions),
+            };
 
-            // 2. Startup Folders
-            progress?.Report("Başlangıç Klasörleri taranıyor...");
-            await foreach (var item in ScanStartupFoldersAsync())
+            foreach (var (status, collect) in collectors)
             {
-                yield return item;
-            }
+                progress?.Report(status);
+                var items = await Task.Run(() =>
+                {
+                    List<PersistenceItem> list;
+                    try
+                    {
+                        list = collect(env);
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException or COMException or ManagementException)
+                    {
+                        AppLog.Warning($"Kalıcılık toplayıcısı başarısız: {status}", ex, nameof(AutorunsScannerEngine));
+                        return new List<PersistenceItem>();
+                    }
+                    Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 4 }, Enrich);
+                    return list;
+                });
 
-            // 3. Winlogon & IFEO Hijacks
-            progress?.Report("Winlogon ve IFEO Kalıcılık Noktaları taranıyor...");
-            await foreach (var item in ScanWinlogonAndIfeoAsync())
-            {
-                yield return item;
-            }
-
-            // 4. Scheduled Tasks
-            progress?.Report("Zamanlanmış Görevler taranıyor...");
-            await foreach (var item in ScanScheduledTasksAsync())
-            {
-                yield return item;
-            }
-
-            // 5. Windows Services
-            progress?.Report("Windows Servisleri taranıyor...");
-            await foreach (var item in ScanServicesAsync())
-            {
-                yield return item;
-            }
-
-            // 6. WMI Event Consumers
-            progress?.Report("WMI Olay Kalıcılıkları (WMI Event Consumers) taranıyor...");
-            await foreach (var item in ScanWmiConsumersAsync())
-            {
-                yield return item;
-            }
-
-            // 7. Shell Context Menu Extensions
-            progress?.Report("Explorer Shell Eklentileri taranıyor...");
-            await foreach (var item in ScanShellExtensionsAsync())
-            {
-                yield return item;
+                foreach (var item in items) yield return item;
             }
         }
 
-        #region 1. Registry Run & RunOnce Scanning
+        #region Toplayıcılar
 
-        private async IAsyncEnumerable<PersistenceItem> ScanRegistryRunKeysAsync()
+        private PersistenceItem CreateItem(string name, string rawCommand, PersistenceCategory category, string categoryDisplay, string source, ResolverEnvironment env)
         {
-            var targets = new (RegistryHive Hive, string SubKey, string Display)[]
+            var resolved = CommandLineResolver.Resolve(rawCommand, env);
+            return new PersistenceItem
             {
-                (RegistryHive.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Run", @"HKCU\...\Run"),
-                (RegistryHive.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\RunOnce", @"HKCU\...\RunOnce"),
-                (RegistryHive.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\Run", @"HKLM\...\Run"),
-                (RegistryHive.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\RunOnce", @"HKLM\...\RunOnce"),
-                (RegistryHive.LocalMachine, @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", @"HKLM\WOW6432Node\...\Run"),
-                (RegistryHive.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run", @"HKCU\Policies\Explorer\Run")
+                Name = string.IsNullOrWhiteSpace(name) ? Path.GetFileNameWithoutExtension(resolved.EffectiveTarget) : name,
+                RawCommand = rawCommand,
+                FilePath = resolved.EffectiveTarget,
+                Arguments = resolved.Arguments,
+                HostName = resolved.HostName,
+                InlineScript = resolved.InlineScript,
+                Resolution = resolved.IsWrapped && !resolved.PayloadFound && resolved.Payload != null ? TargetResolution.NotFound : resolved.Resolution,
+                Category = category,
+                CategoryDisplayName = categoryDisplay,
+                LocationSource = source
             };
+        }
 
-            foreach (var target in targets)
+        private static readonly (RegistryHive Hive, string SubKey, string Display)[] RunKeys =
+        {
+            (RegistryHive.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Run", @"HKCU\…\Run"),
+            (RegistryHive.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\RunOnce", @"HKCU\…\RunOnce"),
+            (RegistryHive.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\Run", @"HKLM\…\Run"),
+            (RegistryHive.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\RunOnce", @"HKLM\…\RunOnce"),
+            (RegistryHive.LocalMachine, @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Run", @"HKLM\WOW6432Node\…\Run"),
+            (RegistryHive.LocalMachine, @"Software\WOW6432Node\Microsoft\Windows\CurrentVersion\RunOnce", @"HKLM\WOW6432Node\…\RunOnce"),
+            (RegistryHive.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run", @"HKCU\Policies\Explorer\Run"),
+            (RegistryHive.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run", @"HKLM\Policies\Explorer\Run"),
+        };
+
+        private List<PersistenceItem> CollectRunKeys(ResolverEnvironment env)
+        {
+            var list = new List<PersistenceItem>();
+            foreach (var target in RunKeys)
             {
-                using var baseKey = RegistryKey.OpenBaseKey(target.Hive, RegistryView.Default);
+                using var baseKey = RegistryKey.OpenBaseKey(target.Hive, RegistryView.Registry64);
                 using var subKey = baseKey.OpenSubKey(target.SubKey);
-                bool approvable = IsApprovableRunKey(target.SubKey);
+                if (subKey == null) continue;
+                bool approvable = AutorunActionPolicy.IsApprovableRunKey(target.SubKey);
                 using var approvedKey = approvable ? baseKey.OpenSubKey(StartupApprovedPaths.ForRunKey(target.SubKey)) : null;
-                if (subKey != null)
+
+                foreach (var valueName in subKey.GetValueNames())
                 {
-                    foreach (var valueName in subKey.GetValueNames())
-                    {
-                        string rawCmd = subKey.GetValue(valueName)?.ToString() ?? string.Empty;
-                        if (string.IsNullOrWhiteSpace(rawCmd)) continue;
+                    string rawCmd = subKey.GetValue(valueName)?.ToString() ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(rawCmd)) continue;
 
-                        var (filePath, args) = ParseCommandAndArgs(rawCmd);
+                    // Eski sürümler devre dışı bırakmak için değeri "Bakim_Disabled_X" diye yeniden
+                    // adlandırıyordu; Windows Run altındaki HER değeri çalıştırdığı için bu etkisizdi.
+                    // Gerçek durum StartupApproved'dan okunur; eski adlar olduğu gibi (etkin) gösterilir.
+                    bool isEnabled = !approvable || StartupApprovedPaths.IsEnabled(approvedKey?.GetValue(valueName) as byte[]);
+                    string cleanName = valueName.StartsWith(LegacyDisabledPrefix, StringComparison.Ordinal)
+                        ? valueName[LegacyDisabledPrefix.Length..]
+                        : valueName;
 
-                        // Eski sürümler devre dışı bırakmak için değeri "Bakim_Disabled_X" diye yeniden
-                        // adlandırıyordu; Windows Run altındaki HER değeri çalıştırdığı için bu etkisizdi.
-                        // Gerçek durum StartupApproved'dan okunur; eski adlar olduğu gibi (etkin) gösterilir.
-                        bool isEnabled = !approvable || StartupApprovedPaths.IsEnabled(approvedKey?.GetValue(valueName) as byte[]);
-                        string cleanName = valueName.StartsWith(LegacyDisabledPrefix, StringComparison.Ordinal)
-                            ? valueName[LegacyDisabledPrefix.Length..]
-                            : valueName;
-
-                        var item = CreateItem(
-                            cleanName,
-                            filePath,
-                            args,
-                            PersistenceCategory.RegistryRun,
-                            "Kayıt Defteri (Run)",
-                            $"{target.Display} -> {valueName}");
-
-                        item.IsEnabled = isEnabled;
-                        item.RegistryKeyPath = (target.Hive == RegistryHive.LocalMachine ? "HKLM\\" : "HKCU\\") + target.SubKey;
-                        item.RegistryValueName = valueName;
-                        yield return item;
-                    }
+                    var item = CreateItem(cleanName, rawCmd, PersistenceCategory.RegistryRun, "Kayıt Defteri (Run)", $"{target.Display} → {valueName}", env);
+                    item.IsEnabled = isEnabled;
+                    item.RegistryKeyPath = (target.Hive == RegistryHive.LocalMachine ? "HKLM\\" : "HKCU\\") + target.SubKey;
+                    item.RegistryValueName = valueName;
+                    list.Add(item);
                 }
             }
-
-            await Task.CompletedTask;
+            return list;
         }
 
         private const string LegacyDisabledPrefix = "Bakim_Disabled_";
         private const string LegacyDisabledFileSuffix = ".bakim_disabled";
 
-        /// <summary>StartupApproved yalnızca Run ve WOW6432Node Run için geçerlidir (RunOnce ve politika anahtarları için değil).</summary>
-        private static bool IsApprovableRunKey(string subKey) =>
-            subKey.EndsWith(@"\CurrentVersion\Run", StringComparison.OrdinalIgnoreCase);
-
-        #endregion
-
-        #region 2. Startup Folders Scanning
-
-        private async IAsyncEnumerable<PersistenceItem> ScanStartupFoldersAsync()
+        private List<PersistenceItem> CollectStartupFolders(ResolverEnvironment env)
         {
+            var list = new List<PersistenceItem>();
             string userStartup = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
             string commonStartup = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup);
 
-            var folders = new (string Path, string Display)[]
+            foreach (var (folder, display) in new[] { (userStartup, "Kullanıcı başlangıç klasörü"), (commonStartup, "Ortak başlangıç klasörü") })
             {
-                (userStartup, "Kullanıcı Başlangıç Klasörü"),
-                (commonStartup, "Ortak Başlangıç Klasörü")
-            };
-
-            foreach (var folder in folders)
-            {
-                if (!Directory.Exists(folder.Path)) continue;
-
+                if (!Directory.Exists(folder)) continue;
                 string[] files;
                 try
                 {
-                    files = Directory.GetFiles(folder.Path);
+                    files = Directory.GetFiles(folder);
                 }
-                catch
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
+                    AppLog.Debug($"Başlangıç klasörü okunamadı: {folder} — {ex.Message}", nameof(AutorunsScannerEngine));
                     continue;
                 }
 
@@ -250,32 +177,20 @@ namespace Bakım.Services
                     string fileName = Path.GetFileName(file);
                     if (string.Equals(fileName, "desktop.ini", StringComparison.OrdinalIgnoreCase)) continue;
 
-                    string targetFile = file;
-                    string args = string.Empty;
                     bool legacyDisabled = fileName.EndsWith(LegacyDisabledFileSuffix, StringComparison.OrdinalIgnoreCase);
-                    bool isEnabled = !legacyDisabled && StartupApprovedPaths.IsEnabled(ReadStartupFolderApproval(folder.Path == commonStartup, fileName));
-
-                    // Resolve .lnk target if shortcut
-                    if (file.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
-                    {
-                        targetFile = ResolveShortcutTarget(file) ?? file;
-                    }
+                    bool isEnabled = !legacyDisabled && StartupApprovedPaths.IsEnabled(ReadStartupFolderApproval(folder == commonStartup, fileName));
+                    string target = file.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase) ? ResolveShortcutTarget(file) ?? file : file;
 
                     var item = CreateItem(
                         Path.GetFileNameWithoutExtension(fileName.Replace(LegacyDisabledFileSuffix, "", StringComparison.OrdinalIgnoreCase)),
-                        targetFile,
-                        args,
-                        PersistenceCategory.StartupFolder,
-                        "Başlangıç Klasörü",
-                        folder.Display);
-
+                        target.Contains(' ') ? $"\"{target}\"" : target,
+                        PersistenceCategory.StartupFolder, "Başlangıç Klasörü", display, env);
                     item.IsEnabled = isEnabled;
                     item.SourceFilePath = file;
-                    yield return item;
+                    list.Add(item);
                 }
             }
-
-            await Task.CompletedTask;
+            return list;
         }
 
         private static byte[]? ReadStartupFolderApproval(bool common, string fileName)
@@ -285,286 +200,233 @@ namespace Bakım.Services
                 using var key = (common ? Registry.LocalMachine : Registry.CurrentUser).OpenSubKey(StartupApprovedPaths.ForStartupFolder);
                 return key?.GetValue(fileName) as byte[];
             }
-            catch
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
             {
+                AppLog.Debug($"StartupApproved okunamadı: {ex.Message}", nameof(AutorunsScannerEngine));
                 return null;
             }
         }
 
-        #endregion
-
-        #region 3. Winlogon & IFEO Hijacks Scanning
-
-        private async IAsyncEnumerable<PersistenceItem> ScanWinlogonAndIfeoAsync()
+        private List<PersistenceItem> CollectWinlogonAndIfeo(ResolverEnvironment env)
         {
-            var results = new List<PersistenceItem>();
+            var list = new List<PersistenceItem>();
+            using var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
 
-            // Winlogon (Userinit, Shell)
+            // Winlogon: Userinit virgülle ayrılmış birden çok program içerebilir; zararlılar sona ekler.
+            using (var winlogon = hklm.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"))
+            {
+                foreach (string val in new[] { "Shell", "Userinit", "Taskman" })
+                {
+                    string raw = winlogon?.GetValue(val)?.ToString() ?? string.Empty;
+                    var parts = val == "Userinit" ? raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : new[] { raw.Trim() };
+                    foreach (string part in parts.Where(p => p.Length > 0))
+                        list.Add(CreateItem($"Winlogon: {val}", part, PersistenceCategory.WinlogonIfeo, "Winlogon", $@"HKLM\…\Winlogon\{val}", env));
+                }
+            }
+
+            // IFEO: Debugger ele geçirmesi (64 ve 32 bit görünüm) + SilentProcessExit izleyicisi.
+            foreach (var (path, suffix) in new[]
+                     {
+                         (@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options", ""),
+                         (@"SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\Image File Execution Options", " (32 bit)")
+                     })
+            {
+                using var ifeo = hklm.OpenSubKey(path);
+                if (ifeo == null) continue;
+                foreach (var subName in ifeo.GetSubKeyNames())
+                {
+                    string debugger = ReadValueSafe(ifeo, subName, "Debugger");
+                    if (!string.IsNullOrWhiteSpace(debugger))
+                        list.Add(CreateItem($"IFEO: {subName}{suffix}", debugger, PersistenceCategory.WinlogonIfeo, "IFEO Debugger", $@"HKLM\…\IFEO\{subName}\Debugger", env));
+                }
+            }
+
+            using (var spe = hklm.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\SilentProcessExit"))
+            {
+                foreach (var subName in spe?.GetSubKeyNames() ?? Array.Empty<string>())
+                {
+                    string monitor = ReadValueSafe(spe!, subName, "MonitorProcess");
+                    if (!string.IsNullOrWhiteSpace(monitor))
+                        list.Add(CreateItem($"SilentProcessExit: {subName}", monitor, PersistenceCategory.WinlogonIfeo, "IFEO SilentProcessExit", $@"HKLM\…\SilentProcessExit\{subName}\MonitorProcess", env));
+                }
+            }
+            return list;
+        }
+
+        /// <summary>Tek bir alt anahtarı okur; erişilemeyen anahtar (korumalı IFEO girdileri) tüm grubu düşürmez.</summary>
+        private static string ReadValueSafe(RegistryKey parent, string subKey, string valueName)
+        {
             try
             {
-                using var winlogonKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon");
-                if (winlogonKey != null)
-                {
-                    string[] checkValues = { "Shell", "Userinit", "Taskman" };
-                    foreach (var val in checkValues)
-                    {
-                        string raw = winlogonKey.GetValue(val)?.ToString() ?? string.Empty;
-                        if (!string.IsNullOrWhiteSpace(raw))
-                        {
-                            var (exePath, args) = ParseCommandAndArgs(raw);
-                            results.Add(CreateItem(
-                                $"Winlogon: {val}",
-                                exePath,
-                                args,
-                                PersistenceCategory.WinlogonIfeo,
-                                "Winlogon",
-                                $@"HKLM\...\Winlogon\{val}"));
-                        }
-                    }
-                }
+                using var key = parent.OpenSubKey(subKey);
+                return key?.GetValue(valueName)?.ToString() ?? string.Empty;
             }
-            catch { }
-
-            // IFEO (Image File Execution Options) Debugger hijack
-            try
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
             {
-                using var ifeoKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options");
-                if (ifeoKey != null)
-                {
-                    foreach (var subName in ifeoKey.GetSubKeyNames())
-                    {
-                        using var appKey = ifeoKey.OpenSubKey(subName);
-                        string debugger = appKey?.GetValue("Debugger")?.ToString() ?? string.Empty;
-                        if (!string.IsNullOrWhiteSpace(debugger))
-                        {
-                            var (exePath, args) = ParseCommandAndArgs(debugger);
-                            results.Add(CreateItem(
-                                $"IFEO Hijack: {subName}",
-                                exePath,
-                                args,
-                                PersistenceCategory.WinlogonIfeo,
-                                "IFEO Debugger",
-                                $@"HKLM\...\IFEO\{subName}\Debugger"));
-                        }
-                    }
-                }
-            }
-            catch { }
-
-            foreach (var item in results)
-            {
-                yield return item;
-            }
-
-            await Task.CompletedTask;
-        }
-
-        #endregion
-
-        #region 4. Scheduled Tasks Scanning
-
-        private async IAsyncEnumerable<PersistenceItem> ScanScheduledTasksAsync()
-        {
-            var taskList = await Task.Run(() =>
-            {
-                var list = new List<PersistenceItem>();
-                try
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "schtasks.exe",
-                        Arguments = "/Query /FO CSV /V",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        CreateNoWindow = true,
-                        StandardOutputEncoding = Encoding.UTF8
-                    };
-
-                    using var proc = Process.Start(psi);
-                    if (proc != null)
-                    {
-                        string output = proc.StandardOutput.ReadToEnd();
-                        proc.WaitForExit(10000);
-
-                        using var reader = new StringReader(output);
-                        string? line;
-                        bool headerParsed = false;
-                        int colTaskName = 0;
-                        int colTaskToRun = 8;
-                        int colStatus = 2;
-
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            if (string.IsNullOrWhiteSpace(line)) continue;
-                            var parts = ParseCsvLine(line);
-                            if (parts.Count < 9) continue;
-
-                            if (!headerParsed)
-                            {
-                                headerParsed = true;
-                                for (int i = 0; i < parts.Count; i++)
-                                {
-                                    string h = parts[i].ToLowerInvariant();
-                                    if (h.Contains("taskname") || h.Contains("görev adı")) colTaskName = i;
-                                    if (h.Contains("task to run") || h.Contains("çalıştırılacak görev")) colTaskToRun = i;
-                                    if (h.Contains("status") || h.Contains("durum")) colStatus = i;
-                                }
-                                continue;
-                            }
-
-                            string taskName = parts.Count > colTaskName ? parts[colTaskName] : string.Empty;
-                            string taskToRun = parts.Count > colTaskToRun ? parts[colTaskToRun] : string.Empty;
-                            string status = parts.Count > colStatus ? parts[colStatus] : string.Empty;
-
-                            if (string.IsNullOrWhiteSpace(taskToRun) || taskToRun.Equals("N/A", StringComparison.OrdinalIgnoreCase))
-                                continue;
-
-                            var (exePath, args) = ParseCommandAndArgs(taskToRun);
-                            if (string.IsNullOrWhiteSpace(exePath)) continue;
-
-                            var item = CreateItem(
-                                Path.GetFileName(taskName.Trim('\\')),
-                                exePath,
-                                args,
-                                PersistenceCategory.ScheduledTask,
-                                "Zamanlanmış Görev",
-                                $"Görev: {taskName}");
-
-                            item.IsEnabled = !status.Equals("Disabled", StringComparison.OrdinalIgnoreCase) &&
-                                             !status.Equals("Devre Dışı", StringComparison.OrdinalIgnoreCase);
-
-                            list.Add(item);
-                        }
-                    }
-                }
-                catch { }
-
-                return list;
-            });
-
-            foreach (var item in taskList)
-            {
-                yield return item;
+                AppLog.Debug($"Anahtar okunamadı: {subKey} — {ex.Message}", nameof(AutorunsScannerEngine));
+                return string.Empty;
             }
         }
 
-        #endregion
-
-        #region 5. Windows Services Scanning
-
-        private async IAsyncEnumerable<PersistenceItem> ScanServicesAsync()
+        /// <summary>
+        /// Görevler Görev Zamanlayıcı COM arayüzünden okunur (ANL Z7). Eskiden schtasks CSV'si yanlış
+        /// kod sayfasıyla okunuyor, başlık satırları görev sanılıyor ve "Devre Dışı" tanınmadığı için
+        /// bütün görevler etkin görünüyordu.
+        /// </summary>
+        private List<PersistenceItem> CollectScheduledTasks(ResolverEnvironment env)
         {
-            var services = await Task.Run(() =>
+            var list = new List<PersistenceItem>();
+            foreach (var task in TaskSchedulerReader.ReadAll())
             {
-                var list = new List<PersistenceItem>();
-                try
+                var actions = task.Actions ?? Array.Empty<TaskAction>();
+                int index = 0;
+                foreach (var action in actions)
                 {
-                    using var rootKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
-                    if (rootKey != null)
-                    {
-                        foreach (var serviceName in rootKey.GetSubKeyNames())
-                        {
-                            try
-                            {
-                                using var sKey = rootKey.OpenSubKey(serviceName);
-                                if (sKey == null) continue;
-
-                                int startType = (int)(sKey.GetValue("Start") ?? 3);
-                                // Only Automatic (2) or Boot (0) or System (1)
-                                if (startType > 2) continue;
-
-                                string rawImagePath = sKey.GetValue("ImagePath")?.ToString() ?? string.Empty;
-                                if (string.IsNullOrWhiteSpace(rawImagePath)) continue;
-
-                                string displayName = sKey.GetValue("DisplayName")?.ToString() ?? serviceName;
-
-                                rawImagePath = Environment.ExpandEnvironmentVariables(rawImagePath);
-                                var (exePath, args) = ParseCommandAndArgs(rawImagePath);
-
-                                var item = CreateItem(
-                                    displayName,
-                                    exePath,
-                                    args,
-                                    PersistenceCategory.WindowsService,
-                                    "Windows Hizmeti",
-                                    $"Hizmet: {serviceName} (Otomatik)");
-
-                                item.IsEnabled = startType <= 2;
-                                list.Add(item);
-                            }
-                            catch { }
-                        }
-                    }
+                    index++;
+                    string path = action.Path.Trim();
+                    string raw = path.StartsWith('"') || !path.Contains(' ') ? path : $"\"{path}\"";
+                    if (action.Arguments.Length > 0) raw += " " + action.Arguments;
+                    list.Add(TaskItem(task, actions.Count > 1 ? $"{task.Name} ({index})" : task.Name, raw, env));
                 }
-                catch { }
-
-                return list;
-            });
-
-            foreach (var item in services)
-            {
-                yield return item;
+                foreach (string clsid in task.ComHandlers ?? Array.Empty<string>())
+                {
+                    string? dll = ReadComServer(clsid);
+                    var item = TaskItem(task, task.Name, dll ?? string.Empty, env);
+                    item.HostName ??= "taskhostw";
+                    if (dll == null)
+                    {
+                        // Paketlenmiş (Mağaza) COM sunucuları klasik CLSID kaydında yer almaz: yetim değil, çözümlenemedi.
+                        item.RawCommand = $"COM işleyicisi {clsid}";
+                        item.InlineScript = item.RawCommand;
+                    }
+                    list.Add(item);
+                }
             }
+            return list;
         }
 
-        #endregion
-
-        #region 6. WMI Event Consumers Scanning
-
-        private async IAsyncEnumerable<PersistenceItem> ScanWmiConsumersAsync()
+        private PersistenceItem TaskItem(ScheduledTaskInfo task, string name, string raw, ResolverEnvironment env)
         {
-            var wmiItems = await Task.Run(() =>
+            var item = CreateItem(name, raw, PersistenceCategory.ScheduledTask,
+                task.Hidden ? "Zamanlanmış Görev (gizli)" : "Zamanlanmış Görev", $"Görev: {task.Path}", env);
+            item.TaskPath = task.Path;
+            item.IsEnabled = task.Enabled;
+            return item;
+        }
+
+        private List<PersistenceItem> CollectServicesAndDrivers(ResolverEnvironment env)
+        {
+            var list = new List<PersistenceItem>();
+            var disabledByBakim = _disabledServices.Load();
+            using var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            using var root = hklm.OpenSubKey(@"SYSTEM\CurrentControlSet\Services");
+            if (root == null) return list;
+
+            foreach (var serviceName in root.GetSubKeyNames())
             {
-                var list = new List<PersistenceItem>();
                 try
                 {
-                    var scope = new ManagementScope(@"\\.\root\subscription");
-                    scope.Connect();
+                    using var key = root.OpenSubKey(serviceName);
+                    if (key == null) continue;
+                    int start = key.GetValue("Start") is int s ? s : 3;
+                    int type = key.GetValue("Type") is int t ? t : 0;
+                    bool bakimDisabled = start == 4 && disabledByBakim.ContainsKey(serviceName);
+                    if (start > 2 && !bakimDisabled) continue;
 
-                    // CommandLineEventConsumer
-                    using var searcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT * FROM CommandLineEventConsumer"));
-                    foreach (ManagementObject obj in searcher.Get())
+                    string imagePath = key.GetValue("ImagePath", string.Empty, RegistryValueOptions.DoNotExpandEnvironmentNames)?.ToString() ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(imagePath)) continue;
+
+                    bool driver = AutorunActionPolicy.IsDriverType(type);
+                    string displayName = LoadIndirectString(key.GetValue("DisplayName")?.ToString()) ?? serviceName;
+                    string startText = start switch { 0 => "Açılış", 1 => "Sistem", 2 => "Otomatik", 4 => "Devre dışı", _ => "El ile" };
+
+                    var item = CreateItem(displayName, imagePath,
+                        driver ? PersistenceCategory.Driver : PersistenceCategory.WindowsService,
+                        driver ? "Sürücü" : "Windows Hizmeti",
+                        $"{(driver ? "Sürücü" : "Hizmet")}: {serviceName} ({startText})", env);
+
+                    // svchost ile barınan hizmetin asıl yükü ServiceDll'dir (AN-07).
+                    string? serviceDll = ReadServiceDll(key);
+                    if (!string.IsNullOrWhiteSpace(serviceDll))
                     {
-                        string name = obj["Name"]?.ToString() ?? "WMI Consumer";
-                        string cmd = obj["CommandLineTemplate"]?.ToString() ?? string.Empty;
-                        var (exePath, args) = ParseCommandAndArgs(cmd);
+                        string raw = CommandLineResolver.NormalizeLeadingPath(Environment.ExpandEnvironmentVariables(serviceDll), env.WindowsDirectory);
+                        string? located = CommandLineResolver.Locate(raw, env);
+                        item.HostName = "svchost";
+                        item.FilePath = located ?? raw;
+                        item.Resolution = located != null ? TargetResolution.Resolved : TargetResolution.NotFound;
+                    }
 
-                        var item = CreateItem(
-                            $"WMI: {name}",
-                            exePath,
-                            args,
-                            PersistenceCategory.WmiEventConsumer,
-                            "WMI Kalıcılığı",
-                            "root\\subscription\\CommandLineEventConsumer");
+                    item.ServiceName = serviceName;
+                    item.ServiceStart = start;
+                    item.ServiceType = type;
+                    item.DisabledByBakim = bakimDisabled;
+                    item.IsEnabled = start <= 2;
+                    list.Add(item);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+                {
+                    AppLog.Debug($"Hizmet okunamadı: {serviceName} — {ex.Message}", nameof(AutorunsScannerEngine));
+                }
+            }
+            return list;
+        }
 
+        private static string? ReadServiceDll(RegistryKey serviceKey)
+        {
+            using var parameters = serviceKey.OpenSubKey("Parameters");
+            return parameters?.GetValue("ServiceDll", null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string
+                   ?? serviceKey.GetValue("ServiceDll", null, RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+        }
+
+        /// <summary>WMI kalıcılığı: komut satırı ve betik tüketicileri (ActiveScript en yaygın zararlı biçimi).</summary>
+        private List<PersistenceItem> CollectWmiConsumers(ResolverEnvironment env)
+        {
+            var list = new List<PersistenceItem>();
+            var scope = new ManagementScope(@"\\.\root\subscription");
+            scope.Connect();
+
+            using (var searcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT * FROM CommandLineEventConsumer")))
+            {
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    using (obj)
+                    {
+                        string name = obj["Name"]?.ToString() ?? "WMI tüketicisi";
+                        string cmd = obj["CommandLineTemplate"]?.ToString() ?? obj["ExecutablePath"]?.ToString() ?? string.Empty;
+                        list.Add(CreateItem($"WMI: {name}", cmd, PersistenceCategory.WmiEventConsumer, "WMI Kalıcılığı", @"root\subscription\CommandLineEventConsumer", env));
+                    }
+                }
+            }
+
+            using (var searcher = new ManagementObjectSearcher(scope, new ObjectQuery("SELECT * FROM ActiveScriptEventConsumer")))
+            {
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    using (obj)
+                    {
+                        string name = obj["Name"]?.ToString() ?? "WMI betiği";
+                        string file = obj["ScriptFileName"]?.ToString() ?? string.Empty;
+                        string text = obj["ScriptText"]?.ToString() ?? string.Empty;
+                        string engine = obj["ScriptingEngine"]?.ToString() ?? "Betik";
+                        var item = CreateItem($"WMI: {name}", file, PersistenceCategory.WmiEventConsumer, $"WMI Betiği ({engine})", @"root\subscription\ActiveScriptEventConsumer", env);
+                        if (text.Length > 0)
+                        {
+                            item.InlineScript = text;
+                            item.RawCommand = $"{engine}: {text[..Math.Min(200, text.Length)]}";
+                            if (file.Length == 0) item.Resolution = TargetResolution.Resolved;
+                        }
                         list.Add(item);
                     }
                 }
-                catch { }
-
-                return list;
-            });
-
-            foreach (var item in wmiItems)
-            {
-                yield return item;
             }
+            return list;
         }
 
-        #endregion
-
-        #region 7. Shell Context Menu Extensions Scanning
-
-        private async IAsyncEnumerable<PersistenceItem> ScanShellExtensionsAsync()
+        private List<PersistenceItem> CollectShellExtensions(ResolverEnvironment env)
         {
-            var paths = new[]
-            {
-                @"*\shellex\ContextMenuHandlers",
-                @"Directory\shellex\ContextMenuHandlers",
-                @"Folder\shellex\ContextMenuHandlers"
-            };
-
-            foreach (var p in paths)
+            var list = new List<PersistenceItem>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var p in new[] { @"*\shellex\ContextMenuHandlers", @"Directory\shellex\ContextMenuHandlers", @"Folder\shellex\ContextMenuHandlers" })
             {
                 using var key = Registry.ClassesRoot.OpenSubKey(p);
                 if (key == null) continue;
@@ -574,42 +436,164 @@ namespace Bakım.Services
                     using var hKey = key.OpenSubKey(handlerName);
                     string clsid = hKey?.GetValue(null)?.ToString() ?? string.Empty;
                     if (string.IsNullOrWhiteSpace(clsid)) clsid = handlerName;
+                    if (!clsid.StartsWith('{')) continue;
+                    // Aynı işleyici *, Directory ve Folder altında tekrar kayıtlıdır (AN-24).
+                    if (!seen.Add(clsid)) continue;
 
-                    if (!clsid.StartsWith("{")) continue;
-
-                    using var clsidKey = Registry.ClassesRoot.OpenSubKey($@"CLSID\{clsid}\InprocServer32");
-                    string dllPath = clsidKey?.GetValue(null)?.ToString() ?? string.Empty;
-                    if (string.IsNullOrWhiteSpace(dllPath)) continue;
-
-                    dllPath = Environment.ExpandEnvironmentVariables(dllPath);
-
-                    yield return CreateItem(
-                        handlerName,
-                        dllPath,
-                        string.Empty,
-                        PersistenceCategory.ShellExtension,
-                        "Explorer Eklentisi",
-                        $@"HKCR\{p}\{handlerName}");
+                    string? dll = ReadComServer(clsid);
+                    if (string.IsNullOrWhiteSpace(dll)) continue;
+                    list.Add(CreateItem(handlerName, dll.Contains(' ') && !dll.StartsWith('"') ? $"\"{dll}\"" : dll,
+                        PersistenceCategory.ShellExtension, "Gezgin Eklentisi", $@"HKCR\{p}\{handlerName}", env));
                 }
             }
+            return list;
+        }
 
-            await Task.CompletedTask;
+        private static string? ReadComServer(string clsid)
+        {
+            using var key = Registry.ClassesRoot.OpenSubKey($@"CLSID\{clsid}\InprocServer32") ?? Registry.ClassesRoot.OpenSubKey($@"CLSID\{clsid}\LocalServer32");
+            return key?.GetValue(null)?.ToString();
         }
 
         #endregion
 
-        #region Toggle & Delete Operations
+        #region Zenginleştirme (önbellekli)
+
+        private sealed record FileFacts(SignatureStatus Status, string Signer, string Sha256, ImageSource? Icon, DateTime? CreatedUtc);
+
+        /// <summary>(yol, boyut, değişim zamanı) → dosya bilgisi. Yeniden taramalarda imza ve hash tekrar hesaplanmaz.</summary>
+        private static readonly ConcurrentDictionary<(string Path, long Size, long Ticks), FileFacts> FactsCache = new();
+
+        private void Enrich(PersistenceItem item)
+        {
+            string path = item.FilePath;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                item.HasValidFile = false;
+                item.Publisher = item.InlineScript != null ? "Satır içi betik" : "Komut boş";
+                return;
+            }
+
+            FileInfo info;
+            try
+            {
+                info = new FileInfo(path);
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException or UnauthorizedAccessException)
+            {
+                info = null!;
+                AppLog.Debug($"Geçersiz yol: {path} — {ex.Message}", nameof(AutorunsScannerEngine));
+            }
+
+            if (info == null || !info.Exists)
+            {
+                item.HasValidFile = false;
+                item.Resolution = TargetResolution.NotFound;
+                item.Signature = SignatureStatus.Unsigned;
+                item.Publisher = "Dosya bulunamadı (yetim kayıt)";
+                return;
+            }
+
+            item.HasValidFile = true;
+            var key = (path.ToLowerInvariant(), info.Length, info.LastWriteTimeUtc.Ticks);
+            var facts = FactsCache.GetOrAdd(key, _ => ReadFacts(path, info));
+            if (FactsCache.Count > 4096) FactsCache.Clear();
+
+            item.Signature = facts.Status;
+            item.SignatureSignerName = facts.Signer;
+            item.Publisher = facts.Status switch
+            {
+                SignatureStatus.Verified => facts.Signer.Length > 0 ? facts.Signer : "İmzalı",
+                SignatureStatus.InvalidOrTampered => facts.Signer.Length > 0 ? $"{facts.Signer} (geçersiz imza)" : "Geçersiz imza",
+                _ => "İmzasız"
+            };
+            // Gizleme yalnızca DOĞRULANMIŞ Microsoft imzasına dayanır (ANL Z2): eskiden yol C:\Windows
+            // altındaysa ya da (geçersiz) sertifika adında "Microsoft" geçiyorsa gizleniyordu.
+            item.IsMicrosoft = facts.Status == SignatureStatus.Verified && IsMicrosoftSigner(facts.Signer);
+            item.Sha256Hash = facts.Sha256;
+            item.IconSource = facts.Icon;
+            item.FileCreatedUtc = facts.CreatedUtc;
+        }
+
+        public static bool IsMicrosoftSigner(string? signer) =>
+            !string.IsNullOrWhiteSpace(signer) && signer.StartsWith("Microsoft ", StringComparison.OrdinalIgnoreCase);
+
+        private FileFacts ReadFacts(string path, FileInfo info)
+        {
+            var signature = SignatureInspector.Inspect(path);
+            string hash = info.Length <= MaxEagerHashBytes ? _virusTotalService.ComputeSha256(path) : string.Empty;
+            DateTime? created = null;
+            try
+            {
+                created = info.CreationTimeUtc;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                AppLog.Debug($"Oluşturma zamanı okunamadı: {path}", nameof(AutorunsScannerEngine));
+            }
+            return new FileFacts(signature.Status, signature.Signer ?? string.Empty, hash, ExtractFileIcon(path), created);
+        }
+
+        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, int cchOutBuf, IntPtr ppvReserved);
+
+        /// <summary>"@%systemroot%\system32\spoolsv.exe,-1" gibi kaynak dizelerini okunur ada çevirir.</summary>
+        private static string? LoadIndirectString(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || !value.StartsWith('@')) return value;
+            var sb = new StringBuilder(512);
+            return SHLoadIndirectString(value, sb, sb.Capacity, IntPtr.Zero) == 0 && sb.Length > 0 ? sb.ToString() : value;
+        }
+
+        [DllImport("gdi32.dll")]
+        private static extern bool DeleteObject(IntPtr hObject);
+
+        private static ImageSource? ExtractFileIcon(string filePath)
+        {
+            try
+            {
+                using var ico = Icon.ExtractAssociatedIcon(filePath);
+                if (ico == null) return null;
+                using var bmp = ico.ToBitmap();
+                var hBmp = bmp.GetHbitmap();
+                try
+                {
+                    var wpfBmp = Imaging.CreateBitmapSourceFromHBitmap(hBmp, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    wpfBmp.Freeze();
+                    return wpfBmp;
+                }
+                finally
+                {
+                    DeleteObject(hBmp);
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException or IOException or ExternalException or UnauthorizedAccessException)
+            {
+                AppLog.Debug($"Simge okunamadı: {filePath}", nameof(AutorunsScannerEngine));
+                return null;
+            }
+        }
+
+        private static string? ResolveShortcutTarget(string shortcutPath) => ShellLink.ResolveTarget(shortcutPath);
+
+        #endregion
+
+        #region Eylemler
 
         /// <summary>
-        /// Girdiyi Görev Yöneticisi ile aynı yöntemle etkinleştirir/devre dışı bırakır.
-        ///
-        /// Eski hatalar: Run değerini "Bakim_Disabled_X" diye yeniden adlandırmak etkisizdi (Windows her
-        /// değeri çalıştırır); başlangıç klasörü girdisinde kısayol yerine kısayolun HEDEFİ olan program
-        /// exe'si yeniden adlandırılıyordu (program bozuluyordu); WOW6432Node ve politika anahtarlarının
-        /// yolu yanlış çözülüyordu.
+        /// Girdiyi Görev Yöneticisi ile aynı yöntemle etkinleştirir/devre dışı bırakır. Her eylem önce
+        /// <see cref="AutorunActionPolicy"/>'den geçer: sürücüler, açılış/sistem hizmetleri, kritik
+        /// hizmetler ve Windows görevleri hiçbir koşulda değiştirilmez (ANL Z1).
         /// </summary>
         public async Task<bool> ToggleItemAsync(PersistenceItem item, bool enable)
         {
+            var decision = AutorunActionPolicy.CanToggle(item.Facts);
+            if (!decision.Allowed)
+            {
+                AppLog.Warning($"Kalıcılık eylemi politika gereği reddedildi: {item.Name} — {decision.Reason}", null, nameof(AutorunsScannerEngine));
+                return false;
+            }
+
             try
             {
                 switch (item.Category)
@@ -622,28 +606,67 @@ namespace Bakım.Services
 
                     case PersistenceCategory.ScheduledTask:
                     {
-                        string taskName = item.LocationSource.Replace("Görev: ", "").Trim();
                         var result = await ElevatedPowerShell.RunAsync(
-                            $"schtasks.exe /Change /TN {ElevatedPowerShell.Quote(taskName)} {(enable ? "/Enable" : "/Disable")}; exit $LASTEXITCODE",
+                            $"schtasks.exe /Change /TN {ElevatedPowerShell.Quote(item.TaskPath!)} {(enable ? "/Enable" : "/Disable")}; exit $LASTEXITCODE",
                             TimeSpan.FromSeconds(30));
                         return result.Succeeded;
                     }
 
                     case PersistenceCategory.WindowsService:
-                    {
-                        string serviceName = item.LocationSource.Replace("Hizmet: ", "").Split(' ')[0];
-                        var result = await ElevatedPowerShell.RunAsync(
-                            $"Set-Service -Name {ElevatedPowerShell.Quote(serviceName)} -StartupType {(enable ? "Automatic" : "Disabled")}",
-                            TimeSpan.FromSeconds(30));
-                        return result.Succeeded;
-                    }
+                        return await ToggleServiceAsync(item, enable);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException or InvalidOperationException or ArgumentException)
             {
                 AppLog.Warning($"Kalıcılık girdisi değiştirilemedi: {item.Name}", ex, nameof(AutorunsScannerEngine));
             }
             return false;
+        }
+
+        /// <summary>
+        /// Hizmeti kapatırken özgün başlangıç türü (Start + DelayedAutostart) saklanır; açarken geri
+        /// yüklenir. Eskiden açma her zaman "Automatic" yazıyordu.
+        /// </summary>
+        private async Task<bool> ToggleServiceAsync(PersistenceItem item, bool enable)
+        {
+            string name = item.ServiceName!;
+            string mode;
+            if (enable)
+            {
+                var saved = _disabledServices.Load().GetValueOrDefault(name);
+                var (start, delayed) = AutorunActionPolicy.RestoreStartType(saved?.Start, saved?.Delayed ?? false);
+                mode = start == 3 ? "demand" : delayed ? "delayed-auto" : "auto";
+            }
+            else
+            {
+                using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{name}");
+                int start = key?.GetValue("Start") is int s ? s : 2;
+                bool delayed = key?.GetValue("DelayedAutostart") is int d && d == 1;
+                _disabledServices.Save(name, new DisabledServiceStore.Entry(start, delayed, DateTime.UtcNow));
+                mode = "disabled";
+            }
+
+            var result = await ElevatedPowerShell.RunAsync(
+                $"& sc.exe config {ElevatedPowerShell.Quote(name)} start= {mode} | Out-Null; exit $LASTEXITCODE",
+                TimeSpan.FromSeconds(30));
+            if (!result.Succeeded)
+            {
+                if (!enable) _disabledServices.Remove(name);
+                return false;
+            }
+
+            if (enable)
+            {
+                _disabledServices.Remove(name);
+                item.ServiceStart = mode == "demand" ? 3 : 2;
+                item.DisabledByBakim = false;
+            }
+            else
+            {
+                item.ServiceStart = 4;
+                item.DisabledByBakim = true;
+            }
+            return true;
         }
 
         private static bool ToggleRegistryItem(PersistenceItem item, bool enable)
@@ -653,7 +676,7 @@ namespace Bakım.Services
             string subKey = item.RegistryKeyPath[5..];
 
             // RunOnce ve politika anahtarları StartupApproved'u dikkate almaz: devre dışı bırakılamaz, silinebilir.
-            if (!IsApprovableRunKey(subKey)) return false;
+            if (!AutorunActionPolicy.IsApprovableRunKey(subKey)) return false;
 
             string valueName = item.RegistryValueName;
 
@@ -711,11 +734,18 @@ namespace Bakım.Services
 
         /// <summary>
         /// Girdiyi kaldırır. Kayıt defteri değeri silinmeden önce yedeklenir (geri yüklenebilir);
-        /// başlangıç klasörü kısayolu Geri Dönüşüm Kutusu'na gider. Eskiden klasör girdisinde kısayolun
-        /// hedefi olan PROGRAM exe'si kalıcı olarak siliniyordu.
+        /// başlangıç klasörü kısayolu Geri Dönüşüm Kutusu'na gider. Hizmet, sürücü, WMI, Winlogon ve
+        /// Windows görevleri politika gereği silinmez.
         /// </summary>
         public async Task<bool> DeleteItemAsync(PersistenceItem item)
         {
+            var decision = AutorunActionPolicy.CanDelete(item.Facts);
+            if (!decision.Allowed)
+            {
+                AppLog.Warning($"Kalıcılık silme politika gereği reddedildi: {item.Name} — {decision.Reason}", null, nameof(AutorunsScannerEngine));
+                return false;
+            }
+
             try
             {
                 switch (item.Category)
@@ -732,16 +762,15 @@ namespace Bakım.Services
                             journal);
                         if (!result.Succeeded && result.Outcome != Safety.DeleteOutcome.NotFound) return false;
 
-                        if (IsApprovableRunKey(subKey))
+                        if (AutorunActionPolicy.IsApprovableRunKey(subKey))
                             VerifiedRegistry.DeleteValue(hklm ? Registry.LocalMachine : Registry.CurrentUser, StartupApprovedPaths.ForRunKey(subKey), item.RegistryValueName);
                         return true;
                     }
 
                     case PersistenceCategory.ScheduledTask:
                     {
-                        string taskName = item.LocationSource.Replace("Görev: ", "").Trim();
                         var result = await ElevatedPowerShell.RunAsync(
-                            $"schtasks.exe /Delete /TN {ElevatedPowerShell.Quote(taskName)} /F; exit $LASTEXITCODE",
+                            $"schtasks.exe /Delete /TN {ElevatedPowerShell.Quote(item.TaskPath!)} /F; exit $LASTEXITCODE",
                             TimeSpan.FromSeconds(30));
                         return result.Succeeded;
                     }
@@ -759,7 +788,7 @@ namespace Bakım.Services
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException or InvalidOperationException or ArgumentException)
             {
                 AppLog.Warning($"Kalıcılık girdisi silinemedi: {item.Name}", ex, nameof(AutorunsScannerEngine));
             }
@@ -767,195 +796,57 @@ namespace Bakım.Services
         }
 
         #endregion
+    }
 
-        #region Helper Methods & Item Factory
+    /// <summary>
+    /// Bakım'ın kapattığı hizmetlerin özgün başlangıç türü. Hizmet yeniden açılırken buradan geri
+    /// yüklenir; kayıt yoksa "Otomatik". %LocalAppData%\Bakim\History\Analyzer\disabled-services.json
+    /// </summary>
+    internal sealed class DisabledServiceStore
+    {
+        public sealed record Entry(int Start, bool Delayed, DateTime DisabledAtUtc);
 
-        private PersistenceItem CreateItem(
-            string name,
-            string filePath,
-            string args,
-            PersistenceCategory category,
-            string categoryDisplay,
-            string source)
+        private static readonly object Gate = new();
+        private readonly string _path = Path.Combine(Core.History.AnalysisHistoryStore.DefaultDirectory(), "disabled-services.json");
+
+        public Dictionary<string, Entry> Load()
         {
-            var item = new PersistenceItem
-            {
-                Name = string.IsNullOrWhiteSpace(name) ? Path.GetFileNameWithoutExtension(filePath) : name,
-                FilePath = filePath,
-                Arguments = args,
-                Category = category,
-                CategoryDisplayName = categoryDisplay,
-                LocationSource = source
-            };
-
-            // 1. Digital Signature Analysis (WinVerifyTrust)
-            if (File.Exists(filePath))
+            lock (Gate)
             {
                 try
                 {
-                    var (sigStatus, signer) = VerifyFileSignature(filePath);
-                    item.Signature = sigStatus;
-                    item.SignatureSignerName = signer;
-                    item.Publisher = !string.IsNullOrWhiteSpace(signer) ? signer : "Bilinmeyen / İmzasız";
-
-                    bool isMs = item.Publisher.Contains("Microsoft", StringComparison.OrdinalIgnoreCase) ||
-                                filePath.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.Windows), StringComparison.OrdinalIgnoreCase);
-                    item.IsMicrosoft = isMs;
-
-                    // Compute SHA-256
-                    item.Sha256Hash = _virusTotalService.ComputeSha256(filePath);
-
-                    // Extract Icon
-                    item.IconSource = ExtractFileIcon(filePath);
+                    if (!File.Exists(_path)) return new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
+                    var map = JsonSerializer.Deserialize<Dictionary<string, Entry>>(File.ReadAllText(_path));
+                    return new Dictionary<string, Entry>(map ?? new(), StringComparer.OrdinalIgnoreCase);
                 }
-                catch { }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    AppLog.Warning("Kapatılan hizmet listesi okunamadı.", ex, nameof(DisabledServiceStore));
+                    return new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
+                }
             }
-            else
-            {
-                item.Publisher = "Dosya Bulunamadı (Yetim Kayıt)";
-                item.Signature = SignatureStatus.Unsigned;
-            }
-
-            return item;
         }
 
-        private static (SignatureStatus Status, string Signer) VerifyFileSignature(string filePath)
+        public void Save(string serviceName, Entry entry) => Mutate(map => map[serviceName] = entry);
+
+        public void Remove(string serviceName) => Mutate(map => map.Remove(serviceName));
+
+        private void Mutate(Action<Dictionary<string, Entry>> change)
         {
-            try
+            lock (Gate)
             {
-                using var fileInfo = new WINTRUST_FILE_INFO(filePath);
-                using var trustData = new WINTRUST_DATA(fileInfo);
-
-                uint result = WinVerifyTrust(IntPtr.Zero, WINTRUST_ACTION_GENERIC_VERIFY_V2, trustData);
-
-                string signer = string.Empty;
+                var map = Load();
+                change(map);
                 try
                 {
-#pragma warning disable SYSLIB0057
-                    var cert = X509Certificate.CreateFromSignedFile(filePath);
-#pragma warning restore SYSLIB0057
-                    if (cert != null)
-                    {
-                        string subject = cert.Subject;
-                        int cnIdx = subject.IndexOf("CN=", StringComparison.OrdinalIgnoreCase);
-                        if (cnIdx >= 0)
-                        {
-                            int commaIdx = subject.IndexOf(',', cnIdx);
-                            signer = commaIdx > 0 ? subject.Substring(cnIdx + 3, commaIdx - (cnIdx + 3)) : subject.Substring(cnIdx + 3);
-                        }
-                        else
-                        {
-                            signer = subject;
-                        }
-                    }
+                    Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+                    File.WriteAllText(_path, JsonSerializer.Serialize(map, new JsonSerializerOptions { WriteIndented = true }));
                 }
-                catch { }
-
-                if (result == 0) // ERROR_SUCCESS
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    return (SignatureStatus.Verified, signer);
+                    AppLog.Warning("Kapatılan hizmet listesi yazılamadı.", ex, nameof(DisabledServiceStore));
                 }
-                else if (result == 0x800B0100) // TRUST_E_NOSIGNATURE
-                {
-                    return (SignatureStatus.Unsigned, string.Empty);
-                }
-                else
-                {
-                    return (SignatureStatus.InvalidOrTampered, !string.IsNullOrWhiteSpace(signer) ? $"{signer} (Geçersiz)" : "Bozulmuş İmza");
-                }
-            }
-            catch
-            {
-                return (SignatureStatus.Unsigned, string.Empty);
             }
         }
-
-        private static ImageSource? ExtractFileIcon(string filePath)
-        {
-            try
-            {
-                using var ico = Icon.ExtractAssociatedIcon(filePath);
-                if (ico != null)
-                {
-                    using var bmp = ico.ToBitmap();
-                    var hBmp = bmp.GetHbitmap();
-                    try
-                    {
-                        var wpfBmp = Imaging.CreateBitmapSourceFromHBitmap(
-                            hBmp,
-                            IntPtr.Zero,
-                            Int32Rect.Empty,
-                            BitmapSizeOptions.FromEmptyOptions());
-                        wpfBmp.Freeze();
-                        return wpfBmp;
-                    }
-                    finally
-                    {
-                        DeleteObject(hBmp);
-                    }
-                }
-            }
-            catch { }
-
-            return null;
-        }
-
-        private static (string FilePath, string Arguments) ParseCommandAndArgs(string rawCmd)
-        {
-            if (string.IsNullOrWhiteSpace(rawCmd)) return (string.Empty, string.Empty);
-            string trimmed = rawCmd.Trim();
-
-            if (trimmed.StartsWith("\""))
-            {
-                int endQuote = trimmed.IndexOf('"', 1);
-                if (endQuote > 0)
-                {
-                    string path = trimmed.Substring(1, endQuote - 1).Trim();
-                    string args = trimmed.Substring(endQuote + 1).Trim();
-                    return (path, args);
-                }
-            }
-
-            int spaceIdx = trimmed.IndexOf(' ');
-            if (spaceIdx > 0)
-            {
-                string path = trimmed.Substring(0, spaceIdx).Trim();
-                string args = trimmed.Substring(spaceIdx + 1).Trim();
-                return (path, args);
-            }
-
-            return (trimmed, string.Empty);
-        }
-
-        private static List<string> ParseCsvLine(string line)
-        {
-            var result = new List<string>();
-            bool inQuotes = false;
-            var sb = new StringBuilder();
-
-            for (int i = 0; i < line.Length; i++)
-            {
-                char c = line[i];
-                if (c == '"')
-                {
-                    inQuotes = !inQuotes;
-                }
-                else if (c == ',' && !inQuotes)
-                {
-                    result.Add(sb.ToString().Trim());
-                    sb.Clear();
-                }
-                else
-                {
-                    sb.Append(c);
-                }
-            }
-            result.Add(sb.ToString().Trim());
-            return result;
-        }
-
-        private static string? ResolveShortcutTarget(string shortcutPath) => Bakım.Helpers.ShellLink.ResolveTarget(shortcutPath);
-
-        #endregion
     }
 }

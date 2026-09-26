@@ -520,6 +520,16 @@ namespace Bakım.ViewModels
             var (older, newer) = OlderSnapshot.Header.TakenAtUtc <= NewerSnapshot.Header.TakenAtUtc
                 ? (OlderSnapshot.Header, NewerSnapshot.Header)
                 : (NewerSnapshot.Header, OlderSnapshot.Header);
+
+            if (older.ParserVersion != newer.ParserVersion)
+            {
+                AddedCount = ChangedCount = RemovedCount = 0;
+                HasDiff = false;
+                DiffSummary = "Tarama motoru bu iki tarama arasında güncellendi; yol ve kayıt biçimi değiştiği için karşılaştırılmadı. " +
+                              "Değişiklikler bir sonraki taramadan itibaren gösterilir.";
+                return;
+            }
+
             var diff = _history.Diff(older.Id, newer.Id);
             foreach (var d in diff) DiffRows.Add(new DiffRow(d));
 

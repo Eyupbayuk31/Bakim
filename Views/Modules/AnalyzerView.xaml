@@ -187,6 +187,14 @@
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Shell"
                                Appearance="{Binding IsShellCategory, Converter={StaticResource BoolToNavAppearance}}"
                                Padding="12,6" Margin="0,0,6,4" Content="Shell eklentileri" Icon="{ui:SymbolIcon Desktop20}"/>
+                    <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Drivers"
+                               Appearance="{Binding IsDriversCategory, Converter={StaticResource BoolToNavAppearance}}"
+                               Padding="12,6" Margin="0,0,6,4" Content="Sürücüler" Icon="{ui:SymbolIcon Wrench20}"
+                               ToolTip="Çekirdek ve dosya sistemi sürücüleri. Yalnızca incelenir; buradan kapatılamaz."/>
+                    <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Files"
+                               Appearance="{Binding IsFilesCategory, Converter={StaticResource BoolToNavAppearance}}"
+                               Padding="12,6" Margin="0,0,6,4" Content="İncelenen dosyalar" Icon="{ui:SymbolIcon DocumentSearch20}"
+                               ToolTip="Kurulum Nöbetçisi'nden ya da elle incelemeye gönderilen dosyalar (başlangıç kaydı değil)."/>
                 </WrapPanel>
 
                 <!-- Row 2: Search Box & Sysinternals Filter Toggles -->
@@ -209,8 +217,9 @@
                     <!-- Filter Switches (Sysinternals Hide Microsoft) -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
-                            <TextBlock Text="Microsoft girdilerini gizle" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <ui:ToggleSwitch IsChecked="{Binding HideMicrosoftEntries, Mode=TwoWay}" AutomationProperties.Name="Microsoft imzalı girdileri gizle" VerticalAlignment="Center"/>
+                            <TextBlock Text="Doğrulanmış Microsoft girdilerini gizle" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"
+                                       ToolTip="Yalnızca imzası Windows tarafından doğrulanan Microsoft dosyaları gizlenir. Geçersiz imzalı ya da imzasız dosyalar Windows klasöründe olsa bile her zaman görünür."/>
+                            <ui:ToggleSwitch IsChecked="{Binding HideMicrosoftEntries, Mode=TwoWay}" AutomationProperties.Name="İmzası doğrulanmış Microsoft girdilerini gizle" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -228,7 +237,7 @@
             <!-- Boş durum: filtre hiçbir şey döndürmediğinde kullanıcıyı yalnız bırakma -->
             <c:EmptyState Icon="Search24"
                           Title="Bu filtrelerle eşleşen kalıcılık girdisi yok"
-                          Description="Arama metnini temizlemeyi, kategori filtresini &quot;Tümü&quot; yapmayı veya &quot;Microsoft girdilerini gizle&quot; anahtarını kapatmayı deneyin."
+                          Description="Arama metnini temizlemeyi, kategori filtresini &quot;Tümü&quot; yapmayı veya &quot;Doğrulanmış Microsoft girdilerini gizle&quot; anahtarını kapatmayı deneyin."
                           Visibility="{Binding HasNoResults, Converter={StaticResource BoolToVis}}"/>
 
         <Border Visibility="{Binding HasNoResults, Converter={StaticResource InverseBoolToVis}}"
@@ -305,14 +314,22 @@
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="ActionCol"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Column 0: Safe Enable/Disable ToggleSwitch -->
-                                <ui:ToggleSwitch Grid.Column="0" 
-                                                 IsChecked="{Binding IsEnabled, Mode=TwoWay}"
-                                                 Command="{Binding DataContext.ToggleItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                 CommandParameter="{Binding}"
-                                                 VerticalAlignment="Center"
-                                                 Margin="0,0,14,0"
-                                                 ToolTip="Başlangıçta çalışmayı aktif et / güvenli devre dışı bırak" AutomationProperties.Name="Başlangıçta çalışmayı aktif et / güvenli devre dışı bırak"/>
+                                <!-- Column 0: açma/kapama yalnızca eylem politikası izin veriyorsa (ANL Z1);
+                                     sürücü, kritik hizmet, Windows görevi, WMI ve Winlogon satırlarında kilit ve gerekçe -->
+                                <Grid Grid.Column="0" Margin="0,0,14,0" VerticalAlignment="Center">
+                                    <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                                                     Command="{Binding DataContext.ToggleItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                     CommandParameter="{Binding}"
+                                                     Visibility="{Binding CanToggle, Converter={StaticResource BoolToVis}}"
+                                                     ToolTip="Başlangıçta çalışmayı aç / kapat (geri alınabilir)" AutomationProperties.Name="Başlangıçta çalışmayı aç veya kapat"/>
+                                    <ui:SymbolIcon Symbol="LockClosed20"
+                                                   FontSize="16"
+                                                   Width="40"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                                   Visibility="{Binding CanToggle, Converter={StaticResource InverseBoolToVis}}"
+                                                   ToolTip="{Binding ToggleLockReason}"
+                                                   AutomationProperties.Name="{Binding ToggleLockReason}"/>
+                                </Grid>
 
                                 <!-- Column 1: Application Icon -->
                                 <Border Grid.Column="1" 
@@ -350,9 +367,17 @@
                                                ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}"
                                                Margin="0,2,0,0"/>
 
-                                    <TextBlock Text="{Binding Publisher, StringFormat='Yayıncı: {0}'}" 
-                                               FontSize="{StaticResource Font.Caption}" 
-                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
+                                    <TextBlock Text="{Binding Publisher, StringFormat='Yayıncı: {0}'}"
+                                               FontSize="{StaticResource Font.Caption}"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               Margin="0,2,0,0"/>
+
+                                    <TextBlock Text="{Binding HostDisplay}"
+                                               FontSize="{StaticResource Font.Caption}"
+                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding RawCommand}"
+                                               Visibility="{Binding HasHost, Converter={StaticResource BoolToVis}}"
                                                Margin="0,2,0,0"/>
                                 </StackPanel>
 
@@ -450,7 +475,7 @@
                                     Column 6: Satır eylemleri.
 
                                     Önceki sürümde 6 etiketsiz simge yan yana duruyordu ve
-                                    ikisi kalkandı (ShieldKeyhole = AI analizi, Shield =
+                                    ikisi kalkandı (ShieldKeyhole = dosya analizi, Shield =
                                     VirusTotal sorgusu). Görsel olarak neredeyse aynı, işleri
                                     tamamen farklı — hangisine basılacağı belirsizdi.
 
@@ -505,7 +530,8 @@
                                                Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon Delete20}"
-                                               ToolTip="Bu kalıcılık girdisini kalıcı olarak sil"
+                                               Visibility="{Binding CanDelete, Converter={StaticResource BoolToVis}}"
+                                               ToolTip="Başlangıç kaydını kaldır (kayıt yedeklenir, kısayol Geri Dönüşüm Kutusu'na gider; programa dokunulmaz)"
                                                AutomationProperties.Name="{Binding Name, StringFormat='{}{0} girdisini sil'}"/>
                                 </StackPanel>
                             </Grid>

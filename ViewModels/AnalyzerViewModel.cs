@@ -17,7 +17,7 @@ using Bakım.Services;
 
 namespace Bakım.ViewModels
 {
-    public partial class AnalyzerViewModel : ObservableObject
+    public partial class AnalyzerViewModel : ObservableObject, IModuleViewModel
     {
         private readonly IAutorunsScannerEngine _scannerEngine;
         private readonly IVirusTotalCheckService _virusTotalService;
@@ -123,6 +123,12 @@ namespace Bakım.ViewModels
         public bool IsServicesCategory => SelectedCategory == "Services";
         public bool IsWmiCategory => SelectedCategory == "Wmi";
         public bool IsShellCategory => SelectedCategory == "Shell";
+        public bool IsDriversCategory => SelectedCategory == "Drivers";
+        public bool IsFilesCategory => SelectedCategory == "Files";
+
+        /// <summary>Son başarılı taramanın zamanı; sayfa açılışında eskiyse yeniden taranır (ANL Z8).</summary>
+        private DateTime _lastScanUtc = DateTime.MinValue;
+        private static readonly TimeSpan RescanAfter = TimeSpan.FromMinutes(10);
 
         #endregion
 
@@ -149,10 +155,19 @@ namespace Bakım.ViewModels
 
             _filteredView = CollectionViewSource.GetDefaultView(Items);
             _filteredView.Filter = FilterItem;
-
-            // Start initial scan
-            _ = ScanAsync();
         }
+
+        /// <summary>
+        /// Sayfa açıldı: ilk açılışta ya da liste 10 dakikadan eskiyse tarar. Eskiden tarama
+        /// kurucuda (UI iş parçacığında) başlıyor ve bir daha tazelenmiyordu (AN-12, AN-21).
+        /// </summary>
+        public Task OnActivatedAsync()
+        {
+            if (!IsScanning && DateTime.UtcNow - _lastScanUtc > RescanAfter) _ = ScanAsync();
+            return Task.CompletedTask;
+        }
+
+        public Task OnDeactivatedAsync() => Task.CompletedTask;
 
         #region Filter Logic & Reactivity
 
@@ -179,6 +194,8 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(IsServicesCategory));
             OnPropertyChanged(nameof(IsWmiCategory));
             OnPropertyChanged(nameof(IsShellCategory));
+            OnPropertyChanged(nameof(IsDriversCategory));
+            OnPropertyChanged(nameof(IsFilesCategory));
             _filteredView.Refresh();
             UpdateStats();
         }
@@ -216,6 +233,8 @@ namespace Bakım.ViewModels
                     "Services" => item.Category == PersistenceCategory.WindowsService,
                     "Wmi" => item.Category == PersistenceCategory.WmiEventConsumer,
                     "Shell" => item.Category == PersistenceCategory.ShellExtension,
+                    "Drivers" => item.Category == PersistenceCategory.Driver,
+                    "Files" => item.Category == PersistenceCategory.InspectedFile,
                     _ => true
                 };
                 if (!categoryMatch) return false;
@@ -252,32 +271,6 @@ namespace Bakım.ViewModels
             HasNoResults = visible.Count == 0 && !IsScanning;
         }
 
-        /// <summary>
-        /// Girdilerin dosya zaman damgalarını doldurur. Tarama motoruna değil
-        /// buraya konuldu: motor 36 KB'lık kritik bir dosya ve bu bilgi
-        /// yalnızca arayüzün zaman çizelgesi için gerekli.
-        /// </summary>
-        private static void PopulateTimestamps(IEnumerable<PersistenceItem> items)
-        {
-            foreach (var item in items)
-            {
-                if (item.FileCreatedUtc.HasValue) continue;
-                if (string.IsNullOrWhiteSpace(item.FilePath)) continue;
-
-                try
-                {
-                    if (File.Exists(item.FilePath))
-                    {
-                        item.FileCreatedUtc = File.GetCreationTimeUtc(item.FilePath);
-                    }
-                }
-                catch
-                {
-                    // Erişim reddi veya bozuk yol: zaman çizelgesi bu girdi için boş kalır
-                }
-            }
-        }
-
         /// <summary>Listeyi risk skoruna göre sıralar: en tehlikeli en üstte.</summary>
         private void ApplyRiskSorting()
         {
@@ -301,26 +294,33 @@ namespace Bakım.ViewModels
             if (IsScanning) return;
 
             IsScanning = true;
-            ScanStatusText = "Kalıcılık noktaları taranıyor...";
+            ScanStatusText = "Kalıcılık noktaları taranıyor…";
+            // Nöbetçi'den gelen incelenen dosyalar yeni taramada korunur.
+            var inspected = Items.Where(i => i.Category == PersistenceCategory.InspectedFile).ToList();
             Items.Clear();
 
-            var progress = new Progress<string>(status =>
-            {
-                ScanStatusText = status;
-            });
+            var progress = new Progress<string>(status => ScanStatusText = status);
 
             try
             {
-                await foreach (var item in _scannerEngine.ScanAllAsync(progress))
+                // Tüm tarama arka planda; sonuçlar 50'lik gruplar halinde eklenir (AN-12). Eskiden her
+                // girdi için ayrı Dispatcher.Invoke yapılıyor, toplayıcıların bir kısmı UI iş parçacığında koşuyordu.
+                var batch = new System.Collections.Generic.List<PersistenceItem>(50);
+                await Task.Run(async () =>
                 {
-                    Application.Current.Dispatcher.Invoke(() =>
+                    await foreach (var item in _scannerEngine.ScanAllAsync(progress))
                     {
-                        Items.Add(item);
-                    });
-                }
+                        batch.Add(item);
+                        if (batch.Count < 50) continue;
+                        var chunk = batch.ToArray();
+                        batch.Clear();
+                        await Application.Current.Dispatcher.InvokeAsync(() => { foreach (var i in chunk) Items.Add(i); });
+                    }
+                });
+                foreach (var item in batch.Concat(inspected)) Items.Add(item);
 
-                PopulateTimestamps(Items);
                 ApplyRiskSorting();
+                _lastScanUtc = DateTime.UtcNow;
 
                 int risky = Items.Count(i => i.RiskScore >= 60);
                 ScanStatusText = risky > 0
@@ -371,6 +371,13 @@ namespace Bakım.ViewModels
             if (item == null) return;
 
             bool targetState = item.IsEnabled;
+            if (!item.CanToggle)
+            {
+                // Arayüz anahtarı göstermez; yine de çağrılırsa (komut paleti, eski bağlama) durum geri alınır.
+                item.IsEnabled = !targetState;
+                ScanStatusText = item.ToggleLockReason;
+                return;
+            }
             item.IsBusy = true;
 
             try
@@ -390,11 +397,7 @@ namespace Bakım.ViewModels
                 {
                     // Revert state on failure
                     item.IsEnabled = !targetState;
-                    string reason = item.Category == PersistenceCategory.RegistryRun
-                                    && item.RegistryKeyPath != null
-                                    && !item.RegistryKeyPath.EndsWith(@"\CurrentVersion\Run", StringComparison.OrdinalIgnoreCase)
-                        ? "Bu tür girdiler (RunOnce / politika anahtarı) Windows'ta devre dışı bırakılamaz; gerekiyorsa silebilirsiniz."
-                        : "Yönetici izni gerekebilir ya da girdi artık yok (listeyi yenileyin).";
+                    string reason = "Yönetici izni verilmemiş olabilir ya da girdi artık yok (listeyi yenileyin).";
                     MessageBox.Show(
                         $"{item.Name} durumu değiştirilemedi.\n\n{reason}",
                         "Değiştirilemedi",
@@ -416,6 +419,11 @@ namespace Bakım.ViewModels
         public async Task DeleteItemAsync(PersistenceItem? item)
         {
             if (item == null) return;
+            if (!item.CanDelete)
+            {
+                ScanStatusText = item.DeleteLockReason;
+                return;
+            }
 
             var confirm = MessageBox.Show(
                 $"Başlangıç girdisi kaldırılsın mı?\n\n" +
@@ -477,8 +485,8 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            int recordStatus = item.TotalScanners; // 0 means 404 not found, > 0 means record found, -1 means unscanned
-            _virusTotalService.SmartOpenInBrowser(item.FilePath, item.Sha256Hash, recordStatus);
+            // TotalScanners: 0 = VT'de kayıt yok (yükleme sayfası), > 0 = kayıt var, -1 = sorgulanmadı.
+            _virusTotalService.SmartOpenInBrowser(item.FilePath, item.Sha256Hash, item.TotalScanners);
         }
 
         [RelayCommand]
@@ -538,17 +546,31 @@ namespace Bakım.ViewModels
             item.IsBusy = true;
             try
             {
-                var (malicious, total, msg) = await _virusTotalService.CheckHashAsync(item.Sha256Hash);
-                item.VirusTotalScore = msg;
-                item.VirusTotalPositives = malicious;
-            }
-            catch (Exception ex)
-            {
-                item.VirusTotalScore = $"Hata: {ex.Message}";
+                await CheckWithVirusTotalAsync(item);
             }
             finally
             {
                 item.IsBusy = false;
+            }
+            ApplyRiskSorting();
+            UpdateStats();
+        }
+
+        /// <summary>VT sonucunu girdiye yazar ve risk puanını tazeler (TotalScanners artık doldurulur).</summary>
+        private async Task CheckWithVirusTotalAsync(PersistenceItem item)
+        {
+            try
+            {
+                var (malicious, total, msg) = await _virusTotalService.CheckHashAsync(item.Sha256Hash);
+                item.VirusTotalScore = msg;
+                item.VirusTotalPositives = malicious;
+                item.TotalScanners = total;
+                item.VirusTotalSuspicious = _virusTotalService.LastSuspicious(item.Sha256Hash);
+                item.NotifyRiskChanged();
+            }
+            catch (Exception ex) when (ex is System.Net.Http.HttpRequestException or TaskCanceledException or InvalidOperationException)
+            {
+                item.VirusTotalScore = $"Hata: {ex.Message}";
             }
         }
 
@@ -578,31 +600,28 @@ namespace Bakım.ViewModels
 
             try
             {
+                // Hız sınırı serviste (ücretsiz anahtar dakikada 4 istek); burada yalnızca kalan süre gösterilir.
                 foreach (var item in itemsToScan)
                 {
                     scanned++;
-                    VirusTotalScanProgress = $"VT Taranıyor ({scanned}/{itemsToScan.Count}): {item.Name}";
+                    int pending = itemsToScan.Skip(scanned - 1).Count(i => !_virusTotalService.IsCached(i.Sha256Hash));
+                    var eta = _virusTotalService.EstimateWait(pending);
+                    VirusTotalScanProgress = $"VirusTotal ({scanned}/{itemsToScan.Count}): {item.Name}" +
+                                             (eta.TotalSeconds >= 5 ? $" · yaklaşık {Math.Ceiling(eta.TotalMinutes)} dk kaldı" : "");
                     item.IsBusy = true;
-
                     try
                     {
-                        var (malicious, total, msg) = await _virusTotalService.CheckHashAsync(item.Sha256Hash);
-                        item.VirusTotalScore = msg;
-                        item.VirusTotalPositives = malicious;
-                    }
-                    catch (Exception ex)
-                    {
-                        item.VirusTotalScore = $"Hata: {ex.Message}";
+                        await CheckWithVirusTotalAsync(item);
                     }
                     finally
                     {
                         item.IsBusy = false;
                     }
-
-                    await Task.Delay(400);
                 }
 
-                VirusTotalScanProgress = $"Tarama tamamlandı! ({scanned} dosya kontrol edildi)";
+                ApplyRiskSorting();
+                UpdateStats();
+                VirusTotalScanProgress = $"VirusTotal sorgusu tamamlandı ({scanned} dosya).";
                 await Task.Delay(3000);
                 VirusTotalScanProgress = string.Empty;
             }
@@ -682,11 +701,15 @@ namespace Bakım.ViewModels
                 if (sfd.ShowDialog() == true)
                 {
                     var sb = new StringBuilder();
-                    sb.AppendLine("Ad,Kategori,Konum,Dosya Yolu,Argümanlar,Yayıncı,Dijital İmza,İmzalayan,SHA256,Aktif");
+                    sb.AppendLine("Ad,Kategori,Konum,Ham komut,Dosya Yolu,Argümanlar,Sarmalayıcı,Yayıncı,Dijital İmza,SHA256,Aktif,Risk Puanı,Risk,VirusTotal");
 
+                    // Formül enjeksiyonu kaçışı (AN-16): "=", "+", "-", "@" ile başlayan alanlar metne çevrilir.
+                    static string F(string? v) => Bakım.Core.Analyzer.CsvText.Field(v);
                     foreach (var item in Items)
                     {
-                        sb.AppendLine($"\"{EscapeCsv(item.Name)}\",\"{EscapeCsv(item.CategoryDisplayName)}\",\"{EscapeCsv(item.LocationSource)}\",\"{EscapeCsv(item.FilePath)}\",\"{EscapeCsv(item.Arguments)}\",\"{EscapeCsv(item.Publisher)}\",\"{item.Signature}\",\"{EscapeCsv(item.SignatureSignerName)}\",\"{item.Sha256Hash}\",\"{item.IsEnabled}\"");
+                        sb.AppendLine(string.Join(",", F(item.Name), F(item.CategoryDisplayName), F(item.LocationSource), F(item.RawCommand),
+                            F(item.FilePath), F(item.Arguments), F(item.HostName), F(item.Publisher), F(item.Signature.ToString()),
+                            F(item.Sha256Hash), F(item.IsEnabled ? "Evet" : "Hayır"), F(item.RiskScore.ToString()), F(item.RiskLabel), F(item.VirusTotalScore)));
                     }
 
                     File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
@@ -699,14 +722,12 @@ namespace Bakım.ViewModels
             }
         }
 
-        private static string EscapeCsv(string val) => val.Replace("\"", "\"\"");
-
         [RelayCommand]
         public async Task AnalyzeThreatAsync(PersistenceItem? item)
         {
             if (item == null || string.IsNullOrWhiteSpace(item.FilePath)) return;
 
-            ScanStatusText = $"{item.Name} için sezgisel AI tehdit analizi yürütülüyor...";
+            ScanStatusText = $"{item.Name} için sezgisel dosya analizi yürütülüyor…";
             IsScanning = true;
 
             try
@@ -775,22 +796,8 @@ namespace Bakım.ViewModels
                     {
                         var report = await _threatAnalyzerService.AnalyzeFileAsync(
                             item.FilePath, item.Arguments, item);
-
-                        // İmza sonucunu girdiye geri yaz: liste artık katalog
-                        // imzalarını da doğru gösterir.
-                        item.Signature = report.IsSigned
-                            ? SignatureStatus.Verified
-                            : (report.DigitalSignatureText.Contains("GEÇERSİZ", StringComparison.OrdinalIgnoreCase)
-                                ? SignatureStatus.InvalidOrTampered
-                                : SignatureStatus.Unsigned);
-
-                        if (!string.IsNullOrWhiteSpace(report.SignerName))
-                            item.SignatureSignerName = report.SignerName;
-
-                        if (!string.IsNullOrWhiteSpace(report.Sha256))
-                            item.Sha256Hash = report.Sha256;
-
-                        if (report.RiskScore >= 60) elevated++;
+                        ApplyDeepResult(item, report);
+                        if (item.RiskScore >= 60) elevated++;
                     }
                     catch (Exception ex)
                     {
@@ -814,12 +821,35 @@ namespace Bakım.ViewModels
             }
         }
 
+        /// <summary>
+        /// Derin analizin sonucunu satıra yazar: satır puanı artık derin puandır (AN-09). Eskiden liste
+        /// yalnızca imzayı güncelliyor, pencere "yüksek risk" derken satır "düşük" kalabiliyordu.
+        /// </summary>
+        private static void ApplyDeepResult(PersistenceItem item, ThreatAnalysisResult report)
+        {
+            item.Signature = report.IsSigned
+                ? SignatureStatus.Verified
+                : report.DigitalSignatureText.Contains("Bozulmuş", StringComparison.OrdinalIgnoreCase)
+                    ? SignatureStatus.InvalidOrTampered
+                    : SignatureStatus.Unsigned;
+            if (!string.IsNullOrWhiteSpace(report.SignerName)) item.SignatureSignerName = report.SignerName;
+            if (!string.IsNullOrWhiteSpace(report.Sha256)) item.Sha256Hash = report.Sha256;
+            if (report.VirusTotalTotal > 0)
+            {
+                item.VirusTotalPositives = report.VirusTotalMalicious;
+                item.TotalScanners = report.VirusTotalTotal;
+                item.VirusTotalScore = report.VirusTotalSummary;
+            }
+            item.DeepRiskScore = report.RiskScore;
+            item.NotifyRiskChanged();
+        }
+
         [RelayCommand]
         public async Task PickAndAnalyzeFileAsync()
         {
             var ofd = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "Sezgisel AI Tehdit Analizi için Dosya Seçin",
+                Title = "Sezgisel dosya analizi için dosya seçin",
                 Filter = "Yürütülebilir ve Sistem Dosyaları (*.exe;*.dll;*.sys;*.bat;*.cmd;*.ps1;*.vbs;*.scr)|*.exe;*.dll;*.sys;*.bat;*.cmd;*.ps1;*.vbs;*.scr|Tüm Dosyalar (*.*)|*.*"
             };
 
@@ -870,7 +900,7 @@ namespace Bakım.ViewModels
                 ? AnalysisContext.Begin(AnalysisSource.Analyzer)
                 : null;
 
-            // Tek dosya ise doğrudan derin AI tehdit analizi penceresini aç
+            // Tek dosya ise doğrudan dosya analizi penceresini aç
             if (validFiles.Count == 1)
             {
                 string singleFile = validFiles[0];
@@ -909,9 +939,11 @@ namespace Bakım.ViewModels
                     {
                         Name = Path.GetFileName(file),
                         FilePath = file,
-                        LocationSource = "Kurulum Nöbetçisi",
-                        Category = PersistenceCategory.StartupFolder,
-                        CategoryDisplayName = "Kurulum Dosyası",
+                        LocationSource = AnalysisContext.Detail ?? "Kurulum Nöbetçisi",
+                        // Başlangıç kaydı değil (AN-14): eskiden StartupFolder sayılıyor, "Başlangıç" süzgecini
+                        // kirletiyor ve sil/kapat düğmeleri yanlış yolla çalışıyordu.
+                        Category = PersistenceCategory.InspectedFile,
+                        CategoryDisplayName = "İncelenen dosya",
                         IsEnabled = true,
                         FileCreatedUtc = File.GetCreationTimeUtc(file)
                     };
@@ -919,19 +951,13 @@ namespace Bakım.ViewModels
                     try
                     {
                         var report = await _threatAnalyzerService.AnalyzeFileAsync(file, string.Empty, item);
-                        item.Signature = report.IsSigned
-                            ? SignatureStatus.Verified
-                            : (report.DigitalSignatureText.Contains("GEÇERSİZ", StringComparison.OrdinalIgnoreCase)
-                                ? SignatureStatus.InvalidOrTampered
-                                : SignatureStatus.Unsigned);
-
-                        if (!string.IsNullOrWhiteSpace(report.SignerName))
-                            item.SignatureSignerName = report.SignerName;
-
-                        if (!string.IsNullOrWhiteSpace(report.Sha256))
-                            item.Sha256Hash = report.Sha256;
+                        ApplyDeepResult(item, report);
+                        item.Publisher = string.IsNullOrWhiteSpace(report.SignerName) ? "İmzasız" : report.SignerName;
                     }
-                    catch { }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+                    {
+                        AppLog.Warning($"Dosya incelenemedi: {file}", ex, nameof(AnalyzerViewModel));
+                    }
 
                     newItems.Add(item);
                 }

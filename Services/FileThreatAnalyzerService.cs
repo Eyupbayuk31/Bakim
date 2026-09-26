@@ -29,12 +29,7 @@ namespace Bakım.Services
     {
         private readonly IVirusTotalCheckService _virusTotalService;
 
-        private static readonly string[] CriticalSystemExes = new[]
-        {
-            "svchost.exe", "csrss.exe", "lsass.exe", "smss.exe", "services.exe",
-            "winlogon.exe", "taskhostw.exe", "explorer.exe", "rundll32.exe",
-            "dwm.exe", "spoolsv.exe", "conhost.exe", "sihost.exe"
-        };
+
 
 
         public FileThreatAnalyzerService(IVirusTotalCheckService virusTotalService)
@@ -68,6 +63,7 @@ namespace Bakım.Services
                 }
 
                 int score = 0;
+                int vtFloor = 0;
                 var fileInfo = new FileInfo(filePath);
                 result.FileSizeBytes = fileInfo.Length;
                 result.FileSizeFormatted = FormatBytes(fileInfo.Length);
@@ -79,11 +75,6 @@ namespace Bakım.Services
 
                 // Check Active Running Processes
                 CheckActiveRunningProcess(filePath, result);
-
-                // =========================================================================
-                // VEKTÖR 0: PE BINARY & EXPLOIT MITIGATION RÖNTGENİ
-                // =========================================================================
-                ParsePeBinary(filePath, result, ref score);
 
                 // =========================================================================
                 // VEKTÖR 1: DİJİTAL İMZA & YAYINCI DOĞRULAMASI (%25)
@@ -175,19 +166,23 @@ namespace Bakım.Services
                 }
 
                 // =========================================================================
+                // VEKTÖR 0: PE İKİLİSİ VE İSTİSMAR KALKANLARI
+                // İmzadan SONRA çalışır: içe aktarım ve kalkan bulguları imzanın güvenine göre
+                // değerlendirilir (ANL Z5).
+                // =========================================================================
+                ParsePeBinary(filePath, result, ref score);
+                EvaluateImports(result, ref score);
+
+                // =========================================================================
                 // VEKTÖR 2: ÇALIŞMA KONUMU & SAHTE SİSTEM DOSYASI TAKLİDİ (%25)
                 // =========================================================================
                 string lowerPath = filePath.ToLowerInvariant();
-                string lowerFileName = result.FileName.ToLowerInvariant();
-                string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows).ToLowerInvariant();
-                string sys32Dir = Path.Combine(winDir, "system32").ToLowerInvariant();
-                string sysWow64Dir = Path.Combine(winDir, "syswow64").ToLowerInvariant();
 
-                // Fake System32 Mimicry Check (e.g. C:\Windows\svchost.exe instead of System32)
-                if (CriticalSystemExes.Contains(lowerFileName))
+                // Sistem dosyası taklidi (ANL Z3): kritik ad yasal dizini dışında mı? explorer.exe'nin yasal
+                // yeri %windir%'dir; eski kural onu da "taklit" sayıp Windows'un kendi dosyasına +40 yazıyordu.
+                if (Bakım.Core.Analyzer.SystemBinaryLocations.IsCriticalName(result.FileName))
                 {
-                    bool isInLegitSystemDir = lowerPath.StartsWith(sys32Dir) || lowerPath.StartsWith(sysWow64Dir);
-                    if (!isInLegitSystemDir)
+                    if (Bakım.Core.Analyzer.SystemBinaryLocations.IsImpersonation(filePath, Environment.GetFolderPath(Environment.SpecialFolder.Windows)))
                     {
                         score += 40;
                         result.Factors.Add(new ThreatFactor
@@ -250,10 +245,11 @@ namespace Bakım.Services
                 // =========================================================================
                 // VEKTÖR 3: KALICILIK VE GİZLİ PARAMETRELER (%15)
                 // =========================================================================
-                string argsToCheck = (commandArgs ?? string.Empty).ToLowerInvariant();
-                if (argsToCheck.Contains("-w hidden") || argsToCheck.Contains("-windowstyle hidden") ||
-                    argsToCheck.Contains("-enc") || argsToCheck.Contains("-encodedcommand") ||
-                    argsToCheck.Contains("/silent") || argsToCheck.Contains("/s") || argsToCheck.Contains("-nop"))
+                // Belirteç eşleşmesi (AN-22): eskiden "/s" her "/s…" ile, "-enc" "--encoding" ile eşleşiyordu.
+                var argTokens = Bakım.Core.Analyzer.CommandLineResolver.Tokenize(commandArgs);
+                if (Bakım.Core.Analyzer.ArgumentRules.HasHiddenWindow(argTokens) ||
+                    Bakım.Core.Analyzer.ArgumentRules.HasEncodedCommand(argTokens) ||
+                    Bakım.Core.Analyzer.ArgumentRules.HasNoProfileBypass(argTokens))
                 {
                     score += 20;
                     result.Factors.Add(new ThreatFactor
@@ -402,26 +398,19 @@ namespace Bakım.Services
                         result.VirusTotalTotal = total;
                         result.VirusTotalSummary = msg;
 
-                        if (malicious >= 4)
+                        // VT uzlaşısı baskın kanıttır (ANL Z4): imza ya da "temiz" işaretler bunu düşüremez.
+                        var vt = Bakım.Core.Analyzer.VirusTotalRules.Evaluate(Math.Max(0, malicious), _virusTotalService.LastSuspicious(result.Sha256), total);
+                        if (vt is { } floor)
                         {
-                            score += 25;
+                            score += floor.Impact;
+                            vtFloor = floor.MinimumScore;
                             result.Factors.Add(new ThreatFactor
                             {
-                                Title = "VirusTotal Antivirüs Tespiti",
-                                Description = $"{total} antivirüs motorundan {malicious} tanesi bu dosyayı zararlı/tehdit olarak etiketledi.",
-                                Severity = ThreatSeverity.Critical,
-                                ScoreImpact = 25
-                            });
-                        }
-                        else if (malicious >= 1)
-                        {
-                            score += 15;
-                            result.Factors.Add(new ThreatFactor
-                            {
-                                Title = "VirusTotal Şüpheli Tespiti",
-                                Description = $"{malicious} adet güvenlik motoru dosyayı şüpheli olarak işaretledi (Olası yanlış pozitif olabilir).",
-                                Severity = ThreatSeverity.Warning,
-                                ScoreImpact = 15
+                                Title = floor.Title,
+                                Description = $"{total} antivirüs motorundan {malicious} tanesi bu dosyayı zararlı olarak etiketledi." +
+                                              (floor.Critical ? " Bu, dosya imzalı olsa bile güçlü bir kanıttır (çalıntı sertifikayla imzalanmış zararlılar vardır)." : " Az sayıda tespit yanlış pozitif olabilir."),
+                                Severity = floor.Critical ? ThreatSeverity.Critical : ThreatSeverity.Warning,
+                                ScoreImpact = floor.Impact
                             });
                         }
                         else if (total > 0 && malicious == 0)
@@ -451,25 +440,47 @@ namespace Bakım.Services
                     catch { }
                 }
 
-                // Final Score clamp
-                result.RiskScore = Math.Clamp(score, 0, 100);
+                // Son puan: VT tabanı toplamın altına düşemez.
+                result.RiskScore = Math.Clamp(Math.Max(score, vtFloor), 0, 100);
 
-                // Build Recommendation
+                // Öneri metni kanıtla orantılı (ANL Z3/Z10): "derhal kalıcı olarak silin" gibi geri
+                // alınamaz öneriler verilmez; önce kaynağın doğrulanması ve geri alınabilir adımlar.
                 if (result.RiskScore >= 61)
                 {
-                    result.Recommendation = "KRİTİK UYARI: Bu dosya çok sayıda belirgin zararlı yazılım ve gizlenme niteliği taşımaktadır. Sürecin sonlandırılması, başlangıçtan kaldırılması ve sistemden derhal kalıcı olarak silinmesi önemle tavsiye edilir.";
+                    result.Recommendation = "YÜKSEK RİSK: Dosyada zararlı yazılımlarda sık görülen birden çok güçlü işaret var. Kaynağını tanımıyorsanız süreci durdurun, başlangıç girdisini kapatın ve dosyayı Geri Dönüşüm Kutusu'na taşıyın; emin değilseniz önce VirusTotal ve Windows Defender ile ikinci görüş alın.";
                 }
                 else if (result.RiskScore >= 26)
                 {
-                    result.Recommendation = "DİKKAT: Dosya bazı şüpheli nitelikler (imzasız kod, alışılmadık çalışma dizini veya parametreler) barındırmaktadır. Kaynağını bilmiyorsanız devre dışı bırakmanız ve incelemeniz önerilir.";
+                    result.Recommendation = "DİKKAT: Dosyada gözden geçirilmesi gereken işaretler var (imzasız kod, alışılmadık konum ya da parametreler). Kaynağını biliyorsanız sorun olmayabilir; bilmiyorsanız başlangıç girdisini kapatıp inceleyin.";
                 }
                 else
                 {
-                    result.Recommendation = "GÜVENLİ: Dosya temel güvenlik ve imza doğrulamalarından başarıyla geçmiştir. Meşru bir yazılım bileşeni olarak değerlendirilmektedir.";
+                    result.Recommendation = "TEMİZ GÖRÜNÜYOR: Belirgin bir tehdit işareti bulunmadı. Bu sezgisel bir değerlendirmedir; dosya içeriği bir antivirüs gibi taranmadı.";
                 }
 
                 return result;
             });
+        }
+
+        /// <summary>
+        /// İçe aktarım bulguları: tek tek API değil, birleşimler (ANL Z5). Eskiden GetKeyState ve
+        /// GetClipboardData "keylogger", tek başına VirtualAllocEx "kritik enjeksiyon" sayılıyordu;
+        /// Notepad++, OBS ve explorer.exe yanlış alarm alıyordu.
+        /// </summary>
+        private static void EvaluateImports(ThreatAnalysisResult result, ref int score)
+        {
+            var names = result.ImportedDlls.SelectMany(g => g.Functions).Select(f => f.Name);
+            foreach (var finding in Bakım.Core.Analyzer.ImportRules.Evaluate(names, result.IsSigned))
+            {
+                score += finding.Impact;
+                result.Factors.Add(new ThreatFactor
+                {
+                    Title = finding.Title,
+                    Description = finding.Detail,
+                    Severity = finding.Critical ? ThreatSeverity.Critical : finding.Impact > 0 ? ThreatSeverity.Warning : ThreatSeverity.Info,
+                    ScoreImpact = finding.Impact
+                });
+            }
         }
 
         private static double CalculateShannonEntropy(string filePath)
@@ -608,7 +619,6 @@ namespace Bakım.Services
             { "VirtualProtectEx", ("Bellek Enjeksiyonu", "Hedef sürecin bellek sayfalarını çalıştırılabilir (PAGE_EXECUTE_READWRITE) hale getirir.") },
 
             // Process & Token Manipulation
-            { "OpenProcess", ("Süreç / Token Manipülasyonu", "Diğer çalışan süreçlerin tanıtıcılarını (handle) açar.") },
             { "AdjustTokenPrivileges", ("Süreç / Token Manipülasyonu", "SeDebugPrivilege gibi kritik sistem ayrıcalıklarını etkinleştirir.") },
             { "DuplicateTokenEx", ("Süreç / Token Manipülasyonu", "Sistem belirteçlerini çoğaltarak yetki yükseltir.") },
             { "ImpersonateLoggedOnUser", ("Süreç / Token Manipülasyonu", "Oturum açmış kullanıcının kimliğine bürünür.") },
@@ -618,22 +628,14 @@ namespace Bakım.Services
             { "SetWindowsHookExA", ("Klavye / Casusluk", "Küresel Windows kancası kurarak tuş basımlarını yakalar.") },
             { "SetWindowsHookExW", ("Klavye / Casusluk", "Küresel Windows kancası kurarak tuş basımlarını yakalar.") },
             { "GetAsyncKeyState", ("Klavye / Casusluk", "Arka planda basılan klavye tuşlarını gizlice dinler (Keylogger).") },
-            { "GetKeyState", ("Klavye / Casusluk", "Klavye tuş durumunu sorgular.") },
-            { "GetClipboardData", ("Klavye / Casusluk", "Panodaki (kopyalanan metin/şifre) verileri çeker.") },
 
             // C2 & Network Communication
             { "InternetOpenUrlA", ("Ağ / C2 İletişimi", "Uzak C2 sunucusuna HTTP/HTTPS bağlantısı açar.") },
             { "InternetOpenUrlW", ("Ağ / C2 İletişimi", "Uzak C2 sunucusuna HTTP/HTTPS bağlantısı açar.") },
-            { "HttpSendRequestA", ("Ağ / C2 İletişimi", "Uzak sunucuya veri/telemetri gönderir.") },
-            { "HttpSendRequestW", ("Ağ / C2 İletişimi", "Uzak sunucuya veri/telemetri gönderir.") },
             { "URLDownloadToFileA", ("Ağ / C2 İletişimi", "İnternetten gizlice ikincil zararlı dosya indirir.") },
             { "URLDownloadToFileW", ("Ağ / C2 İletişimi", "İnternetten gizlice ikincil zararlı dosya indirir.") },
 
             // Persistence & Registry Tampering
-            { "RegSetValueExA", ("Kalıcılık / Registry", "Kayıt defterine başlangıç veya sistem yapılandırma değeri yazar.") },
-            { "RegSetValueExW", ("Kalıcılık / Registry", "Kayıt defterine başlangıç veya sistem yapılandırma değeri yazar.") },
-            { "RegCreateKeyExA", ("Kalıcılık / Registry", "Kayıt defterinde kalıcılık anahtarı oluşturur.") },
-            { "RegCreateKeyExW", ("Kalıcılık / Registry", "Kayıt defterinde kalıcılık anahtarı oluşturur.") }
         };
 
         private static void ParsePeBinary(string filePath, ThreatAnalysisResult result, ref int score)
@@ -826,27 +828,29 @@ namespace Bakım.Services
                 result.Mitigations = mitigations;
 
                 // Mitigation Risk Scoring
+                // Eksik kalkan bir güvenlik açığı işaretidir, zararlılık kanıtı değil: imzalı dosyada bilgi.
+                int mitigationImpact = result.IsSigned ? 0 : 5;
                 if (!mitigations.HasAslr && !isDotNet)
                 {
-                    score += 10;
+                    score += mitigationImpact;
                     result.Factors.Add(new ThreatFactor
                     {
                         Title = "ASLR Kalkanı Devre Dışı",
-                        Description = "Dosya bellek adresi rastgeleleştirme (ASLR) olmadan derlenmiş. Bellek taşması açıklarına karşı savunmasızdır.",
-                        Severity = ThreatSeverity.Warning,
-                        ScoreImpact = 10
+                        Description = "Dosya bellek adresi rastgeleleştirme (ASLR) olmadan derlenmiş. Bellek taşması açıklarına karşı daha savunmasızdır; tek başına zararlılık işareti değildir.",
+                        Severity = mitigationImpact > 0 ? ThreatSeverity.Warning : ThreatSeverity.Info,
+                        ScoreImpact = mitigationImpact
                     });
                 }
 
                 if (!mitigations.HasDep && !isDotNet)
                 {
-                    score += 10;
+                    score += mitigationImpact;
                     result.Factors.Add(new ThreatFactor
                     {
                         Title = "DEP / NX Kalkanı Devre Dışı",
-                        Description = "Veri alanında kod yürütme engeli (Data Execution Prevention) aktif değil. Yığın/Heap üzerinde kod çalıştırma riskine açıktır.",
-                        Severity = ThreatSeverity.Warning,
-                        ScoreImpact = 10
+                        Description = "Veri alanında kod yürütme engeli (DEP) etkin değil. Eski derleyicilerle üretilen meşru yazılımlarda da görülür.",
+                        Severity = mitigationImpact > 0 ? ThreatSeverity.Warning : ThreatSeverity.Info,
+                        ScoreImpact = mitigationImpact
                     });
                 }
 
@@ -1090,39 +1094,7 @@ namespace Bakım.Services
                             catch { }
                         }
 
-                        // Evaluate Suspicious API Findings
-                        var allSuspicious = dllGroups.SelectMany(g => g.Functions).Where(f => f.IsSuspicious).ToList();
-                        if (allSuspicious.Any())
-                        {
-                            bool hasInjection = allSuspicious.Any(f => f.Category == "Bellek Enjeksiyonu" || f.Category == "Process Hollowing");
-                            bool hasSpyware = allSuspicious.Any(f => f.Category == "Klavye / Casusluk");
-
-                            if (hasInjection)
-                            {
-                                score += 30;
-                                string injectNames = string.Join(", ", allSuspicious.Where(f => f.Category == "Bellek Enjeksiyonu" || f.Category == "Process Hollowing").Select(f => f.Name).Distinct().Take(4));
-                                result.Factors.Add(new ThreatFactor
-                                {
-                                    Title = "Kritik Win32 Süreç & Bellek Enjeksiyon API'leri",
-                                    Description = $"Dosya, başka süreçlerin belleğine sızma ve kod enjekte etme fonksiyonlarını içe aktarmaktadır ({injectNames}).",
-                                    Severity = ThreatSeverity.Critical,
-                                    ScoreImpact = 30
-                                });
-                            }
-
-                            if (hasSpyware)
-                            {
-                                score += 20;
-                                string spyNames = string.Join(", ", allSuspicious.Where(f => f.Category == "Klavye / Casusluk").Select(f => f.Name).Distinct().Take(3));
-                                result.Factors.Add(new ThreatFactor
-                                {
-                                    Title = "Klavye Dinleme (Keylogger) ve Kanca API'leri",
-                                    Description = $"Tuş vuruşlarını izleme veya panoyu ele geçirme API'leri bulundu ({spyNames}).",
-                                    Severity = ThreatSeverity.Warning,
-                                    ScoreImpact = 20
-                                });
-                            }
-                        }
+                        // Puanlama EvaluateImports içinde, imza bilgisiyle birlikte yapılır (ANL Z5).
                     }
                 }
             }

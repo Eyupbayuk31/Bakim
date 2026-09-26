@@ -857,7 +857,7 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            StatusMessage = $"{app.DisplayName} için sezgisel AI tehdit analizi yürütülüyor...";
+            StatusMessage = $"{app.DisplayName} için sezgisel dosya analizi yürütülüyor…";
             IsBusy = true;
 
             try
