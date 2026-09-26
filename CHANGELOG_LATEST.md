@@ -1,40 +1,24 @@
-# Bakım v4.2.2 - Sürüm Notları
+# Bakım v4.2.3 - Sürüm Notları
 
-## Fluent 2 Doğal UI Standardı, Özet Şeridi (SummaryStrip) ve Sadeleştirilmiş Dil Revizyonu
+## Windows 11 FluentWindow (Mica) Diyalogları & Başlangıç/Olaylar Tek Kart Mimarisi
 
-Bakım v4.2.2 sürümü, uygulamanın tüm 20 modülünü kapsayan derin bir görsel arındırma ve kullanıcı deneyimi standardizasyonu getirmektedir. Çoklu buton kalabalığı tek birincil eyleme indirgenmiş, hantal KPI blokları zarif özet şeritlerine dönüştürülmüş ve arayüz dili sade, güven veren Fluent 2 standardına kavuşturulmuştur.
-
----
-
-### 1. Sayfa Başına Tek Birincil Eylem Standardı (Visual Hierarchy)
-- **Görsel Odak:** Sayfalardaki çoklu mavi (Primary) düğme karmaşası giderildi. Her sayfada yalnızca kullanıcının odaklanması gereken ana eylem birincil olarak vurgulanırken, ikincil eylemler yumuşak ve şeffaf stillere çekildi.
-- **Güvenli Renk Semantiği:** Sayfa içi butonlardan tehlike (Danger) renkleri kaldırılarak yalnızca onay diyaloglarına sınırlandırıldı; gereksiz görsel stres engellendi.
+Bakım v4.2.3 sürümü; tüm diyalog pencerelerini yerel Windows 11 Mica zeminli FluentWindow standardına taşımakta, Başlangıç ve Olaylar sayfalarındaki dağınık KPI bloklarını tek odak durum kartında birleştirmektedir.
 
 ---
 
-### 2. Birleşik Özet Şeridi (SummaryStrip Mimarisi)
-- **Ferah ve Alan Tasarruflu:** Etkinlik Merkezi, Analizör, Kurulum Nöbetçisi, Süreçler, Gizlilik ve Program Kaldırıcı sayfalarındaki 4'lü büyük sayı blokları yerine tek kartlık, ince ayırıcılı ve modern Fluent özet şeridine (`SummaryStrip`) geçildi.
-- **Hafifletilmiş Metrik Kartları:** `StatCard` bileşenindeki süs amaçlı renkli kenarlıklar sadeleştirildi.
+### 1. Yerel Windows 11 FluentWindow (Mica) Diyalogları
+- **Sahte Kenarlıklar ve Gölgeler Kaldırıldı:** Kaldırıcı, güncelleme, artık temizliği, kurulum nöbetçisi fark inceleme ve hedef eylem diyalogları `AllowsTransparency` tabanlı hantal yapılardan yerel DWM ve Mica zeminli `ui:FluentWindow` mimarisine geçirildi.
+- **Doğal Köşeler ve Başlık Çubuğu:** Standart Windows 11 pencere yuvarlamaları, sistem gölgeleri ve yerel başlık çubuğu butonları pürüzsüz çalışır.
+- **Gereksiz Topmost İptal:** Diyalogların masaüstündeki diğer uygulamaları zorla kapatması (`Topmost`) engellendi; yalnızca pencereden seç modunda korundu.
 
 ---
 
-### 3. Süs Amaçlı Renklerin Arındırılması & Gerçek Değerler
-- **Doğal Tonlar:** Kontrol Paneli ve modül başlıklarındaki süs amaçlı 220'den fazla renkli simge ve metin nötr renk tonlarına dönüştürüldü.
-- **Dürüst Donanım Telemetrisi:** Termal sensör bulunmayan sistemlerde yanıltıcı yeşil "Optimum" rozeti yerine yalnızca gerçek donanım değerleri şeffafça sunuldu.
+### 2. Başlangıç Programları Tek Durum Kartı
+- **Windows Ölçümlü Açılış Süresi:** 4 ayrık KPI kutusu yerine Windows Event Log (Olay 100/101) tabanlı açılış süresi, son açılışların sütun grafiği ve sade sayımlar tek bir odak kartında toplandı.
+- **Kartsız Temiz Komut Satırı:** Filtre çubuğu ve eylemler zarif bir şeride taşındı; program isimleri ve rozetler göz yormayan doğal boyutlara uyarlandı.
 
 ---
 
-### 4. Süreçler ve Etkinlik Merkezi İyileştirmeleri
-- **Süreçler Bellek Haritası:** Süreç yöneticisi modülünde kaybolan bellek tüketim kartı restore edilerek canlı telemetri yeniden sağlandı.
-- **Etkinlik Merkezi Komut Çubuğu:** İşlem filtreleri ve geçmiş kayıtları daha kompakt bir komut çubuğu ile düzenlendi.
-
----
-
-### 5. Temizleyici Modülü Başlık & Eylem Düzeni
-- **Net Başlık ve Eylem Hiyerarşisi:** Temizleme ve analiz butonları arasındaki karmaşa giderildi, sonsuz dönen tarama animasyonları resmi Fluent `ProgressBar` çizgisine dönüştürüldü.
-
----
-
-### 6. Sade ve Doğal Türkçe Terminoloji (Sentence Case)
-- **Windows 11 Cümle Düzeni:** 600'den fazla başlık ve etiket Windows 11 standartlarına uyarlandı.
-- **Sade İfadeler:** "Röntgen" -> "Ayrıntılar", "Avcı Modu" -> "Pencereden seç", "1000 Mbps ultra gigabit hız testi" -> "Hız testi" gibi abartılı ifadeler sadeleştirildi.
+### 3. Olaylar ve Güvenilirlik Zaman Çizelgesi
+- **Birleşik Sağlık & Güvenilirlik Kartı:** Sistem sağlığı ve 30 günlük güvenilirlik eğilimi tek bir Fluent kartında birleştirildi.
+- **SelectorBar Filtreleri:** Başlık eylemlerindeki dağınık sekmeler alt çizgili SelectorBar sekme düzenine kavuşturuldu.

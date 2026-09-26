@@ -1064,13 +1064,30 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v423 = new ReleaseChangelogItem
+            {
+                Version = "v4.2.3",
+                ReleaseDate = "Eylül 2026",
+                Title = "FluentWindow Mica Diyalogları & Başlangıç/Olaylar Tek Kart Mimarisi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Windows 11 FluentWindow (Mica) Diyalogları: Kaldırıcı, güncelleme, kalıntı temizliği, kurulum nöbetçisi fark inceleme ve hedef seçim diyalogları sahte kenarlıklardan arındırılarak yerel Mica zeminli FluentWindow standardına geçirildi.",
+                    "Başlangıç Modülü Tek Durum Kartı: 4 dağınık KPI kartı yerine Windows Event Log 100/101 açılış ölçümü, son açılışların çubuk grafiği ve sade metrikleri tek bir odak kartında birleştirildi.",
+                    "Olaylar & Güvenilirlik Zaman Çizelgesi: Sistem sağlığı ve 30 günlük güvenilirlik geçmişi tek bir kartta toplanarak SelectorBar filtreleriyle donatıldı.",
+                    "Gereksiz Topmost Temizliği: Diyalog pencerelerinin diğer pencereleri zorla örtmesi (Topmost) davranışı yalnızca hedef seçim penceresine sınırlandırıldı.",
+                    "Diyaloglarda İnce Tipografi & Zemin Derinliği: Standart Windows 11 pencere gölgeleri, yuvarlatılmış köşeler ve yerel DWM başlık çubuğu kontrolleri kusursuzlaştırıldı."
+                }
+            };
+
             var v422 = new ReleaseChangelogItem
             {
                 Version = "v4.2.2",
                 ReleaseDate = "Eylül 2026",
                 Title = "Fluent 2 Doğal UI Standardı, Özet Şeridi (SummaryStrip) ve Sadeleştirilmiş Dil Revizyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Sayfa Başına Tek Birincil Eylem İlkesi: Sayfalarındaki çoklu mavi (Primary) düğme karmaşası giderildi; her sayfada yalnızca ana eylem vurgulanarak görsel odak sağlandı.",
@@ -1922,8 +1939,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v422;
+            LatestRelease = v423;
 
+            ReleaseHistory.Add(v423);
             ReleaseHistory.Add(v422);
             ReleaseHistory.Add(v421);
             ReleaseHistory.Add(v420);
