@@ -344,3 +344,43 @@ diyaloğu 1275, Ayarlar 1458, Mağaza 1129 satır) sekme başına UserControl'e 
 | Ayrıntı paneli uygulaması | 5 farklı | 1 bileşen |
 | Serbest Margin/Padding | ~1.300 | cırcırla sürekli azalan |
 | En uzun görünüm dosyası | 1556 satır | < 500 |
+
+---
+
+## 6. Durum (26.09.2026, `claude/awesome-pascal-am378r`)
+
+Uygulandı (her madde ayrı commit; görsel doğrulama Windows'ta yapılacak):
+
+| Alan | Yapılan |
+|---|---|
+| Ortak | `SummaryStrip`, `Tab.Item` (SelectorBar), `Table.HeaderRow`, `Progress.Header`, `EqualsToBool`, `PositiveToBool`; `IntToVis` parametresiz kullanımda artık "0'dan büyükse görünür" (önceden her zaman gizliydi) |
+| Kontrol Paneli, Etkinlik, Temizleyici, Süreçler | §3.2–3.6: özet şeridi, düz sparkline, tek birincil eylem, komut satırı filtreleri |
+| Başlangıç | Açılış süresi kartı + son açılışlar grafiği; KPI kartları kalktı |
+| Olaylar | Sağlık + 30 günlük güvenilirlik tek kartta; SelectorBar; filtre çiplerine seçili durum |
+| Depolama | 1519 satır → kabuk + 3 panel; 4 sekme (Boş klasörler ayrı); komut satırı; EmptyState; tablo satırları |
+| Ağ İzleyici | 1379 satır → kabuk + 5 panel; tanılama açılır ayar kartları; hız testi InfoBar |
+| Mağaza | SelectorBar, nötr kartlar/rozetler, sabit RGB kategori renkleri kaldırıldı |
+| Sistem Bilgisi | Hakkında düzeni: cihaz kartı + açılır donanım bölümleri, Aygıt güvenliği, İlgili bağlantılar; disk sağlığı rozeti gerçek durumu gösteriyor |
+| Windows Ayarları + Gizlilik | Nav.ItemButton kategori menüsü, ayar kartları, `⋯` menüsü, KPI'lar kalktı |
+| Windows Araçları | Ayar kartı + 3 sütunlu tıklanabilir kutucuklar |
+| Kaldırıcı, Nöbetçi | Yüklü uygulamalar düzeni: filtre çipleri, sıralama açılır kutusu, nötr rozetler |
+| Kabuk | 5 grup kenar çubuğu; komut paleti Fluent açılır yüzey; tepsi menüsü Hızlı Ayarlar kutucukları |
+| Pencereler | 5 diyalog FluentWindow + Mica (G9); kaplama ve bildirim pencereleri bilerek saydam kaldı |
+| Metin | Cümle düzeni dedektörü bağlaçları atlıyor; komut paleti adları sayfa adlarıyla aynı |
+| Araçlar | `Tools/*.py` Windows cp1252 konsolunda Türkçe karakterle çökmüyor (stdout UTF-8) |
+
+Ölçüler (başarı ölçütü §5):
+
+| Ölçüt | Başlangıç | Şimdi |
+|---|---|---|
+| Diyalog dışı tehlike düğmesi | 26 | 0 (cırcır) |
+| Success/Caution düğme | 5 | 0 (cırcır) |
+| Sonsuz animasyon / gradyan | 2 / 4 | 0 / 0 (cırcır) |
+| Büyük Harfli metin, "&" | 622 / ~80 | 0 / 0 (cırcır) |
+| Kendi kabuğunu çizen diyalog | 9 | 0 (yalnızca kaplama/bildirim pencereleri) |
+| En uzun görünüm | 1556 | 1422 (Ayarlar; Depolama ve Ağ bölündü) |
+| Serbest köşe yarıçapı | 11 | 6 |
+
+Kalan: Ayarlar'ın önizlemeli tema kutucukları ve dosyanın bölünmesi (§3.19), Analiz diyaloğunun bölüm
+menüsü (§3.21), ayrıntı panellerinin tek `DetailsPane` bileşenine toplanması, 5 tema × 3 genişlik ekran
+görüntüsü matrisi (Faz H — Windows gerekir).
