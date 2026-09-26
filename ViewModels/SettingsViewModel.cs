@@ -1116,17 +1116,16 @@ namespace Bakım.ViewModels
 
             var v460 = new ReleaseChangelogItem
             {
-                Version = "v4.6.1",
+                Version = "v4.6.2",
                 ReleaseDate = "Eylül 2026",
-                Title = "Renk Geçişi Pürüzsüzleştirmesi, Tam Alan Ortam Işığı & Sol Menü Kaydırma Çubuğu Temizliği",
+                Title = "Kompakt Sol Menü (216px Fluent Orantısı) & Akıcı Çalışma Alanı",
                 IsLatest = true,
                 IsExpanded = true,
                 Highlights = new List<string>
                 {
-                    "Kesintisiz Ortam Işığı & Sıfır Kesik Çizgi: Sağ-üst ve sol-alt ortam ışıkları sabit piksel sınırları yerine tüm pencere yüzeyine tam esneyen (Stretch) 3 duraklı yumuşak radyal degradelere dönüştürüldü; pencere ortasındaki dikey renk kesiği ve sınır çizgisi tamamen yok edildi.",
-                    "Kristal Cam Katmanı & Sıfır Grilik: AMOLED ve Slate temalarındaki mat gri katman örtüsü saf kristal beyaz tonlamayla yenilendi; cam kartların altındaki mat sis ve çamurlu grilik hissi ortadan kaldırıldı.",
-                    "Sol Menü Kaydırma Çubuğu Temizliği: Daraltılmış simge rayında beliren hantal kaydırma çubuğu kaldırılarak native Windows 11 pürüzsüz fare tekerleği gezinimi korundu.",
-                    "Ayarlar Kategori Ayracı: Kategori gezinme rayının kenar çizgisi cam uyumlu Divider.Stroke token'ına geçirildi.",
+                    "Kompakt ve Orantılı Sol Menü: Eski 260px sabit genişlik, Windows 11 Fluent 2 standardına (216px / 8-grid) uyarlanarak sağa doğru yayılan gereksiz 44px boşluk temizlendi; aktif menü hapları (pill) öğeleri zarifçe sarar hale getirildi.",
+                    "Genişleyen İçerik Alanı: Sol menünün daralmasıyla ana modül sayfalarına (Temizleyici, Depolama, Optimizatör, Ayarlar) +44px daha geniş ve ferah bir çalışma alanı kazandırıldı.",
+                    "Dikey Hizalama Kusursuzluğu: Kaydırma alanı içindeki liste öğeleri ile alt taraftaki Ayarlar butonu arasındaki 4px kenar marjin farkı giderilerek sağ kenar hizası milimetrik olarak eşitlendi.",
                     "Sıkı Doğrulama: 4 gatekeeper denetimi ve 783 testin tümü yeşil teyit edildi."
                 }
             };

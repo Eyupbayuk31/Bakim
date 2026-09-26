@@ -190,14 +190,14 @@
         <!-- Main Body: Fluent Collapsible Sidebar + Dynamic Content Host -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/> <!-- Collapsible Navigation Sidebar (64px to 260px) -->
+                <ColumnDefinition Width="Auto"/> <!-- Collapsible Navigation Sidebar (64px to 216px) -->
                 <ColumnDefinition Width="*"/>   <!-- Active Module Content Viewport -->
             </Grid.ColumnDefinitions>
 
             <!-- Navigation Sidebar (Collapsible Drawer with 300ms CubicEaseOut Animation) -->
             <Border x:Name="NavSidebar"
                     Grid.Column="0" 
-                    Width="260"
+                    Width="216"
                     ClipToBounds="True"
                     Background="Transparent" 
                     BorderThickness="0" 
@@ -223,7 +223,7 @@
                                      <BeginStoryboard>
                                          <Storyboard>
                                              <DoubleAnimation Storyboard.TargetProperty="Width" 
-                                                              To="260" 
+                                                              To="216" 
                                                               Duration="{StaticResource Motion.Slow}">
                                                  <DoubleAnimation.EasingFunction>
                                                      <CubicEase EasingMode="EaseOut"/>
@@ -278,7 +278,7 @@
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Hidden"
                                   Focusable="False">
-                        <ItemsControl ItemsSource="{Binding NavGroups}" Margin="0,0,4,0" Focusable="False">
+                        <ItemsControl ItemsSource="{Binding NavGroups}" Margin="0" Focusable="False">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type vm:NavGroup}">
                                     <StackPanel>
