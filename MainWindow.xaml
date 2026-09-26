@@ -518,7 +518,7 @@
                                                VerticalAlignment="Center"/>
 
                                 <StackPanel Grid.Column="1" Margin="8,0,8,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="{Binding Message}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                     <!-- UndoToast (§3.5): "Geri al" -->
                                     <StackPanel Orientation="Horizontal" Margin="0,6,0,0"
@@ -750,7 +750,7 @@
                                                         BorderThickness="1">
                                                     <TextBlock Text="{Binding Category}"
                                                                FontSize="{StaticResource Font.Micro}"
-                                                               FontWeight="Bold"
+                                                               FontWeight="SemiBold"
                                                                Foreground="{Binding Category, Converter={StaticResource CategoryToForeground}}"
                                                                VerticalAlignment="Center"/>
                                                 </Border>
@@ -799,7 +799,7 @@
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                         BorderThickness="1">
-                                    <TextBlock Text="↑↓" FontSize="{StaticResource Font.Micro}" FontWeight="Bold"
+                                    <TextBlock Text="↑↓" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                FontFamily="Consolas"/>
                                 </Border>
@@ -811,7 +811,7 @@
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                         BorderThickness="1">
-                                    <TextBlock Text="Enter" FontSize="{StaticResource Font.Micro}" FontWeight="Bold"
+                                    <TextBlock Text="Enter" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                FontFamily="Consolas"/>
                                 </Border>
@@ -823,7 +823,7 @@
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                         BorderThickness="1">
-                                    <TextBlock Text="Esc" FontSize="{StaticResource Font.Micro}" FontWeight="Bold"
+                                    <TextBlock Text="Esc" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                FontFamily="Consolas"/>
                                 </Border>

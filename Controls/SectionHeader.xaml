@@ -40,7 +40,7 @@
                                 <!-- Modülün en üstündeki sayfa başlığı -->
                                 <DataTrigger Binding="{Binding IsPageTitle, ElementName=Root}" Value="True">
                                     <Setter Property="FontSize" Value="{StaticResource Font.TitleLarge}"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

@@ -35,14 +35,8 @@ namespace Bakım.Services
 
         private const string UltimateScheme = "e9a42b02-d5df-448d-aa00-03f14749eb61";
 
-        /// <summary>"OneDrive, Teams.exe" → {"OneDrive","Teams"}.</summary>
-        public static IReadOnlyList<string> ParseProcessList(string? text) =>
-            (text ?? string.Empty)
-                .Split(new[] { ',', ';', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(n => n.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? n[..^4] : n)
-                .Where(n => n.Length > 0)
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
+        /// <summary>"OneDrive, Teams.exe" → {"OneDrive","Teams"}. Kural tek yerde: <see cref="Core.GameMode.ProcessNameList"/>.</summary>
+        public static IReadOnlyList<string> ParseProcessList(string? text) => Core.GameMode.ProcessNameList.Parse(text);
 
         public bool IsGameModeActive => _isGameModeActive;
 

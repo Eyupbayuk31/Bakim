@@ -56,7 +56,7 @@
                         </Grid.ColumnDefinitions>
                         <ui:SymbolIcon Grid.Column="0" Symbol="DeveloperBoard20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Text="İşlemci (CPU)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" x:Name="CpuText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" x:Name="CpuText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
                     <ProgressBar x:Name="CpuProgress" Height="4" Minimum="0" Maximum="100" Value="0" Margin="0,0,0,10" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
 
@@ -69,7 +69,7 @@
                         </Grid.ColumnDefinitions>
                         <ui:SymbolIcon Grid.Column="0" Symbol="TopSpeed20" FontSize="14" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Text="Bellek (RAM)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" x:Name="RamText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" x:Name="RamText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
                     </Grid>
                     <ProgressBar x:Name="RamProgress" Height="4" Minimum="0" Maximum="100" Value="0" Margin="0,0,0,4" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                     <TextBlock x:Name="RamDetailText" Text="Hesaplanıyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right"/>

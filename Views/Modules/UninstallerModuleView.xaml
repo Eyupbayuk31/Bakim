@@ -497,7 +497,7 @@
 
                                     <!-- Col 3: Boyut (Satırlar Arası Otomatik Senkronize Genişlik) -->
                                     <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,24,0" HorizontalAlignment="Right">
-                                        <TextBlock Text="{Binding FormattedSize}" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding FormattedSize}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
                                         <TextBlock Text="Disk Alanı" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right"/>
                                     </StackPanel>
 
@@ -583,8 +583,8 @@
 
                         <StackPanel Grid.Column="0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Kalıntı Analizi: " FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                <TextBlock Text="{Binding SelectedApp.DisplayName}" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Kalıntı Analizi: " FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedApp.DisplayName}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </StackPanel>
                             <TextBlock Text="Aşağıdaki dosya ve kayıt defteri anahtarları programın geride bıraktığı yetim kalıntılardır." 
                                        FontSize="{StaticResource Font.Caption}" 
@@ -698,7 +698,7 @@
                                     <TextBlock Grid.Column="3" 
                                                Text="{Binding FormattedSize}" 
                                                FontSize="{StaticResource Font.Caption}" 
-                                               FontWeight="Bold" 
+                                               FontWeight="SemiBold" 
                                                Foreground="{DynamicResource SystemFillColorCautionBrush}" 
                                                VerticalAlignment="Center" 
                                                HorizontalAlignment="Right"/>

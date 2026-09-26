@@ -55,7 +55,7 @@
 
                         <TextBlock Text="BAKIM" 
                                    FontSize="{StaticResource Font.Title}" 
-                                   FontWeight="Bold" 
+                                   FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                    HorizontalAlignment="Center"/>
 

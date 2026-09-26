@@ -15,7 +15,7 @@ namespace Bakım.Helpers
 
         private static readonly string[] DurationKeys =
         {
-            "Motion.Fast", "Motion.Normal", "Motion.Slow",
+            "Motion.Fast", "Motion.Normal", "Motion.Slow", "Motion.Slower",
             "Duration.Instant", "Duration.Fast", "Duration.Base", "Duration.Slow"
         };
 

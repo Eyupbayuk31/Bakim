@@ -19,12 +19,15 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent  # depo koku
 EXCLUDE_DIRS = {"bin", "obj", ".git", ".vs", "ui-ux-pro-max-skill", ".agents"}
 TOKENS_DIR = ROOT / "Themes" / "Tokens"
+# Paylaşılan denetim stilleri (Nav.ItemButton, Card.Setting ...) de tanım kaynağıdır.
+STYLES_DIR = ROOT / "Themes" / "Controls"
 
 # Bize ait sayılan önekler; diğerleri WPF-UI'dan gelir ve denetlenmez.
 OWNED_PREFIXES = (
     "Brush.", "Color.", "Font.", "Icon.", "Space.", "Pad.",
     "Gap.", "Radius.", "Stroke.", "Duration.", "Ease.", "Time.", "Text.",
     "Surface.", "Border.", "Status.", "Risk.", "Chart.", "Motion.",
+    "Layout.", "Card.", "Nav.",
 )
 
 KEY_USE = re.compile(r'\{(?:Dynamic|Static)Resource\s+([A-Za-z0-9_.]+)\s*\}')
@@ -38,7 +41,7 @@ def iter_xaml(include_tokens):
     for path in ROOT.rglob("*.xaml"):
         if any(part in EXCLUDE_DIRS for part in path.parts):
             continue
-        in_tokens = TOKENS_DIR in path.parents
+        in_tokens = TOKENS_DIR in path.parents or STYLES_DIR in path.parents
         if in_tokens and not include_tokens:
             continue
         if not in_tokens and include_tokens:

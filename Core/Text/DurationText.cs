@@ -14,5 +14,14 @@ namespace Bakım.Core.Text
                 return span.Minutes == 0 ? $"{(int)span.TotalHours} sa" : $"{(int)span.TotalHours} sa {span.Minutes} dk";
             return span.Hours == 0 ? $"{(int)span.TotalDays} gün" : $"{(int)span.TotalDays} gün {span.Hours} sa";
         }
+
+        /// <summary>Canlı sayaç biçimi: "04:07", bir saatten uzunsa "1:04:07".</summary>
+        public static string Clock(TimeSpan span)
+        {
+            if (span < TimeSpan.Zero) span = TimeSpan.Zero;
+            return span.TotalHours >= 1
+                ? $"{(int)span.TotalHours}:{span.Minutes:00}:{span.Seconds:00}"
+                : $"{span.Minutes:00}:{span.Seconds:00}";
+        }
     }
 }

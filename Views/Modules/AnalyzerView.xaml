@@ -603,7 +603,7 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                         <StackPanel>
-                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="{StaticResource Font.Subtitle}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>

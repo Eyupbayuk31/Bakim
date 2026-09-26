@@ -451,7 +451,7 @@
                                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,3">
                                                 <TextBlock Text="Başlangıç Durumu:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
-                                                <TextBlock Text="{Binding AutostartHealthBadgeText}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding AutostartHealthBadgeText}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                             </StackPanel>
                                             <TextBlock Text="{Binding AutostartDiagnosticDetails}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap"/>
                                         </StackPanel>
@@ -489,7 +489,7 @@
                                         </Grid.ColumnDefinitions>
                                         <ui:SymbolIcon Symbol="Warning24" FontSize="18" Foreground="{DynamicResource Status.Critical.Solid}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                         <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource Status.Critical.Text}">
-                                            <Run FontWeight="Bold">Kritik Windows UAC Engeli:</Run> Uygulama 'Yönetici Olarak Çalıştır' olarak işaretlendiği için standart Kayıt Defteri başlangıcı Windows tarafından sessizce engellenmektedir. Programın sorunsuz başlaması için lütfen yukarıdaki <Run FontWeight="Bold">'Başlangıcı Onar &amp; Kur'</Run> butonunu kullanın.
+                                            <Run FontWeight="SemiBold">Kritik Windows UAC Engeli:</Run> Uygulama 'Yönetici Olarak Çalıştır' olarak işaretlendiği için standart Kayıt Defteri başlangıcı Windows tarafından sessizce engellenmektedir. Programın sorunsuz başlaması için lütfen yukarıdaki <Run FontWeight="SemiBold">'Başlangıcı Onar &amp; Kur'</Run> butonunu kullanın.
                                         </TextBlock>
                                     </Grid>
                                 </Border>
@@ -1063,14 +1063,14 @@
                                         <StackPanel Grid.Column="0">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="Rocket24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                                <TextBlock Text="En Son Güncellemede Ne Geldi?" FontSize="{StaticResource Font.BodyLarge}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="En Son Güncellemede Ne Geldi?" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </StackPanel>
                                             <TextBlock Text="{Binding LatestRelease.Title}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
                                             <Border Background="{DynamicResource SystemFillColorSuccessBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,4">
-                                                <TextBlock Text="{Binding LatestRelease.Version, StringFormat='{}{0} - Yayında'}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
+                                                <TextBlock Text="{Binding LatestRelease.Version, StringFormat='{}{0} - Yayında'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
                                             </Border>
                                             <TextBlock Text="{Binding LatestRelease.ReleaseDate}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" Margin="0,3,0,0"/>
                                         </StackPanel>
@@ -1104,7 +1104,7 @@
                                     <StackPanel Margin="0,0,0,14">
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <ui:SymbolIcon Symbol="History24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                            <TextBlock Text="Sürüm Geçmişi &amp; Değişiklik Günlüğü" FontSize="{StaticResource Font.Body}" FontWeight="Bold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="Sürüm Geçmişi &amp; Değişiklik Günlüğü" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
                                         <TextBlock Text="Geçmiş sürümlerde yayınlanan tüm yenilikler ve optimizasyon notları." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
@@ -1135,7 +1135,7 @@
 
                                                                 <!-- Version Badge -->
                                                                 <Border Grid.Column="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="8,3" Margin="0,0,10,0" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding Version}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                                    <TextBlock Text="{Binding Version}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                                                                 </Border>
 
                                                                 <!-- Title & Date -->

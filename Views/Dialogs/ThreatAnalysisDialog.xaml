@@ -216,7 +216,7 @@
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="{Binding RiskScore, StringFormat='%{0}'}"
                                    FontSize="{StaticResource Font.Title}"
-                                   FontWeight="Bold"
+                                   FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="RİSK"
@@ -231,7 +231,7 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="{StaticResource Gap.Bottom.XS}">
                         <TextBlock Text="{Binding FileName}"
                                    FontSize="{StaticResource Font.Title}"
-                                   FontWeight="Bold"
+                                   FontWeight="SemiBold"
                                    TextTrimming="CharacterEllipsis"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
 
@@ -504,7 +504,7 @@
                                                         Background="{DynamicResource ControlFillColorSecondaryBrush}">
                                                     <TextBlock Text="{Binding SeverityBadgeText}"
                                                                FontSize="{StaticResource Font.Micro}"
-                                                               FontWeight="Bold"
+                                                               FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                 </Border>
                                                 <TextBlock Text="{Binding Title}"
@@ -857,7 +857,7 @@
                                                 <TextBlock Text="{Binding PermissionsText}"
                                                            FontFamily="Cascadia Mono, Consolas"
                                                            FontSize="{StaticResource Font.Micro}"
-                                                           FontWeight="Bold"
+                                                           FontWeight="SemiBold"
                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             </Border>
 
@@ -875,7 +875,7 @@
                                                                    Foreground="{DynamicResource Brush.Critical.Text}"/>
                                                     <TextBlock Text="PACKER"
                                                                FontSize="{StaticResource Font.Micro}"
-                                                               FontWeight="Bold"
+                                                               FontWeight="SemiBold"
                                                                Foreground="{DynamicResource Brush.Critical.Text}"/>
                                                 </StackPanel>
                                             </Border>

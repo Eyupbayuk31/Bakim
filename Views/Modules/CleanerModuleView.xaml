@@ -83,7 +83,7 @@
                         <TextBlock Grid.Column="1" 
                                    Text="{Binding SystemDrive.FormattedFree, StringFormat='{}{0} Boş'}" 
                                    FontSize="{StaticResource Font.Caption}" 
-                                   FontWeight="Bold" 
+                                   FontWeight="SemiBold" 
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </Grid>
 
@@ -689,7 +689,7 @@
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding FileName}" 
                                            FontSize="{StaticResource Font.Body}" 
-                                           FontWeight="Bold" 
+                                           FontWeight="SemiBold" 
                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                            TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding CategoryName}" 
