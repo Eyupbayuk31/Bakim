@@ -48,7 +48,7 @@
                             Margin="0,0,10,0">
                         <ui:SymbolIcon Symbol="Delete24"
                                        FontSize="16"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
                     </Border>
@@ -133,7 +133,7 @@
                                 Margin="0,0,6,0">
                             <TextBlock Text="4" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Kalıntı Seçimi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Kalıntı seçimi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                     </StackPanel>
 
                     <ui:SymbolIcon Grid.Column="7" Symbol="ArrowRight20" FontSize="14" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
@@ -194,7 +194,7 @@
                                            Visibility="{Binding TargetApp.IconSource, Converter={StaticResource NullToVisibilityConverter}}"/>
                                     <ui:SymbolIcon Symbol="Apps24"
                                                    FontSize="28"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Visibility="{Binding TargetApp.IconSource, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
                                 </Grid>
                             </Border>
@@ -216,7 +216,7 @@
                                         <TextBlock Text="{Binding DisplayVersion}"
                                                    FontSize="{StaticResource Font.Caption}"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </Border>
                                 </StackPanel>
 
@@ -244,8 +244,8 @@
                                     Padding="12,8"
                                     VerticalAlignment="Center">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Tahmini Boyut" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{Binding FormattedSize}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                    <TextBlock Text="Tahmini boyut" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding FormattedSize}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -270,7 +270,7 @@
                                       Margin="0,0,0,12"
                                       Cursor="Hand">
                                 <StackPanel Margin="6,0,0,0">
-                                    <TextBlock Text="Windows Geri Yükleme Noktası Oluştur (Önerilen)"
+                                    <TextBlock Text="Windows geri yükleme noktası oluştur (önerilen)"
                                                FontSize="{StaticResource Font.Body}"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -289,7 +289,7 @@
                                       Margin="0,0,0,12"
                                       Cursor="Hand">
                                 <StackPanel Margin="6,0,0,0">
-                                    <TextBlock Text="Programa Ait Açık Süreçleri Kapat"
+                                    <TextBlock Text="Programa ait açık süreçleri kapat"
                                                FontSize="{StaticResource Font.Body}"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -306,7 +306,7 @@
                                       IsEnabled="False"
                                       AutomationProperties.Name="Kayıt defteri yedeği her zaman alınır">
                                 <StackPanel Margin="6,0,0,0">
-                                    <TextBlock Text="Kayıt Defteri Yedeği Her Zaman Alınır"
+                                    <TextBlock Text="Kayıt Defteri yedeği her zaman alınır"
                                                FontSize="{StaticResource Font.Body}"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -350,7 +350,7 @@
                                          Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                          Margin="0,0,0,20"/>
 
-                        <TextBlock Text="Resmi Kaldırıcı Çalışıyor..."
+                        <TextBlock Text="Resmi kaldırıcı çalışıyor..."
                                    FontSize="{StaticResource Font.SectionTitle}"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -373,11 +373,11 @@
                                        FontSize="{StaticResource Font.Caption}"
                                        TextWrapping="Wrap"
                                        TextAlignment="Center"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        HorizontalAlignment="Center"/>
                         </Border>
 
-                        <ui:Button Content="Beklemeyi Bırak"
+                        <ui:Button Content="Beklemeyi bırak"
                                    Appearance="Secondary"
                                    Command="{Binding StopWaitingCommand}"
                                    Visibility="{Binding CanStopWaiting, Converter={StaticResource BoolToVis}}"
@@ -401,7 +401,7 @@
                                          Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                          Margin="0,0,0,20"/>
 
-                        <TextBlock Text="Derin Sistem Kalıntıları Taranıyor..."
+                        <TextBlock Text="Derin sistem kalıntıları taranıyor..."
                                    FontSize="{StaticResource Font.SectionTitle}"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -422,7 +422,7 @@
                                 HorizontalAlignment="Center">
                             <TextBlock Text="{Binding LiveProcessStatus}"
                                        FontSize="{StaticResource Font.Caption}"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        HorizontalAlignment="Center"/>
                         </Border>
                     </StackPanel>
@@ -487,7 +487,7 @@
                                 <TextBlock Text="{Binding UninstallBannerDetail}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                             </StackPanel>
-                            <ui:Button Grid.Column="2" Content="Tekrar Dene"
+                            <ui:Button Grid.Column="2" Content="Tekrar dene"
                                        Appearance="Secondary"
                                        Icon="{ui:SymbolIcon ArrowClockwise20}"
                                        Command="{Binding StartUninstallCommand}"
@@ -575,7 +575,7 @@
 
                             <!-- Safe Only Button -->
                             <ui:Button Grid.Column="3"
-                                       Content="Yalnızca Güvenliler"
+                                       Content="Yalnızca güvenliler"
                                        Appearance="Secondary"
                                        Command="{Binding SelectSafeOnlyCommand}"
                                        Padding="8,4"
@@ -591,7 +591,7 @@
                                     Padding="8,4"
                                     VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                                    <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
                                     <TextBlock Text="/" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                                     <TextBlock Text="{Binding TotalCount}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                                     <TextBlock Text=" Kalıntı" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
@@ -651,11 +651,11 @@
                                         <!-- Context Menu -->
                                         <Grid.ContextMenu>
                                             <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                                                <MenuItem Header="Konumu Gezginde Göster"
+                                                <MenuItem Header="Konumu gezginde göster"
                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                           Command="{Binding DataContext.OpenLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                           CommandParameter="{Binding}"/>
-                                                <MenuItem Header="Yolu Panoya Kopyala"
+                                                <MenuItem Header="Yolu panoya kopyala"
                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                           Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                           CommandParameter="{Binding}"/>
@@ -682,7 +682,7 @@
                                             <TextBlock Text="{Binding TypeName}"
                                                        FontSize="{StaticResource Font.Caption}"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </Border>
 
                                         <!-- Path & Description -->
@@ -710,7 +710,7 @@
                                         <!-- Size & Risk Badge -->
                                         <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding FormattedSize}"
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                        FontSize="{StaticResource Font.Caption}"
                                                        FontWeight="SemiBold"
                                                        VerticalAlignment="Center"
@@ -754,10 +754,10 @@
 
                         <!-- Selection Summary -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Temizlenecek Alan: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <TextBlock Text="Temizlenecek alan: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding FormattedSelectedSize}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             <TextBlock Text=" (" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding SelectedCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{Binding SelectedCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text=" Öğe)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </StackPanel>
 
@@ -769,7 +769,7 @@
                                        Padding="16,8"
                                        Margin="0,0,10,0"/>
 
-                            <ui:Button Content="Seçilen Kalıntıları Temizle"
+                            <ui:Button Content="Seçilen kalıntıları temizle"
                                        Appearance="Primary"
                                        Icon="{ui:SymbolIcon Delete20}"
                                        Command="{Binding CleanSelectedResidualsCommand}"
@@ -823,8 +823,8 @@
                                     Padding="16"
                                     Margin="0,0,8,0">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Temizlenen Öğe" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
-                                    <TextBlock Text="{Binding CleanedCount}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                    <TextBlock Text="Temizlenen öğe" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CleanedCount}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
 
@@ -835,7 +835,7 @@
                                     Padding="16"
                                     Margin="8,0,0,0">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Boşaltılan Alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Boşaltılan alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center"/>
                                     <TextBlock Text="{Binding FormattedCleanedSize}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                 </StackPanel>
                             </Border>
@@ -878,7 +878,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <ui:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                <ui:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="Kayıt defteri yedeği alındı" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -886,14 +886,14 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ui:Button Content="Yedeği Göster"
+                                    <ui:Button Content="Yedeği göster"
                                                Appearance="Secondary"
                                                Command="{Binding OpenBackupFolderCommand}"
                                                AutomationProperties.Name="Kayıt defteri yedek klasörünü göster"
                                                Padding="8,4"
                                                Margin="0,0,6,0"
                                                FontSize="{StaticResource Font.Caption}"/>
-                                    <ui:Button Content="Geri Yükle"
+                                    <ui:Button Content="Geri yükle"
                                                Appearance="Secondary"
                                                Command="{Binding RestoreRegistryCommand}"
                                                AutomationProperties.Name="Silinen kayıt defteri öğelerini geri yükle"
@@ -904,7 +904,7 @@
                         </Border>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <ui:Button Content="Geri Dönüşüm Kutusunu Aç"
+                            <ui:Button Content="Geri Dönüşüm Kutusunu aç"
                                        Appearance="Secondary"
                                        Icon="{ui:SymbolIcon Delete20}"
                                        Command="{Binding OpenRecycleBinCommand}"

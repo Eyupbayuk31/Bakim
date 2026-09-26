@@ -26,7 +26,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
-                         Title="Olay Günlüğü &amp; Sistem Sağlığı"
+                         Title="Olaylar ve çökmeler"
                          Description="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı.">
             <c:SectionHeader.Actions>
                 <!-- Sub-Tab Switcher & Refresh Button -->
@@ -34,17 +34,17 @@
                     <Border Style="{StaticResource FluentSegmentedContainer}"
                             Margin="0,0,12,0">
                         <StackPanel Orientation="Horizontal">
-                            <ui:Button Content="Mavi Ekran (BSOD)" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Bsod}"
+                            <ui:Button Content="Mavi ekran (BSOD)" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Bsod}"
                                        Icon="{ui:SymbolIcon DismissCircle20}"
                                        Command="{Binding SwitchTabCommand}"
                                        CommandParameter="Bsod"
                                        Margin="0,0,2,0"/>
-                            <ui:Button Content="Kritik Günlükler" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Events}"
+                            <ui:Button Content="Kritik günlükler" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Events}"
                                        Icon="{ui:SymbolIcon Warning20}"
                                        Command="{Binding SwitchTabCommand}"
                                        CommandParameter="Events"
                                        Margin="0,0,2,0"/>
-                            <ui:Button Content="Sistem Onarımı" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Repair}"
+                            <ui:Button Content="Sistem onarımı" Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding ActiveTab, Converter={StaticResource EqualsToBool}, ConverterParameter=Repair}"
                                        Icon="{ui:SymbolIcon Wrench20}"
                                        Command="{Binding SwitchTabCommand}"
                                        CommandParameter="Repair"/>
@@ -80,7 +80,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Sistem Sağlık Skoru" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Sistem sağlık skoru" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                             <TextBlock Text="%" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                             <TextBlock Text="{Binding Stats.HealthScore}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
@@ -111,7 +111,7 @@
             <!-- Card 2: Total Crashes -->
             <c:StatCard Grid.Column="2" 
                         Icon="DismissCircle24" 
-                        Label="Mavi Ekran / Çökme" 
+                        Label="Mavi ekran / çökme" 
                         Value="{Binding Stats.TotalCrashesCount}" 
                         Caption="adet döküm kaydı" 
                         Intent="Critical" 
@@ -120,7 +120,7 @@
             <!-- Card 3: Critical Events (7 Days) -->
             <c:StatCard Grid.Column="4" 
                         Icon="Warning24" 
-                        Label="Kritik Olaylar (7 Gün)" 
+                        Label="Kritik olaylar (7 gün)" 
                         Value="{Binding Stats.CriticalEvents7DaysCount}" 
                         Caption="kritik hata tespit edildi" 
                         Intent="Caution" 
@@ -129,7 +129,7 @@
             <!-- Card 4: Error Logs -->
             <c:StatCard Grid.Column="6" 
                         Icon="DocumentBulletList24" 
-                        Label="Hata Günlükleri (7 Gün)" 
+                        Label="Hata günlükleri (7 gün)" 
                         Value="{Binding Stats.ErrorEvents7DaysCount}" 
                         Caption="hata günlüğü kaydı" 
                         Intent="Accent" 
@@ -155,7 +155,7 @@
                            CommandParameter="All"
                            Padding="12,6" 
                            Margin="0,0,6,4"/>
-                <ui:Button Content="Yalnızca Kritik" 
+                <ui:Button Content="Yalnızca kritik" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="Kritik"
                            Padding="12,6" 
@@ -170,7 +170,7 @@
                            CommandParameter="Kernel"
                            Padding="12,6" 
                            Margin="0,0,6,4"/>
-                <ui:Button Content="Uygulama Çökmeleri" 
+                <ui:Button Content="Uygulama çökmeleri" 
                            Command="{Binding SetEventLevelFilterCommand}" 
                            CommandParameter="App"
                            Padding="12,6"
@@ -209,7 +209,7 @@
                          Visibility="{Binding Stats.TotalCrashesCount, Converter={StaticResource IntToVis}, ConverterParameter=0}">
                     <StackPanel HorizontalAlignment="Center">
                         <ui:SymbolIcon Symbol="CheckmarkCircle24" FontSize="48" Foreground="{DynamicResource SystemFillColorSuccessBrush}" HorizontalAlignment="Center"/>
-                        <TextBlock Text="Mavi Ekran (BSOD) Çökmesi Bulunamadı!" 
+                        <TextBlock Text="Mavi ekran (BSOD) çökmesi bulunamadı!" 
                                    FontSize="{StaticResource Font.Subtitle}" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
@@ -287,8 +287,8 @@
 
                                         <!-- Offending Driver -->
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                            <TextBlock Text="Neden Olan Sürücü: " FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock Text="{Binding CausedByDriver}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="Neden olan sürücü: " FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            <TextBlock Text="{Binding CausedByDriver}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             <TextBlock Text="{Binding DriverDescription, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         </StackPanel>
 
@@ -308,7 +308,7 @@
                                     <!-- Action Button -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <ui:Button Appearance="Secondary" 
-                                                   Content="Klasörde Göster" 
+                                                   Content="Klasörde göster" 
                                                    Icon="{ui:SymbolIcon FolderOpen20}"
                                                    Command="{Binding DataContext.OpenDumpLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
@@ -377,7 +377,7 @@
                                     <StackPanel Grid.Column="1" Margin="6,0,16,0" VerticalAlignment="Center">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="{Binding Source}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding EventId, StringFormat=' (Olay ID: {0})'}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding EventId, StringFormat=' (Olay ID: {0})'}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             <TextBlock Text="{Binding LogName, StringFormat=' [{0}]'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="6,0,0,0"/>
                                         </StackPanel>
                                         <TextBlock Text="{Binding Message}" 
@@ -428,8 +428,8 @@
                             </Grid.RowDefinitions>
 
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
-                                <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="SFC Sistem Dosyası Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <TextBlock Text="SFC sistem dosyası onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
 
                             <TextBlock Grid.Row="1" 
@@ -440,11 +440,11 @@
                                        Margin="0,0,0,12"/>
 
                             <ui:Button Grid.Row="2" 
-                                       Appearance="Primary" 
+                                       Appearance="Secondary" 
                                        Command="{Binding RunSfcCommand}"
                                        IsEnabled="{Binding IsRepairRunning, Converter={StaticResource InverseBool}}"
                                        Padding="14,8"
-                                       Content="SFC Taramasını Başlat"
+                                       Content="SFC taramasını başlat"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}"/>
                         </Grid>
                     </ui:Card>
@@ -460,7 +460,7 @@
 
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                                 <ui:SymbolIcon Symbol="ArrowClockwise24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="DISM Windows İmaj Onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="DISM Windows imaj onarımı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
 
                             <TextBlock Grid.Row="1" 
@@ -471,11 +471,11 @@
                                        Margin="0,0,0,12"/>
 
                             <ui:Button Grid.Row="2" 
-                                       Appearance="Success" 
+                                       Appearance="Secondary" 
                                        Command="{Binding RunDismCommand}"
                                        IsEnabled="{Binding IsRepairRunning, Converter={StaticResource InverseBool}}"
                                        Padding="14,8"
-                                       Content="DISM Onarımını Başlat"
+                                       Content="DISM onarımını başlat"
                                        Icon="{ui:SymbolIcon ArrowClockwise24}"/>
                         </Grid>
                     </ui:Card>
@@ -497,7 +497,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="Canlı Onarım Konsolu" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Canlı onarım konsolu" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Margin="10,0,0,0"
                                                  Visibility="{Binding IsRepairRunning, Converter={StaticResource BoolToVis}}"/>
                             </StackPanel>
@@ -506,7 +506,7 @@
                                        Appearance="Secondary" 
                                        Command="{Binding ClearConsoleCommand}"
                                        Padding="10,4"
-                                       Content="Konsolu Temizle"/>
+                                       Content="Konsolu temizle"/>
                         </Grid>
 
                         <!-- Console Output Screen -->
@@ -547,7 +547,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Info20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="Info20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                     <TextBlock Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
 

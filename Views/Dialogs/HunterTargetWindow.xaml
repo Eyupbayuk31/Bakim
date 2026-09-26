@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        Title="Avcı Modu"
+        Title="Pencereden seç"
         Width="180" Height="190"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -30,8 +30,8 @@
             <!-- 0. Header (Title & Close) -->
             <Grid Grid.Row="0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Target24" FontSize="15" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                    <TextBlock Text="Avcı Modu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <ui:SymbolIcon Symbol="Target24" FontSize="15" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                    <TextBlock Text="Pencereden seç" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                 </StackPanel>
 
                 <ui:Button Appearance="Transparent"
@@ -39,7 +39,7 @@
                            Padding="4,2"
                            Click="CloseButton_Click"
                            Icon="{ui:SymbolIcon Dismiss16}"
-                           ToolTip="Avcı Modunu Kapat" AutomationProperties.Name="Avcı Modunu Kapat"/>
+                           ToolTip="Kapat (Esc)" AutomationProperties.Name="Pencereden seçimi kapat"/>
             </Grid>
 
             <!-- 1. Center Interactive Draggable Target -->
@@ -66,7 +66,7 @@
                     <Ellipse Width="32" Height="32" Stroke="{DynamicResource AccentTextFillColorPrimaryBrush}" StrokeThickness="1.5" Opacity="0.8"/>
                     <ui:SymbolIcon Symbol="Target24" 
                                    FontSize="36" 
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                    HorizontalAlignment="Center" 
                                    VerticalAlignment="Center"/>
                 </Grid>

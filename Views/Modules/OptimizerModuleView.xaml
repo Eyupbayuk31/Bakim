@@ -21,14 +21,14 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
-                         Title="Bellek ve Süreçler"
+                         Title="Süreçler"
                          Description="Çalışan süreçler ve bellek dağılımı; kullanılmayan belleği Windows'a geri verme.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" 
                                      AutomationProperties.Name="Canlı izlemeyi aç veya kapat"
-                                     OnContent="Canlı İzleme"
-                                     OffContent="Canlı İzleme"
+                                     OnContent="Canlı izleme"
+                                     OffContent="Canlı izleme"
                                      Margin="0,0,10,0"
                                      VerticalAlignment="Center"/>
 
@@ -56,7 +56,7 @@
         <ui:InfoBar Grid.Row="1" 
                     IsOpen="{Binding HasResultBanner}" 
                     Severity="Success" 
-                    Title="İşlem Tamamlandı" 
+                    Title="İşlem tamamlandı" 
                     Message="{Binding OperationResultBanner}" 
                     Margin="0,0,0,14"/>
 
@@ -79,13 +79,12 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Fiziksel Bellek Kompozisyonu" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text=" (Windows 11 Dağılım Modeli)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Bellek kullanımı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Hardware.RamPercentage, StringFormat='%{0} Dolu'}" 
+                        <TextBlock Text="{Binding Hardware.RamPercentage, StringFormat='%{0} dolu'}" 
                                    FontSize="{StaticResource Font.Subtitle}" 
                                    FontWeight="SemiBold" 
                                    Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"/>
@@ -95,7 +94,7 @@
                 </Grid>
 
                 <!-- Multi-Segmented Memory Bar -->
-                <Border Grid.Row="1" Height="14" CornerRadius="{StaticResource Radius.MD}" Background="{DynamicResource ControlFillColorSecondaryBrush}" ClipToBounds="True" Margin="0,0,0,12">
+                <Border Grid.Row="1" Height="8" CornerRadius="{StaticResource Radius.XS}" Background="{DynamicResource ControlFillColorSecondaryBrush}" ClipToBounds="True" Margin="0,0,0,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="{Binding Composition.InUsePercent, FallbackValue=70, StringFormat='{}{0}*'}"/>
@@ -105,11 +104,11 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- In Use (Cyan/Accent) -->
-                        <Border Grid.Column="0" Background="{DynamicResource AccentFillColorDefaultBrush}" ToolTip="{Binding Composition.InUseGb, StringFormat='Kullanımda: {0:F1} GB'}"/>
+                        <Border Grid.Column="0" Background="{DynamicResource Chart.Series1}" ToolTip="{Binding Composition.InUseGb, StringFormat='Kullanımda: {0:F1} GB'}"/>
                         <!-- Modified (Purple) -->
                         <Border Grid.Column="1" Background="{DynamicResource Chart.Series4}" ToolTip="{Binding Composition.ModifiedGb, StringFormat='Değiştirilmiş: {0:F1} GB'}"/>
                         <!-- Standby / Cached (Green) -->
-                        <Border Grid.Column="2" Background="{DynamicResource SystemFillColorSuccessBrush}" ToolTip="{Binding Composition.StandbyGb, StringFormat='Bekleme Listesi (Önbellek): {0:F1} GB'}"/>
+                        <Border Grid.Column="2" Background="{DynamicResource Chart.Series3}" ToolTip="{Binding Composition.StandbyGb, StringFormat='Bekleme Listesi (Önbellek): {0:F1} GB'}"/>
                         <!-- Free (Dark Slate) -->
                         <Border Grid.Column="3" Background="{DynamicResource ControlStrokeColorDefaultBrush}" ToolTip="{Binding Composition.FreeGb, StringFormat='Boş / Serbest: {0:F1} GB'}"/>
                     </Grid>
@@ -126,7 +125,7 @@
 
                     <!-- In Use -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource AccentFillColorDefaultBrush}" Margin="0,0,6,0"/>
+                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource Chart.Series1}" Margin="0,0,6,0"/>
                         <TextBlock Text="Kullanımda: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         <TextBlock Text="{Binding Composition.InUseGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
@@ -140,74 +139,65 @@
 
                     <!-- Standby / Cached -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
+                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource Chart.Series3}" Margin="0,0,6,0"/>
                         <TextBlock Text="Bekleme (Önbellek): " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Text="{Binding Composition.StandbyGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                        <TextBlock Text="{Binding Composition.StandbyGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource Chart.Series3}"/>
                     </StackPanel>
 
                     <!-- Free -->
                     <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource ControlStrokeColorDefaultBrush}" Margin="0,0,6,0"/>
-                        <TextBlock Text="Boş Alan: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="Boş alan: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         <TextBlock Text="{Binding Composition.FreeGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
                 </Grid>
 
                 <!-- 4 KPI Cards (Technical Architecture) -->
-                <Grid Grid.Row="3">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                <c:SummaryStrip Grid.Row="3" Style="{StaticResource SummaryStrip.Inset}">
 
                     <!-- KPI 1: Speed & Slots -->
-                    <c:StatCard Grid.Column="0" 
+                    <c:StatCard 
                                 Icon="TopSpeed20" 
-                                Label="HIZ &amp; YUVALAR" 
+                                Label="Hız ve yuvalar" 
                                 Value="{Binding Hardware.RamSpeedMhz, FallbackValue='3200 MT/s'}" 
                                 Caption="{Binding Composition.SlotsText}" 
                                 Intent="Accent" 
                                 IsInteractive="True"/>
 
                     <!-- KPI 2: Commit Charge / Pagefile -->
-                    <c:StatCard Grid.Column="2" 
+                    <c:StatCard 
                                 Icon="HardDrive20" 
-                                Label="SANAL BELLEK (PAGEFILE)" 
+                                Label="Sanal bellek (sayfa dosyası)" 
                                 Value="{Binding Composition.CommitTotalGb, StringFormat='{}{0:F1} GB İşlendi'}" 
                                 Caption="{Binding Composition.CommitLimitGb, StringFormat='Limit: {0:F1} GB'}" 
                                 Intent="Neutral" 
                                 IsInteractive="True"/>
 
                     <!-- KPI 3: Kernel Pools -->
-                    <c:StatCard Grid.Column="4" 
+                    <c:StatCard 
                                 Icon="DeveloperBoard20" 
-                                Label="ÇEKİRDEK HAVUZLARI" 
+                                Label="Çekirdek havuzları" 
                                 Value="{Binding Composition.PagedPoolMb, StringFormat='Sayfalı: {0:F0} MB'}" 
                                 Caption="{Binding Composition.NonPagedPoolMb, StringFormat='Sayfasız: {0:F0} MB'}" 
                                 Intent="Neutral" 
                                 IsInteractive="True"/>
 
                     <!-- KPI 4: Hardware Reserved -->
-                    <c:StatCard Grid.Column="6" 
+                    <c:StatCard 
                                 Icon="ShieldCheckmark20" 
-                                Label="DONANIMA AYRILMIŞ" 
+                                Label="Donanıma ayrılmış" 
                                 Value="{Binding Composition.HardwareReservedText}" 
-                                Caption="BIOS / Entegre GPU" 
+                                Caption="BIOS / entegre GPU" 
                                 Intent="Neutral" 
                                 IsInteractive="True"/>
-                </Grid>
+                </c:SummaryStrip>
 
                 <!-- Optimization Progress Bar (Only during optimization) -->
                 <Grid Grid.Row="4" Margin="0,14,0,0" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                             <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="{Binding OptimizationStageText}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{Binding OptimizationStageText}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ProgressBar Value="{Binding OptimizationProgressPercent}" Maximum="100" Height="4"/>
                     </StackPanel>
@@ -285,11 +275,7 @@
                     </Grid>
 
                     <!-- Table Column Header -->
-                    <Border Grid.Row="1" 
-                            Background="{DynamicResource ControlFillColorSecondaryBrush}" 
-                            CornerRadius="{StaticResource Radius.SM}" 
-                            Padding="12,8" 
-                            Margin="0,0,0,6">
+                    <Border Grid.Row="1" Style="{StaticResource Table.HeaderRow}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="3*"/>                           <!-- Process Name & Publisher -->
@@ -306,10 +292,10 @@
                                     <MouseBinding Gesture="LeftClick" Command="{Binding ToggleSortCommand}" CommandParameter="Name"/>
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="İşlem / Uygulama" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <TextBlock Text="İşlem / uygulama" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsNameDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsNameAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
@@ -321,9 +307,9 @@
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="PID" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsPidDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsPidAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
@@ -335,9 +321,9 @@
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <TextBlock Text="CPU %" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsCpuDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsCpuAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
@@ -349,14 +335,14 @@
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <TextBlock Text="Bellek (RAM)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsRamDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsRamAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
 
-                            <TextBlock Grid.Column="4" Text="Durum / Öncelik" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Center" Margin="0,0,14,0"/>
+                            <TextBlock Grid.Column="4" Text="Durum / öncelik" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Center" Margin="0,0,14,0"/>
                             <TextBlock Grid.Column="5" Text="Eylemler" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" TextAlignment="Right"/>
                         </Grid>
                     </Border>
@@ -430,24 +416,24 @@
                                 <Grid Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=UserControl}}">
                                     <Grid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Teftiş Çekmecesini Aç" 
+                                            <MenuItem Header="Ayrıntıları göster" 
                                                       Command="{Binding PlacementTarget.Tag.SelectProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                            <MenuItem Header="Dosya Konumunu Aç (Explorer)" 
+                                            <MenuItem Header="Dosya konumunu aç (Explorer)" 
                                                       Command="{Binding PlacementTarget.Tag.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                             <Separator/>
-                                            <MenuItem Header="Öncelik: Yüksek Yap" 
+                                            <MenuItem Header="Öncelik: Yüksek yap" 
                                                       Command="{Binding PlacementTarget.Tag.SetHighPriorityCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                            <MenuItem Header="Öncelik: Normal Yap" 
+                                            <MenuItem Header="Öncelik: Normal yap" 
                                                       Command="{Binding PlacementTarget.Tag.SetNormalPriorityCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                             <Separator/>
-                                            <MenuItem Header="İşlemi Askıya Al / Devam Ettir (Freeze)" 
+                                            <MenuItem Header="İşlemi askıya al / devam ettir (Freeze)" 
                                                       Command="{Binding PlacementTarget.Tag.ToggleSuspendProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                            <MenuItem Header="İşlemi Sonlandır (Görevi Kapat)" 
+                                            <MenuItem Header="İşlemi sonlandır (görevi kapat)" 
                                                       Command="{Binding PlacementTarget.Tag.KillProcessCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                       CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                         </ContextMenu>
@@ -518,7 +504,7 @@
                                                Text="{Binding FormattedMemory}" 
                                                FontSize="{StaticResource Font.Caption}" 
                                                FontWeight="SemiBold" 
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                                VerticalAlignment="Center" 
                                                TextAlignment="Right" 
                                                Margin="0,0,14,0"/>
@@ -557,16 +543,16 @@
                                                    CommandParameter="{Binding}"
                                                    Padding="6,4" 
                                                    Margin="0,0,6,0"
-                                                   ToolTip="Teftiş Çekmecesini Aç" 
+                                                   ToolTip="Ayrıntıları göster" 
                                                    Icon="{ui:SymbolIcon Info20}"/>
 
                                         <!-- Kill Button -->
-                                        <ui:Button Appearance="Danger" 
+                                        <ui:Button Appearance="Secondary" 
                                                    Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
                                                    IsEnabled="{Binding IsTerminating, Converter={StaticResource InverseBool}}"
                                                    Padding="6,4" 
-                                                   ToolTip="Görevi Sonlandır" 
+                                                   ToolTip="Görevi sonlandır" 
                                                    Icon="{ui:SymbolIcon Dismiss20}"/>
                                     </StackPanel>
                                 </Grid>
@@ -608,13 +594,13 @@
                                        Appearance="Transparent" 
                                        Command="{Binding CloseDrawerCommand}" 
                                        Icon="{ui:SymbolIcon Dismiss24}" 
-                                       ToolTip="Çekmeceyi Kapat"/>
+                                       ToolTip="Ayrıntıları kapat"/>
                         </Grid>
 
                         <!-- Description / Publisher -->
                         <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="YAYINCI &amp; AÇIKLAMA" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="Yayıncı ve açıklama" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding SelectedProcess.Publisher}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                                 <TextBlock Text="{Binding SelectedProcess.Description}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                             </StackPanel>
@@ -623,17 +609,17 @@
                         <!-- Memory Metrics Breakdown -->
                         <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
-                                <TextBlock Text="BELLEK AYRINTILARI" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
+                                <TextBlock Text="Bellek ayrıntıları" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
                                 <Grid Margin="0,0,0,4">
-                                    <TextBlock Text="Çalışma Kümesi (RAM)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding SelectedProcess.FormattedMemory}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="Çalışma kümesi (RAM)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding SelectedProcess.FormattedMemory}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,4">
-                                    <TextBlock Text="Özel Ayrılmış (Private)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="Özel ayrılmış (Private)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     <TextBlock Text="{Binding SelectedProcess.FormattedPrivateBytes}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,4">
-                                    <TextBlock Text="İş Parçacıkları (Threads)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="İş parçacıkları (Threads)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     <TextBlock Text="{Binding SelectedProcess.ThreadCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Grid>
@@ -646,13 +632,13 @@
                         <!-- File Path Section -->
                         <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="12" Margin="0,0,0,14">
                             <StackPanel>
-                                <TextBlock Text="ÇALIŞTIRILABİLİR DOSYA YOLU" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="Çalıştırılabilir dosya yolu" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding SelectedProcess.FilePath}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" Margin="0,4,0,8"/>
                                 <ui:Button Appearance="Secondary" 
                                            Command="{Binding OpenFileLocationCommand}" 
                                            HorizontalAlignment="Stretch"
                                            Padding="8,6"
-                                           Content="Dosya Konumunu Aç (Explorer)" 
+                                           Content="Dosya konumunu aç (Explorer)" 
                                            Icon="{ui:SymbolIcon FolderOpen24}"/>
                             </StackPanel>
                         </Border>
@@ -663,7 +649,7 @@
                                        Command="{Binding ToggleSuspendProcessCommand}"
                                        HorizontalAlignment="Stretch"
                                        Padding="10,8"
-                                       Content="İşlemi Askıya Al / Devam Et"
+                                       Content="İşlemi askıya al / devam et"
                                        Icon="{ui:SymbolIcon Pause24}"
                                        Margin="0,0,0,8"/>
 
@@ -671,7 +657,7 @@
                                        Command="{Binding TrimProcessRamCommand}"
                                        HorizontalAlignment="Stretch"
                                        Padding="10,8"
-                                       Content="Bu Sürecin RAM'ini Kırp"
+                                       Content="Bu sürecin RAM'ini kırp"
                                        Icon="{ui:SymbolIcon Flash24}"
                                        Margin="0,0,0,8"/>
 
@@ -679,16 +665,16 @@
                                        Command="{Binding ScanWithVirusTotalCommand}"
                                        HorizontalAlignment="Stretch"
                                        Padding="10,8"
-                                       Content="VirusTotal Güvenlik Analizi"
+                                       Content="VirusTotal güvenlik analizi"
                                        Icon="{ui:SymbolIcon ShieldCheckmark24}"
                                        Margin="0,0,0,8"/>
 
-                            <ui:Button Appearance="Danger"
+                            <ui:Button Appearance="Secondary"
                                        Command="{Binding KillProcessCommand}"
                                        CommandParameter="{Binding SelectedProcess}"
                                        HorizontalAlignment="Stretch"
                                        Padding="10,8"
-                                       Content="Görevi Sonlandır (Ağacı Kapat)"
+                                       Content="Görevi sonlandır (ağacı kapat)"
                                        Icon="{ui:SymbolIcon Dismiss24}"/>
                         </StackPanel>
                     </StackPanel>

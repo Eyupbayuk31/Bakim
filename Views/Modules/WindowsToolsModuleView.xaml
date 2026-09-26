@@ -50,23 +50,23 @@
                                     CornerRadius="28" 
                                     Margin="0,0,16,0"
                                     VerticalAlignment="Center">
-                                <ui:SymbolIcon Symbol="Image24" FontSize="28" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ui:SymbolIcon Symbol="Image24" FontSize="28" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                    <TextBlock Text="Klasik Windows Fotoğraf Görüntüleyicisi (Photo Viewer)" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Klasik Windows fotoğraf görüntüleyicisi (Photo Viewer)" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     
                                     <!-- Aktif Rozeti -->
                                     <Border Background="{DynamicResource Brush.Success.Subtle}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0"
                                             Visibility="{Binding IsPhotoViewerActivated, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Sistemde Aktif (.jpg, .png, .bmp, .gif)" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                                        <TextBlock Text="Sistemde aktif (.jpg, .png, .bmp, .gif)" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                     </Border>
                                     
                                     <!-- Pasif Rozeti -->
                                     <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="10,0,0,0"
                                             Visibility="{Binding IsPhotoViewerActivated, Converter={StaticResource InverseBoolToVis}}">
-                                        <TextBlock Text="Varsayılan UWP / Pasif" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <TextBlock Text="Varsayılan UWP / pasif" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     </Border>
                                 </StackPanel>
                                 <TextBlock Text="Windows 10 ve 11'in yavaş açılan 'Fotoğraflar' UWP uygulaması yerine, Windows 7'nin anında açılan ve renkleri doğru veren efsanevi Photo Viewer motorunu tüm formatlar için sisteme geri getirir." 
@@ -80,14 +80,14 @@
                                        VerticalAlignment="Center"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="Fotoğraf Görüntüleyicisini Sisteme Tanımla &amp; Aç" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
+                                    <TextBlock Text="Fotoğraf görüntüleyicisini sisteme tanımla ve aç" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"/>
                                 </StackPanel>
                             </ui:Button>
                         </Grid>
                     </Border>
 
                     <!-- OPERATION RESULT INFOBAR -->
-                    <ui:InfoBar Title="İşlem Durumu" 
+                    <ui:InfoBar Title="İşlem durumu" 
                                 Message="{Binding ToolOperationMessage}" 
                                 Severity="{Binding ToolOperationSeverity}" 
                                 IsOpen="{Binding IsToolOperationMessageOpen}" 
@@ -122,7 +122,7 @@
                                            Margin="0,0,6,0" Padding="12,6">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Sistem &amp; Çekirdek (6)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Sistem ve çekirdek (6)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </ui:Button>
 
@@ -131,7 +131,7 @@
                                            Margin="0,0,6,0" Padding="12,6">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="HardDrive20" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Donanım &amp; Disk (4)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Donanım ve disk (4)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </ui:Button>
 
@@ -140,7 +140,7 @@
                                            Margin="0,0,6,0" Padding="12,6">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="ShieldKeyhole24" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Ağ &amp; Güvenlik (5)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Ağ ve güvenlik (5)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </ui:Button>
 
@@ -149,7 +149,7 @@
                                            Margin="0,0,6,0" Padding="12,6">
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="Flash24" FontSize="14" Margin="0,0,6,0"/>
-                                        <TextBlock Text="Hızlı Erişim &amp; Klasik Araçlar (9)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Hızlı erişim ve klasik araçlar (9)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                                     </StackPanel>
                                 </ui:Button>
                             </WrapPanel>
@@ -195,7 +195,7 @@
                                                 VerticalAlignment="Center">
                                             <ui:SymbolIcon Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" 
                                                            FontSize="22" 
-                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         </Border>
 
@@ -204,7 +204,7 @@
                                             <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                                                 <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="5,1" Margin="0,0,6,0">
-                                                    <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </Border>
                                                 <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="5,1">
                                                     <TextBlock Text="{Binding ExecutablePath}" FontSize="{StaticResource Font.Micro}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>

@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        Title="Avcı Modu - Hedef Eylemleri"
+        Title="Pencereden seç"
         Width="520" Height="470"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
@@ -31,9 +31,9 @@
             <!-- 0. Header -->
             <Grid Grid.Row="0" Margin="0,0,0,16">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Target24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                    <ui:SymbolIcon Symbol="Target24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                     <StackPanel>
-                        <TextBlock Text="Avcı Modu - Hedef Yakalandı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Seçilen uygulama" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Seçilen hedef üzerinde gerçekleştirmek istediğiniz işlemi seçin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -78,7 +78,7 @@
                             <ui:SymbolIcon x:Name="FallbackIcon" 
                                            Symbol="Apps24" 
                                            FontSize="28" 
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>
                         </Grid>
@@ -86,10 +86,10 @@
 
                     <!-- Info Texts -->
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtDisplayName" Text="Uygulama Adı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock x:Name="TxtDisplayName" Text="Uygulama adı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         
                         <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                            <TextBlock x:Name="TxtProcessInfo" Text="chrome.exe (PID: 1234)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Medium"/>
+                            <TextBlock x:Name="TxtProcessInfo" Text="chrome.exe (PID: 1234)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontWeight="Medium"/>
                             <TextBlock x:Name="TxtMatchStatus" Text=" • [Kayıtlı Program]" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="6,0,0,0"/>
                         </StackPanel>
 
@@ -115,7 +115,7 @@
                            Icon="{ui:SymbolIcon Delete24}">
                     <ui:Button.Content>
                         <StackPanel Margin="8,0,0,0">
-                            <TextBlock Text="Uygulamayı Kaldır (Uninstall)" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Uygulamayı kaldır (Uninstall)" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="Resmi kaldırma sihirbazını başlatır ve ardından artık dosyaları temizler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </ui:Button.Content>
@@ -130,7 +130,7 @@
                            Icon="{ui:SymbolIcon Broom24}">
                     <ui:Button.Content>
                         <StackPanel Margin="8,0,0,0">
-                            <TextBlock Text="Zorla Kaldır (Force Uninstall)" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                            <TextBlock Text="Zorla kaldır (Force Uninstall)" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
                             <TextBlock Text="Kaldırıcıyı beklemeden süreci kapatır, tüm klasör ve kayıt defteri artıklarını zorla söker" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </ui:Button.Content>
@@ -154,7 +154,7 @@
                                Click="ThreatAnalysis_Click"
                                Icon="{ui:SymbolIcon ShieldKeyhole20}">
                         <ui:Button.Content>
-                            <TextBlock Text="Tehdit Analizi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Tehdit analizi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </ui:Button.Content>
                     </ui:Button>
 
@@ -166,7 +166,7 @@
                                Click="KillProcess_Click"
                                Icon="{ui:SymbolIcon Stop20}">
                         <ui:Button.Content>
-                            <TextBlock Text="Süreci Kapat" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Süreci kapat" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </ui:Button.Content>
                     </ui:Button>
 
@@ -178,7 +178,7 @@
                                Click="OpenFileLocation_Click"
                                Icon="{ui:SymbolIcon FolderOpen20}">
                         <ui:Button.Content>
-                            <TextBlock Text="Konumu Aç" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Konumu aç" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </ui:Button.Content>
                     </ui:Button>
                 </Grid>

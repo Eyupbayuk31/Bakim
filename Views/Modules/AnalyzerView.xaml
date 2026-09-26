@@ -41,7 +41,7 @@
                                    FontSize="{StaticResource Font.Caption}"
                                    FontWeight="Medium"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
@@ -53,7 +53,7 @@
                                    VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis"
                                    MaxWidth="340"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
             </c:SectionHeader.TitleAdornment>
@@ -77,16 +77,16 @@
                                           Command="{Binding ScanAllVisibleWithVirusTotalCommand}"
                                           IsEnabled="{Binding IsVirusTotalScanning, Converter={StaticResource InverseBool}}"
                                           Icon="{ui:SymbolIcon ShieldTask20}"/>
-                                <MenuItem Header="VT API Anahtarını Yönet"
+                                <MenuItem Header="VT API anahtarını yönet"
                                           Command="{Binding OpenApiKeyDialogCommand}"
                                           Icon="{ui:SymbolIcon Key20}"/>
                                 <Separator/>
-                                <MenuItem Header="Tümünü Derinlemesine Analiz Et"
+                                <MenuItem Header="Tümünü derinlemesine analiz et"
                                           Command="{Binding DeepAnalyzeAllCommand}"
                                           IsEnabled="{Binding IsDeepAnalyzing, Converter={StaticResource InverseBool}}"
                                           Icon="{ui:SymbolIcon DocumentSearch20}"/>
                                 <Separator/>
-                                <MenuItem Header="CSV Raporu Dışa Aktar"
+                                <MenuItem Header="CSV raporu dışa aktar"
                                           Command="{Binding ExportReportCsvCommand}"
                                           Icon="{ui:SymbolIcon ArrowDownload20}"/>
                             </ContextMenu>
@@ -98,8 +98,8 @@
                                Padding="{StaticResource Pad.Control}"
                                Margin="{StaticResource Gap.Right.SM}"
                                Icon="{ui:SymbolIcon DocumentSearch24}"
-                               Content="Dosya İncele"
-                               ToolTip="Herhangi bir .exe, .dll veya başlangıç dosyasını röntgenle"
+                               Content="Dosya incele"
+                               ToolTip="Herhangi bir .exe, .dll veya başlangıç dosyasını analiz et"
                                AutomationProperties.Name="Bir dosyayı seçip derinlemesine incele"/>
 
                     <ui:Button Appearance="Primary"
@@ -107,7 +107,7 @@
                                IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBool}}"
                                Padding="14,8"
                                Icon="{ui:SymbolIcon ArrowClockwise24}"
-                               Content="Yeniden Tara"
+                               Content="Yeniden tara"
                                ToolTip="Tüm kalıcılık noktalarını yeniden tara"
                                AutomationProperties.Name="Kalıcılık noktalarını yeniden tara"/>
                 </StackPanel>
@@ -153,42 +153,37 @@
                                     Visibility="{Binding DataContext.IsChangesTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
 
         <!-- 1. KPI kartları — tasarım sistemi bileşeni (önceki 76 satırlık elle yazım yerine) -->
-        <UniformGrid Grid.Row="2" Columns="5" Margin="{StaticResource Gap.Bottom.LG}" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
+        <c:SummaryStrip Grid.Row="2" Margin="{StaticResource Gap.Bottom.LG}" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
             <c:StatCard Icon="Apps24"
                         Intent="Accent"
-                        Label="Aktif Kalıcılık"
+                        Label="Aktif kalıcılık"
                         Value="{Binding TotalCount}"
-                        Caption="Taranan tüm başlangıç vektörleri"
-                        Margin="0,0,6,0"/>
+                        Caption="Taranan tüm başlangıç vektörleri"/>
 
             <c:StatCard Icon="ShieldDismiss24"
                         Intent="Critical"
-                        Label="Yüksek Risk"
+                        Label="Yüksek risk"
                         Value="{Binding HighRiskCount}"
-                        Caption="Listenin en üstünde sıralanır"
-                        Margin="6,0,6,0"/>
+                        Caption="Listenin en üstünde sıralanır"/>
 
             <c:StatCard Icon="Warning24"
                         Intent="Caution"
-                        Label="İmzasız / Şüpheli"
+                        Label="İmzasız / şüpheli"
                         Value="{Binding UnsignedCount}"
-                        Caption="Dijital imzası doğrulanamayan girdiler"
-                        Margin="6,0,6,0"/>
+                        Caption="Dijital imzası doğrulanamayan girdiler"/>
 
             <c:StatCard Icon="ShieldCheckmark24"
                         Intent="Success"
-                        Label="Doğrulanmış İmza"
+                        Label="Doğrulanmış imza"
                         Value="{Binding VerifiedCount}"
-                        Caption="Gömülü veya katalog imzası geçerli"
-                        Margin="6,0,6,0"/>
+                        Caption="Gömülü veya katalog imzası geçerli"/>
 
             <c:StatCard Icon="CalendarClock24"
                         Intent="Caution"
-                        Label="Son 7 Günde Eklenen"
+                        Label="Son 7 günde eklenen"
                         Value="{Binding RecentlyAddedCount}"
-                        Caption="Taze başlangıç girdisi = erken bulaşma sinyali"
-                        Margin="6,0,0,0"/>
-        </UniformGrid>
+                        Caption="Taze başlangıç girdisi = erken bulaşma sinyali"/>
+        </c:SummaryStrip>
 
         <!-- 2. Category Toolbar & Options -->
         <Border Grid.Row="3" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}" 
@@ -215,19 +210,19 @@
                                Padding="12,6" Margin="0,0,6,4" Content="Kayıt Defteri (Run)" Icon="{ui:SymbolIcon Document20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Startup"
                                Appearance="{Binding IsStartupCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Başlangıç Klasörü" Icon="{ui:SymbolIcon Folder20}"/>
+                               Padding="12,6" Margin="0,0,6,4" Content="Başlangıç klasörü" Icon="{ui:SymbolIcon Folder20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Tasks"
                                Appearance="{Binding IsTasksCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Zamanlanmış Görevler" Icon="{ui:SymbolIcon CalendarClock20}"/>
+                               Padding="12,6" Margin="0,0,6,4" Content="Zamanlanmış görevler" Icon="{ui:SymbolIcon CalendarClock20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Services"
                                Appearance="{Binding IsServicesCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Windows Servisleri" Icon="{ui:SymbolIcon DeveloperBoard20}"/>
+                               Padding="12,6" Margin="0,0,6,4" Content="Windows servisleri" Icon="{ui:SymbolIcon DeveloperBoard20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Wmi"
                                Appearance="{Binding IsWmiCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="WMI Kalıcılığı" Icon="{ui:SymbolIcon Flash20}"/>
+                               Padding="12,6" Margin="0,0,6,4" Content="WMI kalıcılığı" Icon="{ui:SymbolIcon Flash20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Shell"
                                Appearance="{Binding IsShellCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Shell Eklentileri" Icon="{ui:SymbolIcon Desktop20}"/>
+                               Padding="12,6" Margin="0,0,6,4" Content="Shell eklentileri" Icon="{ui:SymbolIcon Desktop20}"/>
                 </WrapPanel>
 
                 <!-- Row 2: Search Box & Sysinternals Filter Toggles -->
@@ -250,12 +245,12 @@
                     <!-- Filter Switches (Sysinternals Hide Microsoft) -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
-                            <TextBlock Text="Microsoft Girdilerini Gizle" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Microsoft girdilerini gizle" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <ui:ToggleSwitch IsChecked="{Binding HideMicrosoftEntries, Mode=TwoWay}" AutomationProperties.Name="Microsoft imzalı girdileri gizle" VerticalAlignment="Center"/>
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Yalnızca İmzasızları Göster" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Yalnızca imzasızları göster" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <ui:ToggleSwitch IsChecked="{Binding ShowOnlyUnsigned, Mode=TwoWay}" AutomationProperties.Name="Yalnızca imzasız girdileri göster" VerticalAlignment="Center"/>
                         </StackPanel>
                     </StackPanel>
@@ -312,7 +307,7 @@
                                 Padding="12,10">
                             <Border.ContextMenu>
                                 <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                                    <MenuItem Header="Sezgisel Tehdit Analizi Yap"
+                                    <MenuItem Header="Sezgisel tehdit analizi yap"
                                               Icon="{ui:SymbolIcon Shield24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               FontWeight="SemiBold"
@@ -323,12 +318,12 @@
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="Dosya Konumunu Aç"
+                                    <MenuItem Header="Dosya konumunu aç"
                                               Icon="{ui:SymbolIcon FolderOpen24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="SHA-256 Kopyala"
+                                    <MenuItem Header="SHA-256 kopyala"
                                               Icon="{ui:SymbolIcon Copy24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -370,7 +365,7 @@
                                                RenderOptions.BitmapScalingMode="HighQuality"/>
                                         <ui:SymbolIcon Symbol="Document24" 
                                                        FontSize="18" 
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                        HorizontalAlignment="Center" 
                                                        VerticalAlignment="Center"
                                                        Visibility="{Binding IconSource, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
@@ -406,7 +401,7 @@
                                         Padding="8,4"
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding CategoryDisplayName}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryDisplayName}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </Border>
 
                                 <!-- Column 4: Digital Signature Badge -->
@@ -482,7 +477,7 @@
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                                        <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,4,0"/>
                                         <TextBlock Text="{Binding VirusTotalScore}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Border>
@@ -506,7 +501,7 @@
                                                Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                Icon="{ui:SymbolIcon ShieldTask20}"
-                                               Content="Analiz Et"
+                                               Content="Analiz et"
                                                ToolTip="Dosyayı derinlemesine incele: PE yapısı, imza, entropi ve risk skoru"
                                                AutomationProperties.Name="{Binding Name, StringFormat='{}{0} dosyasını analiz et'}"/>
 
@@ -523,16 +518,16 @@
                                                           Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           CommandParameter="{Binding}"
                                                           Icon="{ui:SymbolIcon Shield20}"/>
-                                                <MenuItem Header="VirusTotal Raporunu Tarayıcıda Aç"
+                                                <MenuItem Header="VirusTotal raporunu tarayıcıda aç"
                                                           Command="{Binding DataContext.OpenVirusTotalWebCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           CommandParameter="{Binding}"
                                                           Icon="{ui:SymbolIcon Globe20}"/>
                                                 <Separator/>
-                                                <MenuItem Header="Dosya Konumunu Aç"
+                                                <MenuItem Header="Dosya konumunu aç"
                                                           Command="{Binding DataContext.OpenFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           CommandParameter="{Binding}"
                                                           Icon="{ui:SymbolIcon FolderOpen20}"/>
-                                                <MenuItem Header="SHA-256 Özetini Kopyala"
+                                                <MenuItem Header="SHA-256 özetini kopyala"
                                                           Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           CommandParameter="{Binding}"
                                                           Icon="{ui:SymbolIcon Copy20}"/>
@@ -541,7 +536,7 @@
                                     </ui:DropDownButton>
 
                                     <!-- Yıkıcı eylem görünür kalır: kırmızı ve beklenen konumda -->
-                                    <ui:Button Appearance="Danger"
+                                    <ui:Button Appearance="Secondary"
                                                Padding="8,5"
                                                Command="{Binding DataContext.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
@@ -596,9 +591,9 @@
                 <!-- Modal Header -->
                 <Grid Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                        <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                         <StackPanel>
-                            <TextBlock Text="VirusTotal API Entegrasyonu" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="VirusTotal API entegrasyonu" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
@@ -611,7 +606,7 @@
                 </Grid>
 
                 <!-- API Key Input Field -->
-                <TextBlock Text="VirusTotal API Anahtarı (v3):" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,6"/>
+                <TextBlock Text="VirusTotal API anahtarı (v3):" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,6"/>
                 <ui:TextBox Text="{Binding ApiKeyInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             PlaceholderText="64 karakterlik VirusTotal API anahtarınızı buraya yapıştırın..."
                             ClearButtonEnabled="True"
@@ -621,7 +616,7 @@
                 <!-- Status Message -->
                 <TextBlock Text="{Binding ApiKeyStatusText}" 
                            FontSize="{StaticResource Font.Caption}" 
-                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                            FontWeight="Medium"
                            Margin="0,0,0,16"
                            TextWrapping="Wrap"/>
@@ -648,8 +643,8 @@
                                Command="{Binding CloseApiKeyDialogCommand}"/>
 
                     <ui:Button Grid.Column="3"
-                               Appearance="Primary"
-                               Content="Doğrula &amp; Kaydet"
+                               Appearance="Secondary"
+                               Content="Doğrula ve kaydet"
                                Padding="16,8"
                                Icon="{ui:SymbolIcon Checkmark20}"
                                Command="{Binding SaveApiKeyCommand}"/>

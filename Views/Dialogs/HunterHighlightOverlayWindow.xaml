@@ -38,9 +38,9 @@
             </Border.Effect>
 
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:SymbolIcon x:Name="HudIcon" Symbol="Target24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                <ui:SymbolIcon x:Name="HudIcon" Symbol="Target24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                 <StackPanel>
-                    <TextBlock x:Name="HudTitle" Text="Hedef Tespit Edildi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock x:Name="HudTitle" Text="Hedef tespit edildi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     <TextBlock x:Name="HudSubtitle" Text="PID: ---" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                 </StackPanel>
             </StackPanel>

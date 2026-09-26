@@ -31,11 +31,8 @@
         <!-- 0. Header — tasarım sistemi bileşeni (önceki 38 satırlık elle yazım yerine) -->
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
-                         Title="Genel Bakış"
+                         Title="Genel bakış"
                          Description="Sistem durumu, donanım sensörleri ve hızlı bakım eylemleri.">
-            <c:SectionHeader.TitleAdornment>
-                <c:StatusBadge Text="Canlı Telemetri Aktif" Intent="Success"/>
-            </c:SectionHeader.TitleAdornment>
             <c:SectionHeader.Actions>
                 <ui:Button Appearance="Secondary"
                            Command="{Binding RefreshCommand}"
@@ -56,8 +53,8 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Puan halkası -->
-                <Grid Grid.Column="0" Width="112" Height="112" Margin="0,0,24,0" VerticalAlignment="Top">
-                    <ui:ProgressRing Width="112" Height="112"
+                <Grid Grid.Column="0" Width="96" Height="96" Margin="0,0,24,0" VerticalAlignment="Top">
+                    <ui:ProgressRing Width="96" Height="96"
                                      Progress="{Binding HealthScoreValue}"
                                      IsIndeterminate="False"
                                      Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
@@ -141,7 +138,7 @@
                     <StackPanel Margin="{StaticResource Gap.Top.SM}"
                                 Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVis}}">
                         <TextBlock Text="{Binding BoostStageText}" FontSize="{StaticResource Font.Caption}" TextTrimming="CharacterEllipsis"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    AutomationProperties.LiveSetting="Polite"/>
                         <ProgressBar Value="{Binding BoostProgressPercent}" Maximum="100" Height="4" Margin="{StaticResource Gap.Top.XS}"/>
                         <ui:Button Appearance="Transparent" Padding="6,2" Margin="{StaticResource Gap.Top.XS}" HorizontalAlignment="Right"
@@ -202,7 +199,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <ui:SymbolIcon Symbol="{Binding KindSymbol}" FontSize="{StaticResource Icon.SM}" VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding TimeText}" FontSize="{StaticResource Font.Caption}" Margin="0,0,10,0"
                                                VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     <TextBlock Grid.Column="2" FontSize="{StaticResource Font.Body}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
@@ -228,7 +225,7 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                         <ui:SymbolIcon Symbol="Games24" FontSize="{StaticResource Icon.LG}" Filled="{Binding IsGameModeActive}"
-                                       Margin="{StaticResource Gap.Right.SM}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                       Margin="{StaticResource Gap.Right.SM}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         <TextBlock Text="Oyun Modu" Style="{StaticResource Text.CardTitle}" VerticalAlignment="Center"/>
                         <c:StatusBadge Text="Açık" Intent="Success" Margin="8,0,0,0" VerticalAlignment="Center"
                                        Visibility="{Binding IsGameModeActive, Converter={StaticResource BoolToVis}}"/>
@@ -279,8 +276,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="İşlemci (CPU)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="İşlemci" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
                             <TextBlock Text="{Binding Metrics.CpuTemperatureText}" ToolTip="{Binding Metrics.CpuTemperatureTooltip}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -297,17 +294,10 @@
                     <!-- Native WPF Sparkline Chart -->
                     <Viewbox Grid.Row="2" Stretch="Fill" Margin="0,4,0,4">
                         <Canvas Width="160" Height="46" ClipToBounds="True">
-                            <Polygon Points="{Binding CpuSparklinePolygonPoints}">
-                                <Polygon.Fill>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="{DynamicResource Color.Accent}" Offset="0.0"/>
-                                        <GradientStop Color="{DynamicResource Color.Accent.Transparent}" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Polygon.Fill>
-                            </Polygon>
+                            <Polygon Points="{Binding CpuSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series1.Subtle}"/>
                             <Polyline Points="{Binding CpuSparklinePoints}" 
-                                      Stroke="{DynamicResource AccentTextFillColorPrimaryBrush}" 
-                                      StrokeThickness="2" 
+                                      Stroke="{DynamicResource Chart.Series1}" 
+                                      StrokeThickness="1.5" 
                                       StrokeLineJoin="Round"/>
                         </Canvas>
                     </Viewbox>
@@ -315,8 +305,8 @@
                     <!-- Bottom Specs -->
                     <TextBlock Grid.Row="3" 
                                Text="{Binding Metrics.CpuClockSpeed, StringFormat='Saat: {0}'}" 
-                               FontSize="{StaticResource Font.Micro}" 
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                               FontSize="{StaticResource Font.Caption}" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
             </ui:Card>
 
@@ -337,11 +327,11 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="TopSpeed24" FontSize="16" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Fiziksel RAM" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ui:SymbolIcon Symbol="TopSpeed24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Bellek" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
-                            <TextBlock Text="{Binding Metrics.RamUsagePercentage, StringFormat='%{0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="{Binding Metrics.RamUsagePercentage, StringFormat='%{0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
                     </Grid>
 
@@ -355,17 +345,10 @@
                     <!-- Native WPF Sparkline Chart -->
                     <Viewbox Grid.Row="2" Stretch="Fill" Margin="0,4,0,4">
                         <Canvas Width="160" Height="46" ClipToBounds="True">
-                            <Polygon Points="{Binding RamSparklinePolygonPoints}">
-                                <Polygon.Fill>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="{DynamicResource Color.Success}" Offset="0.0"/>
-                                        <GradientStop Color="{DynamicResource Color.Success.Transparent}" Offset="1.0"/>
-                                    </LinearGradientBrush>
-                                </Polygon.Fill>
-                            </Polygon>
+                            <Polygon Points="{Binding RamSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series2.Subtle}"/>
                             <Polyline Points="{Binding RamSparklinePoints}" 
-                                      Stroke="{DynamicResource SystemFillColorSuccessBrush}" 
-                                      StrokeThickness="2" 
+                                      Stroke="{DynamicResource Chart.Series2}" 
+                                      StrokeThickness="1.5" 
                                       StrokeLineJoin="Round"/>
                         </Canvas>
                     </Viewbox>
@@ -373,8 +356,8 @@
                     <!-- Bottom Specs -->
                     <TextBlock Grid.Row="3" 
                                Text="{Binding Metrics.FreeRamGb, StringFormat='{}{0} GB Kullanılabilir'}" 
-                               FontSize="{StaticResource Font.Micro}" 
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                               FontSize="{StaticResource Font.Caption}" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
             </ui:Card>
 
@@ -396,33 +379,33 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Ağ Trafiği" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Ağ" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
-                            <TextBlock Text="Aktif" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
+                            <TextBlock Text="Aktif" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
                     </Grid>
 
                     <!-- Download Speed -->
                     <StackPanel Grid.Row="1" Margin="0,10,0,2">
-                        <TextBlock Text="İndirme (Download)" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="İndirme" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding Metrics.FormattedNetworkInSpeed}" 
-                                   FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Upload Speed -->
                     <StackPanel Grid.Row="2" Margin="0,4,0,8">
-                        <TextBlock Text="Yükleme (Upload)" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Yükleme" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding Metrics.FormattedNetworkOutSpeed}" 
                                    FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
 
                     <!-- Bottom Interface Status -->
                     <TextBlock Grid.Row="4" 
-                               Text="Ethernet / Wi-Fi Bağlantısı" 
-                               FontSize="{StaticResource Font.Micro}" 
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                               Text="Ethernet / Wi-Fi bağlantısı" 
+                               FontSize="{StaticResource Font.Caption}" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
             </ui:Card>
 
@@ -444,11 +427,11 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="16" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Disk Hızı &amp; C:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                            <TextBlock Text="Disk" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
-                            <TextBlock Text="{Binding Metrics.SystemDriveUsedPercentage, StringFormat='%{0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                            <TextBlock Text="{Binding Metrics.SystemDriveUsedPercentage, StringFormat='%{0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Border>
                     </Grid>
 
@@ -473,8 +456,8 @@
 
                     <TextBlock Grid.Row="4" 
                                Text="{Binding Metrics.SystemDriveTotalGb, StringFormat='Toplam: {0} GB'}" 
-                               FontSize="{StaticResource Font.Micro}" 
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                               FontSize="{StaticResource Font.Caption}" 
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
             </ui:Card>
         </Grid>
@@ -497,8 +480,8 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
-                        <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Donanım Özeti &amp; Sensörler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Donanım özeti ve sensörler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Details Rows -->
@@ -511,7 +494,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="İşlemci Modeli" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="İşlemci modeli" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                     <TextBlock Text="{Binding Metrics.CpuName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" VerticalAlignment="Center">
@@ -530,7 +513,7 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Text="Grafik Kartı (GPU)" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                        <TextBlock Text="Grafik kartı (GPU)" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                 BorderThickness="1" 
@@ -539,12 +522,12 @@
                                                 Margin="6,0,0,0" 
                                                 VerticalAlignment="Center"
                                                 Visibility="{Binding Metrics.HasDualGpu, Converter={StaticResource BoolToVis}}">
-                                            <TextBlock Text="Harici" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="Harici" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </Border>
                                     </StackPanel>
                                     <TextBlock Text="{Binding Metrics.GpuName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding Metrics.GpuVram}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Metrics.GpuVram}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
 
@@ -556,12 +539,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Sistem Termal Durumu" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    <TextBlock Text="{Binding Metrics.ThermalStatus, StringFormat='Termal Durum: {0}'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Sistem termal durumu" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    <TextBlock Text="{Binding Metrics.ThermalStatus, StringFormat='{}{0}'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
-                                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" VerticalAlignment="Center">
-                                    <TextBlock Text="Optimum" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                                </Border>
                             </Grid>
                         </Border>
                     </StackPanel>
@@ -572,7 +552,7 @@
                                Command="{Binding GoToCleanerCommand}"
                                HorizontalAlignment="Left"
                                Padding="14,7"
-                               Content="Sistem Temizliğini Aç"
+                               Content="Sistem temizliğini aç"
                                Icon="{ui:SymbolIcon ArrowRight24}"/>
                 </Grid>
             </ui:Card>
@@ -592,10 +572,10 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="TopSpeed24" FontSize="18" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="En Çok Bellek Tüketen Süreçler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                            <ui:SymbolIcon Symbol="TopSpeed24" FontSize="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
+                            <TextBlock Text="En çok bellek tüketen süreçler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </StackPanel>
-                        <TextBlock Grid.Column="1" Text="İlk 3 Süreç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="İlk 3 süreç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Items Control for Top 3 Hogs -->
@@ -627,12 +607,12 @@
 
                                         <!-- Quick Kill Task Button -->
                                         <ui:Button Grid.Column="2" 
-                                                   Appearance="Danger" 
+                                                   Appearance="Secondary" 
                                                    Padding="6,4"
                                                    Command="{Binding DataContext.KillHogProcessCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                    CommandParameter="{Binding}"
                                                    Icon="{ui:SymbolIcon Dismiss20}"
-                                                   ToolTip="Görevi Sonlandır" AutomationProperties.Name="Görevi Sonlandır"/>
+                                                   ToolTip="Görevi sonlandır" AutomationProperties.Name="Görevi Sonlandır"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

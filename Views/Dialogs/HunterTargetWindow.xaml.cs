@@ -125,7 +125,7 @@ namespace Bakım.Views.Dialogs
                 {
                     MessageBox.Show(
                         "Bakım kendi kendini hedef alamaz!\n\nLütfen sisteminizde kaldırmak veya yönetmek istediğiniz harici bir program penceresini hedefleyin.",
-                        "Avcı Modu - Korumalı Uygulama",
+                        "Pencereden seç - Korumalı uygulama",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     return;
@@ -136,7 +136,7 @@ namespace Bakım.Views.Dialogs
                 {
                     MessageBox.Show(
                         "Windows Masaüstü ve Görev Çubuğu çekirdek işletim sistemi bileşenidir ve kaldırılamaz.",
-                        "Avcı Modu - Sistem Koruması",
+                        "Pencereden seç - Sistem koruması",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;
@@ -147,7 +147,7 @@ namespace Bakım.Views.Dialogs
                 {
                     MessageBox.Show(
                         "İmleç altında çalışan aktif bir uygulama penceresi tespit edilemedi.\nLütfen hedef simgesini kaldırmak istediğiniz programın penceresine bırakın.",
-                        "Avcı Modu",
+                        "Pencereden seç",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     return;

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:models="clr-namespace:Bakım.Models"
-        Title="Kalıntı Temizleme Asistanı"
+        Title="Kalıntı temizleme asistanı"
         Width="740" Height="620"
         MinWidth="650" MinHeight="520"
         WindowStartupLocation="CenterScreen"
@@ -57,7 +57,7 @@
                         <ui:SymbolIcon x:Name="FallbackIcon"
                                        Symbol="Delete24"
                                        FontSize="24"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
                     </Grid>
@@ -72,10 +72,10 @@
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    TextTrimming="CharacterEllipsis"
                                    MaxWidth="450"/>
-                        <TextBlock Text=" • Kalıntı Temizleyici"
+                        <TextBlock Text=" • Kalıntı temizleyici"
                                    FontSize="{StaticResource Font.Subtitle}"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
                     <TextBlock Text="Kaldırma işlemi bitti. Sistemde kalan artık klasör, dosya ve kayıt defteri girdileri bulundu."
                                FontSize="{StaticResource Font.Caption}"
@@ -114,7 +114,7 @@
                               VerticalAlignment="Center"
                               Margin="0,0,16,0"
                               Cursor="Hand">
-                        <TextBlock Text="Tümünü Seç / Kaldır"
+                        <TextBlock Text="Tümünü seç / kaldır"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    FontSize="{StaticResource Font.Caption}"
                                    FontWeight="Medium"
@@ -162,7 +162,7 @@
                             CornerRadius="{StaticResource Radius.SM}"
                             Padding="8,3">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text="/" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text="{Binding TotalCount}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text=" Kalıntı" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
@@ -222,11 +222,11 @@
                                 <!-- Context Menu -->
                                 <Grid.ContextMenu>
                                     <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                                        <MenuItem Header="Dosya Gezgininde Göster"
+                                        <MenuItem Header="Dosya Gezgininde göster"
                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                   Command="{Binding DataContext.OpenLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   CommandParameter="{Binding}"/>
-                                        <MenuItem Header="Yolu Panoya Kopyala"
+                                        <MenuItem Header="Yolu panoya kopyala"
                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                   Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   CommandParameter="{Binding}"/>
@@ -252,7 +252,7 @@
                                     <TextBlock Text="{Binding TypeName}"
                                                FontSize="{StaticResource Font.Micro}"
                                                FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
                                 </Border>
@@ -274,7 +274,7 @@
                                 <!-- Size & Risk Badge -->
                                 <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding FormattedSize}"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                FontSize="{StaticResource Font.Caption}"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center"
@@ -320,7 +320,7 @@
 
                 <!-- Selected Total Size Footprint -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
-                    <TextBlock Text="Temizlenecek Alan: "
+                    <TextBlock Text="Temizlenecek alan: "
                                FontSize="{StaticResource Font.Caption}"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     <TextBlock Text="{Binding FormattedSelectedSize}"
@@ -340,7 +340,7 @@
 
                 <!-- Quick Help / Note -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Info20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                    <ui:SymbolIcon Symbol="Info20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="İpucu: Sağ tıklayarak konumu dosya gezgininde inceleyebilirsiniz."
                                FontSize="{StaticResource Font.Caption}"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
@@ -355,7 +355,7 @@
                                Padding="16,8"
                                Margin="0,0,10,0"/>
 
-                    <ui:Button Content="Seçilenleri Temizle"
+                    <ui:Button Content="Seçilenleri temizle"
                                Appearance="Primary"
                                Icon="{ui:SymbolIcon Delete20}"
                                Command="{Binding CleanSelectedCommand}"

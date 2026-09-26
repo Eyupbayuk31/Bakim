@@ -27,7 +27,7 @@ namespace Bakım.ViewModels
             var local = entry.AtUtc.ToLocalTime();
             TimeText = local.ToString("HH:mm", Tr);
             DateText = local.ToString("d MMMM yyyy HH:mm", Tr);
-            DayGroup = ActivityQuery.DayLabel(local, nowLocal).ToUpper(Tr);
+            DayGroup = ActivityQuery.DayLabel(local, nowLocal);
         }
 
         public ActivityEntry Entry { get; }

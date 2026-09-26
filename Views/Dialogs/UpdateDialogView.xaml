@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
-        Title="Yeni Güncelleme Mevcut"
+        Title="Yeni güncelleme mevcut"
         Width="540" Height="480"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -45,10 +45,10 @@
                             CornerRadius="{StaticResource Radius.MD}" 
                             Padding="8" 
                             Margin="0,0,12,0">
-                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Yeni Sürüm Güncellemesi!" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="Yeni sürüm güncellemesi!" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Bakım için yeni performans ve güvenlik paketi yayınlandı." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -86,7 +86,7 @@
                         Padding="10,6" 
                         Margin="0,0,8,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Yeni Sürüm: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource ApplicationBackgroundBrush}" FontWeight="SemiBold"/>
+                        <TextBlock Text="Yeni sürüm: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource ApplicationBackgroundBrush}" FontWeight="SemiBold"/>
                         <TextBlock x:Name="LatestVersionText" Text="v2.6.0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource ApplicationBackgroundBrush}"/>
                     </StackPanel>
                 </Border>
@@ -112,7 +112,7 @@
                     Margin="0,0,0,14">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <TextBlock Text="Değişiklik Notları (Changelog):" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
+                        <TextBlock Text="Değişiklik notları (Changelog):" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,8"/>
                         <TextBlock x:Name="ReleaseNotesText" 
                                    Text="Yükleniyor..." 
                                    FontSize="{StaticResource Font.Caption}" 
@@ -127,7 +127,7 @@
             <StackPanel x:Name="ProgressPanel" Grid.Row="3" Margin="0,0,0,14" Visibility="Collapsed">
                 <Grid Margin="0,0,0,6">
                     <TextBlock x:Name="StatusLabel" Text="Güncelleme paketi indiriliyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock x:Name="PercentageLabel" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    <TextBlock x:Name="PercentageLabel" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" HorizontalAlignment="Right" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                 </Grid>
                 <ProgressBar x:Name="DownloadProgressBar" Height="8" Minimum="0" Maximum="100" Value="0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
             </StackPanel>
@@ -139,13 +139,13 @@
                     <ui:Button x:Name="LaterButton" 
                                Appearance="Secondary" 
                                Click="OnLaterClicked" 
-                               Content="Daha Sonra" 
+                               Content="Daha sonra" 
                                Margin="0,0,10,0"/>
 
                     <ui:Button x:Name="UpdateButton" 
                                Appearance="Primary" 
                                Click="OnUpdateNowClicked" 
-                               Content="Hemen Güncelle" 
+                               Content="Hemen güncelle" 
                                Icon="{ui:SymbolIcon ArrowSync24}"/>
                 </StackPanel>
             </Grid>
