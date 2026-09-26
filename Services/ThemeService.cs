@@ -729,33 +729,35 @@ namespace Bakım.Services
                 };
                 Set(res, "Card.Surface.Hero.Stroke", heroStroke);
 
-                // 4. Ortam ışığı: sağ üst köşe radyal degrade, vurgu renginde %26.7
+                // 4. Ortam ışığı: sağ üst köşe radyal degrade, vurgu renginde
                 var ambPrimary = def.AmbientPrimary ?? def.Primary;
                 var ambLight = new RadialGradientBrush
                 {
                     Center = new Point(1, 0),
                     GradientOrigin = new Point(1, 0),
-                    RadiusX = 1.35,
-                    RadiusY = 1.35,
+                    RadiusX = 1.25,
+                    RadiusY = 1.25,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambPrimary, 0x44), 0.0),
+                        new GradientStop(WithAlpha(ambPrimary, 0x38), 0.0),
+                        new GradientStop(WithAlpha(ambPrimary, 0x14), 0.45),
                         new GradientStop(WithAlpha(ambPrimary, 0x00), 1.0)
                     }
                 };
                 Set(res, "Surface.AmbientLight", ambLight);
 
-                // Sol alt köşe radyal degrade, ikincil renk %16.5
+                // Sol alt köşe radyal degrade, ikincil renk
                 var ambSecondary = def.AmbientSecondary ?? def.Accent;
                 var ambSec = new RadialGradientBrush
                 {
                     Center = new Point(0, 1),
                     GradientOrigin = new Point(0, 1),
-                    RadiusX = 1.25,
-                    RadiusY = 1.25,
+                    RadiusX = 1.15,
+                    RadiusY = 1.15,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambSecondary, 0x2A), 0.0),
+                        new GradientStop(WithAlpha(ambSecondary, 0x22), 0.0),
+                        new GradientStop(WithAlpha(ambSecondary, 0x08), 0.5),
                         new GradientStop(WithAlpha(ambSecondary, 0x00), 1.0)
                     }
                 };
@@ -983,8 +985,8 @@ namespace Bakım.Services
                 Success = Hex("#34D399"),
                 Caution = Hex("#FBBF24"),
                 Critical = Hex("#F87171"),
-                OverlayTint = Hex("#CBD5E1"),
-                TintOpacity = 0.22,
+                OverlayTint = Hex("#FFFFFF"),
+                TintOpacity = 0.18,
                 AmbientPrimary = Hex("#2563EB"),
                 AmbientSecondary = Hex("#60A5FA")
             };
@@ -1012,8 +1014,8 @@ namespace Bakım.Services
                 Success = Hex("#4ADE80"),
                 Caution = Hex("#FACC15"),
                 Critical = Hex("#FB7185"),
-                OverlayTint = Hex("#D4D4D8"),
-                TintOpacity = 0.45,
+                OverlayTint = Hex("#FFFFFF"),
+                TintOpacity = 0.22,
                 AmbientPrimary = Hex("#9333EA"),
                 AmbientSecondary = Hex("#C084FC")
             };

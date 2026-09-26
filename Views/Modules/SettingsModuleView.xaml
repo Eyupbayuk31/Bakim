@@ -59,7 +59,7 @@
             <Border Grid.Column="0"
                     Margin="0,0,18,0"
                     Background="Transparent"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                    BorderBrush="{DynamicResource Divider.Stroke}"
                     BorderThickness="0,0,1,0"
                     Padding="0,0,14,0">
                 <StackPanel>

@@ -228,13 +228,15 @@
         <GradientStop Color="#14FFFFFF" Offset="1.0"/>
     </LinearGradientBrush>
 
-    <RadialGradientBrush x:Key="Surface.AmbientLight" Center="1,0" GradientOrigin="1,0" RadiusX="1.35" RadiusY="1.35">
-        <GradientStop Color="#4460CDFF" Offset="0.0"/>
+    <RadialGradientBrush x:Key="Surface.AmbientLight" Center="1,0" GradientOrigin="1,0" RadiusX="1.25" RadiusY="1.25">
+        <GradientStop Color="#3860CDFF" Offset="0.0"/>
+        <GradientStop Color="#1460CDFF" Offset="0.45"/>
         <GradientStop Color="#0060CDFF" Offset="1.0"/>
     </RadialGradientBrush>
 
-    <RadialGradientBrush x:Key="Surface.AmbientSecondary" Center="0,1" GradientOrigin="0,1" RadiusX="1.25" RadiusY="1.25">
-        <GradientStop Color="#2A99EBFF" Offset="0.0"/>
+    <RadialGradientBrush x:Key="Surface.AmbientSecondary" Center="0,1" GradientOrigin="0,1" RadiusX="1.15" RadiusY="1.15">
+        <GradientStop Color="#2299EBFF" Offset="0.0"/>
+        <GradientStop Color="#0899EBFF" Offset="0.5"/>
         <GradientStop Color="#0099EBFF" Offset="1.0"/>
     </RadialGradientBrush>
 </ResourceDictionary>

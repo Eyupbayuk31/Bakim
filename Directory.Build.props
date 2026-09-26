@@ -8,6 +8,6 @@
       • release.yml → etiket (vX.Y.Z) bu değerle aynı değilse sürüm durdurulur.
   -->
   <PropertyGroup>
-    <BakimVersion>4.6.0</BakimVersion>
+    <BakimVersion>4.6.1</BakimVersion>
   </PropertyGroup>
 </Project>

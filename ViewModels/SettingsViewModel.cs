@@ -1116,18 +1116,18 @@ namespace Bakım.ViewModels
 
             var v460 = new ReleaseChangelogItem
             {
-                Version = "v4.6.0",
+                Version = "v4.6.1",
                 ReleaseDate = "Eylül 2026",
-                Title = "Windows 11 Cam Tasarımı Tamamlaması, Dinamik Malzeme Seçimi & Kusursuz Sol Menü",
+                Title = "Renk Geçişi Pürüzsüzleştirmesi, Tam Alan Ortam Işığı & Sol Menü Kaydırma Çubuğu Temizliği",
                 IsLatest = true,
                 IsExpanded = true,
                 Highlights = new List<string>
                 {
-                    "Dinamik Arka Plan Malzemesi (Mica, Mica Alt, Akrilik): Ayarlar sayfasına pencereler için Windows 11 DWM malzeme seçici eklendi. Duvar kağıdı ve masaüstü bulanıklığı dinamik olarak değiştirilebilir hale getirildi.",
-                    "Ortam Işığı Denetimi: Cam kartların arkasında sağ-üst ve sol-alt köşelerden süzülen radyal ışık auraları açılıp kapatılabilir özellik olarak yapılandırıldı.",
-                    "Kusursuz Sol Menü (Sidebar) Modernizasyonu: Çift 'Bakım' başlığı temizlenip standart 'Gezinme' etiketine çevrildi, simge-metin parlaklık senkronizasyonu sağlandı ve seçili öğe üzerine gelindiğinde oluşan parlaklık kısılma hatası buzlu cam ışıltısıyla giderildi.",
-                    "Bütün Sayfalarda %100 Cam Dönüşümü: Temizleyici, Analizör, Etkinlik Merkezi, Başlangıç, Windows Tweaker, Gizlilik ve Optimizatör modüllerindeki tüm kalan kartlar, rozetler ve çekmeceler Fluent 2 cam katmanlarına uyarlandı.",
-                    "Sıfır Tasarım Borcu & Kusursuz Gatekeeper Koruması: verify-tokens, verify-symbols, verify-design-debt ve verify-bindings kapı denetimlerinin tamamı hatasız geçilerek 783 birim testin tümü yeşil teyit edildi."
+                    "Kesintisiz Ortam Işığı & Sıfır Kesik Çizgi: Sağ-üst ve sol-alt ortam ışıkları sabit piksel sınırları yerine tüm pencere yüzeyine tam esneyen (Stretch) 3 duraklı yumuşak radyal degradelere dönüştürüldü; pencere ortasındaki dikey renk kesiği ve sınır çizgisi tamamen yok edildi.",
+                    "Kristal Cam Katmanı & Sıfır Grilik: AMOLED ve Slate temalarındaki mat gri katman örtüsü saf kristal beyaz tonlamayla yenilendi; cam kartların altındaki mat sis ve çamurlu grilik hissi ortadan kaldırıldı.",
+                    "Sol Menü Kaydırma Çubuğu Temizliği: Daraltılmış simge rayında beliren hantal kaydırma çubuğu kaldırılarak native Windows 11 pürüzsüz fare tekerleği gezinimi korundu.",
+                    "Ayarlar Kategori Ayracı: Kategori gezinme rayının kenar çizgisi cam uyumlu Divider.Stroke token'ına geçirildi.",
+                    "Sıkı Doğrulama: 4 gatekeeper denetimi ve 783 testin tümü yeşil teyit edildi."
                 }
             };
 

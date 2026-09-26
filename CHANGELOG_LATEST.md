@@ -1,61 +1,40 @@
-# Bakım v4.6.0 - Sürüm Notları
+# Bakım v4.6.1 - Sürüm Notları
 
-## Windows 11 Cam Tasarımı Tamamlaması, Dinamik Malzeme Seçimi & Kusursuz Sol Menü
+## Renk Geçişi Pürüzsüzleştirmesi, Kesintisiz Tam Alan Ortam Işığı & Sol Menü Kaydırma Çubuğu Temizliği
 
-Bakım v4.6.0 sürümü; Windows 11 Fluent 2 cam (Mica + Glassmorphism) malzeme modelini uygulamanın tüm sayfalarına, panellerine ve bileşenlerine eksiksiz yaymakta; DWM malzeme seçiciyi, ortam ışığı denetimini ve sol menü iyileştirmelerini kullanıcılara sunmaktadır.
-
----
-
-### 1. Dinamik DWM Pencere Malzemesi Seçici (Mica, Mica Alt, Akrilik, Opak)
-- **Windows 11 DWM Entegrasyonu:**
-  - Kullanıcılar Ayarlar modülünden pencere arka plan malzemesini anında değiştirebilir:
-    - **Mica:** Klasik Windows 11 masaüstü duvar kağıdı rengini yumuşak yansıtan dinamik katman.
-    - **Mica Alt (Tabbed):** Sekmeli ve çok katmanlı pencereler için daha zengin ve kontrastlı cam malzemesi.
-    - **Akrilik (Acrylic):** Arka plandaki pencereleri ve masaüstünü bulanıklaştıran derin buzlu cam etkisi.
-    - **Kapalı (None):** Saydamlık efektlerini kapatarak donanım dostu opak pencere zemini.
-  - Seçim `AppSettingsData` içine kalıcı olarak kaydedilir ve uygulama açılışında anında geri yüklenir.
+Bakım v4.6.1 sürümü; sol menüden içerik alanına geçişteki renk pürüzlerini ve dikey sınır çizgisini ortadan kaldırmakta, ortam ışığını pencere boyutuna göre kesintisiz esnetmekte, AMOLED/Slate temalarındaki mat gri katman örtüsünü kristal cam parlaklığına dönüştürmekte ve daraltılmış sol menüdeki gereksiz kaydırma çubuğunu temizlemektedir.
 
 ---
 
-### 2. Ortam Işığı (Ambient Light) Denetimi & Genişletilmiş Auralar
-- **Kişiselleştirilebilir Işık Aurası:**
-  - Ayarlar sayfasına "Ortam ışığı (Ambient Light)" açma/kapatma anahtarı eklendi.
-  - Işık auraları pencere boyutuna göre optimize edildi: sağ-üst köşe 1050×750 px, sol-alt köşe 850×600 px boyutlarına büyütülerek cam kartların arkasından süzülen ışık derinliği belirginleştirildi.
-  - Düşük donanımlı sistemler veya minimalist kullanıcılar için tek tıkla gizlenebilir mimari sağlandı.
+### 1. Kesintisiz Ortam Işığı & Sıfır Dikey Kesik Çizgi
+- **Genişletilmiş ve Tam Alan (Stretch) Işık Auraları:**
+  - Ana pencere arka planındaki sağ-üst (`Surface.AmbientLight`) ve sol-alt (`Surface.AmbientSecondary`) radyal ışık kaynaklarının sabit piksel genişlik/yükseklik sınırları kaldırıldı.
+  - Artık tüm pencere alanını orantısal olarak kaplayan (`HorizontalAlignment="Stretch"` ve `VerticalAlignment="Stretch"`) 3 duraklı yumuşak radyal degradeler kullanılıyor.
+  - 1050 pikselden geniş pencerelerde ve geniş ekranlarda ortaya çıkan, pencerenin ortasını kesen keskin dikey sınır çizgisi ve renk kopması tamamen ortadan kaldırıldı.
 
 ---
 
-### 3. Kusursuz Sol Menü (Sidebar) Modernizasyonu
-- **Başlık Alanı & Hamburger Hizalaması:**
-  - Menü başındaki gereksiz çift "Bakım" başlığı kaldırılarak modern "Gezinme" etiketine dönüştürüldü.
-  - Hamburger daraltma butonu alt menü öğeleriyle milimetrik olarak dikey eksende hizalandı (`HorizontalAlignment="Left"`).
-- **Simge ve Metin Parlaklık Senkronizasyonu:**
-  - NavItem şablonunda simge (`ui:SymbolIcon`) ve metin (`TextBlock`) ön plan renkleri doğrudan butonun `Foreground` özelliğine bağlandı; hover ve seçim durumlarında senkronize parlama sağlandı.
-  - Ayarlar öğesinin sağ-alt marjin farkı (`0,0,0,2`) düzeltilerek tüm menüyle görsel ritim eşitlendi.
-- **Seçili Öğe Kararma Hatasının Giderilmesi:**
-  - Seçili bir menü öğesinin üzerine gelindiğinde rengin koyulaşması hatası, `IsSelected` + `IsMouseOver` MultiTrigger'ına `Card.Fill` (buzlu cam parlaması) atanarak çözüldü.
+### 2. Kristal Cam Katmanı & Sıfır Grilik (Mat Sis Giderildi)
+- **Saf Beyaz Kristal Cam Örtüsü (OverlayTint):**
+  - AMOLED Siyah ve Slate Koyu temalarında buzlu cam efektine hafif tozlu/çamurlu bir grilik katan mat çinko-gri tonlama kaldırıldı (`#D4D4D8` / `#CBD5E1` -> `#FFFFFF`).
+  - Saydamlık opaklığı (TintOpacity) AMOLED için %22'ye, Slate için %18'e kalibre edildi.
+  - Cam kartların altındaki mat sis etkisi kayboldu; pencereler, kartlar ve gezinme rayları gerçek Windows 11 kristal cam parlaklığına kavuştu.
 
 ---
 
-### 4. Bütün Sayfalarda %100 Cam Dönüşümü
-- **Tüm Modüller Cam Katmanlarıyla Donatıldı:**
-  - **Temizleyici (Cleaner):** Sayaç kartı, durum rozeti ve detay paneli cam tokens (`Card.Fill`, `Card.Stroke.Glass`).
-  - **Etkinlik Merkezi (ActivityCenter):** Zaman çizelgesi listesi ve detay kartı.
-  - **Analizör (Analyzer):** Sekmeler, seçenekler araç çubuğu, sonuç kartları, kategori rozetleri ve API anahtarı modali.
-  - **Kaldırıcı (Uninstaller):** İstatistik kartı, kaldırıcı listesi ve detay çekmecesi.
-  - **Mağaza (Store):** AIO Runtimes kahraman banner'ı, paket kartları ve canlı kuyruk / konsol çekmecesi.
-  - **Çökme Analizörü (CrashAnalyzer):** Seviye rozetleri ve alt durum çubuğu.
-  - **Gizlilik & Debloat (PrivacyDebloat):** Bilgilendirme kartı, ayar kartları, bloatware listesi ve durum çubuğu.
-  - **Optimizatör (Optimizer):** CPU ve durum rozetleri.
-  - **Başlangıç Yöneticisi (Startup):** Sağ teftiş çekmecesi ve simge kutuları.
-  - **Windows Tweaker:** Kategori rozetleri ve ayar kartları.
-  - **Sentinel (Kurulum Nöbetçisi):** Geçmiş listesi cam çerçevesi.
-  - **Hizmet Yöneticisi (ServiceManager):** Hizmetler ve sürücüler liste arka planları.
-  - **Ağ Panelleri (Network):** Bağlantılar listesi, teftiş çekmecesi, DNS hız kıyaslama ve dinleme portları.
+### 3. Sol Menü (Sidebar) Temizliği & Kaydırma Çubuğu Optimizasyonu
+- **Görünmeyen Kaydırma Çubuğu, Kusursuz Tekerlek Gezinimi:**
+  - Sol menü daraltıldığında (yalnızca simgeler görünürken) simgelerin hemen yanında beliren hantal ve amatör dikey kaydırma çubuğu gizlendi (`VerticalScrollBarVisibility="Hidden"`).
+  - Fare tekerleğiyle dikey gezinme (scroll) yeteneği %100 kesintisiz korunurken, arayüzün akıcı ve minimalist görünümü korundu.
 
 ---
 
-### 5. Sıkı Doğrulama, Sıfır Tasarım Borcu & %100 Test Başarısı
-- **Sıfır Legacy Token:** Kod tabanındaki tüm eski `CardBackgroundFillColorDefaultBrush` referansları temizlendi.
-- **4 Gatekeeper Tam Başarı:** `verify-tokens.py`, `verify-symbols.py`, `verify-design-debt.py` ve `verify-bindings.py` hatasız geçti.
-- **783 Birim Test Yeşil:** Tüm çekirdek iş mantığı, WPF arayüz testleri ve duman testleri 0 hata ile tamamlandı.
+### 4. Ayarlar Modülü & UI İnce Ayarları
+- **Kategori Ayracı Görsel Uyumu:**
+  - Ayarlar sayfası kategori gezinme rayındaki sol kenarlık, cam diliyle tam uyumlu `{DynamicResource Divider.Stroke}` semantik belirtecine geçirildi.
+
+---
+
+### 5. Sıkı Doğrulama & %100 Test Başarısı
+- **4 Gatekeeper Tam Başarı:** `verify-tokens.py`, `verify-symbols.py`, `verify-design-debt.py` ve `verify-bindings.py` tam puanla geçti.
+- **783 Birim Test Yeşil:** Tüm iş mantığı ve WPF UI testleri 0 hata ile doğrulandı.

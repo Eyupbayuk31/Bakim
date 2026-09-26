@@ -276,18 +276,8 @@
                     <ScrollViewer Grid.Row="1"
                                   helpers:ScrollFade.IsEnabled="True"
                                   HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Hidden"
                                   Focusable="False">
-                        <!-- Kaydırma çubuğu yalnızca fare kenar çubuğundayken görünür (Windows 11 gezinme bölmesi) -->
-                        <ScrollViewer.Style>
-                            <Style TargetType="ScrollViewer" BasedOn="{StaticResource {x:Type ScrollViewer}}">
-                                <Setter Property="VerticalScrollBarVisibility" Value="Hidden"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ScrollViewer.Style>
                         <ItemsControl ItemsSource="{Binding NavGroups}" Margin="0,0,4,0" Focusable="False">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type vm:NavGroup}">
@@ -420,16 +410,14 @@
                     ClipToBounds="True">
                 <Grid>
                     <!-- Statik Ortam Işıkları (docs/WIN11_CAM_TASARIM_PLANI.md §2.3) -->
-                    <!-- Sağ üst köşe radyal ortam ışığı (vurgu rengi) -->
-                    <Rectangle HorizontalAlignment="Right" VerticalAlignment="Top"
-                               Width="1050" Height="750"
+                    <!-- Sağ üst köşe radyal ortam ışığı (vurgu rengi - tam yüzey yumuşak geçiş) -->
+                    <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                Fill="{DynamicResource Surface.AmbientLight}"
                                IsHitTestVisible="False"
                                Visibility="{Binding IsAmbientLightEnabled, Converter={StaticResource BoolToVis}}"/>
 
-                    <!-- Sol alt köşe radyal ortam ışığı (ikincil renk) -->
-                    <Rectangle HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                               Width="850" Height="600"
+                    <!-- Sol alt köşe radyal ortam ışığı (ikincil renk - tam yüzey yumuşak geçiş) -->
+                    <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                Fill="{DynamicResource Surface.AmbientSecondary}"
                                IsHitTestVisible="False"
                                Visibility="{Binding IsAmbientLightEnabled, Converter={StaticResource BoolToVis}}"/>
