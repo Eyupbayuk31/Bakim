@@ -1064,13 +1064,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v440 = new ReleaseChangelogItem
+            {
+                Version = "v4.4.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Fluent v2 Yerleşim Sistemi, Birleşik Sayfa Kabuğu (ModulePage) & Canlı Tema Önizleme",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Fluent v2 Yerleşim Mimarisi: Controls/Layout altında AdaptiveGrid, CardHeader, ListCard, MetricTile, ModulePage, Section, SelectionBar, StatusGlyph ve ThemePreview kontrolleri sıfırdan inşa edildi.",
+                    "Birleşik Sayfa Kabuğu (ModulePage): Kontrol Paneli, Temizleyici, Başlangıç, Sistem Bilgisi, Ağ, Mağaza, Kaldırıcı, Çökmeler, Ayarlar ve Tweaker sayfaları standart ModulePage kabuğuna taşındı.",
+                    "Kontrol Paneli (Dashboard) Revizyonu: Sayfa hiyerarşisi yeniden dizildi; CPU/RAM/Disk metrikleri MetricTile ve donmuş grafik noktalarıyla ultra akıcı hale getirildi.",
+                    "Windows 11 Canlı Tema Seçimi (ThemePreview): Ayarlar sayfasındaki tema seçimi, Windows 11 Kişiselleştirme ekranındaki gibi gerçek renk ve katman önizlemeli kutucuklara dönüştürüldü.",
+                    "Otomatik Ekran Görüntüsü Hattı (Screenshots): UI duman testlerine ekran görüntüsü üretimi ve GitHub Actions iş akışı (screenshots.yml) entegre edildi.",
+                    "Tasarım Borcu & Kararlılık: Çıplak ui:Card ve eski sayfa başlıkları temizlendi; cırcır eşikleri ve 783 testin tümü başarıyla teyit edildi."
+                }
+            };
+
             var v430 = new ReleaseChangelogItem
             {
                 Version = "v4.3.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Modüler Depolama & Ağ Panelleri, Oyun Kütüphanesi & Fluent Tasarım Revizyonu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Modüler Depolama Mimarisi: Disk Haritası, Yinelenen Dosyalar, Büyük Dosyalar ve Boş Klasörler panelleri dikey ayrık kullanıcı kontrollerine (StorageDiskMapPanel, StorageDuplicatesPanel vb.) dönüştürüldü.",
@@ -1972,8 +1990,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v430;
+            LatestRelease = v440;
 
+            ReleaseHistory.Add(v440);
             ReleaseHistory.Add(v430);
             ReleaseHistory.Add(v424);
             ReleaseHistory.Add(v423);

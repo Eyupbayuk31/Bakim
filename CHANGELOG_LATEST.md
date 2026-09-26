@@ -1,49 +1,47 @@
-# Bakım v4.3.0 - Sürüm Notları
+# Bakım v4.4.0 - Sürüm Notları
 
-## Modüler Depolama & Ağ Panelleri, Akıllı Oyun Kütüphanesi & Fluent Tasarım Revizyonu
+## Fluent v2 Yerleşim Sistemi, Birleşik Sayfa Kabuğu (ModulePage) & Canlı Tema Önizleme
 
-Bakım v4.3.0 sürümü; monolitik Depolama ve Ağ sayfalarını yüksek performanslı dikey modüler alt panellere dönüştürmekte, Steam/Epic/GOG akıllı oyun kütüphanesi tarayıcısını entegre etmekte ve Windows 11 Fluent 2 tasarım standartlarını yeni arayüz bileşenleriyle taçlandırmaktadır.
-
----
-
-### 1. Modüler Depolama Mimarisi (Storage Panels)
-- **Ayrık Alt Panel Mimarisi:** Büyük monolitik depolama sayfası bağımsız ve optimize 4 alt panele bölündü:
-  - `StorageDiskMapPanel`: Görsel disk kullanım haritası, blok dağılımı ve hızlı erişim paneli.
-  - `StorageDuplicatesPanel`: MD5/SHA256 hash tabanlı yinelenen dosya tarayıcısı ve güvenli temizleme.
-  - `StorageLargeFilesPanel`: Boyut filtresine göre diskteki devasa dosyaları listeleyen ve yöneten panel.
-  - `StorageEmptyFoldersPanel`: Sistemdeki atıl ve boş klasörleri tespit eden temizlik aracı.
-- **Asenkron Performans & Sıfır UI Kilitlenmesi:** Tüm dosya sistemi I/O işlemleri arka plan iş parçacıklarına taşınarak akıcı bir arayüz deneyimi sağlandı.
+Bakım v4.4.0 sürümü; tüm uygulama sayfalarını birleşik bir Fluent v2 yerleşim sistemine (`ModulePage`) kavuşturmakta, Kontrol Paneli'ni referans mimariyle yeniden dizayn etmekte, Windows 11 Kişiselleştirme tarzı canlı tema seçim kutucuklarını entegre etmekte ve otomatik ekran görüntüsü doğrulama hattını devreye almaktadır.
 
 ---
 
-### 2. Modüler Ağ İzleyici (Network Monitor Panels)
-- **5 Odaklı Ağ Bileşeni:**
-  - `NetworkAdaptersPanel`: Fiziksel ve sanal tüm ağ adaptörlerinin IP, MAC, durum ve hız bilgileri.
-  - `NetworkConnectionsPanel`: Gerçek zamanlı TCP/UDP bağlantıları, uzak adresler ve ilişkili süreçler.
-  - `NetworkDiagnosticsPanel`: Entegre Ping, Traceroute, DNS çözümleme ve ağ sağlık testleri.
-  - `NetworkListeningPanel`: Yerel makinede açık olan tüm dinleme portları ve soket dökümleri.
-  - `NetworkSpeedTestPanel`: Gerçek zamanlı indirme, yükleme ve gecikme (latency) ölçüm motoru.
+### 1. Fluent v2 Yerleşim Mimarisi (Layout Controls)
+- **Yeni Yerleşim Bileşenleri (`Controls/Layout/`):**
+  - `AdaptiveGrid`: Pencere boyutuna ve ekran çözünürlüğüne göre sütun sayılarını otomatik hesaplayan akıcı ızgara.
+  - `CardHeader`: Başlık, açıklama ve durum gliflerini standart Windows 11 hiyerarşisinde sunan kart başlığı.
+  - `ListCard`: Liste görünümündeki öğeler için sınır ve dolgu standartlarını belirleyen liste kartı.
+  - `MetricTile`: Donanım ve sistem ölçümlerini net sayı ve trend göstergeleriyle özetleyen metrik kutusu.
+  - `ModulePage`: Sayfa başlığı, birincil eylemler, alt seçim çubuğu ve kaydırma alanını standartlaştıran birleşik sayfa kabuğu.
+  - `Section`: Mantıksal bölümleri başlık ve boşluklarıyla gruplayan bölüm yapısı.
+  - `SelectionBar`: Windows 11 Fluent alt seçim çubuğu kontrolü.
+  - `StatusGlyph`: Sistem durumu ve önem derecesini nötr ve zarif gliflerle belirten durum simgesi.
+  - `ThemePreview`: Canlı tema ve renk önizleme bileşeni.
 
 ---
 
-### 3. Akıllı Oyun Kütüphanesi & Oyun Modu Entegrasyonu
-- **Otomatik Kütüphane Taraması (`GameLibraryService`):**
-  - **Steam:** `libraryfolders.vdf` ve `appmanifest_*.acf` dosyalarını doğrudan ayrıştıran `GameLibraryParser`.
-  - **Epic Games & GOG:** Kurulu oyun manifestslerini sistem kayıtlarından ve varsayılan dizinlerden otomatik tespit.
-- **Oyun Modu Eylem Planı (`GameModePlan`):** Algılanan oyunlar tek tıkla Oyun Modu tetikleyici listesine eklenebilir; oyun başladığında arka plan gereksiz servisleri otomatik askıya alınır.
+### 2. Birleşik Sayfa Kabuğu (`ModulePage`) Dönüşümü
+- **Tüm Sayfalarda Standart Düzen:**
+  - **Kontrol Paneli (Dashboard):** Referans sayfa olarak sıfırdan dizayn edildi; CPU, RAM ve Disk ölçümleri `MetricTile` ve donmuş grafik noktalarıyla yeniden kurgulandı.
+  - **Temizleyici, Başlangıç & Sistem Bilgisi:** Kart içinde kart kalabalığı arındırıldı; `ModulePage` kabuğunda duyarlı ızgaraya geçirildi.
+  - **Ağ İzleyici, Mağaza & Kaldırıcı:** Alt seçim çubuğu (`SelectionBar`) ve duyarlı kutucuk ızgarasıyla zenginleştirildi.
+  - **Çökme Analizcisi:** Güvenilirlik kahramanı ve zaman çizelgesi yeni düzene adapte edildi.
+  - **Windows Tweaker:** 12 kategori ayar kartı yeni layout mimarisine uyarlandı.
 
 ---
 
-### 4. Yeni Windows 11 Fluent 2 Kontrolleri & Tipografi
-- **PickListDialog:** Arama ve filtreleme yetenekli modern çoklu seçim diyalogu.
-- **KeyCap:** Klavye kısayollarını Windows 11 standartlarında görselleştiren tuş rozeti.
-- **StepList:** Süreç adımlarını hiyerarşik ve durum ikonlarıyla listeleyen aşama kontrolü.
-- **SummaryStrip:** 4'lü hantal kart blokları yerine tek satırda şık ve derli toplu özet şeridi.
-- **ScrollFade:** Uzun listelerde üst ve alt kenarları yumuşakça solduran Fluent görsel efekti.
-- **Kenar Çubuğu & Cümle Düzeni:** 5 mantıksal gruba ayrılmış gezinme çubuğu ve Windows 11 yerel cümle düzeni (sentence-case) standartları tamamlandı.
+### 3. Windows 11 Canlı Tema Önizleme Kutucukları (`ThemePreview`)
+- **Windows 11 Kişiselleştirme Deneyimi:** Ayarlar sayfasındaki tema butonları yerine; pencere tabanı, katman rengi, kart dolgusu ve vurgu rengini birebir yansıtan interaktif `ThemePreview` kutucukları getirildi.
+- **Tek Vurgu ve Katman Derinliği:** Koyu ve açık mod renk kontrastları, yüzey derinlikleri ve sınır çizgileri WCAG ve Fluent standartlarına tam uyarlandı.
 
 ---
 
-### 5. Kalite, Test & Güvenlik Güvencesi
-- **%100 Doğrulanmış Tasarım:** `verify-tokens.py`, `verify-symbols.py`, `verify-design-debt.py` ve `verify-bindings.py` kontrollerinin tümü sıfır hatayla geçti.
-- **777 Birim Test & UI Duman Testleri:** Çekirdek iş mantığı ve tüm WPF görünümleri eksiksiz doğrulandı.
+### 4. Otomatik Ekran Görüntüsü Hattı (Screenshots Pipeline)
+- **UI Duman Testi Entegrasyonu (`Screenshots.cs`):** Tüm modüllerin ve temaların pencereleri izole ortamda ayağa kaldırılarak ekran görüntüleri test hattında yakalanır.
+- **GitHub Actions İş Akışı (`screenshots.yml`):** Dağıtım ve PR süreçlerinde arayüzün piksel bazında bozulmadığını garanti altına alan otomatik CI hattı kuruldu.
+
+---
+
+### 5. Sıfır Hata Güvencesi & Test Başarısı
+- **Sıkılaştırılmış Tasarım Cırcırları:** Çıplak `ui:Card`, durum dolgulu haplar ve eski sayfa başlığı sayaçları sıfır toleransla denetlendi; `verify-design-debt.py` ve `verify-tokens.py` kontrolleri %100 yeşil tamamlandı.
+- **783 Birim Test & UI Duman Testi:** 462 çekirdek iş mantığı ve 321 WPF/UI testi olmak üzere 783 testin tamamı sıfır hatayla geçti.
