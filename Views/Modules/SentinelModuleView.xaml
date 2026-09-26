@@ -59,7 +59,7 @@
                 </Grid.ColumnDefinitions>
                 <ui:SymbolIcon Grid.Column="0" Symbol="ShieldCheckmark24" FontSize="32" Filled="{Binding IsEnabled}"
                                Margin="{StaticResource Gap.Right.MD}" VerticalAlignment="Center"
-                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding StatusTitle}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold"

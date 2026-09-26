@@ -57,7 +57,7 @@
                         <ui:SymbolIcon x:Name="FallbackIcon"
                                        Symbol="Delete24"
                                        FontSize="24"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
                     </Grid>
@@ -75,7 +75,7 @@
                         <TextBlock Text=" • Kalıntı temizleyici"
                                    FontSize="{StaticResource Font.Subtitle}"
                                    FontWeight="SemiBold"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
                     <TextBlock Text="Kaldırma işlemi bitti. Sistemde kalan artık klasör, dosya ve kayıt defteri girdileri bulundu."
                                FontSize="{StaticResource Font.Caption}"
@@ -162,7 +162,7 @@
                             CornerRadius="{StaticResource Radius.SM}"
                             Padding="8,3">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="{Binding SelectedCount}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text="/" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text="{Binding TotalCount}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
                             <TextBlock Text=" Kalıntı" Foreground="{DynamicResource TextFillColorTertiaryBrush}" FontSize="{StaticResource Font.Caption}"/>
@@ -252,7 +252,7 @@
                                     <TextBlock Text="{Binding TypeName}"
                                                FontSize="{StaticResource Font.Micro}"
                                                FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
                                 </Border>
@@ -274,7 +274,7 @@
                                 <!-- Size & Risk Badge -->
                                 <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding FormattedSize}"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                FontSize="{StaticResource Font.Caption}"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center"
@@ -340,7 +340,7 @@
 
                 <!-- Quick Help / Note -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Info20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                    <ui:SymbolIcon Symbol="Info20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
                     <TextBlock Text="İpucu: Sağ tıklayarak konumu dosya gezgininde inceleyebilirsiniz."
                                FontSize="{StaticResource Font.Caption}"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>

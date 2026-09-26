@@ -30,7 +30,7 @@
             <!-- 0. Header (Title & Close) -->
             <Grid Grid.Row="0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Target24" FontSize="15" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                    <ui:SymbolIcon Symbol="Target24" FontSize="15" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
                     <TextBlock Text="Avcı modu" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                 </StackPanel>
 
@@ -66,7 +66,7 @@
                     <Ellipse Width="32" Height="32" Stroke="{DynamicResource AccentTextFillColorPrimaryBrush}" StrokeThickness="1.5" Opacity="0.8"/>
                     <ui:SymbolIcon Symbol="Target24" 
                                    FontSize="36" 
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                    HorizontalAlignment="Center" 
                                    VerticalAlignment="Center"/>
                 </Grid>

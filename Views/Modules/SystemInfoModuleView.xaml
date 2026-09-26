@@ -97,7 +97,7 @@
                             </Grid.RowDefinitions>
                             
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="İşlemci (CPU)" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
                             
@@ -109,7 +109,7 @@
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Hardware.CpuName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.CpuName}"/>
                                     <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                        <TextBlock Text="{Binding Hardware.CpuClockSpeed}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding Hardware.CpuClockSpeed}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
                                         <TextBlock Text="{Binding Hardware.CpuL3Cache}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -153,7 +153,7 @@
                             </Grid.RowDefinitions>
                             
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:SymbolIcon Symbol="Desktop20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <ui:SymbolIcon Symbol="Desktop20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="Ekran kartı (GPU)" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
@@ -163,7 +163,7 @@
                                         Margin="8,0,0,0" 
                                         VerticalAlignment="Center"
                                         Visibility="{Binding Hardware.HasDualGpu, Converter={StaticResource BoolToVis}}">
-                                    <TextBlock Text="Harici + dahili" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="Harici + dahili" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </Border>
                             </StackPanel>
 
@@ -177,11 +177,11 @@
                                     <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                                         <TextBlock Text="{Binding Hardware.GpuVram}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
                                         <TextBlock Text="{Binding Hardware.DisplayResolution}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,4,0"/>
-                                        <TextBlock Text="{Binding Hardware.DisplayRefreshRate, StringFormat='@ {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding Hardware.DisplayRefreshRate, StringFormat='@ {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="8,4" VerticalAlignment="Center" Margin="8,0,0,0">
-                                    <ui:SymbolIcon Symbol="Tv20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <ui:SymbolIcon Symbol="Tv20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </Border>
                             </Grid>
 
@@ -212,7 +212,7 @@
                             </Grid.RowDefinitions>
                             
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:SymbolIcon Symbol="TopSpeed20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <ui:SymbolIcon Symbol="TopSpeed20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="Fiziksel bellek (RAM)" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -224,7 +224,7 @@
                                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <TextBlock Text="{Binding Hardware.RamSpeedMhz, StringFormat='{} ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                                        <TextBlock Text="{Binding Hardware.RamSpeedMhz, StringFormat='{} ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                                         <TextBlock Text="{Binding Hardware.FreeRamGb, StringFormat='Boş: {0:F1} GB'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
@@ -270,13 +270,13 @@
                             </Grid.RowDefinitions>
                             
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:SymbolIcon Symbol="Laptop20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <ui:SymbolIcon Symbol="Laptop20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="Anakart ve bellenim" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,6">
                                 <TextBlock Text="{Binding Hardware.MotherboardModel}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.MotherboardModel}"/>
-                                <TextBlock Text="{Binding Hardware.BiosVersion}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Hardware.BiosVersion}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
                             </StackPanel>
 
                             <TextBlock Grid.Row="2" Text="SMBIOS / UEFI donanım katmanı" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
@@ -293,7 +293,7 @@
                             </Grid.RowDefinitions>
                             
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:SymbolIcon Symbol="WifiSettings20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <ui:SymbolIcon Symbol="WifiSettings20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="Ağ ve bağlantı" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -301,7 +301,7 @@
                                 <TextBlock Text="{Binding Hardware.NetworkAdapterName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Hardware.NetworkAdapterName}"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                                     <TextBlock Text="{Binding Hardware.NetworkLinkSpeed}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                    <TextBlock Text="{Binding Hardware.NetworkIpAddress, StringFormat='IP: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding Hardware.NetworkIpAddress, StringFormat='IP: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
                             </StackPanel>
 
@@ -319,7 +319,7 @@
                             </Grid.RowDefinitions>
                             
                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                                <ui:SymbolIcon Symbol="Settings20" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                                <ui:SymbolIcon Symbol="Settings20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                                 <TextBlock Text="İşletim sistemi ve uptime" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             </StackPanel>
 
@@ -344,7 +344,7 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <TextBlock Grid.Row="2" Text="{Binding Hardware.SystemUptimeText, StringFormat='Çalışma Süresi: {0}'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Grid.Row="2" Text="{Binding Hardware.SystemUptimeText, StringFormat='Çalışma Süresi: {0}'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </Grid>
                     </ui:Card>
                 </Grid>
@@ -359,7 +359,7 @@
                         <TextBlock Text="Sabit sürücüler ve depolama bölümleri" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Sürücü doluluk oranları, dosya sistemleri ve doğrudan hızlı bakım eylemleri." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
                     </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding Hardware.DiskActivityText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Hardware.DiskActivityText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
                 </Grid>
 
                 <!-- Interactive Drive Partitions Cards -->
@@ -387,11 +387,11 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                                             <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                                             <TextBlock Text="{Binding VolumeLabel, StringFormat='({0})'}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                             <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.XS}" Padding="6,2">
-                                                <TextBlock Text="{Binding DriveFormat}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding DriveFormat}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </Border>
                                         </StackPanel>
 
@@ -497,7 +497,7 @@
                             <Border Grid.Column="0" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                        <ui:SymbolIcon Symbol="Shield20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <ui:SymbolIcon Symbol="Shield20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
                                         <TextBlock Text="Güvenli önyükleme" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="{Binding Hardware.SecureBootStatus}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" TextTrimming="CharacterEllipsis"/>
@@ -508,7 +508,7 @@
                             <Border Grid.Column="2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                        <ui:SymbolIcon Symbol="LockClosed20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <ui:SymbolIcon Symbol="LockClosed20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
                                         <TextBlock Text="TPM güvenlik çipi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="{Binding Hardware.TpmStatus}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" TextTrimming="CharacterEllipsis"/>
@@ -519,7 +519,7 @@
                             <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                        <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <ui:SymbolIcon Symbol="DeveloperBoard20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
                                         <TextBlock Text="CPU sanallaştırma" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="{Binding Hardware.VirtualizationStatus}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
@@ -530,7 +530,7 @@
                             <Border Grid.Column="6" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                        <ui:SymbolIcon Symbol="ShieldKeyhole20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                        <ui:SymbolIcon Symbol="ShieldKeyhole20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
                                         <TextBlock Text="UAC yetki düzeyi" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                     <TextBlock Text="Yönetici (Tam Yetkili)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Visibility="{Binding Hardware.IsAdmin, Converter={StaticResource BoolToVis}}"/>
@@ -571,7 +571,7 @@
                                         Width="40" Height="40"
                                         Margin="0,0,12,0"
                                         VerticalAlignment="Center">
-                                    <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -626,7 +626,7 @@
                                         Width="40" Height="40"
                                         Margin="0,0,12,0"
                                         VerticalAlignment="Center">
-                                    <ui:SymbolIcon Symbol="WindowDevTools20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <ui:SymbolIcon Symbol="WindowDevTools20" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
 
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -724,11 +724,11 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="24" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,12,0"/>
+                                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="24" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,12,0"/>
                                             <StackPanel>
                                                 <TextBlock Text="{Binding Model}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                                                    <TextBlock Text="{Binding InterfaceType}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                                    <TextBlock Text="{Binding InterfaceType}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                                                     <TextBlock Text="{Binding MediaType}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,10,0"/>
                                                     <TextBlock Text="{Binding FormattedSize, StringFormat='Kapasite: {0}'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </StackPanel>

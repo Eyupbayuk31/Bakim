@@ -252,7 +252,7 @@
 
                         <!-- Left: Drive Selector -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                             <TextBlock Text="Hedef sürücü:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox ItemsSource="{Binding AvailableDrives}" AutomationProperties.Name="Sürücü filtresi" 
                                       SelectedItem="{Binding SelectedDriveFilter, Mode=TwoWay}"
@@ -390,8 +390,8 @@
                                 VerticalAlignment="Center"
                                 Margin="0,0,0,4">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <ui:SymbolIcon Symbol="DocumentBulletList20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
-                                <TextBlock Text="{Binding TotalLargeFilesSizeFormatted}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <ui:SymbolIcon Symbol="DocumentBulletList20" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                <TextBlock Text="{Binding TotalLargeFilesSizeFormatted}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -453,7 +453,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="HardDrive20" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                        <ui:SymbolIcon Symbol="HardDrive20" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                                         <TextBlock FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center">
                                             <Run Text="{Binding SelectedDriveName}"/><Run Text=" ("/><Run Text="{Binding SelectedDriveVolumeLabel}"/><Run Text=") - "/><Run Text="{Binding SelectedDriveFormat}"/>
                                         </TextBlock>
@@ -461,7 +461,7 @@
 
                                     <!-- Usage Badge -->
                                     <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="10,4">
-                                        <TextBlock FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                        <TextBlock FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                                             <Run Text="% "/><Run Text="{Binding SelectedDriveUsagePercentage}"/><Run Text=" Dolu"/>
                                         </TextBlock>
                                     </Border>
@@ -509,7 +509,7 @@
                                     <Border Grid.Column="4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,10">
                                         <StackPanel>
                                             <TextBlock Text="Boş alan" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            <TextBlock FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0">
+                                            <TextBlock FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0">
                                                 <Run Text="{Binding SelectedDriveFreeGb}"/><Run Text=" GB"/>
                                             </TextBlock>
                                         </StackPanel>
@@ -815,7 +815,7 @@
                                                 Padding="8,6" 
                                                 VerticalAlignment="Center" 
                                                 Margin="0,0,12,0">
-                                            <ui:SymbolIcon Symbol="{Binding CategorySymbol}" FontSize="16" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <ui:SymbolIcon Symbol="{Binding CategorySymbol}" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                         </Border>
 
                                         <!-- File Name, Full Path & Date -->
@@ -842,7 +842,7 @@
                                                    Text="{Binding SizeFormatted}" 
                                                    FontSize="{StaticResource Font.Body}" 
                                                    FontWeight="SemiBold" 
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                                    VerticalAlignment="Center" 
                                                    TextAlignment="Right" 
                                                    Margin="0,0,16,0"/>

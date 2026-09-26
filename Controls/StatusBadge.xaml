@@ -12,7 +12,8 @@
         renk körü kullanıcılar için biçim de ayırt edici olmalıdır.
     -->
 
-    <Border BorderThickness="{StaticResource Stroke.Thin}"
+    <!-- Fluent rozeti: hafif tonlu zemin, çerçevesiz; anlam nokta/simge + metin rengiyle. -->
+    <Border BorderThickness="{StaticResource Stroke.None}"
             CornerRadius="{StaticResource Radius.XS}"
             Padding="{StaticResource Pad.Badge}"
             VerticalAlignment="Center"
@@ -20,7 +21,7 @@
 
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
                 <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}"/>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Accent">

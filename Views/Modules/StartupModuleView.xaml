@@ -294,7 +294,7 @@
                                             <Grid>
                                                 <Image Source="{Binding IconSource}" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                        Visibility="{Binding IconSource, Converter={StaticResource NullToVisibilityConverter}}"/>
-                                                <ui:SymbolIcon Symbol="AppGeneric24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                <ui:SymbolIcon Symbol="AppGeneric24" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                                Visibility="{Binding IconSource, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
                                             </Grid>
                                         </Border>
@@ -438,17 +438,17 @@
                                 <Grid>
                                     <Image Source="{Binding IconSource}" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center"
                                            Visibility="{Binding IconSource, Converter={StaticResource NullToVisibilityConverter}}"/>
-                                    <ui:SymbolIcon Symbol="AppGeneric24" FontSize="26" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    <ui:SymbolIcon Symbol="AppGeneric24" FontSize="26" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
                                                    Visibility="{Binding IconSource, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
                                 </Grid>
                             </Border>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                <TextBlock Text="{Binding Publisher}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding Publisher}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                                     <Border Background="{DynamicResource Brush.Accent.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,6,0">
-                                        <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                        <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </Border>
                                     <Border Background="{DynamicResource Brush.Caution.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2">
                                         <TextBlock Text="{Binding EstimatedDelayText, StringFormat='Gecikme {0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>

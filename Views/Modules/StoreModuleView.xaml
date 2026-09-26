@@ -82,7 +82,7 @@
                             <ui:SymbolIcon Symbol="Apps24" FontSize="15" Margin="0,0,6,0"/>
                             <TextBlock Text="Uygulama kataloğu" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
                             <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.MD}" Padding="6,1" Margin="8,0,0,0">
-                                <TextBlock Text="{Binding TotalAppsCount, StringFormat='{}{0} Yazılım'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding TotalAppsCount, StringFormat='{}{0} Yazılım'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </Border>
                         </StackPanel>
                     </ui:Button>
@@ -137,9 +137,9 @@
 
                     <!-- Kurulabilir / Eksik -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" ToolTip="Henüz kurulmamış, indirilmeye hazır uygulamalar">
-                        <ui:SymbolIcon Symbol="ArrowDownload20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,5,0"/>
+                        <ui:SymbolIcon Symbol="ArrowDownload20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,5,0"/>
                         <TextBlock Text="Eksik: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding AvailableAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="{Binding AvailableAppsCount}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Seçili Kurulum -->
@@ -438,9 +438,9 @@
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,3">
-                                                <ui:SymbolIcon Symbol="ArrowSync20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
-                                                <TextBlock Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                                                <TextBlock Text="{Binding ProgressPercentage, StringFormat='{} (%{0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <ui:SymbolIcon Symbol="ArrowSync20" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                                                <TextBlock Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding ProgressPercentage, StringFormat='{} (%{0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             </StackPanel>
                                             <ProgressBar Grid.Row="1" Value="{Binding ProgressPercentage}" Maximum="100" Height="4"/>
                                         </Grid>
@@ -712,7 +712,7 @@
                                     CornerRadius="28" 
                                     Margin="0,0,16,0"
                                     VerticalAlignment="Center">
-                                <ui:SymbolIcon Symbol="Flash24" FontSize="28" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ui:SymbolIcon Symbol="Flash24" FontSize="28" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
 
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -810,7 +810,7 @@
                                                     VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="{Binding IconSymbol}" 
                                                                FontSize="24" 
-                                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Border>
 
@@ -819,7 +819,7 @@
                                                 <StackPanel Orientation="Horizontal">
                                                     <TextBlock Text="{Binding Title}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                     <Border Background="{DynamicResource SubtleFillColorTertiaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="6,2" Margin="8,0,0,0">
-                                                        <TextBlock Text="{Binding Badge}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                        <TextBlock Text="{Binding Badge}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                     </Border>
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding Subtitle}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
@@ -965,7 +965,7 @@
                                                 <Run Text=" · "/>
                                                 <Run Text="{Binding Id, Mode=OneWay}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                             </TextBlock>
-                                            <TextBlock Text="{Binding ResultText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding ResultText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                                         </StackPanel>
                                         <ui:Button Grid.Column="1" Appearance="Secondary" Padding="12,5" Content="Güncelle" VerticalAlignment="Center"
                                                    IsEnabled="{Binding CanUpgrade}"
@@ -1009,9 +1009,9 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                        <ui:SymbolIcon Symbol="ArrowDownload24" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                         <TextBlock Text="Canlı kurulum kuyruğu: " FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="{Binding CurrentAppName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"/>
+                        <TextBlock Text="{Binding CurrentAppName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="4,0,0,0"/>
                         <TextBlock Text=" (" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text="{Binding QueueProgressSummary}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         <TextBlock Text=")" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>

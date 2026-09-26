@@ -31,7 +31,7 @@
             <!-- 0. Header -->
             <Grid Grid.Row="0" Margin="0,0,0,16">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Target24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                    <ui:SymbolIcon Symbol="Target24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                     <StackPanel>
                         <TextBlock Text="Avcı modu - Hedef yakalandı" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock Text="Seçilen hedef üzerinde gerçekleştirmek istediğiniz işlemi seçin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
@@ -78,7 +78,7 @@
                             <ui:SymbolIcon x:Name="FallbackIcon" 
                                            Symbol="Apps24" 
                                            FontSize="28" 
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                            HorizontalAlignment="Center" 
                                            VerticalAlignment="Center"/>
                         </Grid>
@@ -89,7 +89,7 @@
                         <TextBlock x:Name="TxtDisplayName" Text="Uygulama adı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         
                         <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                            <TextBlock x:Name="TxtProcessInfo" Text="chrome.exe (PID: 1234)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="Medium"/>
+                            <TextBlock x:Name="TxtProcessInfo" Text="chrome.exe (PID: 1234)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontWeight="Medium"/>
                             <TextBlock x:Name="TxtMatchStatus" Text=" • [Kayıtlı Program]" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="6,0,0,0"/>
                         </StackPanel>
 
@@ -154,7 +154,7 @@
                                Click="ThreatAnalysis_Click"
                                Icon="{ui:SymbolIcon ShieldKeyhole20}">
                         <ui:Button.Content>
-                            <TextBlock Text="Tehdit analizi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="Tehdit analizi" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </ui:Button.Content>
                     </ui:Button>
 

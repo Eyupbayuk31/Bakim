@@ -344,7 +344,7 @@
                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
             <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Body}" HorizontalAlignment="Right"
                        TextTrimming="CharacterEllipsis" MaxWidth="700"
-                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
         </Grid>
     </Grid>
 </UserControl>

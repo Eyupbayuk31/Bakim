@@ -44,7 +44,7 @@
                             CornerRadius="{StaticResource Radius.MD}"
                             Padding="10"
                             Margin="0,0,12,0">
-                        <ui:SymbolIcon Symbol="Document24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <ui:SymbolIcon Symbol="Document24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -88,7 +88,7 @@
                 <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Padding="12,10" Margin="0,0,8,0">
                     <StackPanel>
                         <TextBlock Text="Yürütülebilir (.exe / .dll)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock x:Name="KpiExecutablesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="KpiExecutablesText" Text="0" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Border>
 
@@ -176,7 +176,7 @@
                                                 <TextBlock Text="{Binding Detail}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
                                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                 <TextBlock Text="{Binding ResultText}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,2,0,0"
-                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                            Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}"/>
                                             </StackPanel>
                                             </Grid>
@@ -219,7 +219,7 @@
                                                     Padding="6,2"
                                                     Margin="0,0,8,0"
                                                     VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Extension}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Extension}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -281,7 +281,7 @@
                                                     Padding="6,2"
                                                     Margin="0,0,8,0"
                                                     VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Hive}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Hive}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </Border>
 
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -310,7 +310,7 @@
                                 <DataTemplate>
                                     <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="8,8">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             <TextBlock Text="{Binding PathOrKey}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                         </StackPanel>
                                     </Border>
@@ -334,7 +334,7 @@
                                 <DataTemplate>
                                     <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="8,8">
                                         <StackPanel>
-                                            <TextBlock FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}">
+                                            <TextBlock FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
                                                 <Run Text="{Binding Area, Mode=OneWay}" FontWeight="SemiBold"/>
                                                 <Run Text="{Binding Kind, Mode=OneWay, StringFormat=' · {0}'}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             </TextBlock>

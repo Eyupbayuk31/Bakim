@@ -116,7 +116,7 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                             <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="{Binding OptimizationStageText}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="{Binding OptimizationStageText}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <ProgressBar Value="{Binding OptimizationProgressPercent}" Maximum="100" Height="4"/>
                     </StackPanel>
@@ -216,9 +216,9 @@
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="İşlem / uygulama" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsNameDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsNameAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
@@ -230,9 +230,9 @@
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="PID" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsPidDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsPidAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
@@ -244,9 +244,9 @@
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <TextBlock Text="CPU %" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsCpuDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsCpuAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
@@ -258,9 +258,9 @@
                                 </Border.InputBindings>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                                     <TextBlock Text="Bellek (RAM)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronDown20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsRamDesc, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="4,0,0,0"
+                                    <ui:SymbolIcon Symbol="ChevronUp20" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="4,0,0,0"
                                                    Visibility="{Binding IsRamAsc, Converter={StaticResource BoolToVis}}"/>
                                 </StackPanel>
                             </Border>
@@ -427,7 +427,7 @@
                                                Text="{Binding FormattedMemory}" 
                                                FontSize="{StaticResource Font.Caption}" 
                                                FontWeight="SemiBold" 
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                                VerticalAlignment="Center" 
                                                TextAlignment="Right" 
                                                Margin="0,0,14,0"/>
@@ -535,7 +535,7 @@
                                 <TextBlock Text="Bellek ayrıntıları" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,6"/>
                                 <Grid Margin="0,0,0,4">
                                     <TextBlock Text="Çalışma kümesi (RAM)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding SelectedProcess.FormattedMemory}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{Binding SelectedProcess.FormattedMemory}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 <Grid Margin="0,0,0,4">
                                     <TextBlock Text="Özel ayrılmış (Private)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>

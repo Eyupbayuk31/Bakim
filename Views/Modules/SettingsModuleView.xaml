@@ -174,7 +174,7 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="DarkTheme24"
                                                    FontSize="20"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Margin="0,0,8,0"/>
                                     <TextBlock Text="Arayüz Görünümü ve Temalar"
                                                FontSize="{StaticResource Font.Subtitle}"
@@ -335,7 +335,7 @@
                                     <TextBlock Text="{Binding CurrentThemeStatus}"
                                                FontSize="{StaticResource Font.Caption}"
                                                FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
                             </Border>
 
@@ -381,7 +381,7 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="TopSpeed24"
                                                    FontSize="20"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Margin="0,0,8,0"/>
                                     <TextBlock Text="Performans ve Bellek Tercihleri"
                                                FontSize="{StaticResource Font.Subtitle}"
@@ -451,7 +451,7 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <ui:SymbolIcon Symbol="Settings24"
                                                    FontSize="20"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Margin="0,0,8,0"/>
                                     <TextBlock Text="Sistem Başlangıcı ve Davranışı"
                                                FontSize="{StaticResource Font.Subtitle}"
@@ -521,7 +521,7 @@
                                                     <TextBlock Text="{Binding AutostartHealthBadgeText}"
                                                                FontSize="{StaticResource Font.Caption}"
                                                                FontWeight="SemiBold"
-                                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </StackPanel>
                                                 <TextBlock Text="{Binding AutostartDiagnosticDetails}"
                                                            FontSize="{StaticResource Font.Caption}"
@@ -748,7 +748,7 @@
                                     <ui:SymbolIcon Grid.Column="0"
                                                    Symbol="Shield24"
                                                    FontSize="26"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Margin="0,0,14,0"
                                                    VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -812,7 +812,7 @@
                                             Margin="0,0,0,12">
                                     <ui:SymbolIcon Symbol="ArrowCounterclockwise24"
                                                    FontSize="20"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Margin="0,0,8,0"/>
                                     <TextBlock Text="Program kaldırıcı ve Sistem Geri Yükleme"
                                                FontSize="{StaticResource Font.BodyLarge}"
@@ -898,7 +898,7 @@
                                             Margin="0,0,0,12">
                                     <ui:SymbolIcon Symbol="Shield24"
                                                    FontSize="20"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Margin="0,0,8,0"/>
                                     <TextBlock Text="Kurulum Nöbetçisi (Sentinel Setup Guard)"
                                                FontSize="{StaticResource Font.BodyLarge}"
@@ -961,7 +961,7 @@
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <ui:SymbolIcon Symbol="ShieldCheckmark24"
                                                        FontSize="20"
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                        Margin="0,0,8,0"/>
                                         <TextBlock Text="VirusTotal API entegrasyonu"
                                                    FontSize="{StaticResource Font.BodyLarge}"
@@ -1011,7 +1011,7 @@
                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                         <TextBlock Text="{Binding VirusTotalApiStatus}"
                                                    FontSize="{StaticResource Font.Caption}"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                    FontWeight="Medium"/>
                                         <TextBlock Text=" • Ücretsiz anahtar için virustotal.com/gui/join-us adresini ziyaret edin."
                                                    FontSize="{StaticResource Font.Caption}"
@@ -1040,7 +1040,7 @@
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <ui:SymbolIcon Symbol="Info24"
                                                            FontSize="20"
-                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                            Margin="0,0,8,0"/>
                                             <TextBlock Text="Uygulama Bilgileri ve Günlük Yönetimi"
                                                        FontSize="{StaticResource Font.Subtitle}"
@@ -1181,7 +1181,7 @@
                                             <TextBlock Text="{Binding DeveloperName}"
                                                        FontSize="{StaticResource Font.Body}"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                        Margin="0,2,0,0"/>
                                         </StackPanel>
                                     </Border>
@@ -1221,7 +1221,7 @@
                                     <ui:SymbolIcon Grid.Column="0"
                                                    Symbol="AppFolder24"
                                                    FontSize="18"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                    Margin="0,0,10,0"
                                                    VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -1271,7 +1271,7 @@
                                             <TextBlock Text="{Binding LatestRelease.Title}"
                                                        FontSize="{StaticResource Font.Caption}"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                        Margin="0,4,0,0"/>
                                         </StackPanel>
 
@@ -1334,7 +1334,7 @@
                                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                             <ui:SymbolIcon Symbol="History24"
                                                            FontSize="18"
-                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                            Margin="0,0,8,0"/>
                                             <TextBlock Text="Sürüm geçmişi ve değişiklik günlüğü"
                                                        FontSize="{StaticResource Font.Body}"
@@ -1381,7 +1381,7 @@
                                                                     <TextBlock Text="{Binding Version}"
                                                                                FontSize="{StaticResource Font.Caption}"
                                                                                FontWeight="SemiBold"
-                                                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                                 </Border>
 
                                                                 <!-- Title & Date -->
@@ -1429,7 +1429,7 @@
                                                                             <ui:SymbolIcon Grid.Column="0"
                                                                                            Symbol="ChevronRight20"
                                                                                            FontSize="12"
-                                                                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                                                                            Margin="0,3,6,0"
                                                                                            VerticalAlignment="Top"/>
                                                                             <TextBlock Grid.Column="1"

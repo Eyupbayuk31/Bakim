@@ -294,7 +294,7 @@
                                             BorderThickness="1" 
                                             Margin="0,0,12,0" 
                                             VerticalAlignment="Top">
-                                        <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
 
                                     <!-- Main Details -->
@@ -307,7 +307,7 @@
                                                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                                                     BorderThickness="1" 
                                                     Margin="0,0,8,0">
-                                                <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </Border>
 
                                             <!-- Risk Level Badge: Önerilen (Green) -->
@@ -370,8 +370,8 @@
                                                     </Style>
                                                 </Border.Style>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <ui:SymbolIcon Symbol="Info16" FontSize="11" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
-                                                    <TextBlock Text="İsteğe bağlı" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                    <ui:SymbolIcon Symbol="Info16" FontSize="11" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="İsteğe bağlı" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
@@ -541,7 +541,7 @@
                                             BorderThickness="1" 
                                             Margin="0,0,12,0" 
                                             VerticalAlignment="Top">
-                                        <ui:SymbolIcon Symbol="Apps20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <ui:SymbolIcon Symbol="Apps20" FontSize="18" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
 
                                     <!-- App Text Details -->
@@ -559,7 +559,7 @@
                                                     BorderThickness="1" 
                                                     Margin="10,0,0,0"
                                                     Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
-                                                <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                             </Border>
 
                                             <!-- Essential Badge -->
@@ -679,7 +679,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:SymbolIcon Symbol="Info20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                    <ui:SymbolIcon Symbol="Info20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
                     <TextBlock Text="{Binding StatusMessage}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </StackPanel>
 

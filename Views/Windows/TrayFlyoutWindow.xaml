@@ -32,7 +32,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <ui:SymbolIcon Symbol="ShieldTask24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <ui:SymbolIcon Symbol="ShieldTask24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="Bakım sistem paneli" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         <TextBlock x:Name="StatusText" Text="Sistem nöbette (Arka Plan Aktif)" FontSize="{StaticResource Font.Caption}" Margin="0,2,0,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -54,9 +54,9 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <ui:SymbolIcon Grid.Column="0" Symbol="DeveloperBoard20" FontSize="14" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="0" Symbol="DeveloperBoard20" FontSize="14" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,6,0" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Text="İşlemci (CPU)" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" x:Name="CpuText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" x:Name="CpuText" Text="%0" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
                     <ProgressBar x:Name="CpuProgress" Height="4" Minimum="0" Maximum="100" Value="0" Margin="0,0,0,10" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
 
@@ -84,7 +84,7 @@
                     CornerRadius="{StaticResource Radius.MD}">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="14" Margin="0,0,6,0" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <ui:SymbolIcon Symbol="ShieldCheckmark20" FontSize="14" Margin="0,0,6,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         <TextBlock x:Name="SentinelText" Text="Kurulum Nöbetçisi" FontSize="{StaticResource Font.Caption}"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>

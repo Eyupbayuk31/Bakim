@@ -103,7 +103,7 @@
                             <TextBlock Text="Toplam hizmet" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.TotalServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <ui:SymbolIcon Grid.Column="1" Symbol="Server24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="1" Symbol="Server24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
                 </ui:Card>
 
@@ -129,9 +129,9 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Güvenli kapatılabilir" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="{Binding Stats.OptimizableServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding Stats.OptimizableServices}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <ui:SymbolIcon Grid.Column="1" Symbol="TopSpeed24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="1" Symbol="TopSpeed24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
                 </ui:Card>
 
@@ -172,7 +172,7 @@
                             <TextBlock Text="Toplam donanım sürücüsü" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                             <TextBlock Text="{Binding Stats.TotalDrivers}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <ui:SymbolIcon Grid.Column="1" Symbol="Desktop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="1" Symbol="Desktop24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
                 </ui:Card>
 
@@ -212,9 +212,9 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Sistem entegrasyonu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                            <TextBlock Text="PnP çekirdek aktif" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
+                            <TextBlock Text="PnP çekirdek aktif" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
                         </StackPanel>
-                        <ui:SymbolIcon Grid.Column="1" Symbol="Laptop24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                        <ui:SymbolIcon Grid.Column="1" Symbol="Laptop24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
                     </Grid>
                 </ui:Card>
             </Grid>
@@ -236,7 +236,7 @@
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <ui:SymbolIcon Symbol="{Binding Icon}" FontSize="18" Margin="0,0,8,0"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
@@ -633,7 +633,7 @@
                                     VerticalAlignment="Center" 
                                     HorizontalAlignment="Left"
                                     Visibility="{Binding DeviceClass, Converter={StaticResource NullToVisibilityConverter}}">
-                                <TextBlock Text="{Binding DeviceClass}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="{Binding DeviceClass}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </Border>
 
                             <!-- Col 2: Manufacturer -->

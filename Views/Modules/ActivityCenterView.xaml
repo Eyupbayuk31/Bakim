@@ -167,7 +167,7 @@
                                     </Grid.ColumnDefinitions>
                                     <ui:SymbolIcon Grid.Column="0" Symbol="{Binding KindSymbol}" FontSize="18"
                                                    VerticalAlignment="Top" Margin="0,1,0,0"
-                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding TimeText}"
                                                FontSize="{StaticResource Font.Body}"
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"

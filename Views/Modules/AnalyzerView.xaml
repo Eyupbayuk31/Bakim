@@ -41,7 +41,7 @@
                                    FontSize="{StaticResource Font.Caption}"
                                    FontWeight="Medium"
                                    VerticalAlignment="Center"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
@@ -53,7 +53,7 @@
                                    VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis"
                                    MaxWidth="340"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
             </c:SectionHeader.TitleAdornment>
@@ -365,7 +365,7 @@
                                                RenderOptions.BitmapScalingMode="HighQuality"/>
                                         <ui:SymbolIcon Symbol="Document24" 
                                                        FontSize="18" 
-                                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                        HorizontalAlignment="Center" 
                                                        VerticalAlignment="Center"
                                                        Visibility="{Binding IconSource, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
@@ -401,7 +401,7 @@
                                         Padding="8,4"
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding CategoryDisplayName}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding CategoryDisplayName}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </Border>
 
                                 <!-- Column 4: Digital Signature Badge -->
@@ -477,7 +477,7 @@
                                         Margin="0,0,10,0"
                                         VerticalAlignment="Center">
                                     <StackPanel Orientation="Horizontal">
-                                        <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,4,0"/>
+                                        <ui:SymbolIcon Symbol="Shield20" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,4,0"/>
                                         <TextBlock Text="{Binding VirusTotalScore}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     </StackPanel>
                                 </Border>
@@ -591,7 +591,7 @@
                 <!-- Modal Header -->
                 <Grid Margin="0,0,0,16">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                        <ui:SymbolIcon Symbol="Key24" FontSize="22" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                         <StackPanel>
                             <TextBlock Text="VirusTotal API entegrasyonu" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="SHA-256 hash'lerini otomatik sorgulamak için API anahtarınızı girin" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,2,0,0"/>
@@ -616,7 +616,7 @@
                 <!-- Status Message -->
                 <TextBlock Text="{Binding ApiKeyStatusText}" 
                            FontSize="{StaticResource Font.Caption}" 
-                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" 
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                            FontWeight="Medium"
                            Margin="0,0,0,16"
                            TextWrapping="Wrap"/>

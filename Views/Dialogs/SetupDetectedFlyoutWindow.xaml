@@ -45,7 +45,7 @@
                                 CornerRadius="{StaticResource Radius.MD}"
                                 Padding="8"
                                 Margin="0,0,10,0">
-                            <ui:SymbolIcon Symbol="Eye24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <ui:SymbolIcon Symbol="Eye24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -54,7 +54,7 @@
                                     <TextBlock x:Name="FlyoutProtectionText" Text="Tam koruma" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
                                 </Border>
                             </StackPanel>
-                            <TextBlock x:Name="MonitoringAppNameText" Text="Yeni yazılım kurulumu izleniyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="MonitoringAppNameText" Text="Yeni yazılım kurulumu izleniyor..." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -106,11 +106,11 @@
                                 CornerRadius="{StaticResource Radius.MD}"
                                 Padding="8"
                                 Margin="0,0,10,0">
-                            <ui:SymbolIcon Symbol="Shield24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <ui:SymbolIcon Symbol="Shield24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="Kurulum tamamlandı" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock x:Name="FinishedAppNameText" Text="Uygulama adı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            <TextBlock x:Name="FinishedAppNameText" Text="Uygulama adı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontWeight="SemiBold" Margin="0,2,0,0"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -143,7 +143,7 @@
                             Margin="0,8,0,2"
                             Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Shield24" FontSize="15" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                            <ui:SymbolIcon Symbol="Shield24" FontSize="15" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
                             <TextBlock x:Name="QuickRiskSummaryText"
                                        Text="Risk analizi hazırlandı"
                                        FontSize="{StaticResource Font.Caption}"
@@ -170,7 +170,7 @@
                                 CornerRadius="{StaticResource Radius.SM}"
                                 Padding="8,4"
                                 Margin="0,0,6,6">
-                            <TextBlock x:Name="ExecutablesBadgeText" Text="+0 Yürütülebilir" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock x:Name="ExecutablesBadgeText" Text="+0 Yürütülebilir" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </Border>
 
                         <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"

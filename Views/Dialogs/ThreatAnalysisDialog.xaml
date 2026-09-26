@@ -318,11 +318,11 @@
                     <StackPanel Orientation="Horizontal" Margin="{StaticResource Gap.Top.XS}"
                                 Visibility="{Binding HasPreviousAnalyses, Converter={StaticResource BoolToVis}}">
                         <ui:SymbolIcon Symbol="History20" FontSize="{StaticResource Icon.SM}" Margin="{StaticResource Gap.IconText}"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         <TextBlock Text="{Binding PreviousAnalysesText}"
                                    FontSize="{StaticResource Font.Body}"
                                    TextWrapping="Wrap"
-                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -540,12 +540,12 @@
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="Lightbulb24" FontSize="{StaticResource Icon.MD}"
                                            Margin="0,1,10,0" VerticalAlignment="Top"
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                             <StackPanel>
                                 <TextBlock Text="Sistem güvenlik tavsiyesi"
                                            FontSize="{StaticResource Font.BodyLarge}"
                                            FontWeight="SemiBold"
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <TextBlock Text="{Binding Recommendation}"
                                            FontSize="{StaticResource Font.Caption}"
                                            TextWrapping="Wrap"
@@ -946,7 +946,7 @@
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <ui:SymbolIcon Symbol="Library24" FontSize="{StaticResource Icon.XS}"
                                                                Margin="{StaticResource Gap.IconText}"
-                                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 <TextBlock Text="{Binding DllName}"
                                                            FontFamily="Cascadia Mono, Consolas"
                                                            FontSize="{StaticResource Font.Body}"
