@@ -529,7 +529,7 @@
                                                    Visibility="{Binding IsSystemComponent, Converter={StaticResource InverseBooleanToVisibilityConverter}}" AutomationProperties.Name="Sezgisel Tehdit &amp; Güvenlik Analizi Yap"/>
 
                                         <!-- Standard Uninstall Button -->
-                                        <ui:Button Appearance="Primary" 
+                                        <ui:Button Appearance="Secondary" 
                                                    Content="Kaldır" 
                                                    ToolTip="{Binding UninstallHint}"
                                                    Icon="{ui:SymbolIcon Delete20}"

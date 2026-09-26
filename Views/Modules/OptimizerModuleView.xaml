@@ -275,11 +275,7 @@
                     </Grid>
 
                     <!-- Table Column Header -->
-                    <Border Grid.Row="1" 
-                            Background="{DynamicResource ControlFillColorSecondaryBrush}" 
-                            CornerRadius="{StaticResource Radius.SM}" 
-                            Padding="12,8" 
-                            Margin="0,0,0,6">
+                    <Border Grid.Row="1" Style="{StaticResource Table.HeaderRow}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="3*"/>                           <!-- Process Name & Publisher -->

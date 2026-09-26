@@ -278,12 +278,7 @@
                             </Grid.RowDefinitions>
 
                             <!-- Column Headers -->
-                            <Border Grid.Row="0" 
-                                    Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
-                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                    BorderThickness="0,0,0,1" 
-                                    CornerRadius="8,8,0,0" 
-                                    Padding="16,10">
+                            <Border Grid.Row="0" Style="{StaticResource Table.HeaderRow}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="1.8*" MinWidth="150"/> <!-- Process & PID -->
@@ -811,7 +806,7 @@
                                    Padding="12,8" 
                                    Margin="0,0,8,0"
                                    ToolTip="DHCP Kira Süresini ve IP Adresini Yenile (ipconfig /renew)"/>
-                        <ui:Button Appearance="Primary" 
+                        <ui:Button Appearance="Secondary" 
                                    Command="{Binding RefreshCommand}" 
                                    Content="Yenile" 
                                    Icon="{ui:SymbolIcon ArrowSync20}" 
@@ -1084,7 +1079,7 @@
                                                 Icon="{ui:SymbolIcon Globe20}"/>
 
                                     <ui:Button Grid.Column="2" 
-                                               Appearance="Primary" 
+                                               Appearance="Secondary" 
                                                Command="{Binding RunPingCommand}" 
                                                Padding="16,8" 
                                                Content="Ping gönder" 
@@ -1161,7 +1156,7 @@
                                                 Icon="{ui:SymbolIcon NumberSymbol20}"/>
 
                                     <ui:Button Grid.Column="4" 
-                                               Appearance="Primary" 
+                                               Appearance="Secondary" 
                                                Command="{Binding CheckPortCommand}" 
                                                Padding="16,8" 
                                                Content="Portu test et" 
@@ -1206,7 +1201,7 @@
                                                 Icon="{ui:SymbolIcon Globe20}"/>
 
                                     <ui:Button Grid.Column="2" 
-                                               Appearance="Primary" 
+                                               Appearance="Secondary" 
                                                Command="{Binding RunTracerouteCommand}" 
                                                IsEnabled="{Binding IsTracerouteRunning, Converter={StaticResource InverseBool}}"
                                                Padding="16,8" 
@@ -1267,7 +1262,7 @@
                                         <TextBlock Text="Dünyanın önde gelen DNS sağlayıcılarını (Cloudflare, Google, Quad9, AdGuard vb.) sorgulayarak en düşük gecikmeli sunucuyu tespit edin." FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
                                     </StackPanel>
                                     <ui:Button Grid.Column="1" 
-                                               Appearance="Primary" 
+                                               Appearance="Secondary" 
                                                Command="{Binding RunDnsBenchmarkCommand}" 
                                                IsEnabled="{Binding IsDnsBenchmarking, Converter={StaticResource InverseBool}}"
                                                Padding="16,8" 

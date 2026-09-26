@@ -298,12 +298,7 @@
             </Grid.RowDefinitions>
 
             <!-- Services Table Header -->
-            <Border Grid.Row="0" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                    BorderThickness="1,1,1,0" 
-                    CornerRadius="{StaticResource Radius.TopOnly}" 
-                    Padding="16,10">
+            <Border Grid.Row="0" Style="{StaticResource Table.HeaderRow}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2.5*"/> <!-- Service & Display Name -->
@@ -519,12 +514,7 @@
             </Grid.RowDefinitions>
 
             <!-- Drivers Table Header -->
-            <Border Grid.Row="0" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                    BorderThickness="1,1,1,0" 
-                    CornerRadius="{StaticResource Radius.TopOnly}" 
-                    Padding="16,10">
+            <Border Grid.Row="0" Style="{StaticResource Table.HeaderRow}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2.5*"/> <!-- Device Name -->

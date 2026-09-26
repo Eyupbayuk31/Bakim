@@ -537,7 +537,7 @@
                                                VerticalAlignment="Center" 
                                                Margin="0,0,10,0"/>
                                     <ui:Button Content="Kaydet" 
-                                               Appearance="Primary"
+                                               Appearance="Secondary"
                                                Command="{Binding DataContext.SaveNumericTweakCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                CommandParameter="{Binding}"
                                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
@@ -581,7 +581,7 @@
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <ui:Button Grid.Column="1" 
-                                   Appearance="Primary"
+                                   Appearance="Secondary"
                                    Content="Önbellekleri sıfırla ve Explorer'ı başlat"
                                    Icon="{ui:SymbolIcon ArrowSync24}"
                                    Command="{Binding ResetCachesCommand}"
@@ -661,7 +661,7 @@
                                         Padding="10,8"
                                         Margin="0,0,10,0" AutomationProperties.Name="Kısayol Adı"/>
                             <ui:Button Grid.Column="2" 
-                                       Appearance="Primary"
+                                       Appearance="Secondary"
                                        Content="Kısayolu oluştur"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}"
                                        Command="{Binding CreateElevatedShortcutCommand}"
@@ -721,7 +721,7 @@
                         </Grid>
 
                         <ui:Button Grid.Row="2" 
-                                   Appearance="Primary"
+                                   Appearance="Secondary"
                                    Content="OEM ve Kullanıcı Bilgilerini Kaydet"
                                    Icon="{ui:SymbolIcon Save24}"
                                    Command="{Binding SaveOemInfoCommand}"
@@ -781,7 +781,7 @@
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:Button Appearance="Primary"
+                            <ui:Button Appearance="Secondary"
                                        Content="Metrikleri kaydet ve DWM yenile"
                                        Icon="{ui:SymbolIcon Save24}"
                                        Command="{Binding SaveWindowMetricsCommand}"

@@ -494,7 +494,7 @@
                                                 </StackPanel>
 
                                                 <!-- State 2: NOT INSTALLED -> Sleek Modern Primary Action Button -->
-                                                <ui:Button Appearance="Primary"
+                                                <ui:Button Appearance="Secondary"
                                                            Visibility="{Binding IsInstalled, Converter={StaticResource InverseBoolToVis}}"
                                                            Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                            CommandParameter="{Binding}"
@@ -653,7 +653,7 @@
 
                                     <!-- Column 6: Action Button -->
                                     <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:Button Appearance="Primary"
+                                        <ui:Button Appearance="Secondary"
                                                    Visibility="{Binding IsInstalled, Converter={StaticResource InverseBoolToVis}}"
                                                    Command="{Binding DataContext.InstallSingleAppCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
@@ -727,7 +727,7 @@
                             </StackPanel>
 
                             <ui:Button Grid.Column="2" 
-                                       Appearance="Primary" 
+                                       Appearance="Secondary" 
                                        Command="{Binding InstallAllRuntimesCommand}"
                                        Padding="18,10" 
                                        VerticalAlignment="Center"
@@ -907,7 +907,7 @@
                                                        ToolTip="Paketi seç ve doğrudan Uygulama Kataloğu görünümüne dön."/>
 
                                             <ui:Button Grid.Column="2" 
-                                                       Appearance="Primary"
+                                                       Appearance="Secondary"
                                                        Command="{Binding DataContext.InstallPresetImmediatelyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                        CommandParameter="{Binding}"
                                                        Content="Hemen kur"
@@ -944,7 +944,7 @@
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <ui:Button Appearance="Secondary" Padding="12,6" Margin="0,0,8,0" Content="Yenile" Icon="{ui:SymbolIcon ArrowClockwise24}"
                                    Command="{Binding RefreshUpdatesCommand}"/>
-                        <ui:Button Appearance="Primary" Padding="12,6" Content="Tümünü güncelle" Icon="{ui:SymbolIcon ArrowDownload24}"
+                        <ui:Button Appearance="Secondary" Padding="12,6" Content="Tümünü güncelle" Icon="{ui:SymbolIcon ArrowDownload24}"
                                    Command="{Binding UpgradeAllCommand}"/>
                     </StackPanel>
                 </Grid>

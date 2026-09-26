@@ -532,7 +532,7 @@
                                                         Orientation="Horizontal"
                                                         VerticalAlignment="Center"
                                                         Margin="10,0,0,0">
-                                                <ui:Button Appearance="Primary"
+                                                <ui:Button Appearance="Secondary"
                                                            Content="Başlangıcı onar ve kur"
                                                            Icon="{ui:SymbolIcon Wrench20}"
                                                            Command="{Binding RepairAutostartCommand}"
@@ -992,7 +992,7 @@
                                                     Padding="12,10"
                                                     AutomationProperties.Name="VirusTotal API anahtarınızı girin"/>
                                         <ui:Button Grid.Column="2"
-                                                   Appearance="Primary"
+                                                   Appearance="Secondary"
                                                    Command="{Binding SaveAndTestVirusTotalKeyCommand}"
                                                    IsEnabled="{Binding IsTestingVirusTotalKey, Converter={StaticResource InverseBool}}"
                                                    Padding="16,10"

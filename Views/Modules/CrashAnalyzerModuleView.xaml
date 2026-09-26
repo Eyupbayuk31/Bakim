@@ -440,7 +440,7 @@
                                        Margin="0,0,0,12"/>
 
                             <ui:Button Grid.Row="2" 
-                                       Appearance="Primary" 
+                                       Appearance="Secondary" 
                                        Command="{Binding RunSfcCommand}"
                                        IsEnabled="{Binding IsRepairRunning, Converter={StaticResource InverseBool}}"
                                        Padding="14,8"
@@ -471,7 +471,7 @@
                                        Margin="0,0,0,12"/>
 
                             <ui:Button Grid.Row="2" 
-                                       Appearance="Primary" 
+                                       Appearance="Secondary" 
                                        Command="{Binding RunDismCommand}"
                                        IsEnabled="{Binding IsRepairRunning, Converter={StaticResource InverseBool}}"
                                        Padding="14,8"

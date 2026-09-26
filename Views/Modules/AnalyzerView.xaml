@@ -643,7 +643,7 @@
                                Command="{Binding CloseApiKeyDialogCommand}"/>
 
                     <ui:Button Grid.Column="3"
-                               Appearance="Primary"
+                               Appearance="Secondary"
                                Content="Doğrula ve kaydet"
                                Padding="16,8"
                                Icon="{ui:SymbolIcon Checkmark20}"

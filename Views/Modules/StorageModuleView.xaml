@@ -608,7 +608,7 @@
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                            HorizontalAlignment="Center"
                                            Margin="0,0,0,12"/>
-                                <ui:Button Appearance="Primary"
+                                <ui:Button Appearance="Secondary"
                                            Content="Büyük dosya taramasını başlat"
                                            Icon="{ui:SymbolIcon Search24}"
                                            Command="{Binding ScanLargeFilesCommand}"
@@ -1275,7 +1275,7 @@
                             <TextBlock Text="Yinelenen dosyalar" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                             <TextBlock Text="Diskinizdeki veya seçtiğiniz klasördeki birebir aynı içeriğe sahip (SHA-256 hash eşleşmeli) kopya dosyaları milisaniyeler içinde tespit edin. Güvenli akıllı seçim sayesinde orijinal dosyalarınız korunur, kopyalar güvenle Geri Dönüşüm Kutusu'na taşınır."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Margin="0,0,0,20"/>
-                            <ui:Button Appearance="Primary"
+                            <ui:Button Appearance="Secondary"
                                        Content="Yinelenen dosyaları taramaya başla"
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding StartDuplicateScanCommand}"
@@ -1438,7 +1438,7 @@
                             <TextBlock Text="Sahipsiz boş klasör temizleyici" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
                             <TextBlock Text="Kaldırılmış yazılımlardan, eski güncellemelerden ve taşınmış dizinlerden arta kalan 0 baytlık boş klasörleri derinlemesine tarayın. Windows ve sistem güvenlik klasörleri otomatik filtrelenir ve korunur."
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" TextAlignment="Center" LineHeight="18" Margin="0,0,0,20"/>
-                            <ui:Button Appearance="Primary"
+                            <ui:Button Appearance="Secondary"
                                        Content="Boş klasörleri taramaya başla"
                                        Icon="{ui:SymbolIcon Search24}"
                                        Command="{Binding StartEmptyFolderScanCommand}"
