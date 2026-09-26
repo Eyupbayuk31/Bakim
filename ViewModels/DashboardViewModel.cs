@@ -132,16 +132,16 @@ namespace Bakım.ViewModels
         private TelemetryMetrics _metrics = new();
 
         [ObservableProperty]
-        private PointCollection _cpuSparklinePoints = new();
+        private PointCollection _cpuSparklinePoints = FrozenPoints();
 
         [ObservableProperty]
-        private PointCollection _cpuSparklinePolygonPoints = new();
+        private PointCollection _cpuSparklinePolygonPoints = FrozenPoints();
 
         [ObservableProperty]
-        private PointCollection _ramSparklinePoints = new();
+        private PointCollection _ramSparklinePoints = FrozenPoints();
 
         [ObservableProperty]
-        private PointCollection _ramSparklinePolygonPoints = new();
+        private PointCollection _ramSparklinePolygonPoints = FrozenPoints();
 
         [ObservableProperty]
         private bool _isBusy;
@@ -379,6 +379,13 @@ namespace Bakım.ViewModels
             catch { }
         }
 
+        private static PointCollection FrozenPoints()
+        {
+            var points = new PointCollection();
+            points.Freeze();
+            return points;
+        }
+
         private void UpdateSparklineCollections()
         {
             const double width = 160.0;
@@ -403,6 +410,10 @@ namespace Bakım.ViewModels
             }
             cpuPoly.Add(new(width, height));
 
+            // Donmuş koleksiyon: grafik bağlaması hangi iş parçacığında atanırsa atansın güvenli
+            // (dondurulmamış PointCollection başka iş parçacığında oluşunca WPF bağlaması çöküyordu).
+            cpuLine.Freeze();
+            cpuPoly.Freeze();
             CpuSparklinePoints = cpuLine;
             CpuSparklinePolygonPoints = cpuPoly;
 
@@ -424,6 +435,8 @@ namespace Bakım.ViewModels
             }
             ramPoly.Add(new(width, height));
 
+            ramLine.Freeze();
+            ramPoly.Freeze();
             RamSparklinePoints = ramLine;
             RamSparklinePolygonPoints = ramPoly;
         }

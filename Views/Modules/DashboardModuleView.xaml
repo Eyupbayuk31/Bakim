@@ -169,7 +169,7 @@
                                   Caption="{Binding Metrics.CpuClockSpeed}"
                                   ToolTip="{Binding Metrics.CpuTemperatureTooltip}">
                         <Viewbox Stretch="Fill">
-                            <Canvas Width="160" Height="40" ClipToBounds="True">
+                            <Canvas Width="160" Height="46" ClipToBounds="True">
                                 <Polygon Points="{Binding CpuSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series1.Subtle}"/>
                                 <Polyline Points="{Binding CpuSparklinePoints}" Stroke="{DynamicResource Chart.Series1}"
                                           StrokeThickness="1.5" StrokeLineJoin="Round"/>
@@ -182,7 +182,7 @@
                                   Unit="{Binding Metrics.TotalRamGb, StringFormat='/ {0:0.0} GB'}"
                                   Caption="{Binding Metrics.FreeRamGb, StringFormat='{}{0:0.0} GB kullanılabilir'}">
                         <Viewbox Stretch="Fill">
-                            <Canvas Width="160" Height="40" ClipToBounds="True">
+                            <Canvas Width="160" Height="46" ClipToBounds="True">
                                 <Polygon Points="{Binding RamSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series2.Subtle}"/>
                                 <Polyline Points="{Binding RamSparklinePoints}" Stroke="{DynamicResource Chart.Series2}"
                                           StrokeThickness="1.5" StrokeLineJoin="Round"/>

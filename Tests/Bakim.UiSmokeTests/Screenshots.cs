@@ -37,6 +37,15 @@ internal static class Screenshots
         var app = new Bakım.App();
         app.InitializeComponent();
 
+        // Tek bir sayfanın hatası tüm görüntü setini düşürmesin: günlüğe yaz, devam et.
+        var errors = new List<string>();
+        app.DispatcherUnhandledException += (_, e) =>
+        {
+            errors.Add(e.Exception.GetType().Name + ": " + e.Exception.Message);
+            Console.WriteLine($"  UYARI      | {e.Exception}");
+            e.Handled = true;
+        };
+
         var collection = new ServiceCollection();
         Bakım.App.ConfigureServices(collection, NullLogService.Instance, new AppSettingsService(NullLogService.Instance));
         var provider = collection.BuildServiceProvider();
@@ -52,7 +61,15 @@ internal static class Screenshots
         main.ShowInTaskbar = false;
         main.Width = Widths[0];
         main.Height = 900;
-        main.Show();
+        try
+        {
+            main.Show();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"  UYARI      | Pencere gösterilirken: {ex}");
+            failed++;
+        }
 
         var keys = NavCatalog.AllItems(NavCatalog.Build()).Select(i => i.Key)
             .Append(NavCatalog.BuildSettingsItem().Key)
@@ -88,7 +105,7 @@ internal static class Screenshots
             }
         }
 
-        Console.WriteLine($"SONUC: {saved} goruntu, {failed} hata");
+        Console.WriteLine($"SONUC: {saved} goruntu, {failed} hata, {errors.Count} dagitici hatasi");
         // Arka plan servisleri (telemetri, tepsi) süreci açık tutabilir.
         Environment.Exit(failed == 0 ? 0 : 1);
         return 0;
