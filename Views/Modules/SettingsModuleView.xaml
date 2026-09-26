@@ -181,103 +181,53 @@
                                     CornerRadius="{StaticResource Radius.XS}"
                                    
                                     Margin="{StaticResource Gap.Card}">
-                                <UniformGrid Columns="3" Margin="0,0,-8,8">
-                                    <ui:Button HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="14,12"
-                                               Margin="0,0,8,8"
-                                               Appearance="{Binding IsMicaTheme, Converter={StaticResource BoolToNavAppearance}}"
-                                               Command="{Binding SetMicaDarkThemeCommand}"
-                                               AutomationProperties.Name="Windows 11 Koyu temasını uygula"
-                                               Icon="{ui:SymbolIcon DarkTheme24}">
-                                        <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="Windows 11 koyu"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="{StaticResource Font.Body}"/>
-                                            <TextBlock Text="Mica zemin, Fluent renkleri"
-                                                       FontSize="{StaticResource Font.Caption}"
-                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                       Margin="0,2,0,0"
-                                                       TextWrapping="Wrap"/>
+                                <c:AdaptiveGrid MinColumnWidth="150" MaxColumns="5" ColumnSpacing="8" RowSpacing="8" Margin="0,0,0,4">
+                                    <Button Style="{StaticResource Theme.Tile}" helpers:NavSelection.IsSelected="{Binding IsMicaTheme}"
+                                            Command="{Binding SetMicaDarkThemeCommand}" AutomationProperties.Name="Windows 11 koyu temasını uygula">
+                                        <StackPanel>
+                                            <c:ThemePreview WindowBrush="{StaticResource Preview.Dark.Window}" CardBrush="{StaticResource Preview.Dark.Card}"
+                                                            TextBrush="{StaticResource Preview.Dark.Text}" AccentBrush="{StaticResource Preview.Dark.Accent}"/>
+                                            <TextBlock Text="Windows 11 koyu" Margin="2,8,0,2" FontSize="{StaticResource Font.Body}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
-                                    </ui:Button>
-                                    <ui:Button HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="14,12"
-                                               Margin="0,0,8,8"
-                                               Appearance="{Binding IsLightTheme, Converter={StaticResource BoolToNavAppearance}}"
-                                               Command="{Binding SetLightThemeCommand}"
-                                               AutomationProperties.Name="Windows 11 Açık temasını uygula"
-                                               Icon="{ui:SymbolIcon WeatherSunny24}">
-                                        <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="Windows 11 açık"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="{StaticResource Font.Body}"/>
-                                            <TextBlock Text="Mica zemin, aydınlık"
-                                                       FontSize="{StaticResource Font.Caption}"
-                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                       Margin="0,2,0,0"
-                                                       TextWrapping="Wrap"/>
+                                    </Button>
+                                    <Button Style="{StaticResource Theme.Tile}" helpers:NavSelection.IsSelected="{Binding IsLightTheme}"
+                                            Command="{Binding SetLightThemeCommand}" AutomationProperties.Name="Windows 11 açık temasını uygula">
+                                        <StackPanel>
+                                            <c:ThemePreview WindowBrush="{StaticResource Preview.Light.Window}" CardBrush="{StaticResource Preview.Light.Card}"
+                                                            TextBrush="{StaticResource Preview.Light.Text}" AccentBrush="{StaticResource Preview.Light.Accent}"/>
+                                            <TextBlock Text="Windows 11 açık" Margin="2,8,0,2" FontSize="{StaticResource Font.Body}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
-                                    </ui:Button>
-                                    <ui:Button HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="14,12"
-                                               Margin="0,0,8,8"
-                                               Appearance="{Binding IsSlateTheme, Converter={StaticResource BoolToNavAppearance}}"
-                                               Command="{Binding SetSlateThemeCommand}"
-                                               AutomationProperties.Name="Slate Koyu temasını uygula"
-                                               Icon="{ui:SymbolIcon WeatherMoon24}">
-                                        <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="Slate koyu"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="{StaticResource Font.Body}"/>
-                                            <TextBlock Text="Lacivert-gri (v4.1)"
-                                                       FontSize="{StaticResource Font.Caption}"
-                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                       Margin="0,2,0,0"
-                                                       TextWrapping="Wrap"/>
+                                    </Button>
+                                    <Button Style="{StaticResource Theme.Tile}" helpers:NavSelection.IsSelected="{Binding IsSlateTheme}"
+                                            Command="{Binding SetSlateThemeCommand}" AutomationProperties.Name="Slate koyu temasını uygula">
+                                        <StackPanel>
+                                            <c:ThemePreview WindowBrush="{StaticResource Preview.Slate.Window}" CardBrush="{StaticResource Preview.Slate.Card}"
+                                                            TextBrush="{StaticResource Preview.Slate.Text}" AccentBrush="{StaticResource Preview.Slate.Accent}"/>
+                                            <TextBlock Text="Slate koyu" Margin="2,8,0,2" FontSize="{StaticResource Font.Body}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
-                                    </ui:Button>
-                                    <ui:Button HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="14,12"
-                                               Margin="0,0,8,8"
-                                               Appearance="{Binding IsAmoledTheme, Converter={StaticResource BoolToNavAppearance}}"
-                                               Command="{Binding SetAmoledThemeCommand}"
-                                               AutomationProperties.Name="AMOLED Siyah temasını uygula"
-                                               Icon="{ui:SymbolIcon WeatherMoon24}">
-                                        <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="AMOLED siyah"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="{StaticResource Font.Body}"/>
-                                            <TextBlock Text="Saf OLED siyahı"
-                                                       FontSize="{StaticResource Font.Caption}"
-                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                       Margin="0,2,0,0"
-                                                       TextWrapping="Wrap"/>
+                                    </Button>
+                                    <Button Style="{StaticResource Theme.Tile}" helpers:NavSelection.IsSelected="{Binding IsAmoledTheme}"
+                                            Command="{Binding SetAmoledThemeCommand}" AutomationProperties.Name="AMOLED siyah temasını uygula">
+                                        <StackPanel>
+                                            <c:ThemePreview WindowBrush="{StaticResource Preview.Amoled.Window}" CardBrush="{StaticResource Preview.Amoled.Card}"
+                                                            TextBrush="{StaticResource Preview.Amoled.Text}" AccentBrush="{StaticResource Preview.Amoled.Accent}"/>
+                                            <TextBlock Text="AMOLED siyah" Margin="2,8,0,2" FontSize="{StaticResource Font.Body}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
-                                    </ui:Button>
-                                    <ui:Button HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Left"
-                                               Padding="14,12"
-                                               Margin="0,0,8,8"
-                                               Appearance="{Binding IsCyberpunkTheme, Converter={StaticResource BoolToNavAppearance}}"
-                                               Command="{Binding SetCyberpunkThemeCommand}"
-                                               AutomationProperties.Name="Cyberpunk Mor temasını uygula"
-                                               Icon="{ui:SymbolIcon Color24}">
-                                        <StackPanel Margin="6,0,0,0">
-                                            <TextBlock Text="Cyberpunk mor"
-                                                       FontWeight="SemiBold"
-                                                       FontSize="{StaticResource Font.Body}"/>
-                                            <TextBlock Text="Neon mor ve pembe"
-                                                       FontSize="{StaticResource Font.Caption}"
-                                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                                       Margin="0,2,0,0"
-                                                       TextWrapping="Wrap"/>
+                                    </Button>
+                                    <Button Style="{StaticResource Theme.Tile}" helpers:NavSelection.IsSelected="{Binding IsCyberpunkTheme}"
+                                            Command="{Binding SetCyberpunkThemeCommand}" AutomationProperties.Name="Neon mor temasını uygula">
+                                        <StackPanel>
+                                            <c:ThemePreview WindowBrush="{StaticResource Preview.Neon.Window}" CardBrush="{StaticResource Preview.Neon.Card}"
+                                                            TextBrush="{StaticResource Preview.Neon.Text}" AccentBrush="{StaticResource Preview.Neon.Accent}"/>
+                                            <TextBlock Text="Neon mor" Margin="2,8,0,2" FontSize="{StaticResource Font.Body}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         </StackPanel>
-                                    </ui:Button>
-                                </UniformGrid>
+                                    </Button>
+                                </c:AdaptiveGrid>
                             </Border>
 
                             <!-- Yüksek Kontrast (§3.1, §3.8) -->

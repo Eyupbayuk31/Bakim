@@ -15,7 +15,8 @@
                     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                     xmlns:c="clr-namespace:Bakım.Controls"
                     xmlns:m="clr-namespace:Bakım.Models"
-                    xmlns:conv="clr-namespace:Bakım.Converters">
+                    xmlns:conv="clr-namespace:Bakım.Converters"
+                    xmlns:helpers="clr-namespace:Bakım.Helpers">
 
     <conv:SafeSymbolConverter x:Key="Layout.SafeSymbol"/>
     <conv:StringToVisConverter x:Key="Layout.StringToVis"/>
@@ -403,6 +404,88 @@
                             <ContentPresenter Grid.Column="1" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============ TEMA ÖNİZLEMESİ ============ -->
+    <!-- Önizleme renkleri diğer temaları temsil eder; bu yüzden sabittir (etkin temadan bağımsız). -->
+    <SolidColorBrush x:Key="Preview.Dark.Window" Color="#202020"/>
+    <SolidColorBrush x:Key="Preview.Dark.Card" Color="#2E2E2E"/>
+    <SolidColorBrush x:Key="Preview.Dark.Text" Color="#CFCFCF"/>
+    <SolidColorBrush x:Key="Preview.Dark.Accent" Color="#60CDFF"/>
+    <SolidColorBrush x:Key="Preview.Light.Window" Color="#F3F3F3"/>
+    <SolidColorBrush x:Key="Preview.Light.Card" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="Preview.Light.Text" Color="#5F5F5F"/>
+    <SolidColorBrush x:Key="Preview.Light.Accent" Color="#005FB8"/>
+    <SolidColorBrush x:Key="Preview.Slate.Window" Color="#0B1220"/>
+    <SolidColorBrush x:Key="Preview.Slate.Card" Color="#18233A"/>
+    <SolidColorBrush x:Key="Preview.Slate.Text" Color="#CBD5E1"/>
+    <SolidColorBrush x:Key="Preview.Slate.Accent" Color="#2563EB"/>
+    <SolidColorBrush x:Key="Preview.Amoled.Window" Color="#000000"/>
+    <SolidColorBrush x:Key="Preview.Amoled.Card" Color="#121216"/>
+    <SolidColorBrush x:Key="Preview.Amoled.Text" Color="#D4D4D8"/>
+    <SolidColorBrush x:Key="Preview.Amoled.Accent" Color="#9333EA"/>
+    <SolidColorBrush x:Key="Preview.Neon.Window" Color="#090514"/>
+    <SolidColorBrush x:Key="Preview.Neon.Card" Color="#180F30"/>
+    <SolidColorBrush x:Key="Preview.Neon.Text" Color="#DDD6FE"/>
+    <SolidColorBrush x:Key="Preview.Neon.Accent" Color="#8B5CF6"/>
+
+    <Style TargetType="{x:Type c:ThemePreview}">
+        <Setter Property="Height" Value="80"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type c:ThemePreview}">
+                    <Border Background="{TemplateBinding WindowBrush}" CornerRadius="{StaticResource Radius.XS}" ClipToBounds="True">
+                        <Grid Margin="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="22"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Kenar çubuğu çizgileri -->
+                            <StackPanel Grid.Column="0" Margin="0,4,6,0">
+                                <Border Height="3" CornerRadius="{StaticResource Radius.Indicator}" Background="{TemplateBinding AccentBrush}" Margin="0,0,0,5"/>
+                                <Border Height="3" CornerRadius="{StaticResource Radius.Indicator}" Background="{TemplateBinding TextBrush}" Opacity="0.5" Margin="0,0,0,5"/>
+                                <Border Height="3" CornerRadius="{StaticResource Radius.Indicator}" Background="{TemplateBinding TextBrush}" Opacity="0.5"/>
+                            </StackPanel>
+                            <!-- Kart -->
+                            <Border Grid.Column="1" Background="{TemplateBinding CardBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="8">
+                                <StackPanel>
+                                    <Border Height="4" Width="44" HorizontalAlignment="Left" CornerRadius="{StaticResource Radius.Indicator}" Background="{TemplateBinding TextBrush}"/>
+                                    <Border Height="3" Width="64" HorizontalAlignment="Left" CornerRadius="{StaticResource Radius.Indicator}" Background="{TemplateBinding TextBrush}" Opacity="0.5" Margin="0,6,0,0"/>
+                                    <Border Height="10" Width="28" HorizontalAlignment="Right" CornerRadius="{StaticResource Radius.XS}" Background="{TemplateBinding AccentBrush}" Margin="0,8,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Tema kutucuğu: önizleme + ad; seçili olanda 2 px vurgu çerçevesi -->
+    <Style x:Key="Theme.Tile" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+        <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Frame" Background="{TemplateBinding Background}" CornerRadius="{StaticResource Radius.MD}"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="{StaticResource Stroke.Thin}" Padding="8">
+                        <ContentPresenter/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Frame" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="helpers:NavSelection.IsSelected" Value="True">
+                            <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                            <Setter TargetName="Frame" Property="BorderThickness" Value="2"/>
+                            <Setter TargetName="Frame" Property="Padding" Value="7"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
