@@ -79,7 +79,7 @@
         <!-- ========================================================================= -->
         <!-- ROW 2: CLEANING TARGETS & TOOLBAR                                         -->
         <!-- ========================================================================= -->
-        <ui:Card Grid.Row="2" Padding="18" Margin="0,0,0,16">
+        <Border Style="{StaticResource Card.Surface}" Grid.Row="2" Margin="0,0,0,16">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- Title & Toolbar -->
@@ -161,7 +161,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ui:Card Padding="12,10" Margin="3" Cursor="Hand" ClipToBounds="False" ToolTip="{Binding Description}">
+                            <Border Style="{StaticResource Card.Surface.Compact}" Margin="3" Cursor="Hand" ClipToBounds="False" ToolTip="{Binding Description}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -228,17 +228,17 @@
                                                      Margin="4,0,0,0"
                                                      Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}"/>
                                 </Grid>
-                            </ui:Card>
+                            </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Grid>
-        </ui:Card>
+        </Border>
 
         <!-- ========================================================================= -->
         <!-- ROW 3: REALTIME STATUS & PROGRESS BAR                                     -->
         <!-- ========================================================================= -->
-        <ui:Card Grid.Row="3" Padding="14,10" Margin="0,0,0,14">
+        <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="3" Margin="0,0,0,14">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -300,7 +300,7 @@
                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                            TextTrimming="CharacterEllipsis"/>
             </Grid>
-        </ui:Card>
+        </Border>
 
         <!-- ========================================================================= -->
         <!-- ROW 4: SCANNED FILES TABLE & RIGHT INSPECTION DRAWER                      -->
@@ -312,7 +312,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Main: Files List Card -->
-            <ui:Card Grid.Column="0" Padding="16">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Search & Filters -->
@@ -507,7 +507,7 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Column 1: Right Master-Detail Inspection Drawer -->
             <Border Grid.Column="1" 

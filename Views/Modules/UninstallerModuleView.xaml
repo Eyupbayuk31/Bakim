@@ -203,9 +203,9 @@
                 </Grid.RowDefinitions>
 
                 <!-- Batch Progress Banner -->
-                <ui:Card Grid.Row="0"
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="0"
                          Margin="0,0,0,10" 
-                         Padding="14,10" 
+                         
                          Background="{DynamicResource ControlFillColorSecondaryBrush}"
                          Visibility="{Binding IsBatchRunning, Converter={StaticResource BoolToVis}}">
                     <Grid>
@@ -219,7 +219,7 @@
                         </StackPanel>
                         <ProgressBar Grid.Row="1" Margin="0,8,0,0" Height="4" Value="{Binding BatchProgress}" Maximum="{Binding BatchProgressMax}"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Korumalı Sistem Katmanı Bilgilendirme Çubuğu -->
                 <ui:InfoBar Grid.Row="1"
@@ -453,7 +453,7 @@
                 </Grid.RowDefinitions>
 
                 <!-- Leftovers Action Bar -->
-                <ui:Card Grid.Row="0" Padding="16,14" Margin="0,0,0,12">
+                <Border Style="{StaticResource Card.Surface.Compact}" Grid.Row="0" Margin="0,0,0,12">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -497,7 +497,7 @@
                                        Padding="12,8"/>
                         </StackPanel>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Leftovers ListView -->
                 <ListView Grid.Row="1" 

@@ -79,6 +79,26 @@
         <Setter Property="Padding" Value="{StaticResource Pad.Card}"/>
     </Style>
 
+    <!-- Sayfa başı kartı (hero): daha geniş iç boşluk -->
+    <Style x:Key="Card.Surface.Hero" TargetType="Border" BasedOn="{StaticResource Card.Surface}">
+        <Setter Property="Padding" Value="{StaticResource Pad.CardHero}"/>
+    </Style>
+
+    <!-- Sıkı kart (liste kartı, kutucuk) -->
+    <Style x:Key="Card.Surface.Compact" TargetType="Border" BasedOn="{StaticResource Card.Surface}">
+        <Setter Property="Padding" Value="{StaticResource Pad.CardCompact}"/>
+    </Style>
+
+    <!-- Tıklanabilir kart: yükselmez, çerçevesi değişmez; yalnızca zemin bir ton açılır -->
+    <Style x:Key="Card.Surface.Interactive" TargetType="Border" BasedOn="{StaticResource Card.Surface}">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <Style x:Key="Card.Inset" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>

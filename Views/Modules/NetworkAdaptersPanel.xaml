@@ -47,7 +47,7 @@
             <ItemsControl ItemsSource="{Binding Adapters}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:NetworkAdapterItem}">
-                        <ui:Card Padding="18" Margin="0,0,0,12">
+                        <Border Style="{StaticResource Card.Surface}" Margin="0,0,0,12">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -117,7 +117,7 @@
                                     </Border>
                                 </Grid>
                             </Grid>
-                        </ui:Card>
+                        </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

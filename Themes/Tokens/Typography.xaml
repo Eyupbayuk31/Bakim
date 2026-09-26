@@ -121,7 +121,7 @@
 
     <!-- Kenar çubuğu grup başlığı (Fluent NavigationViewItemHeader): Body Strong, büyük harf yok. -->
     <Style x:Key="Text.NavGroup" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
         <Setter Property="TextTrimming" Value="CharacterEllipsis"/>

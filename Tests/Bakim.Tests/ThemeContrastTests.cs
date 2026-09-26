@@ -140,6 +140,22 @@ public class ThemeContrastTests
             $"{t.DisplayName}: kenarlik kart zemininden ayirt edilemiyor ({ratio:F2}:1)");
     }
 
+    [Theory]
+    [MemberData(nameof(AllThemes))]
+    public void Layers_GetLighter_WindowToContentToCard(AppThemeKind kind)
+    {
+        // Windows 11 katman modeli: kart içerik katmanından, içerik katmanı pencereden açık
+        // (ya da eşit — Yüksek Kontrast). Aksi halde kartlar zeminde "delik" gibi görünür.
+        var t = ThemeService.GetDefinition(kind);
+        double window = Luminance(t.WindowBackground);
+        double layer = Luminance(t.ContentLayer);
+        double card = Luminance(t.CardBackground);
+        _output.WriteLine($"{t.DisplayName} | pencere {window:F4} · katman {layer:F4} · kart {card:F4}");
+        Assert.True(window <= layer && layer <= card,
+            $"{t.DisplayName}: katman sırası bozuk (pencere {window:F4}, katman {layer:F4}, kart {card:F4})");
+    }
+
+
     [Fact]
     public void EveryTheme_HasDistinctWindowBackground()
     {

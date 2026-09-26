@@ -44,7 +44,7 @@
         </c:SectionHeader>
 
         <!-- 1. Sağlık (kalıcı sinyaller, §5.1) ve Hızlı Bakım -->
-        <ui:Card Grid.Row="1" Padding="20" Margin="0,0,0,18">
+        <Border Style="{StaticResource Card.Surface}" Grid.Row="1" Margin="0,0,0,18">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/> <!-- Puan -->
@@ -170,7 +170,7 @@
                     </Border>
                 </StackPanel>
             </Grid>
-        </ui:Card>
+        </Border>
 
         <!-- 2. Son etkinlikler + Oyun Modu özeti -->
         <Grid Grid.Row="2" Margin="0,0,0,18">
@@ -180,7 +180,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <ui:Card Grid.Column="0" Padding="16,14">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
                 <StackPanel>
                     <Grid Margin="0,0,0,6">
                         <TextBlock Text="Son etkinlikler" Style="{StaticResource Text.CardTitle}"/>
@@ -219,9 +219,9 @@
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                Visibility="{Binding HasRecentActivity, Converter={StaticResource InverseBoolToVis}}"/>
                 </StackPanel>
-            </ui:Card>
+            </Border>
 
-            <ui:Card Grid.Column="2" Padding="16,14">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="2">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                         <ui:SymbolIcon Symbol="Games24" FontSize="{StaticResource Icon.LG}" Filled="{Binding IsGameModeActive}"
@@ -244,7 +244,7 @@
                                    AutomationProperties.Name="Oyun Modu sayfasını aç"/>
                     </WrapPanel>
                 </StackPanel>
-            </ui:Card>
+            </Border>
         </Grid>
 
         <!-- 3. Four-Column Live Telemetry Cards (CPU, RAM, Network, Disk) -->
@@ -260,7 +260,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Card 1: Processor (CPU) -->
-            <ui:Card Grid.Column="0" Padding="16">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -308,10 +308,10 @@
                                FontSize="{StaticResource Font.Caption}" 
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Card 2: Memory (RAM) -->
-            <ui:Card Grid.Column="2" Padding="16">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="2">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -359,10 +359,10 @@
                                FontSize="{StaticResource Font.Caption}" 
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Card 3: Network Traffic (Ağ) -->
-            <ui:Card Grid.Column="4" Padding="16">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="4">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -407,10 +407,10 @@
                                FontSize="{StaticResource Font.Caption}" 
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Card 4: Disk Activity -->
-            <ui:Card Grid.Column="6" Padding="16">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="6">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -459,7 +459,7 @@
                                FontSize="{StaticResource Font.Caption}" 
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                 </Grid>
-            </ui:Card>
+            </Border>
         </Grid>
 
         <!-- 4. Bottom Row: Hardware Sensors & Top Resource Hogs Grid -->
@@ -471,7 +471,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Column 0: Hardware Sensors & Specs -->
-            <ui:Card Grid.Column="0" Padding="18">
+            <Border Style="{StaticResource Card.Surface}" Grid.Column="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Title -->
@@ -555,10 +555,10 @@
                                Content="Sistem temizliğini aç"
                                Icon="{ui:SymbolIcon ArrowRight24}"/>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Column 1: Top Resource Hogs (Süreç Canavarları) -->
-            <ui:Card Grid.Column="2" Padding="18">
+            <Border Style="{StaticResource Card.Surface}" Grid.Column="2">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Title -->
@@ -628,7 +628,7 @@
                                Content="Süreçler"
                                Icon="{ui:SymbolIcon ArrowRight24}"/>
                 </Grid>
-            </ui:Card>
+            </Border>
         </Grid>
     </Grid>
     </ScrollViewer>

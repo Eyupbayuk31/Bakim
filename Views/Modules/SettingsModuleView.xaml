@@ -180,9 +180,9 @@
 
                             <!-- 4 Theme Selection Grid -->
                             <!-- Tema kartları: ilk ikisi Windows 11 (Fluent), diğerleri isteğe bağlı -->
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <UniformGrid Columns="3" Margin="0,0,-8,8">
                                     <ui:Button HorizontalAlignment="Stretch"
@@ -284,9 +284,9 @@
                             </Border>
 
                             <!-- Yüksek Kontrast (§3.1, §3.8) -->
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <ui:Button HorizontalAlignment="Stretch"
                                            HorizontalContentAlignment="Left"
@@ -438,9 +438,9 @@
                             </StackPanel>
 
                             <!-- Item 1: Start with Windows & Health Diagnostic -->
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <Grid>
                                     <Grid.RowDefinitions>
@@ -597,9 +597,9 @@
                             </ui:CardControl>
 
                             <!-- Item 4: Windows Gezgini Sağ Tık Menüsü Entegrasyonu -->
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -658,9 +658,9 @@
                                            Icon="{ui:SymbolIcon ArrowClockwise24}"
                                            Command="{Binding RefreshArtifactsCommand}"/>
                             </ui:CardControl>
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <ItemsControl ItemsSource="{Binding Artifacts}" Margin="0,8,0,0">
                                     <ItemsControl.ItemTemplate>
@@ -708,9 +708,9 @@
                     <!-- ============================================================ -->
                     <StackPanel VerticalAlignment="Top" Visibility="{Binding IsSecuritySelected, Converter={StaticResource BoolToVis}}">
                             <!-- Current Admin Status Bar -->
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -816,9 +816,9 @@
                                 </ui:CardControl>
 
                                 <!-- Item 3: Windows Gezgini Sağ Tık Menüsü -->
-                                <Border Style="{StaticResource Card.Surface}"
+                                <Border Style="{StaticResource Card.Surface.Compact}"
                                         CornerRadius="{StaticResource Radius.XS}"
-                                        Padding="16"
+                                       
                                         Margin="{StaticResource Gap.Card}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -879,9 +879,9 @@
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 </StackPanel>
 
-                                <Border Style="{StaticResource Card.Surface}"
+                                <Border Style="{StaticResource Card.Surface.Compact}"
                                         CornerRadius="{StaticResource Radius.XS}"
-                                        Padding="16"
+                                       
                                         Margin="{StaticResource Gap.Card}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -947,9 +947,9 @@
                                                Margin="0,4,0,0"/>
                                 </StackPanel>
 
-                                <Border Style="{StaticResource Card.Surface}"
+                                <Border Style="{StaticResource Card.Surface.Compact}"
                                         CornerRadius="{StaticResource Radius.XS}"
-                                        Padding="16"
+                                       
                                         Margin="{StaticResource Gap.Card}">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -974,9 +974,9 @@
                                     </Grid>
                                 </Border>
 
-                                <Border Style="{StaticResource Card.Surface}"
+                                <Border Style="{StaticResource Card.Surface.Compact}"
                                         CornerRadius="{StaticResource Radius.XS}"
-                                        Padding="16"
+                                       
                                         Margin="{StaticResource Gap.Card}">
                                     <StackPanel Orientation="Horizontal" Margin="2,4,0,0">
                                         <TextBlock Text="Durum: "
@@ -1000,9 +1000,9 @@
                     <!-- ============================================================ -->
                     <StackPanel VerticalAlignment="Top" Visibility="{Binding IsAboutSelected, Converter={StaticResource BoolToVis}}">
                             <!-- Header & Actions -->
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -1075,9 +1075,9 @@
                             </Border>
 
                             <!-- 4-Column Metadata Grid -->
-                            <Border Style="{StaticResource Card.Surface}"
+                            <Border Style="{StaticResource Card.Surface.Compact}"
                                     CornerRadius="{StaticResource Radius.XS}"
-                                    Padding="16"
+                                   
                                     Margin="{StaticResource Gap.Card}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>

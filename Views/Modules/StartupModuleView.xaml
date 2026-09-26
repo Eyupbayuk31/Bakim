@@ -192,7 +192,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Main Items Card -->
-            <ui:Card Grid.Column="0" Padding="16">
+            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -372,7 +372,7 @@
                         <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                     </Border>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- ========================================================================= -->
             <!-- RIGHT SIDE MASTER-DETAIL INSPECTION DRAWER                                -->

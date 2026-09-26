@@ -15,11 +15,11 @@
     <!-- ============ WPF-UI ANLAMSAL FIRÇALARI ============ -->
     <SolidColorBrush x:Key="ApplicationBackgroundBrush" Color="#202020"/>
 
-    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#2B2B2B"/>
-    <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="#272727"/>
-    <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="#404040"/>
-    <SolidColorBrush x:Key="CardBackground" Color="#2B2B2B"/>
-    <SolidColorBrush x:Key="CardBorderBrush" Color="#404040"/>
+    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#2E2E2E"/>
+    <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="#292929"/>
+    <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="#434343"/>
+    <SolidColorBrush x:Key="CardBackground" Color="#2E2E2E"/>
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#434343"/>
 
     <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="#323232"/>
     <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="#323232"/>
@@ -42,11 +42,11 @@
 
     <!-- ============ YEREL ANLAMSAL FIRÇALAR ============ -->
     <SolidColorBrush x:Key="Brush.Window.Background" Color="#202020"/>
-    <SolidColorBrush x:Key="Brush.Surface.Background" Color="#2B2B2B"/>
-    <SolidColorBrush x:Key="Brush.Surface.Border" Color="#404040"/>
+    <SolidColorBrush x:Key="Brush.Surface.Background" Color="#2E2E2E"/>
+    <SolidColorBrush x:Key="Brush.Surface.Border" Color="#434343"/>
     <SolidColorBrush x:Key="Brush.Surface.Hover" Color="#0FFFFFFF"/>
-    <SolidColorBrush x:Key="Brush.Card.Background" Color="#2B2B2B"/>
-    <SolidColorBrush x:Key="Brush.Card.Border" Color="#404040"/>
+    <SolidColorBrush x:Key="Brush.Card.Background" Color="#2E2E2E"/>
+    <SolidColorBrush x:Key="Brush.Card.Border" Color="#434343"/>
     <SolidColorBrush x:Key="Brush.Text.Primary" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Brush.Text.Secondary" Color="#CFCFCF"/>
     <SolidColorBrush x:Key="Brush.Text.Muted" Color="#9B9B9B"/>
@@ -56,7 +56,7 @@
     <SolidColorBrush x:Key="Brush.Warning" Color="#FCE100"/>
     <SolidColorBrush x:Key="Brush.Danger" Color="#FF99A4"/>
     <SolidColorBrush x:Key="Brush.Input.Background" Color="#202020"/>
-    <SolidColorBrush x:Key="Brush.Input.Border" Color="#404040"/>
+    <SolidColorBrush x:Key="Brush.Input.Border" Color="#434343"/>
     <SolidColorBrush x:Key="Brush.Input.Border.Focus" Color="#99EBFF"/>
     <SolidColorBrush x:Key="Brush.Input.Foreground" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="Brush.Badge.Background" Color="#323232"/>
@@ -87,9 +87,9 @@
 
     <!-- ============ HAM RENKLER (Gradient & Gölge) ============ -->
     <Color x:Key="Color.Window.Background">#202020</Color>
-    <Color x:Key="Color.Surface">#2B2B2B</Color>
-    <Color x:Key="Color.Surface.Alt">#272727</Color>
-    <Color x:Key="Color.Border">#404040</Color>
+    <Color x:Key="Color.Surface">#2E2E2E</Color>
+    <Color x:Key="Color.Surface.Alt">#292929</Color>
+    <Color x:Key="Color.Border">#434343</Color>
     <Color x:Key="Color.Control">#323232</Color>
     <Color x:Key="Color.Text.Primary">#FFFFFF</Color>
     <Color x:Key="Color.Text.Secondary">#CFCFCF</Color>
@@ -109,14 +109,14 @@
     <!-- ============ TASARIM SİSTEMİ v2: ANLAMSAL KATMAN (§3.1) ============ -->
     <!-- ThemeService.SemanticV2 ile aynı formüller (MicaDark). XAML yalnızca bunları kullanmalı. -->
     <SolidColorBrush x:Key="Surface.Base" Color="#202020"/>
-    <SolidColorBrush x:Key="Surface.Raised" Color="#2B2B2B"/>
+    <SolidColorBrush x:Key="Surface.Raised" Color="#2E2E2E"/>
     <SolidColorBrush x:Key="Surface.Overlay" Color="#323232"/>
-    <SolidColorBrush x:Key="Surface.Sunken" Color="#272727"/>
+    <SolidColorBrush x:Key="Surface.Sunken" Color="#292929"/>
     <SolidColorBrush x:Key="Surface.Hover" Color="#0FFFFFFF"/>
     <SolidColorBrush x:Key="Surface.Pressed" Color="#0AFFFFFF"/>
     <SolidColorBrush x:Key="Surface.Selected" Color="#3360CDFF"/>
     <SolidColorBrush x:Key="Border.Subtle" Color="#99404040"/>
-    <SolidColorBrush x:Key="Border.Default" Color="#404040"/>
+    <SolidColorBrush x:Key="Border.Default" Color="#434343"/>
     <SolidColorBrush x:Key="Border.Strong" Color="#3D3D3D"/>
     <SolidColorBrush x:Key="Border.Focus" Color="#99EBFF"/>
     <SolidColorBrush x:Key="Text.Primary" Color="#FFFFFF"/>
@@ -177,4 +177,19 @@
     <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#000000"/>
     <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#B3000000"/>
 
+    <!-- Katman ve tek vurgu (ThemeService.PublishAccent ile aynı anahtarlar; Windows 11 Koyu değerleri) -->
+    <SolidColorBrush x:Key="Surface.Layer" Color="#272727"/>
+    <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="#272727"/>
+    <Color x:Key="SystemAccentColor">#60CDFF</Color>
+    <Color x:Key="SystemAccentColorPrimary">#60CDFF</Color>
+    <Color x:Key="SystemAccentColorSecondary">#60CDFF</Color>
+    <Color x:Key="SystemAccentColorTertiary">#99EBFF</Color>
+    <Color x:Key="AccentFillColorDefault">#60CDFF</Color>
+    <Color x:Key="AccentFillColorSecondary">#E560CDFF</Color>
+    <Color x:Key="AccentFillColorTertiary">#CC60CDFF</Color>
+    <Color x:Key="TextOnAccentFillColorPrimary">#000000</Color>
+    <SolidColorBrush x:Key="SystemAccentBrush" Color="#60CDFF"/>
+    <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#E560CDFF"/>
+    <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#CC60CDFF"/>
+    <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="#B3000000"/>
 </ResourceDictionary>

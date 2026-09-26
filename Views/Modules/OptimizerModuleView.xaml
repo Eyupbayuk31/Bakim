@@ -61,7 +61,7 @@
                     Margin="0,0,0,14"/>
 
         <!-- RAM Status Overview Card (Multi-Segmented Memory Breakdown + 4 KPI Cards) -->
-        <ui:Card Grid.Row="2" Padding="20" Margin="0,0,0,16">
+        <Border Style="{StaticResource Card.Surface}" Grid.Row="2" Margin="0,0,0,16">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- Title + Percent -->
@@ -203,7 +203,7 @@
                     </StackPanel>
                 </Grid>
             </Grid>
-        </ui:Card>
+        </Border>
 
         <!-- Process Manager Card & Right Inspection Drawer -->
         <Grid Grid.Row="3">
@@ -213,7 +213,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Main Process Table Card -->
-            <ui:Card Grid.Column="0" Padding="18">
+            <Border Style="{StaticResource Card.Surface}" Grid.Column="0">
                 <Grid Grid.IsSharedSizeScope="True">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Filter / Search Row -->
@@ -560,12 +560,12 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </Grid>
-            </ui:Card>
+            </Border>
 
             <!-- Right Process Inspection Drawer (Deep Röntgen Paneli) -->
-            <ui:Card Grid.Column="1" 
+            <Border Style="{StaticResource Card.Surface}" Grid.Column="1" 
                      Width="340" 
-                     Padding="18" 
+                     
                      Margin="14,0,0,0"
                      Visibility="{Binding IsDrawerOpen, Converter={StaticResource BoolToVis}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -679,7 +679,7 @@
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
-            </ui:Card>
+            </Border>
         </Grid>
     </Grid>
 </UserControl>

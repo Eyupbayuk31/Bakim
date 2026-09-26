@@ -27,7 +27,7 @@
                              Description="Oyun sırasında güç planını yükseltir ve arka plan yükünü azaltır. Kapatınca her şey geri alınır."/>
 
             <!-- ============ 1) DURUM KARTI ============ -->
-            <Border Style="{StaticResource Card.Surface}" Padding="20">
+            <Border Style="{StaticResource Card.Surface}">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -237,7 +237,7 @@
 
                     <TextBlock Text="Arka plan uygulamaları" Style="{StaticResource Text.SectionLabel}"/>
 
-                    <Border Style="{StaticResource Card.Surface}" CornerRadius="{StaticResource Radius.XS}" Padding="16">
+                    <Border Style="{StaticResource Card.Surface.Compact}" CornerRadius="{StaticResource Radius.XS}">
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -270,7 +270,7 @@
 
                     <TextBlock Text="Otomatik başlatma" Style="{StaticResource Text.SectionLabel}"/>
 
-                    <Border Style="{StaticResource Card.Surface}" CornerRadius="{StaticResource Radius.XS}" Padding="16">
+                    <Border Style="{StaticResource Card.Surface.Compact}" CornerRadius="{StaticResource Radius.XS}">
                         <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>

@@ -233,12 +233,12 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:SystemTweakItem}">
-                    <ui:Card Padding="{StaticResource Pad.SettingsCard}" ClipToBounds="False"
+                    <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" ClipToBounds="False"
                              ToolTipService.InitialShowDelay="200"
                              ToolTipService.ShowDuration="30000"
                              ToolTipService.BetweenShowDelay="100">
                         <!-- Rich Hover Card for Tweak (Human-readable, No registry jargon) -->
-                        <ui:Card.ToolTip>
+                        <Border.ToolTip>
                             <ToolTip Background="{DynamicResource Brush.Surface.Background}"
                                      BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                      BorderThickness="1"
@@ -303,7 +303,7 @@
                                     </Grid>
                                 </StackPanel>
                             </ToolTip>
-                        </ui:Card.ToolTip>
+                        </Border.ToolTip>
 
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -419,7 +419,7 @@
                                            Visibility="{Binding IsAction, Converter={StaticResource BoolToVis}}"/>
                             </StackPanel>
                         </Grid>
-                    </ui:Card>
+                    </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
@@ -431,7 +431,7 @@
                       Visibility="{Binding IsToolsTabVisible, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <!-- Tool 1: Reset Cache Engine -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -454,10 +454,10 @@
                                    VerticalAlignment="Center"
                                    Padding="16,8"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 2: Run as TrustedInstaller -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -490,10 +490,10 @@
                                        Padding="16,8"/>
                         </Grid>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 3: Elevated Shortcut Creator -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -533,10 +533,10 @@
                                        Padding="16,8"/>
                         </Grid>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 4: OEM & Registered Owner Editor -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -594,10 +594,10 @@
                                    HorizontalAlignment="Right"
                                    Padding="18,8"/>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Tool 5: Reset Local Group Policy -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -620,7 +620,7 @@
                                    VerticalAlignment="Center"
                                    Padding="16,8"/>
                     </Grid>
-                </ui:Card>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
@@ -631,7 +631,7 @@
                       Visibility="{Binding IsAdvancedAppearanceTabVisible, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <!-- Hero Info Card -->
-                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Bottom.MD}">
+                <Border Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Bottom.MD}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -659,7 +659,7 @@
                                        Padding="14,10"/>
                         </StackPanel>
                     </Grid>
-                </ui:Card>
+                </Border>
 
                 <!-- Grid with 2 Configuration Cards -->
                 <Grid Margin="0,0,0,16">
@@ -670,7 +670,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Card: Desktop Icons & Scrollbars -->
-                    <ui:Card Grid.Column="0" Padding="{StaticResource Pad.Card}">
+                    <Border Style="{StaticResource Card.Surface}" Grid.Column="0" Padding="{StaticResource Pad.Card}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <ui:SymbolIcon Symbol="Desktop24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
@@ -710,10 +710,10 @@
                                 <TextBlock Grid.Column="1" Text="{Binding Metrics.ScrollWidth, StringFormat='{}{0} px'}" FontWeight="SemiBold" Width="55" TextAlignment="Right"/>
                             </Grid>
                         </StackPanel>
-                    </ui:Card>
+                    </Border>
 
                     <!-- Right Card: Borders & Title Bars -->
-                    <ui:Card Grid.Column="2" Padding="{StaticResource Pad.Card}">
+                    <Border Style="{StaticResource Card.Surface}" Grid.Column="2" Padding="{StaticResource Pad.Card}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <ui:SymbolIcon Symbol="Window24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
@@ -753,11 +753,11 @@
                                 <TextBlock Grid.Column="1" Text="{Binding Metrics.CaptionHeight, StringFormat='{}{0} px'}" FontWeight="SemiBold" Width="55" TextAlignment="Right"/>
                             </Grid>
                         </StackPanel>
-                    </ui:Card>
+                    </Border>
                 </Grid>
 
                 <!-- Color & Aero Lite Card -->
-                <ui:Card Padding="18">
+                <Border Style="{StaticResource Card.Surface}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -779,7 +779,7 @@
                                        Padding="16,8"/>
                         </StackPanel>
                     </Grid>
-                </ui:Card>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 
