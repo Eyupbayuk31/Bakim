@@ -24,8 +24,13 @@ import json
 import re
 import sys
 from pathlib import Path
+import importlib.util
 
 ROOT = Path(__file__).parent.parent
+
+_spec = importlib.util.spec_from_file_location("sentence_case", Path(__file__).parent / "migrate-sentence-case.py")
+SENTENCE = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(SENTENCE)
 BASELINE = ROOT / "Tools" / "design-debt-baseline.json"
 EXCLUDE = {"bin", "obj", ".git", ".vs", "Tests", "Tools", "ui-ux-pro-max-skill", ".agents"}
 
@@ -81,8 +86,8 @@ def measure():
         bump("gradient_brush", path, len(re.findall(r"<(?:Linear|Radial)GradientBrush\b", text)))
         texts = re.findall(r'(?<![\w.:])(?:Text|Content|Title|Header|Label|Description)="([^"{][^"]*)"', text)
         def title_case(t):
-            words = [w for w in t.replace("&amp;", " ").split() if w[:1].isalpha()]
-            return len(words) >= 2 and all(w[0].isupper() for w in words) and "\\" not in t
+            # Ürün/özellik adları ("Windows Ayarları", "Oyun Modu") sayılmaz: dönüşüm betiği onları korur.
+            return SENTENCE.is_title_case(t) and SENTENCE.convert(t) != t
         bump("title_case_text", path, sum(1 for t in texts if title_case(t)))
         bump("ampersand_text", path, sum(1 for t in texts if " &amp; " in t))
 
