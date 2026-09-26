@@ -1,635 +1,302 @@
 <UserControl x:Class="Bakım.Views.Modules.DashboardModuleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              xmlns:c="clr-namespace:Bakım.Controls"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:DashboardViewModel}"
-             d:DesignHeight="820" d:DesignWidth="1050">
+             d:DesignHeight="900" d:DesignWidth="1300">
 
     <!--
-        Pano içeriği pencere yüksekliğinden uzundur (tasarım yüksekliği 820,
-        pencere alt sınırı 680). ScrollViewer olmadan küçük ekranlarda alttaki
-        donanım sensörleri ve süreç listesi tamamen erişilemez kalıyordu.
+        KONTROL PANELİ — düzen v2 referans sayfası (docs/FLUENT_DUZEN_PLANI.md §3.1)
+        Hero (sağlık + tek birincil eylem) → Canlı durum (4 kutucuk) → Etkinlik ve oyun → Kaynaklar.
+        Bölüm başlıkları kartın dışında; kartlar AdaptiveGrid ile eşit yükseklikte.
     -->
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  PanningMode="VerticalOnly">
-    <Grid Margin="{StaticResource Pad.Module}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Header -->
-            <RowDefinition Height="Auto"/> <!-- 1: Sağlık ve Hızlı Bakım -->
-            <RowDefinition Height="Auto"/> <!-- 2: Son etkinlikler + Oyun Modu -->
-            <RowDefinition Height="Auto"/> <!-- 3: 4-Column Live Telemetry Cards -->
-            <RowDefinition Height="*"/>    <!-- 4: Hardware Sensors & Top Resource Hogs Grid -->
-        </Grid.RowDefinitions>
-
-        <!-- 0. Header — tasarım sistemi bileşeni (önceki 38 satırlık elle yazım yerine) -->
-        <c:SectionHeader Grid.Row="0"
-                         IsPageTitle="True"
-                         Title="Genel bakış"
-                         Description="Sistem durumu, donanım sensörleri ve hızlı bakım eylemleri.">
-            <c:SectionHeader.Actions>
-                <ui:Button Appearance="Secondary"
-                           Command="{Binding RefreshCommand}"
-                           Padding="14,8"
-                           Content="Yenile"
-                           AutomationProperties.Name="Telemetri verilerini yenile"
-                           Icon="{ui:SymbolIcon ArrowClockwise24}"/>
-            </c:SectionHeader.Actions>
-        </c:SectionHeader>
-
-        <!-- 1. Sağlık (kalıcı sinyaller, §5.1) ve Hızlı Bakım -->
-        <Border Style="{StaticResource Card.Surface}" Grid.Row="1" Margin="0,0,0,18">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/> <!-- Puan -->
-                    <ColumnDefinition Width="*"/>    <!-- Bileşenler -->
-                    <ColumnDefinition Width="Auto"/> <!-- Hızlı Bakım -->
-                </Grid.ColumnDefinitions>
-
-                <!-- Puan halkası -->
-                <Grid Grid.Column="0" Width="96" Height="96" Margin="0,0,24,0" VerticalAlignment="Top">
-                    <ui:ProgressRing Width="96" Height="96"
-                                     Progress="{Binding HealthScoreValue}"
-                                     IsIndeterminate="False"
-                                     Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="{Binding HealthScoreValue}"
-                                   Style="{StaticResource Text.KPI}"
-                                   FontSize="{StaticResource Font.TitleLarge}"
-                                   HorizontalAlignment="Center"/>
-                        <TextBlock Text="Sağlık" FontSize="{StaticResource Font.Caption}" HorizontalAlignment="Center"
-                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                    </StackPanel>
+    <UserControl.Resources>
+        <!-- Hero kartındaki sağlık satırı: durum simgesi · başlık · ayrıntı · puan · eylem -->
+        <DataTemplate x:Key="HealthRowTemplate" DataType="{x:Type vm:HealthRow}">
+            <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Padding="0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="200"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <c:StatusGlyph Grid.Column="0" Intent="{Binding Intent}" ToolTip="{Binding StatusText}" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Detail}" ToolTip="{Binding Detail}" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" Margin="0,0,12,0"
+                               FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <TextBlock Grid.Column="3" Text="{Binding DeductionText}" VerticalAlignment="Center" Margin="0,0,12,0"
+                               Typography.NumeralAlignment="Tabular" ToolTip="Puandan düşülen"
+                               FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                               Visibility="{Binding HasDeduction, Converter={StaticResource BoolToVis}}"/>
+                    <ui:Button Grid.Column="4" Style="{StaticResource Link.Button}"
+                               Content="{Binding ActionText}"
+                               Visibility="{Binding HasAction, Converter={StaticResource BoolToVis}}"
+                               Command="{Binding DataContext.OpenHealthActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                               CommandParameter="{Binding}"
+                               AutomationProperties.Name="{Binding Title, StringFormat='{}{0}: ilgili sayfayı aç'}"/>
                 </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
 
-                <!-- Başlık ve bileşenler -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Top">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                        <TextBlock Text="{Binding HealthTitle}" Style="{StaticResource Text.CardTitle}" FontSize="{StaticResource Font.SectionTitle}"/>
-                        <ui:ProgressRing IsIndeterminate="True" Width="14" Height="14" Margin="10,0,0,0" VerticalAlignment="Center"
-                                         Visibility="{Binding IsHealthLoading, Converter={StaticResource BoolToVis}}"/>
-                        <ui:Button Appearance="Transparent" Padding="4" Margin="6,0,0,0"
-                                   Icon="{ui:SymbolIcon ArrowClockwise20}"
-                                   ToolTip="Sağlığı yeniden denetle"
-                                   Command="{Binding RefreshHealthCommand}"
-                                   AutomationProperties.Name="Sağlığı yeniden denetle"/>
-                    </StackPanel>
-                    <TextBlock Text="{Binding HealthSummary}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
+    <c:ModulePage Title="Kontrol Paneli"
+                  Subtitle="Sistem durumu, canlı kaynak kullanımı ve hızlı bakım.">
+        <StackPanel>
 
-                    <ItemsControl ItemsSource="{Binding HealthRows}" Focusable="False">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:HealthRow}">
-                                <Grid Margin="0,2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="180"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <c:StatusBadge Grid.Column="0" Text="{Binding StatusText}" Intent="{Binding Intent}" MinWidth="78"
-                                                   Margin="{StaticResource Gap.Right.SM}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
-                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Grid.Column="2" Text="{Binding Detail}" FontSize="{StaticResource Font.Body}"
-                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                               ToolTip="{Binding Detail}"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Grid.Column="3" Text="{Binding DeductionText}" FontSize="{StaticResource Font.Caption}"
-                                               VerticalAlignment="Center" Margin="8,0" Typography.NumeralAlignment="Tabular"
-                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                               ToolTip="Puandan düşülen"
-                                               Visibility="{Binding HasDeduction, Converter={StaticResource BoolToVis}}"/>
-                                    <ui:Button Grid.Column="4" Appearance="Transparent" Padding="8,2"
-                                               Content="{Binding ActionText}"
-                                               Visibility="{Binding HasAction, Converter={StaticResource BoolToVis}}"
-                                               Command="{Binding DataContext.OpenHealthActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding}"
-                                               AutomationProperties.Name="{Binding Title, StringFormat='{}{0}: ilgili sayfayı aç'}"/>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+            <!-- ================= HERO: sağlık + hızlı bakım ================= -->
+            <Border Style="{StaticResource Card.Surface.Hero}">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
 
-                <!-- Hızlı Bakım -->
-                <StackPanel Grid.Column="2" VerticalAlignment="Top" Margin="16,0,0,0" MinWidth="220" MaxWidth="280">
-                    <ui:Button Appearance="Primary"
-                               Command="{Binding QuickMaintenanceCommand}"
-                               Padding="20,12"
-                               HorizontalAlignment="Stretch"
-                               Icon="{ui:SymbolIcon Broom24}"
-                               Content="Hızlı Bakım"
-                               ToolTip="Yaş filtreli geçici dosyalar, çökme dökümleri, tarayıcı ve gölgelendirici önbellekleri, DNS önbelleği. Dosyalar Temizleyici kurallarıyla silinir."
-                               AutomationProperties.Name="Hızlı Bakım"/>
-                    <TextBlock Text="Güvenli geçici dosyalar, önbellekler ve DNS önbelleği" FontSize="{StaticResource Font.Caption}"
-                               TextWrapping="Wrap" Margin="{StaticResource Gap.Top.XS}"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <!-- Puan halkası: vurgu renginde -->
+                        <Grid Grid.Column="0" Width="88" Height="88" Margin="0,0,24,0" VerticalAlignment="Center">
+                            <ui:ProgressRing Width="88" Height="88" IsIndeterminate="False"
+                                             Progress="{Binding HealthScoreValue}"
+                                             Foreground="{DynamicResource AccentFillColorDefaultBrush}"/>
+                            <TextBlock Text="{Binding HealthScoreValue}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontSize="{StaticResource Font.TitleLarge}" FontWeight="SemiBold"
+                                       Typography.NumeralAlignment="Tabular"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                       AutomationProperties.Name="{Binding HealthScoreValue, StringFormat='Sağlık puanı {0}'}"/>
+                        </Grid>
 
-                    <!-- Gerçek ilerleme (adım sayısı) -->
-                    <StackPanel Margin="{StaticResource Gap.Top.SM}"
-                                Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVis}}">
-                        <TextBlock Text="{Binding BoostStageText}" FontSize="{StaticResource Font.Caption}" TextTrimming="CharacterEllipsis"
-                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                   AutomationProperties.LiveSetting="Polite"/>
-                        <ProgressBar Value="{Binding BoostProgressPercent}" Maximum="100" Height="4" Margin="{StaticResource Gap.Top.XS}"/>
-                        <ui:Button Appearance="Transparent" Padding="6,2" Margin="{StaticResource Gap.Top.XS}" HorizontalAlignment="Right"
-                                   Content="İptal" Command="{Binding CancelMaintenanceCommand}"/>
-                    </StackPanel>
-
-                    <!-- Sonuç -->
-                    <Border Background="{DynamicResource Status.Success.Subtle}"
-                            BorderBrush="{DynamicResource Status.Success.Border}"
-                            BorderThickness="1"
-                            CornerRadius="{StaticResource Radius.MD}"
-                            Padding="{StaticResource Pad.CardCompact}"
-                            Margin="{StaticResource Gap.Top.SM}"
-                            Visibility="{Binding HasOptimizationResult, Converter={StaticResource BoolToVis}}">
-                        <StackPanel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <StackPanel Orientation="Horizontal">
-                                <ui:SymbolIcon Symbol="CheckmarkCircle20" FontSize="{StaticResource Icon.MD}" Margin="{StaticResource Gap.IconText}"
-                                               Foreground="{DynamicResource Status.Success.Text}"/>
-                                <TextBlock Text="{Binding OptimizationFreedBadge}" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource Status.Success.Text}"/>
+                                <TextBlock Text="{Binding HealthTitle}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                 Visibility="{Binding IsHealthLoading, Converter={StaticResource BoolToVis}}"/>
                             </StackPanel>
-                            <TextBlock Text="{Binding OptimizationResultMessage}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
-                                       Margin="{StaticResource Gap.Top.XS}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                       AutomationProperties.LiveSetting="Polite"/>
-                            <ui:Button Appearance="Transparent" Padding="6,2" Margin="{StaticResource Gap.Top.XS}" HorizontalAlignment="Left"
-                                       Icon="{ui:SymbolIcon History24}" Content="Etkinlik Merkezi'nde aç"
-                                       Command="{Binding OpenActivityCenterCommand}"/>
+                            <TextBlock Text="{Binding HealthSummary}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <!-- Tek birincil eylem -->
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="24,0,0,0" MinWidth="200" MaxWidth="280">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon ArrowClockwise20}" Margin="0,0,8,0"
+                                           ToolTip="Sağlığı yeniden denetle" Command="{Binding RefreshHealthCommand}"
+                                           AutomationProperties.Name="Sağlığı yeniden denetle"/>
+                                <ui:Button Appearance="Primary"
+                                           Command="{Binding QuickMaintenanceCommand}"
+                                           Icon="{ui:SymbolIcon Broom24}"
+                                           Content="Hızlı bakım"
+                                           ToolTip="Güvenli geçici dosyalar, çökme dökümleri, tarayıcı ve gölgelendirici önbellekleri ile DNS önbelleğini temizler (Temizleyici kurallarıyla)."
+                                           AutomationProperties.Name="Hızlı bakım"/>
+                            </StackPanel>
+
+                            <!-- Gerçek ilerleme -->
+                            <StackPanel Margin="{StaticResource Gap.Top.SM}"
+                                        Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{Binding BoostStageText}" FontSize="{StaticResource Font.Caption}" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" AutomationProperties.LiveSetting="Polite"/>
+                                <ProgressBar Value="{Binding BoostProgressPercent}" Maximum="100" Height="4" Margin="{StaticResource Gap.Top.XS}"/>
+                                <ui:Button Style="{StaticResource Link.Button}" HorizontalAlignment="Right" Content="İptal"
+                                           Command="{Binding CancelMaintenanceCommand}"/>
+                            </StackPanel>
+
+                            <!-- Sonuç -->
+                            <StackPanel Margin="{StaticResource Gap.Top.SM}"
+                                        Visibility="{Binding HasOptimizationResult, Converter={StaticResource BoolToVis}}">
+                                <c:StatusGlyph Intent="Success" Text="{Binding OptimizationFreedBadge}" HorizontalAlignment="Right"/>
+                                <TextBlock Text="{Binding OptimizationResultMessage}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
+                                           TextAlignment="Right" Margin="{StaticResource Gap.Top.XS}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" AutomationProperties.LiveSetting="Polite"/>
+                                <ui:Button Style="{StaticResource Link.Button}" HorizontalAlignment="Right"
+                                           Content="Etkinlik Merkezi'nde aç" Command="{Binding OpenActivityCenterCommand}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Sorunlu bileşenler: hep açık -->
+                    <ItemsControl Margin="0,20,0,0" Focusable="False"
+                                  ItemsSource="{Binding IssueRows}"
+                                  ItemTemplate="{StaticResource HealthRowTemplate}"
+                                  Visibility="{Binding HasIssueRows, Converter={StaticResource BoolToVis}}"/>
+
+                    <!-- İyi olanlar: tek satıra katlanır -->
+                    <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0"
+                            Visibility="{Binding HasHealthyRows, Converter={StaticResource BoolToVis}}">
+                        <StackPanel>
+                            <ui:Button Appearance="Transparent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                                       Padding="0,10" Margin="0,2,0,0" Command="{Binding ToggleHealthyRowsCommand}"
+                                       AutomationProperties.Name="İyi durumdaki bileşenleri göster veya gizle">
+                                <Grid>
+                                    <c:StatusGlyph Intent="Success" Text="{Binding HealthyRowsText}"/>
+                                    <ui:SymbolIcon HorizontalAlignment="Right" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}">
+                                        <ui:SymbolIcon.Style>
+                                            <Style TargetType="ui:SymbolIcon">
+                                                <Setter Property="Symbol" Value="ChevronDown16"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ShowHealthyRows}" Value="True">
+                                                        <Setter Property="Symbol" Value="ChevronUp16"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:SymbolIcon.Style>
+                                    </ui:SymbolIcon>
+                                </Grid>
+                            </ui:Button>
+                            <ItemsControl Focusable="False"
+                                          ItemsSource="{Binding HealthyRows}"
+                                          ItemTemplate="{StaticResource HealthRowTemplate}"
+                                          Visibility="{Binding ShowHealthyRows, Converter={StaticResource BoolToVis}}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
-            </Grid>
-        </Border>
+            </Border>
 
-        <!-- 2. Son etkinlikler + Oyun Modu özeti -->
-        <Grid Grid.Row="2" Margin="0,0,0,18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- ================= CANLI DURUM ================= -->
+            <c:Section Header="Canlı durum">
+                <c:AdaptiveGrid MinColumnWidth="220" MaxColumns="4">
+                    <c:MetricTile Icon="DeveloperBoard24" Label="İşlemci"
+                                  Value="{Binding Metrics.CpuUsagePercentage, StringFormat='%{0}'}"
+                                  Caption="{Binding Metrics.CpuClockSpeed}"
+                                  ToolTip="{Binding Metrics.CpuTemperatureTooltip}">
+                        <Viewbox Stretch="Fill">
+                            <Canvas Width="160" Height="40" ClipToBounds="True">
+                                <Polygon Points="{Binding CpuSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series1.Subtle}"/>
+                                <Polyline Points="{Binding CpuSparklinePoints}" Stroke="{DynamicResource Chart.Series1}"
+                                          StrokeThickness="1.5" StrokeLineJoin="Round"/>
+                            </Canvas>
+                        </Viewbox>
+                    </c:MetricTile>
 
-            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
-                <StackPanel>
-                    <Grid Margin="0,0,0,6">
-                        <TextBlock Text="Son etkinlikler" Style="{StaticResource Text.CardTitle}"/>
-                        <ui:Button HorizontalAlignment="Right" Appearance="Transparent" Padding="6,2"
-                                   Content="Tümü" Command="{Binding OpenActivityCenterCommand}"
-                                   AutomationProperties.Name="Etkinlik Merkezi'ni aç"/>
-                    </Grid>
-                    <ItemsControl ItemsSource="{Binding RecentActivity}" Focusable="False">
-                        <ItemsControl.ItemTemplate>
+                    <c:MetricTile Icon="TopSpeed24" Label="Bellek"
+                                  Value="{Binding Metrics.UsedRamGb, StringFormat='{}{0:0.0}'}"
+                                  Unit="{Binding Metrics.TotalRamGb, StringFormat='/ {0:0.0} GB'}"
+                                  Caption="{Binding Metrics.FreeRamGb, StringFormat='{}{0:0.0} GB kullanılabilir'}">
+                        <Viewbox Stretch="Fill">
+                            <Canvas Width="160" Height="40" ClipToBounds="True">
+                                <Polygon Points="{Binding RamSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series2.Subtle}"/>
+                                <Polyline Points="{Binding RamSparklinePoints}" Stroke="{DynamicResource Chart.Series2}"
+                                          StrokeThickness="1.5" StrokeLineJoin="Round"/>
+                            </Canvas>
+                        </Viewbox>
+                    </c:MetricTile>
+
+                    <c:MetricTile Icon="ArrowSync24" Label="Ağ"
+                                  Value="{Binding Metrics.FormattedNetworkInSpeed}"
+                                  Caption="{Binding Metrics.FormattedNetworkOutSpeed, StringFormat='İndirme · yükleme {0}'}"/>
+
+                    <c:MetricTile Icon="HardDrive20" Label="{Binding Metrics.SystemDriveLetter, StringFormat='Disk {0}'}"
+                                  Value="{Binding Metrics.SystemDriveUsedPercentage, StringFormat='%{0}'}"
+                                  Unit="dolu"
+                                  Caption="{Binding Metrics.SystemDriveFreeGb, StringFormat='{}{0} GB boş'}">
+                        <ProgressBar Value="{Binding Metrics.SystemDriveUsedPercentage}" Maximum="100" Height="4"
+                                     VerticalAlignment="Bottom" Margin="16,0,16,16"/>
+                    </c:MetricTile>
+                </c:AdaptiveGrid>
+            </c:Section>
+
+            <!-- ================= ETKİNLİK VE OYUN ================= -->
+            <c:Section Header="Etkinlik ve oyun">
+                <c:AdaptiveGrid MinColumnWidth="300" MaxColumns="3">
+                    <c:ListCard c:AdaptiveGrid.Span="2"
+                                Header="Son etkinlikler" HeaderIcon="History24"
+                                ItemsSource="{Binding RecentActivity}">
+                        <c:ListCard.HeaderTrailing>
+                            <ui:Button Style="{StaticResource Link.Button}" Content="Tümü"
+                                       Command="{Binding OpenActivityCenterCommand}"
+                                       AutomationProperties.Name="Etkinlik Merkezi'ni aç"/>
+                        </c:ListCard.HeaderTrailing>
+                        <c:ListCard.EmptyContent>
+                            <TextBlock Text="Henüz kayıtlı etkinlik yok. Temizlik, kaldırma ve ince ayarlar burada görünür."
+                                       TextWrapping="Wrap" FontSize="{StaticResource Font.Body}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </c:ListCard.EmptyContent>
+                        <c:ListCard.ItemTemplate>
                             <DataTemplate DataType="{x:Type vm:ActivityRow}">
-                                <Grid Margin="0,3">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="24"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <ui:SymbolIcon Symbol="{Binding KindSymbol}" FontSize="{StaticResource Icon.SM}" VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding TimeText}" FontSize="{StaticResource Font.Caption}" Margin="0,0,10,0"
-                                               VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    <TextBlock Grid.Column="2" FontSize="{StaticResource Font.Body}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                                        <Run Text="{Binding Module, Mode=OneWay}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                        <Run Text=" · "/>
-                                        <Run Text="{Binding Title, Mode=OneWay}"/>
-                                    </TextBlock>
-                                    <c:StatusBadge Grid.Column="3" Text="{Binding UndoText}" Intent="{Binding UndoIntent}" Margin="8,0,0,0"
-                                                   Visibility="{Binding HasUndoText, Converter={StaticResource BoolToVis}}"/>
-                                </Grid>
+                                <c:ListRow Icon="{Binding KindSymbol}" Title="{Binding Title}"
+                                           Subtitle="{Binding Module}" Meta="{Binding TimeText}">
+                                    <c:ListRow.Trailing>
+                                        <c:StatusBadge Text="{Binding UndoText}" Intent="{Binding UndoIntent}"
+                                                       Visibility="{Binding HasUndoText, Converter={StaticResource BoolToVis}}"/>
+                                    </c:ListRow.Trailing>
+                                </c:ListRow>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <TextBlock Text="Henüz kayıtlı etkinlik yok. Temizlik, kaldırma ve ince ayarlar burada görünür."
-                               FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                               Visibility="{Binding HasRecentActivity, Converter={StaticResource InverseBoolToVis}}"/>
-                </StackPanel>
-            </Border>
+                        </c:ListCard.ItemTemplate>
+                    </c:ListCard>
 
-            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="2">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <ui:SymbolIcon Symbol="Games24" FontSize="{StaticResource Icon.LG}" Filled="{Binding IsGameModeActive}"
-                                       Margin="{StaticResource Gap.Right.SM}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        <TextBlock Text="Oyun Modu" Style="{StaticResource Text.CardTitle}" VerticalAlignment="Center"/>
-                        <c:StatusBadge Text="Açık" Intent="Success" Margin="8,0,0,0" VerticalAlignment="Center"
-                                       Visibility="{Binding IsGameModeActive, Converter={StaticResource BoolToVis}}"/>
-                    </StackPanel>
-                    <TextBlock Text="{Binding GameModeDetail}"
-                               FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <WrapPanel Margin="{StaticResource Gap.Top.SM}">
-                        <!-- Fluent: başlatmak birincil eylemdir (vurgu), kapatmak standart düğmedir. -->
-                        <ui:Button Appearance="{Binding IsGameModeActive, Converter={StaticResource InverseBoolToNavAppearance}}"
-                                   Command="{Binding ToggleGameModeCommand}"
-                                   Padding="{StaticResource Pad.Control}" Margin="0,0,8,0"
-                                   Content="{Binding GameModeButtonText}"/>
-                        <ui:Button Appearance="Transparent" Padding="{StaticResource Pad.Control}"
-                                   Content="Ayrıntılar" Command="{Binding OpenGameModePageCommand}"
-                                   AutomationProperties.Name="Oyun Modu sayfasını aç"/>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
+                    <Border Style="{StaticResource Card.Surface}">
+                        <DockPanel LastChildFill="False">
+                            <c:CardHeader DockPanel.Dock="Top" Icon="Games24" Title="Oyun Modu">
+                                <c:CardHeader.Trailing>
+                                    <c:StatusGlyph Intent="Success" Text="Açık"
+                                                   Visibility="{Binding IsGameModeActive, Converter={StaticResource BoolToVis}}"/>
+                                </c:CardHeader.Trailing>
+                            </c:CardHeader>
+                            <TextBlock DockPanel.Dock="Top" Text="{Binding GameModeDetail}" TextWrapping="Wrap"
+                                       FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,16,0,0">
+                                <ui:Button Appearance="Secondary" Command="{Binding ToggleGameModeCommand}"
+                                           Content="{Binding GameModeButtonText}" Margin="{StaticResource Gap.Right.SM}"/>
+                                <ui:Button Style="{StaticResource Link.Button}" Content="Ayrıntılar"
+                                           Command="{Binding OpenGameModePageCommand}"
+                                           AutomationProperties.Name="Oyun Modu sayfasını aç"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </c:AdaptiveGrid>
+            </c:Section>
 
-        <!-- 3. Four-Column Live Telemetry Cards (CPU, RAM, Network, Disk) -->
-        <Grid Grid.Row="3" Margin="0,0,0,18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Card 1: Processor (CPU) -->
-            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="50"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Header -->
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="İşlemci" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                        <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
-                            <TextBlock Text="{Binding Metrics.CpuTemperatureText}" ToolTip="{Binding Metrics.CpuTemperatureTooltip}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </Border>
-                    </Grid>
-
-                    <!-- Large Value -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,4">
-                        <TextBlock Text="{Binding Metrics.CpuUsagePercentage, StringFormat='%{0}'}" 
-                                   FontSize="{StaticResource Font.TitleLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text=" Yük" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,3"/>
-                    </StackPanel>
-
-                    <!-- Native WPF Sparkline Chart -->
-                    <Viewbox Grid.Row="2" Stretch="Fill" Margin="0,4,0,4">
-                        <Canvas Width="160" Height="46" ClipToBounds="True">
-                            <Polygon Points="{Binding CpuSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series1.Subtle}"/>
-                            <Polyline Points="{Binding CpuSparklinePoints}" 
-                                      Stroke="{DynamicResource Chart.Series1}" 
-                                      StrokeThickness="1.5" 
-                                      StrokeLineJoin="Round"/>
-                        </Canvas>
-                    </Viewbox>
-
-                    <!-- Bottom Specs -->
-                    <TextBlock Grid.Row="3" 
-                               Text="{Binding Metrics.CpuClockSpeed, StringFormat='Saat: {0}'}" 
-                               FontSize="{StaticResource Font.Caption}" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                </Grid>
-            </Border>
-
-            <!-- Card 2: Memory (RAM) -->
-            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="50"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Header -->
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="TopSpeed24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Bellek" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                        <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
-                            <TextBlock Text="{Binding Metrics.RamUsagePercentage, StringFormat='%{0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </Border>
-                    </Grid>
-
-                    <!-- Large Value -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,4">
-                        <TextBlock Text="{Binding Metrics.UsedRamGb, StringFormat='{}{0} GB'}" 
-                                   FontSize="{StaticResource Font.TitleLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        <TextBlock Text="{Binding Metrics.TotalRamGb, StringFormat='{} / {0} GB'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Bottom" Margin="4,0,0,3"/>
-                    </StackPanel>
-
-                    <!-- Native WPF Sparkline Chart -->
-                    <Viewbox Grid.Row="2" Stretch="Fill" Margin="0,4,0,4">
-                        <Canvas Width="160" Height="46" ClipToBounds="True">
-                            <Polygon Points="{Binding RamSparklinePolygonPoints}" Fill="{DynamicResource Chart.Series2.Subtle}"/>
-                            <Polyline Points="{Binding RamSparklinePoints}" 
-                                      Stroke="{DynamicResource Chart.Series2}" 
-                                      StrokeThickness="1.5" 
-                                      StrokeLineJoin="Round"/>
-                        </Canvas>
-                    </Viewbox>
-
-                    <!-- Bottom Specs -->
-                    <TextBlock Grid.Row="3" 
-                               Text="{Binding Metrics.FreeRamGb, StringFormat='{}{0} GB Kullanılabilir'}" 
-                               FontSize="{StaticResource Font.Caption}" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                </Grid>
-            </Border>
-
-            <!-- Card 3: Network Traffic (Ağ) -->
-            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="4">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Header -->
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Ağ" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                        <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
-                            <TextBlock Text="Aktif" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </Border>
-                    </Grid>
-
-                    <!-- Download Speed -->
-                    <StackPanel Grid.Row="1" Margin="0,10,0,2">
-                        <TextBlock Text="İndirme" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Metrics.FormattedNetworkInSpeed}" 
-                                   FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    </StackPanel>
-
-                    <!-- Upload Speed -->
-                    <StackPanel Grid.Row="2" Margin="0,4,0,8">
-                        <TextBlock Text="Yükleme" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Metrics.FormattedNetworkOutSpeed}" 
-                                   FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-
-                    <!-- Bottom Interface Status -->
-                    <TextBlock Grid.Row="4" 
-                               Text="Ethernet / Wi-Fi bağlantısı" 
-                               FontSize="{StaticResource Font.Caption}" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                </Grid>
-            </Border>
-
-            <!-- Card 4: Disk Activity -->
-            <Border Style="{StaticResource Card.Surface.Compact}" Grid.Column="6">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Header -->
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="16" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
-                            <TextBlock Text="Disk" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </StackPanel>
-                        <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">
-                            <TextBlock Text="{Binding Metrics.SystemDriveUsedPercentage, StringFormat='%{0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                        </Border>
-                    </Grid>
-
-                    <!-- Read / Write Speeds -->
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,6">
-                        <TextBlock Text="{Binding Metrics.FormattedDiskReadSpeed}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
-                        <TextBlock Text="{Binding Metrics.FormattedDiskWriteSpeed}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-
-                    <!-- Disk Usage Bar -->
-                    <ProgressBar Grid.Row="2" 
-                                 Value="{Binding Metrics.SystemDriveUsedPercentage}" 
-                                 Maximum="100" 
-                                 Height="6" 
-                                 Margin="0,4,0,8"/>
-
-                    <!-- Bottom Free Space -->
-                    <Grid Grid.Row="3" Margin="0,0,0,2">
-                        <TextBlock Text="{Binding Metrics.SystemDriveLetter, StringFormat='Sürücü {0}'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Metrics.SystemDriveFreeGb, StringFormat='{}{0} GB Boş'}" HorizontalAlignment="Right" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    </Grid>
-
-                    <TextBlock Grid.Row="4" 
-                               Text="{Binding Metrics.SystemDriveTotalGb, StringFormat='Toplam: {0} GB'}" 
-                               FontSize="{StaticResource Font.Caption}" 
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                </Grid>
-            </Border>
-        </Grid>
-
-        <!-- 4. Bottom Row: Hardware Sensors & Top Resource Hogs Grid -->
-        <Grid Grid.Row="4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Column 0: Hardware Sensors & Specs -->
-            <Border Style="{StaticResource Card.Surface}" Grid.Column="0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Title -->
-                        <RowDefinition Height="*"/>    <!-- Hardware Rows -->
-                        <RowDefinition Height="Auto"/> <!-- Module Shortcut Button -->
-                    </Grid.RowDefinitions>
-
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,14">
-                        <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
-                        <TextBlock Text="Donanım özeti ve sensörler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                    </StackPanel>
-
-                    <!-- Details Rows -->
-                    <StackPanel Grid.Row="1" Margin="0,0,0,12">
-                        <!-- Processor -->
-                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="İşlemci modeli" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    <TextBlock Text="{Binding Metrics.CpuName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                                <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Metrics.CpuTemperatureText}" ToolTip="{Binding Metrics.CpuTemperatureTooltip}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                </Border>
-                            </Grid>
-                        </Border>
-
-                        <!-- Graphics -->
-                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8" Margin="0,0,0,8"
-                                ToolTip="{Binding Metrics.GpuTooltip}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
-                                        <TextBlock Text="Grafik kartı (GPU)" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                                BorderThickness="1" 
-                                                CornerRadius="{StaticResource Radius.XS}" 
-                                                Padding="5,1" 
-                                                Margin="6,0,0,0" 
-                                                VerticalAlignment="Center"
-                                                Visibility="{Binding Metrics.HasDualGpu, Converter={StaticResource BoolToVis}}">
-                                            <TextBlock Text="Harici" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        </Border>
-                                    </StackPanel>
-                                    <TextBlock Text="{Binding Metrics.GpuName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding Metrics.GpuVram}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <!-- Thermal Status -->
-                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.SM}" Padding="10,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Sistem termal durumu" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    <TextBlock Text="{Binding Metrics.ThermalStatus, StringFormat='{}{0}'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
-
-                    <!-- Shortcut to Cleaner -->
-                    <ui:Button Grid.Row="2" 
-                               Appearance="Secondary" 
-                               Command="{Binding GoToCleanerCommand}"
-                               HorizontalAlignment="Left"
-                               Padding="14,7"
-                               Content="Sistem temizliğini aç"
-                               Icon="{ui:SymbolIcon ArrowRight24}"/>
-                </Grid>
-            </Border>
-
-            <!-- Column 1: Top Resource Hogs (Süreç Canavarları) -->
-            <Border Style="{StaticResource Card.Surface}" Grid.Column="2">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/> <!-- Title -->
-                        <RowDefinition Height="*"/>    <!-- Process List -->
-                        <RowDefinition Height="Auto"/> <!-- Shortcut to Optimizer -->
-                    </Grid.RowDefinitions>
-
-                    <Grid Grid.Row="0" Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="TopSpeed24" FontSize="18" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0"/>
-                            <TextBlock Text="En çok bellek tüketen süreçler" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        </StackPanel>
-                        <TextBlock Grid.Column="1" Text="İlk 3 süreç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
-                    </Grid>
-
-                    <!-- Items Control for Top 3 Hogs -->
-                    <ItemsControl Grid.Row="1" ItemsSource="{Binding TopHogs}" Margin="0,0,0,12">
-                        <ItemsControl.ItemTemplate>
+            <!-- ================= KAYNAKLAR ================= -->
+            <c:Section Header="Kaynaklar">
+                <c:AdaptiveGrid MinColumnWidth="420" MaxColumns="2">
+                    <c:ListCard Header="En çok bellek kullananlar" HeaderIcon="TopSpeed24"
+                                ItemsSource="{Binding TopHogs}">
+                        <c:ListCard.HeaderTrailing>
+                            <ui:Button Style="{StaticResource Link.Button}" Content="Süreçler"
+                                       Command="{Binding GoToOptimizerCommand}"/>
+                        </c:ListCard.HeaderTrailing>
+                        <c:ListCard.EmptyContent>
+                            <TextBlock Text="Süreç bilgisi yükleniyor…" FontSize="{StaticResource Font.Body}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </c:ListCard.EmptyContent>
+                        <c:ListCard.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:ResourceHogItem}">
-                                <Border Background="{DynamicResource ControlFillColorSecondaryBrush}" 
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                        BorderThickness="1" 
-                                        CornerRadius="{StaticResource Radius.SM}" 
-                                        Padding="12,7" 
-                                        Margin="0,0,0,6">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding ProcessName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                            <TextBlock Text="{Binding Id, StringFormat='PID: {0}'}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                        </StackPanel>
-
-                                        <Border Grid.Column="1" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="8,2" Margin="8,0,10,0" VerticalAlignment="Center"
-                                                Visibility="{Binding FormattedMemory, Converter={StaticResource NullToVisibilityConverter}}">
-                                            <TextBlock Text="{Binding FormattedMemory}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
-                                        </Border>
-
-                                        <!-- Quick Kill Task Button -->
-                                        <ui:Button Grid.Column="2" 
-                                                   Appearance="Secondary" 
-                                                   Padding="6,4"
-                                                   Command="{Binding DataContext.KillHogProcessCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                <c:ListRow Icon="Apps24" Title="{Binding ProcessName}"
+                                           Subtitle="{Binding Id, StringFormat='PID {0}'}"
+                                           Meta="{Binding FormattedMemory}">
+                                    <c:ListRow.Trailing>
+                                        <ui:Button Appearance="Transparent" Icon="{ui:SymbolIcon Dismiss20}"
+                                                   Command="{Binding DataContext.KillHogProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
-                                                   Icon="{ui:SymbolIcon Dismiss20}"
-                                                   ToolTip="Görevi sonlandır" AutomationProperties.Name="Görevi Sonlandır"/>
-                                    </Grid>
-                                </Border>
+                                                   ToolTip="Sonlandır" AutomationProperties.Name="Süreci sonlandır"/>
+                                    </c:ListRow.Trailing>
+                                </c:ListRow>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                        </c:ListCard.ItemTemplate>
+                    </c:ListCard>
 
-                    <!-- Shortcut to Optimizer -->
-                    <ui:Button Grid.Row="2" 
-                               Appearance="Secondary" 
-                               Command="{Binding GoToOptimizerCommand}"
-                               HorizontalAlignment="Left"
-                               Padding="14,7"
-                               Content="Süreçler"
-                               Icon="{ui:SymbolIcon ArrowRight24}"/>
-                </Grid>
-            </Border>
-        </Grid>
-    </Grid>
-    </ScrollViewer>
+                    <c:ListCard Header="Donanım" HeaderIcon="DeveloperBoard24">
+                        <c:ListCard.HeaderTrailing>
+                            <ui:Button Style="{StaticResource Link.Button}" Content="Sistem Bilgisi"
+                                       Command="{Binding OpenSystemInfoPageCommand}"/>
+                        </c:ListCard.HeaderTrailing>
+                        <c:ListRow Icon="DeveloperBoard24" Title="{Binding Metrics.CpuName}" Subtitle="İşlemci"
+                                   Meta="{Binding Metrics.CpuTemperatureText}"/>
+                        <c:ListRow Icon="Desktop24" Title="{Binding Metrics.GpuName}" Subtitle="Ekran kartı"
+                                   Meta="{Binding Metrics.GpuVram}" ToolTip="{Binding Metrics.GpuTooltip}"/>
+                        <c:ListRow Icon="Temperature24" Title="{Binding Metrics.ThermalStatus}" Subtitle="Sıcaklık"/>
+                    </c:ListCard>
+                </c:AdaptiveGrid>
+            </c:Section>
+        </StackPanel>
+    </c:ModulePage>
 </UserControl>
