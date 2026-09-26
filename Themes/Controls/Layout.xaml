@@ -41,9 +41,28 @@
                                       VerticalScrollBarVisibility="Auto"
                                       PanningMode="VerticalOnly"
                                       Focusable="False">
-                            <Grid Margin="{TemplateBinding Padding}"
+                            <Grid x:Name="PART_Body"
+                                  Margin="{TemplateBinding Padding}"
                                   MaxWidth="{TemplateBinding MaxContentWidth}"
                                   HorizontalAlignment="Stretch">
+                                <!-- Sayfa girişi: 167 ms solma + 8 px yukarı kayma (Windows 11 sayfa geçişi) -->
+                                <Grid.RenderTransform>
+                                    <TranslateTransform Y="0"/>
+                                </Grid.RenderTransform>
+                                <Grid.Triggers>
+                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="{StaticResource Motion.Normal}"/>
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" From="8" To="0" Duration="{StaticResource Motion.Normal}">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Grid.Triggers>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/> <!-- Başlık -->
                                     <RowDefinition Height="Auto"/> <!-- Sekmeler -->

@@ -14,6 +14,7 @@
 
     <c:ModulePage Title="Ayarlar"
                   Subtitle="Görünüm teması, sistem performansı, başlangıç davranışı, güvenlik ve modül ayarları."
+                  MaxContentWidth="{StaticResource Layout.PageMaxWidth.Narrow}"
                   IsScrollable="False">
     <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal">

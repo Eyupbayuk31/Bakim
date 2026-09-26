@@ -433,12 +433,8 @@
                                 <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                                 <TextBlock Text="{Binding Publisher}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
                                 <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                    <Border Background="{DynamicResource Brush.Accent.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,6,0">
-                                        <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
-                                    <Border Background="{DynamicResource Brush.Caution.Subtle}" CornerRadius="{StaticResource Radius.XS}" Padding="6,2">
-                                        <TextBlock Text="{Binding EstimatedDelayText, StringFormat='Gecikme {0}'}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                                    </Border>
+                                    <TextBlock Text="{Binding StatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <c:StatusGlyph Intent="Caution" Text="{Binding EstimatedDelayText, StringFormat='Gecikme {0}'}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>

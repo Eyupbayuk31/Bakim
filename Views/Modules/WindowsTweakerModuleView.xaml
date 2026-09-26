@@ -15,6 +15,7 @@
 
     <c:ModulePage Title="Windows Ayarları"
                   Subtitle="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar."
+                  MaxContentWidth="{StaticResource Layout.PageMaxWidth.Narrow}"
                   IsScrollable="False">
     <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -348,20 +349,12 @@
                                     </Border>
 
                                     <!-- Güvenlik etkisi rozetleri (S-16) -->
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1"
-                                            Background="{DynamicResource Status.Critical.Subtle}"
-                                            Margin="0,0,6,4"
-                                            ToolTip="{Binding SecurityWarning}"
-                                            Visibility="{Binding ReducesSecurity, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Güvenliği azaltır" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1"
-                                            Background="{DynamicResource Status.Caution.Subtle}"
-                                            Margin="0,0,6,4"
-                                            ToolTip="{Binding SecurityWarning}"
-                                            Visibility="{Binding AffectsSecurity, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Güvenliği etkiler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </Border>
+                                    <c:StatusGlyph Intent="Critical" Text="Güvenliği azaltır" Margin="0,0,12,4"
+                                                   ToolTip="{Binding SecurityWarning}"
+                                                   Visibility="{Binding ReducesSecurity, Converter={StaticResource BoolToVis}}"/>
+                                    <c:StatusGlyph Intent="Caution" Text="Güvenliği etkiler" Margin="0,0,12,4"
+                                                   ToolTip="{Binding SecurityWarning}"
+                                                   Visibility="{Binding AffectsSecurity, Converter={StaticResource BoolToVis}}"/>
                                 </WrapPanel>
 
                                 <!-- Neyi değiştirir? (veri tabanlı ayarlar: gerçek kayıt yolları, §5.16 şeffaflık) -->
