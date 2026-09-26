@@ -34,7 +34,7 @@
 
         <!-- 1. Güvenilirlik kartı + sekmeler (SelectorBar) -->
         <StackPanel Grid.Row="1">
-            <Border Style="{StaticResource Card.Surface}" Margin="{StaticResource Gap.Bottom.MD}">
+            <Border Style="{StaticResource Card.Surface.Hero}" Margin="{StaticResource Gap.Bottom.MD}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -50,7 +50,7 @@
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,32,0" MinWidth="160">
                         <TextBlock Text="Sistem sağlığı" Style="{StaticResource Text.SettingDescription}" Margin="0"/>
-                        <TextBlock FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2">
+                        <TextBlock FontSize="{StaticResource Font.TitleLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,2">
                             <Run Text="%"/><Run Text="{Binding Stats.HealthScore, Mode=OneWay}"/>
                         </TextBlock>
                         <TextBlock Text="{Binding Stats.HealthStatusText}" Style="{StaticResource Text.SettingDescription}"/>
@@ -58,7 +58,7 @@
 
                     <!-- Windows Güvenilirlik İzleyicisi: son 30 günün günlük en düşük endeksi -->
                     <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Margin="0,0,24,0">
-                        <ItemsControl ItemsSource="{Binding ReliabilityBars}" Height="40"
+                        <ItemsControl ItemsSource="{Binding ReliabilityBars}" Height="56"
                                       Visibility="{Binding HasReliability, Converter={StaticResource BoolToVis}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>

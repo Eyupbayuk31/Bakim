@@ -42,6 +42,23 @@
                 </StackPanel>
             
     </c:ModulePage.Actions>
+    <c:ModulePage.Footer>
+        <c:SelectionBar Summary="{Binding SelectedAppsCount, StringFormat='{}{0} uygulama seçildi'}"
+                        Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}">
+            <StackPanel Orientation="Horizontal">
+                <ui:Button Appearance="Secondary"
+                           Content="Seçimi temizle"
+                           Command="{Binding SelectAllAppsCommand}"
+                           CommandParameter="false"
+                           Margin="0,0,8,0"/>
+                <ui:Button Appearance="Primary"
+                           Content="Seçilenleri kaldır"
+                           Icon="{ui:SymbolIcon Delete24}"
+                           Command="{Binding BatchUninstallCommand}"/>
+            </StackPanel>
+        </c:SelectionBar>
+    </c:ModulePage.Footer>
+
 
     <Grid>
         <Grid.RowDefinitions>
@@ -167,23 +184,7 @@
                                Command="{Binding SelectAllAppsCommand}"
                                CommandParameter="true"
                                Padding="10,5"
-                               Margin="0,0,4,4"/>
-                    <ui:Button Appearance="Secondary"
-                               Content="Seçimi kaldır"
-                               Command="{Binding SelectAllAppsCommand}"
-                               CommandParameter="false"
-                               Padding="10,5"
-                               Margin="0,0,8,4"
-                               Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}"/>
-
-                    <!-- Batch Silent Uninstall Button -->
-                    <ui:Button Appearance="Secondary"
-                               Content="{Binding SelectedAppsCount, StringFormat='Seçilenleri kaldır ({0})'}"
-                               Icon="{ui:SymbolIcon Delete24}"
-                               Command="{Binding BatchUninstallCommand}"
-                               Padding="12,5"
-                               Margin="0,0,0,4"
-                               Visibility="{Binding HasSelectedApps, Converter={StaticResource BoolToVis}}"/>
+                               Margin="0,0,0,4"/>
                 </WrapPanel>
             </Grid>
         </Grid>
