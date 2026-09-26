@@ -1064,13 +1064,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v421 = new ReleaseChangelogItem
+            {
+                Version = "v4.2.1",
+                ReleaseDate = "Eylül 2026",
+                Title = "Windows 11 SelectorBar Sekmeleri, Tema Vurgu Senkronizasyonu & Temizleyici Bağlama Onarımı",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Temizleyici Kategori Düğmeleri Onarımı: ViewModel'de bulunmayan SelectedCategoryGroup yerine doğru CategoryGroupFilter özelliğine bağlanarak tüm kategori butonlarının varsayılan mavi (Primary) görünmesi engellendi.",
+                    "Sessiz XAML Bağlama Denetçisi (Tools/verify-bindings.py): Eksik veya bozuk ViewModel bağlamalarını otomatik tespit eden yeni doğrulama aracı CI hattına dahil edildi.",
+                    "Windows 11 SelectorBar Sekme Stili (Tab.Item): 27 sayfa sekmesi dolu kutu butonlardan Windows 11 Fluent SelectorBar (alt accent çizgili) modern sekme stiline geçirildi.",
+                    "Tema Vurgu Rengi Senkronizasyonu (ThemeService): WPF-UI dahili kontrollerinin (Button, CheckBox, ToggleSwitch) Windows sistem mavisi yerine seçili tema vurgu rengiyle birebir senkronize çalışması sağlandı.",
+                    "Depolama & Disk Haritası İlk Başlatma İyileştirmesi: Disk haritası açıldığında hedef sürücünün boş kalması engellendi; sistem sürücüsü (C:) otomatik seçili getirildi.",
+                    "Metin Temizliği: Depolama sayfasındaki çiftleme ('143,2 GB Boş Boş') format hatası giderildi; StatCard kartlarından gereksiz renkli çerçeveler arındırıldı."
+                }
+            };
+
             var v420 = new ReleaseChangelogItem
             {
                 Version = "v4.2.0",
                 ReleaseDate = "Eylül 2026",
                 Title = "Bakım 4.2: Yeni Nesil Oyun Modu, Windows 11 Fluent Ayarlar Mimarisi & Akıllı Oyun Kütüphanesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Windows 11 Fluent 2 Oyun Modu Mimarisi: Sayfa hiyerarşisi sıfırdan inşa edildi. Geniş, göz yoran satırlar yerine kart bazlı eylem planı (CardAction / SettingsCard), kompakt adım listesi (StepList) ve etkileşimli etiket düzenleyicisi (ChipListEditor) getirildi.",
@@ -1886,8 +1904,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v420;
+            LatestRelease = v421;
 
+            ReleaseHistory.Add(v421);
             ReleaseHistory.Add(v420);
             ReleaseHistory.Add(v412);
             ReleaseHistory.Add(v411);
