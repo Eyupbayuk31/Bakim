@@ -81,7 +81,7 @@
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <TextBlock Grid.Column="1" 
-                                   Text="{Binding SystemDrive.FormattedFree, StringFormat='{}{0} Boş'}" 
+                                   Text="{Binding SystemDrive.FormattedFree, StringFormat='{}{0} boş'}" 
                                    FontSize="{StaticResource Font.Caption}" 
                                    FontWeight="SemiBold" 
                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
@@ -219,19 +219,19 @@
                     <!-- Group Filter Pills (Segmented Container) -->
                     <Border Style="{StaticResource FluentSegmentedContainer}" Margin="0,0,14,6">
                         <StackPanel Orientation="Horizontal">
-                            <ui:Button Content="Tümü" Appearance="{Binding SelectedCategoryGroup, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Tümü}" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Tümü" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Tümü}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Tümü"/>
 
-                            <ui:Button Content="Windows &amp; Sistem" Appearance="{Binding SelectedCategoryGroup, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Windows &amp; Sistem'}" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Windows &amp; Sistem" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Windows &amp; Sistem'}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Windows &amp; Sistem"/>
 
-                            <ui:Button Content="Web Tarayıcıları" Appearance="{Binding SelectedCategoryGroup, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Web Tarayıcıları'}" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Web Tarayıcıları" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Web Tarayıcıları'}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Web Tarayıcıları"/>
 
-                            <ui:Button Content="Oyunlar &amp; Medya" Appearance="{Binding SelectedCategoryGroup, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Oyunlar &amp; Medya'}" Padding="10,4" Margin="0,0,2,0"
+                            <ui:Button Content="Oyunlar &amp; Medya" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Oyunlar &amp; Medya'}" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Oyunlar &amp; Medya"/>
 
-                            <ui:Button Content="Geliştirici" Appearance="{Binding SelectedCategoryGroup, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Geliştirici}" Padding="10,4"
+                            <ui:Button Content="Geliştirici" Appearance="{Binding CategoryGroupFilter, Converter={StaticResource StringToNavAppearance}, ConverterParameter=Geliştirici}" Padding="10,4"
                                        Command="{Binding SetCategoryGroupCommand}" CommandParameter="Geliştirici"/>
                         </StackPanel>
                     </Border>

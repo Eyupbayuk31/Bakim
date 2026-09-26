@@ -115,6 +115,22 @@ namespace Bakım.Converters
         }
     }
 
+    /// <summary>
+    /// Değer parametreye eşit mi (metin olarak, büyük/küçük harf duyarsız)? Sekme seçimini
+    /// ("ActiveTab" == "Events", SelectedTabIndex == 2) bool'a çevirir.
+    /// </summary>
+    public class EqualsToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+            value != null && parameter != null &&
+            string.Equals(System.Convert.ToString(value, CultureInfo.InvariantCulture), parameter.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     /// <summary>bool → iki sabit metinden biri (ör. ekran okuyucu durum metni).</summary>
     public class BoolToTextConverter : IValueConverter
     {

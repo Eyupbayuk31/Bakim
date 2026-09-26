@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:helpers="clr-namespace:Bakım.Helpers"
              xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:models="clr-namespace:Bakım.Models"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
@@ -74,9 +75,8 @@
                     Padding="3">
                 <StackPanel Orientation="Horizontal">
                     <!-- Sekme 1: Uygulama Kataloğu -->
-                    <ui:Button Appearance="{Binding SelectedStoreTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=0}"
+                    <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=0}"
                                Command="{Binding SwitchToCatalogCommand}"
-                               Padding="14,6"
                                Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Apps24" FontSize="15" Margin="0,0,6,0"/>
@@ -88,9 +88,8 @@
                     </ui:Button>
 
                     <!-- Sekme 2: Hazır Paketler & Format Kurtarıcı -->
-                    <ui:Button Appearance="{Binding SelectedStoreTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=1}"
+                    <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=1}"
                                Command="{Binding SwitchToPresetsCommand}"
-                               Padding="14,6"
                                Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Flash24" FontSize="15" Margin="0,0,6,0"/>
@@ -102,9 +101,8 @@
                     </ui:Button>
 
                     <!-- Sekme 3: Güncellemeler (winget upgrade) -->
-                    <ui:Button Appearance="{Binding SelectedStoreTabIndex, Converter={StaticResource IntEqualsToAppearance}, ConverterParameter=2}"
+                    <ui:Button Style="{StaticResource Tab.Item}" helpers:NavSelection.IsSelected="{Binding SelectedStoreTabIndex, Converter={StaticResource EqualsToBool}, ConverterParameter=2}"
                                Command="{Binding SwitchToUpdatesCommand}"
-                               Padding="14,6"
                                Margin="0,0,4,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="ArrowSync24" FontSize="15" Margin="0,0,6,0"/>

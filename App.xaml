@@ -45,6 +45,7 @@
             <conv:BoolToNavAppearanceConverter x:Key="BoolToNavAppearance"/>
             <conv:BoolToNavAppearanceConverter x:Key="InverseBoolToNavAppearance" Invert="True"/>
             <conv:SafeSymbolConverter x:Key="SafeSymbol"/>
+            <conv:EqualsToBoolConverter x:Key="EqualsToBool"/>
             <conv:BoolToTextConverter x:Key="GameModeStatusText" TrueText="Açık" FalseText="Kapalı"/>
             <conv:EventLevelToBrushConverter x:Key="EventLevelToBrush"/>
             <conv:CategoryToForegroundConverter x:Key="CategoryToForeground"/>

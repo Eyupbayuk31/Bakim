@@ -11,12 +11,11 @@
     -->
 
     <!-- Dış Kapsayıcı Kartı -->
+    <!-- Fluent: sekme ve filtre grupları çerçeveli kutuya konmaz (SelectorBar / ToggleButton dizisi). -->
     <Style x:Key="FluentSegmentedContainer" TargetType="{x:Type Border}">
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-        <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="{StaticResource Radius.MD}"/>
-        <Setter Property="Padding" Value="3"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
     </Style>
 
     <!-- İç Sekme Buton Taban Stili -->
