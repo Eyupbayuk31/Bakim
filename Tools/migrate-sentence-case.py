@@ -60,6 +60,8 @@ def convert(text):
             core = w.strip(".,:;!?&")
             if core in ACRONYMS or not core or w == "&amp;":
                 out.append(w)
+            elif w.startswith("("):
+                out.append(w.lower())   # parantez içi çoğunlukla İngilizce terim (PAGEFILE → pagefile)
             else:
                 low = tr_lower(w)
                 out.append(low[:1].upper().replace("i", "İ") + low[1:] if i == 0 else low)

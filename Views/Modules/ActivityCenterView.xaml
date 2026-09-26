@@ -61,63 +61,55 @@
             <c:StatCard Icon="ErrorCircle24" Label="Başarısız" Value="{Binding FailedCount}" Intent="Critical"/>
         </c:SummaryStrip>
 
-        <!-- 2. Filtre çubuğu -->
-        <Border Grid.Row="2"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="{StaticResource Radius.MD}"
-                Padding="{StaticResource Pad.CardCompact}"
-                Margin="{StaticResource Gap.Bottom.MD}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <!-- 2. Komut çubuğu: arama ve filtreler tek satırda (çerçevesiz, Fluent) -->
+        <Grid Grid.Row="2" Margin="{StaticResource Gap.Bottom.MD}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="220"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                <ui:TextBox Grid.Column="0"
-                            Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                            PlaceholderText="Başlığa, modüle ya da dosya/anahtar yoluna göre ara…"
-                            Icon="{ui:SymbolIcon Search24}"
-                            ClearButtonEnabled="True"
-                            Margin="{StaticResource Gap.Right.SM}"
-                            AutomationProperties.Name="Etkinliklerde ara"/>
-                <ComboBox Grid.Column="1"
-                          ItemsSource="{Binding KindOptions}"
-                          DisplayMemberPath="Value"
-                          SelectedValuePath="Key"
-                          SelectedValue="{Binding SelectedKind}"
-                          MinWidth="160"
-                          Margin="{StaticResource Gap.Right.SM}"
-                          AutomationProperties.Name="Türe göre filtrele"/>
-                <ComboBox Grid.Column="2"
-                          ItemsSource="{Binding OutcomeOptions}"
-                          DisplayMemberPath="Value"
-                          SelectedValuePath="Key"
-                          SelectedValue="{Binding SelectedOutcome}"
-                          MinWidth="150"
-                          AutomationProperties.Name="Sonuca göre filtrele"/>
-
-                <WrapPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="{StaticResource Gap.Top.SM}" VerticalAlignment="Center">
-                    <TextBlock Text="Tarih:" FontSize="{StaticResource Font.Body}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <RadioButton Content="Bugün" GroupName="ActivityRange" Margin="{StaticResource Gap.Right.SM}"
-                                 Command="{Binding SetRangeCommand}" CommandParameter="Today"/>
-                    <RadioButton Content="7 gün" GroupName="ActivityRange" Margin="{StaticResource Gap.Right.SM}"
-                                 Command="{Binding SetRangeCommand}" CommandParameter="7"/>
-                    <RadioButton Content="30 gün" GroupName="ActivityRange" Margin="{StaticResource Gap.Right.SM}"
-                                 Command="{Binding SetRangeCommand}" CommandParameter="30"/>
-                    <RadioButton Content="Tümü" GroupName="ActivityRange" IsChecked="True" Margin="0,0,16,0"
-                                 Command="{Binding SetRangeCommand}" CommandParameter="All"/>
-                    <CheckBox Content="Yalnızca geri alınabilir" IsChecked="{Binding UndoableOnly}"/>
-                </WrapPanel>
-            </Grid>
-        </Border>
+            <ui:TextBox Grid.Column="0"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="Başlık, modül ya da dosya/anahtar yolu ara"
+                        Icon="{ui:SymbolIcon Search20}"
+                        ClearButtonEnabled="True"
+                        Margin="{StaticResource Gap.Right.SM}"
+                        AutomationProperties.Name="Etkinliklerde ara"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding KindOptions}"
+                      DisplayMemberPath="Value"
+                      SelectedValuePath="Key"
+                      SelectedValue="{Binding SelectedKind}"
+                      MinWidth="150"
+                      Margin="{StaticResource Gap.Right.SM}"
+                      AutomationProperties.Name="Türe göre filtrele"/>
+            <ComboBox Grid.Column="2"
+                      ItemsSource="{Binding OutcomeOptions}"
+                      DisplayMemberPath="Value"
+                      SelectedValuePath="Key"
+                      SelectedValue="{Binding SelectedOutcome}"
+                      MinWidth="140"
+                      Margin="{StaticResource Gap.Right.SM}"
+                      AutomationProperties.Name="Sonuca göre filtrele"/>
+            <ComboBox Grid.Column="3"
+                      SelectedValuePath="Tag"
+                      SelectedValue="{Binding Range}"
+                      MinWidth="120"
+                      Margin="{StaticResource Gap.Right.MD}"
+                      AutomationProperties.Name="Tarih aralığı">
+                <ComboBoxItem Content="Bugün" Tag="Today"/>
+                <ComboBoxItem Content="Son 7 gün" Tag="7"/>
+                <ComboBoxItem Content="Son 30 gün" Tag="30"/>
+                <ComboBoxItem Content="Tüm zamanlar" Tag="All"/>
+            </ComboBox>
+            <CheckBox Grid.Column="4"
+                      Content="Yalnızca geri alınabilir"
+                      IsChecked="{Binding UndoableOnly}"
+                      VerticalAlignment="Center"/>
+        </Grid>
 
         <!-- 3. Zaman çizelgesi + ayrıntı -->
         <Grid Grid.Row="3">
@@ -150,8 +142,8 @@
                                         <TextBlock Text="{Binding Name}"
                                                    FontSize="{StaticResource Font.Body}"
                                                    FontWeight="SemiBold"
-                                                   Margin="12,12,0,4"
-                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                                   Margin="12,16,0,6"
+                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                     </DataTemplate>
                                 </GroupStyle.HeaderTemplate>
                             </GroupStyle>
@@ -218,12 +210,15 @@
                     CornerRadius="{StaticResource Radius.MD}"
                     Padding="{StaticResource Pad.Card}">
                 <Grid>
-                    <TextBlock Text="Ayrıntıları görmek için soldan bir etkinlik seçin."
-                               FontSize="{StaticResource Font.Body}"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                               TextWrapping="Wrap"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}"/>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="260"
+                                Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}">
+                        <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="32" HorizontalAlignment="Center"
+                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                        <TextBlock Text="Bir etkinlik seçin" HorizontalAlignment="Center" Margin="{StaticResource Gap.Top.MD}"
+                                   Style="{StaticResource Text.BodyStrong}"/>
+                        <TextBlock Text="Ne değiştiği, hangi öğeleri etkilediği ve geri alınıp alınamayacağı burada görünür."
+                                   Style="{StaticResource Text.BodySecondary}" TextAlignment="Center" Margin="{StaticResource Gap.Top.XS}"/>
+                    </StackPanel>
 
                     <Grid Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
                         <Grid.RowDefinitions>

@@ -117,6 +117,20 @@
         </Setter>
     </Style>
 
+    <!-- Kart içindeki özet şeridi: çift çerçeve olmasın diye yalnızca üstte ince ayırıcı -->
+    <Style x:Key="SummaryStrip.Inset" TargetType="{x:Type c:SummaryStrip}" BasedOn="{StaticResource {x:Type c:SummaryStrip}}">
+        <Setter Property="Margin" Value="{StaticResource Gap.Top.MD}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type c:SummaryStrip}">
+                    <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,1,0,0" Padding="0,14,0,0">
+                        <ItemsPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ============ LİSTE / TABLO ============ -->
     <!-- Tablo başlık satırı: dolgusuz, altta ince çizgi (Fluent ListView başlığı). -->
     <Style x:Key="Table.HeaderRow" TargetType="Border">

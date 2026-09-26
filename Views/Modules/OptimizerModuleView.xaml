@@ -72,7 +72,88 @@
                 </Grid.RowDefinitions>
 
                 <!-- Header -->
-                <c:SummaryStrip Grid.Row="0" Margin="0,0,0,10">
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="TopSpeed24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                        <TextBlock Text="Bellek kullanımı" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Hardware.RamPercentage, StringFormat='%{0} dolu'}" 
+                                   FontSize="{StaticResource Font.Subtitle}" 
+                                   FontWeight="SemiBold" 
+                                   Foreground="{Binding Hardware.RamPercentage, Converter={StaticResource PercentageToBrush}}"/>
+                        <TextBlock Text="{Binding Hardware.UsedRamGb, StringFormat=' ({0:F1} GB / '}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Hardware.TotalRamGb, StringFormat='{}{0:F1} GB)'}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Multi-Segmented Memory Bar -->
+                <Border Grid.Row="1" Height="8" CornerRadius="{StaticResource Radius.XS}" Background="{DynamicResource ControlFillColorSecondaryBrush}" ClipToBounds="True" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Composition.InUsePercent, FallbackValue=70, StringFormat='{}{0}*'}"/>
+                            <ColumnDefinition Width="{Binding Composition.ModifiedPercent, FallbackValue=5, StringFormat='{}{0}*'}"/>
+                            <ColumnDefinition Width="{Binding Composition.StandbyPercent, FallbackValue=15, StringFormat='{}{0}*'}"/>
+                            <ColumnDefinition Width="{Binding Composition.FreePercent, FallbackValue=10, StringFormat='{}{0}*'}"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- In Use (Cyan/Accent) -->
+                        <Border Grid.Column="0" Background="{DynamicResource Chart.Series1}" ToolTip="{Binding Composition.InUseGb, StringFormat='Kullanımda: {0:F1} GB'}"/>
+                        <!-- Modified (Purple) -->
+                        <Border Grid.Column="1" Background="{DynamicResource Chart.Series4}" ToolTip="{Binding Composition.ModifiedGb, StringFormat='Değiştirilmiş: {0:F1} GB'}"/>
+                        <!-- Standby / Cached (Green) -->
+                        <Border Grid.Column="2" Background="{DynamicResource Chart.Series3}" ToolTip="{Binding Composition.StandbyGb, StringFormat='Bekleme Listesi (Önbellek): {0:F1} GB'}"/>
+                        <!-- Free (Dark Slate) -->
+                        <Border Grid.Column="3" Background="{DynamicResource ControlStrokeColorDefaultBrush}" ToolTip="{Binding Composition.FreeGb, StringFormat='Boş / Serbest: {0:F1} GB'}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Legend -->
+                <Grid Grid.Row="2" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- In Use -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource Chart.Series1}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Kullanımda: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.InUseGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </StackPanel>
+
+                    <!-- Modified -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource Chart.Series4}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Değiştirilmiş: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.ModifiedGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </StackPanel>
+
+                    <!-- Standby / Cached -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource Chart.Series3}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Bekleme (Önbellek): " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.StandbyGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource Chart.Series3}"/>
+                    </StackPanel>
+
+                    <!-- Free -->
+                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
+                        <Border Width="10" Height="10" CornerRadius="{StaticResource Radius.SM}" Background="{DynamicResource ControlStrokeColorDefaultBrush}" Margin="0,0,6,0"/>
+                        <TextBlock Text="Boş alan: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding Composition.FreeGb, StringFormat='{}{0:F1} GB'}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- 4 KPI Cards (Technical Architecture) -->
+                <c:SummaryStrip Grid.Row="3" Style="{StaticResource SummaryStrip.Inset}">
 
                     <!-- KPI 1: Speed & Slots -->
                     <c:StatCard 
@@ -86,7 +167,7 @@
                     <!-- KPI 2: Commit Charge / Pagefile -->
                     <c:StatCard 
                                 Icon="HardDrive20" 
-                                Label="Sanal bellek (pagefıle)" 
+                                Label="Sanal bellek (sayfa dosyası)" 
                                 Value="{Binding Composition.CommitTotalGb, StringFormat='{}{0:F1} GB İşlendi'}" 
                                 Caption="{Binding Composition.CommitLimitGb, StringFormat='Limit: {0:F1} GB'}" 
                                 Intent="Neutral" 
