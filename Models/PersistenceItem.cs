@@ -16,7 +16,11 @@ namespace Bakım.Models
         /// <summary>Çekirdek ve dosya sistemi sürücüleri (hizmetlerden ayrı; hiçbir zaman değiştirilemez).</summary>
         Driver,
         /// <summary>Kurulum Nöbetçisi ya da kullanıcının incelettiği dosya: başlangıç kaydı değil.</summary>
-        InspectedFile
+        InspectedFile,
+        /// <summary>AppInit/AppCert DLL, LSA paketi, yazdırma izleyicisi, Winsock, Netsh, BootExecute, PowerShell profili.</summary>
+        SystemHook,
+        BrowserExtension,
+        OfficeAddin
     }
 
     public enum SignatureStatus
@@ -127,6 +131,17 @@ namespace Bakım.Models
         }
         private bool? _hasValidFile;
 
+        /// <summary>
+        /// Dijital imza bu girdi için anlamlı mı? Tarayıcı eklentisi, betik profili gibi PE olmayan
+        /// girdilerde "imzasız" puanı uygulanmaz (her eklenti gürültü üretirdi).
+        /// </summary>
+        public bool SignatureApplicable { get; set; } = true;
+
+        /// <summary>Toplayıcının kendi bulguları (ör. politika ile zorla kurulan eklenti): puan ve açıklama.</summary>
+        public int CollectorRisk { get; set; }
+        public string? CollectorNotes { get; set; }
+        public bool HasCollectorNotes => !string.IsNullOrWhiteSpace(CollectorNotes);
+
         /// <summary>Derin analizin puanı (varsa satır puanı budur: daha fazla kanıta dayanır).</summary>
         public int? DeepRiskScore { get; set; }
 
@@ -192,9 +207,9 @@ namespace Bakım.Models
             {
                 if (DeepRiskScore is int deep) return IsEnabled ? deep : (int)(deep * 0.4);
 
-                int score = 0;
+                int score = CollectorRisk;
 
-                score += Signature switch
+                if (SignatureApplicable) score += Signature switch
                 {
                     SignatureStatus.InvalidOrTampered => 60,  // imza var ama bozuk: en kötü işaret
                     SignatureStatus.Unsigned => 35,
@@ -215,10 +230,11 @@ namespace Bakım.Models
                 };
 
                 if (IsRecentlyAdded) score += 10;
-                if (!IsMicrosoft && Signature == SignatureStatus.Unsigned) score += 5;
+                if (SignatureApplicable && !IsMicrosoft && Signature == SignatureStatus.Unsigned) score += 5;
 
                 // Dosya artık yoksa girdi bozuk demektir — tehdit değil, temizlik konusu
-                if (!string.IsNullOrWhiteSpace(FilePath) && !HasValidFile) score = Math.Max(score - 15, 5);
+                // İmza puanı düşer; yalnızca konumun kendi riski (WMI, Winlogon …) ve toplayıcı bulguları kalır.
+                if (!string.IsNullOrWhiteSpace(FilePath) && !HasValidFile) score = Math.Clamp(score - 40, 5, 20);
 
                 // Devre dışı girdi çalışmıyor: risk büyük ölçüde düşer
                 if (!IsEnabled) score = (int)(score * 0.4);

@@ -191,6 +191,16 @@
                                Appearance="{Binding IsDriversCategory, Converter={StaticResource BoolToNavAppearance}}"
                                Padding="12,6" Margin="0,0,6,4" Content="Sürücüler" Icon="{ui:SymbolIcon Wrench20}"
                                ToolTip="Çekirdek ve dosya sistemi sürücüleri. Yalnızca incelenir; buradan kapatılamaz."/>
+                    <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Hooks"
+                               Appearance="{Binding IsHooksCategory, Converter={StaticResource BoolToNavAppearance}}"
+                               Padding="12,6" Margin="0,0,6,4" Content="Sistem kancaları" Icon="{ui:SymbolIcon PlugConnected20}"
+                               ToolTip="AppInit/AppCert DLL, LSA paketleri, yazdırma izleyicileri, Winsock, Netsh, BootExecute ve PowerShell profilleri."/>
+                    <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Browser"
+                               Appearance="{Binding IsBrowserCategory, Converter={StaticResource BoolToNavAppearance}}"
+                               Padding="12,6" Margin="0,0,6,4" Content="Tarayıcı eklentileri" Icon="{ui:SymbolIcon Globe20}"/>
+                    <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Office"
+                               Appearance="{Binding IsOfficeCategory, Converter={StaticResource BoolToNavAppearance}}"
+                               Padding="12,6" Margin="0,0,6,4" Content="Office eklentileri" Icon="{ui:SymbolIcon DocumentBulletList20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Files"
                                Appearance="{Binding IsFilesCategory, Converter={StaticResource BoolToNavAppearance}}"
                                Padding="12,6" Margin="0,0,6,4" Content="İncelenen dosyalar" Icon="{ui:SymbolIcon DocumentSearch20}"
@@ -370,6 +380,13 @@
                                     <TextBlock Text="{Binding Publisher, StringFormat='Yayıncı: {0}'}"
                                                FontSize="{StaticResource Font.Caption}"
                                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                               Margin="0,2,0,0"/>
+
+                                    <TextBlock Text="{Binding CollectorNotes}"
+                                               FontSize="{StaticResource Font.Caption}"
+                                               Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                               TextWrapping="Wrap"
+                                               Visibility="{Binding HasCollectorNotes, Converter={StaticResource BoolToVis}}"
                                                Margin="0,2,0,0"/>
 
                                     <TextBlock Text="{Binding HostDisplay}"

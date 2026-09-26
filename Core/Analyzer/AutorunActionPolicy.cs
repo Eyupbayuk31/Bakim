@@ -14,7 +14,11 @@ namespace Bakım.Core.Analyzer
         WinlogonIfeo,
         ShellExtension,
         Driver,
-        InspectedFile
+        InspectedFile,
+        /// <summary>AppInit/AppCert DLL, LSA paketi, yazdırma izleyicisi, Winsock, Netsh, BootExecute, PowerShell profili.</summary>
+        SystemHook,
+        BrowserExtension,
+        OfficeAddin
     }
 
     /// <summary>Politikanın değerlendirdiği girdi bilgileri.</summary>
@@ -63,6 +67,9 @@ namespace Bakım.Core.Analyzer
             AutorunCategory.WmiEventConsumer => ActionDecision.Deny("WMI abonelikleri kapatılamaz; incelemek için dosya analizini kullanın."),
             AutorunCategory.WinlogonIfeo => ActionDecision.Deny("Winlogon ve IFEO değerleri oturum açılışını doğrudan etkiler; buradan değiştirilemez."),
             AutorunCategory.ShellExtension => ActionDecision.Deny("Gezgin eklentileri buradan kapatılamaz."),
+            AutorunCategory.SystemHook => ActionDecision.Deny("Sistem kancaları (LSA, Winsock, yazdırma izleyicisi …) yanlış değiştirilirse oturum açma ya da ağ bozulur; yalnızca incelenir."),
+            AutorunCategory.BrowserExtension => ActionDecision.Deny("Tarayıcı eklentileri tarayıcının kendi eklenti sayfasından kaldırılmalıdır."),
+            AutorunCategory.OfficeAddin => ActionDecision.Deny("Office eklentileri Office'in Seçenekler > Eklentiler sayfasından yönetilir."),
             _ => ActionDecision.Deny("Bu girdi bir başlangıç kaydı değil, incelenen bir dosyadır.")
         };
 

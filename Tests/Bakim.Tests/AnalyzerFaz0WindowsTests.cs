@@ -103,6 +103,42 @@ public sealed class AnalyzerFaz0WindowsTests
     }
 
     [Fact]
+    public async Task Scanner_Faz1_Categories_AreReadOnly_AndResolved()
+    {
+        var items = await ScanAsync();
+
+        // BootExecute "autocheck autochk *": program autochk.exe'dir ve her Windows'ta vardır.
+        var boot = items.FirstOrDefault(i => i.Name.StartsWith("BootExecute: autocheck", StringComparison.OrdinalIgnoreCase));
+        if (boot != null) Assert.True(boot.HasValidFile, boot.FilePath);
+
+        // LSA paketleri (msv1_0 …) System32 altında çözülür.
+        Assert.All(items.Where(i => i.Name.Equals("LSA: msv1_0", StringComparison.OrdinalIgnoreCase)), i => Assert.True(i.HasValidFile));
+
+        foreach (var i in items.Where(i => i.Category is PersistenceCategory.SystemHook or PersistenceCategory.BrowserExtension or PersistenceCategory.OfficeAddin))
+        {
+            Assert.False(i.CanToggle);
+            Assert.False(i.CanDelete);
+        }
+
+        // Eklentilere imza puanı uygulanmaz.
+        Assert.All(items.Where(i => i.Category == PersistenceCategory.BrowserExtension), i => Assert.False(i.SignatureApplicable));
+
+        // Aynı Office eklentisi iki kez listelenmez.
+        var office = items.Where(i => i.Category == PersistenceCategory.OfficeAddin).Select(i => i.LocationSource).ToList();
+        Assert.Equal(office.Count, office.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+
+    [Fact]
+    public void RiskScore_MissingFile_IsCleanupNotThreat()
+    {
+        var orphan = new PersistenceItem { Signature = SignatureStatus.Unsigned, FilePath = @"C:\Users\u\Desktop\gone.exe", HasValidFile = false, Category = PersistenceCategory.RegistryRun };
+        Assert.InRange(orphan.RiskScore, 5, 20);
+
+        var noFile = new PersistenceItem { Signature = SignatureStatus.Unsigned, FilePath = string.Empty, SignatureApplicable = false, Category = PersistenceCategory.OfficeAddin };
+        Assert.Equal(0, noFile.RiskScore);
+    }
+
+    [Fact]
     public async Task Engine_RefusesPolicyViolations_WithoutTouchingSystem()
     {
         var engine = new AutorunsScannerEngine(new FakeVirusTotal());

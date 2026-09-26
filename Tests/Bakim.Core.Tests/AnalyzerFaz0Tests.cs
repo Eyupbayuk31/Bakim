@@ -267,6 +267,44 @@ public class AnalyzerFaz0Tests
         Assert.True(ArgumentRules.HasNoProfileBypass(CommandLineResolver.Tokenize("-nop -ep bypass")));
     }
 
+    // ---- Faz 1: tarayıcı eklentileri ve yeni kategoriler ----
+
+    [Fact]
+    public void Extensions_CommonBlockersAreLowRisk_ForcedOffStoreIsHigh()
+    {
+        var adblock = ExtensionRules.Evaluate(false, null, new[] { "<all_urls>", "webRequest", "storage" });
+        Assert.InRange(adblock.Risk, 1, 29);
+        Assert.Contains("ağ trafiğini", adblock.Notes);
+
+        var passwordManager = ExtensionRules.Evaluate(false, null, new[] { "nativeMessaging", "tabs" });
+        Assert.Equal(0, passwordManager.Risk);
+
+        var forcedStore = ExtensionRules.Evaluate(true, "https://clients2.google.com/service/update2/crx", Array.Empty<string>());
+        Assert.Equal(10, forcedStore.Risk);
+
+        var forcedOffStore = ExtensionRules.Evaluate(true, "https://cdn.evil.example/update.xml", new[] { "<all_urls>", "webRequestBlocking" });
+        Assert.True(forcedOffStore.Risk >= 45);
+        Assert.Contains("Mağaza dışı", forcedOffStore.Notes);
+    }
+
+    [Theory]
+    [InlineData("__MSG_appName__", "appName")]
+    [InlineData("__MSG_extName__", "extName")]
+    [InlineData("uBlock Origin", null)]
+    [InlineData("__MSG___", null)]
+    public void Extensions_MessageKey(string name, string? key) => Assert.Equal(key, ExtensionRules.MessageKey(name));
+
+    [Fact]
+    public void Policy_NewCategories_AreReadOnly()
+    {
+        foreach (var c in new[] { AutorunCategory.SystemHook, AutorunCategory.BrowserExtension, AutorunCategory.OfficeAddin })
+        {
+            Assert.False(AutorunActionPolicy.CanToggle(new AutorunFacts(c)).Allowed);
+            Assert.False(AutorunActionPolicy.CanDelete(new AutorunFacts(c)).Allowed);
+            Assert.NotEmpty(AutorunActionPolicy.CanToggle(new AutorunFacts(c)).Reason);
+        }
+    }
+
     // ---- AN-16: CSV ----
 
     [Theory]

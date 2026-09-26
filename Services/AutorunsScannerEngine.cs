@@ -33,7 +33,7 @@ namespace Bakım.Services
     /// Tüm tarama arka plan iş parçacığında yürür (eskiden Run/Başlangıç/Winlogon/Kabuk UI iş
     /// parçacığında imza + SHA-256 + simge hesaplıyordu).
     /// </summary>
-    public class AutorunsScannerEngine : IAutorunsScannerEngine
+    public partial class AutorunsScannerEngine : IAutorunsScannerEngine
     {
         private readonly IVirusTotalCheckService _virusTotalService;
         private readonly DisabledServiceStore _disabledServices = new();
@@ -58,6 +58,11 @@ namespace Bakım.Services
                 ("Hizmetler ve sürücüler taranıyor…", CollectServicesAndDrivers),
                 ("WMI abonelikleri taranıyor…", CollectWmiConsumers),
                 ("Gezgin eklentileri taranıyor…", CollectShellExtensions),
+                ("Oturum açılışı kancaları taranıyor…", CollectLogonHooks),
+                ("Sistem kancaları (LSA, Winsock, AppInit …) taranıyor…", CollectSystemHooks),
+                ("Gezgin kancaları taranıyor…", CollectExplorerHooks),
+                ("Tarayıcı eklentileri taranıyor…", CollectBrowserExtensions),
+                ("Office eklentileri taranıyor…", CollectOfficeAddins),
             };
 
             foreach (var (status, collect) in collectors)
@@ -70,8 +75,9 @@ namespace Bakım.Services
                     {
                         list = collect(env);
                     }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException or COMException or ManagementException)
+                    catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
                     {
+                        // Tek bir konumun hatası taramanın geri kalanını düşürmez.
                         AppLog.Warning($"Kalıcılık toplayıcısı başarısız: {status}", ex, nameof(AutorunsScannerEngine));
                         return new List<PersistenceItem>();
                     }
@@ -449,10 +455,18 @@ namespace Bakım.Services
             return list;
         }
 
+        /// <summary>CLSID → sunucu yolu: 64 bit, ardından 32 bit (WOW6432Node) kayıt; süreç içi ve süreç dışı.</summary>
         private static string? ReadComServer(string clsid)
         {
-            using var key = Registry.ClassesRoot.OpenSubKey($@"CLSID\{clsid}\InprocServer32") ?? Registry.ClassesRoot.OpenSubKey($@"CLSID\{clsid}\LocalServer32");
-            return key?.GetValue(null)?.ToString();
+            foreach (string prefix in new[] { "CLSID", @"WOW6432Node\CLSID" })
+            {
+                foreach (string server in new[] { "InprocServer32", "LocalServer32" })
+                {
+                    using var key = Registry.ClassesRoot.OpenSubKey($@"{prefix}\{clsid}\{server}");
+                    if (key?.GetValue(null)?.ToString() is { Length: > 0 } path) return path;
+                }
+            }
+            return null;
         }
 
         #endregion
@@ -469,6 +483,8 @@ namespace Bakım.Services
             string path = item.FilePath;
             if (string.IsNullOrWhiteSpace(path))
             {
+                // İncelenecek dosya yok: imza hükmü verilemez ("imzasız" puanı uygulanmaz).
+                item.SignatureApplicable = false;
                 item.HasValidFile = false;
                 item.Publisher = item.InlineScript != null ? "Satır içi betik" : "Komut boş";
                 return;
@@ -501,6 +517,8 @@ namespace Bakım.Services
 
             item.Signature = facts.Status;
             item.SignatureSignerName = facts.Signer;
+            // İmzanın anlamsız olduğu girdilerde (eklenti, betik) toplayıcının yayıncı etiketi korunur.
+            if (!item.SignatureApplicable && !string.IsNullOrEmpty(item.Publisher)) { item.Sha256Hash = facts.Sha256; item.FileCreatedUtc = facts.CreatedUtc; return; }
             item.Publisher = facts.Status switch
             {
                 SignatureStatus.Verified => facts.Signer.Length > 0 ? facts.Signer : "İmzalı",

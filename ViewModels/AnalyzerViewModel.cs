@@ -125,6 +125,9 @@ namespace Bakım.ViewModels
         public bool IsShellCategory => SelectedCategory == "Shell";
         public bool IsDriversCategory => SelectedCategory == "Drivers";
         public bool IsFilesCategory => SelectedCategory == "Files";
+        public bool IsHooksCategory => SelectedCategory == "Hooks";
+        public bool IsBrowserCategory => SelectedCategory == "Browser";
+        public bool IsOfficeCategory => SelectedCategory == "Office";
 
         /// <summary>Son başarılı taramanın zamanı; sayfa açılışında eskiyse yeniden taranır (ANL Z8).</summary>
         private DateTime _lastScanUtc = DateTime.MinValue;
@@ -196,6 +199,9 @@ namespace Bakım.ViewModels
             OnPropertyChanged(nameof(IsShellCategory));
             OnPropertyChanged(nameof(IsDriversCategory));
             OnPropertyChanged(nameof(IsFilesCategory));
+            OnPropertyChanged(nameof(IsHooksCategory));
+            OnPropertyChanged(nameof(IsBrowserCategory));
+            OnPropertyChanged(nameof(IsOfficeCategory));
             _filteredView.Refresh();
             UpdateStats();
         }
@@ -235,6 +241,9 @@ namespace Bakım.ViewModels
                     "Shell" => item.Category == PersistenceCategory.ShellExtension,
                     "Drivers" => item.Category == PersistenceCategory.Driver,
                     "Files" => item.Category == PersistenceCategory.InspectedFile,
+                    "Hooks" => item.Category == PersistenceCategory.SystemHook,
+                    "Browser" => item.Category == PersistenceCategory.BrowserExtension,
+                    "Office" => item.Category == PersistenceCategory.OfficeAddin,
                     _ => true
                 };
                 if (!categoryMatch) return false;

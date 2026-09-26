@@ -210,6 +210,12 @@ Sarmalayıcı açma: `rundll32 x.dll,Giriş` → x.dll; `regsvr32 /s /i:url scro
 `cmd /c`, `powershell -enc` (base64 çözülüp gösterilir), `wscript/cscript x.vbs`, `mshta` → betik dosyası
 ya da satır içi betik ayrı kanıt olur.
 
+> **Durum (v4.9.0): uygulandı.** Oturum açılışı (Active Setup, cmd AutoRun, HKCU Shell, AppSetup), sistem
+> kancaları (AppInit/AppCert, LSA, yazdırma, Winsock LSP/NSP, Netsh, BootExecute, PowerShell profilleri),
+> Gezgin kancaları, tarayıcı eklentileri (Chromium ailesi + Firefox + zorunlu politika) ve Office COM/VSTO
+> eklentileri. Kurallar: `Core/Analyzer/ExtensionRules.cs`. Bu makinede: 498 girdi, 11 eklenti, 37 kanca.
+> Autoruns ile birebir karşılaştırma henüz yapılmadı.
+
 **Kabul:** Sysinternals Autoruns ile aynı makinede karşılaştırma. Ortak konumlarda sayım farkı ≤ %3,
 her fark açıklanabilir.
 
