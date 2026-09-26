@@ -1064,13 +1064,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v422 = new ReleaseChangelogItem
+            {
+                Version = "v4.2.2",
+                ReleaseDate = "Eylül 2026",
+                Title = "Fluent 2 Doğal UI Standardı, Özet Şeridi (SummaryStrip) ve Sadeleştirilmiş Dil Revizyonu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Sayfa Başına Tek Birincil Eylem İlkesi: Sayfalarındaki çoklu mavi (Primary) düğme karmaşası giderildi; her sayfada yalnızca ana eylem vurgulanarak görsel odak sağlandı.",
+                    "Birleşik Özet Şeridi (SummaryStrip): 4'lü büyük sayı blokları yerine tek kartlık, ince ayırıcılı ve yer tasarruflu Fluent özet şeridi mimarisine geçildi.",
+                    "Süs Amaçlı Renklerin Arındırılması: Kontrol Paneli ve modül başlıklarındaki süs amaçlı 220'yi aşkın renkli simge ve metin nötr renk tonlarına çekildi; termal ölçüm yoksa yeşil 'Optimum' rozeti yerine dürüst değerler gösterildi.",
+                    "Süreçler & Bellek Haritası İyileştirmesi: Süreç yöneticisi modülünde bellek kullanım kartı restore edildi; Etkinlik Merkezi komut çubuğu modernleştirildi.",
+                    "Temizleyici Başlık ve Eylem Düzeni: Temizleyici modülünde analiz/temizleme eylemleri ve başlık hiyerarşisi yeniden düzenlendi; gereksiz animasyonlar temizlendi.",
+                    "Sade ve Doğal Türkçe Terminoloji: 600'den fazla metin ve başlık Windows 11 cümle düzenine uyarlandı; 'Röntgen' -> 'Ayrıntılar', 'Avcı Modu' -> 'Pencereden seç' gibi abartılı ifadeler sadeleştirildi."
+                }
+            };
+
             var v421 = new ReleaseChangelogItem
             {
                 Version = "v4.2.1",
                 ReleaseDate = "Eylül 2026",
                 Title = "Windows 11 SelectorBar Sekmeleri, Tema Vurgu Senkronizasyonu & Temizleyici Bağlama Onarımı",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Temizleyici Kategori Düğmeleri Onarımı: ViewModel'de bulunmayan SelectedCategoryGroup yerine doğru CategoryGroupFilter özelliğine bağlanarak tüm kategori butonlarının varsayılan mavi (Primary) görünmesi engellendi.",
@@ -1904,8 +1922,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v421;
+            LatestRelease = v422;
 
+            ReleaseHistory.Add(v422);
             ReleaseHistory.Add(v421);
             ReleaseHistory.Add(v420);
             ReleaseHistory.Add(v412);

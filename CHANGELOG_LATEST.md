@@ -1,34 +1,40 @@
-# Bakım v4.2.1 - Sürüm Notları
+# Bakım v4.2.2 - Sürüm Notları
 
-## Windows 11 SelectorBar Sekmeleri, Tema Vurgu Senkronizasyonu & Temizleyici Bağlama Onarımı
+## Fluent 2 Doğal UI Standardı, Özet Şeridi (SummaryStrip) ve Sadeleştirilmiş Dil Revizyonu
 
-Bakım v4.2.1 sürümü; kullanıcı arayüzünde tespit edilen bağlama hatalarını gidermekte, 27 sayfa sekmesini modern Windows 11 Fluent SelectorBar stiline kavuşturmakta ve WPF-UI bileşenlerinin tema vurgu renkleriyle %100 senkronize çalışmasını sağlamaktadır.
-
----
-
-### 1. Temizleyici Kategori Düğmeleri Bağlama Onarımı
-- **Doğru Filtreleme Özelliği:** Temizleyici modülünde ViewModel'de yer almayan `SelectedCategoryGroup` özelliği yerine doğru `CategoryGroupFilter` bağlaması yapıldı.
-- **Mavi Buton Düşmesi Giderildi:** Hatalı bağlama nedeniyle butonların WPF-UI varsayılan rengine (`Primary` mavi) düşmesi engellendi; seçili kategori zarifçe vurgulanmaktadır.
+Bakım v4.2.2 sürümü, uygulamanın tüm 20 modülünü kapsayan derin bir görsel arındırma ve kullanıcı deneyimi standardizasyonu getirmektedir. Çoklu buton kalabalığı tek birincil eyleme indirgenmiş, hantal KPI blokları zarif özet şeritlerine dönüştürülmüş ve arayüz dili sade, güven veren Fluent 2 standardına kavuşturulmuştur.
 
 ---
 
-### 2. Sessiz XAML Bağlama Denetçisi (`Tools/verify-bindings.py`)
-- **CI Doğrulama Kapısı:** XAML görünümleri ile C# ViewModel'leri arasındaki tüm veri bağlamalarını statik olarak denetleyen yeni doğrulama aracı geliştirildi ve CI hattına eklendi.
-- **Sıfır Sessiz Hata:** ViewModel'de karşılığı bulunmayan veya yanlış yazılan bağlamalar artık derleme öncesi otomatik yakalanır.
+### 1. Sayfa Başına Tek Birincil Eylem Standardı (Visual Hierarchy)
+- **Görsel Odak:** Sayfalardaki çoklu mavi (Primary) düğme karmaşası giderildi. Her sayfada yalnızca kullanıcının odaklanması gereken ana eylem birincil olarak vurgulanırken, ikincil eylemler yumuşak ve şeffaf stillere çekildi.
+- **Güvenli Renk Semantiği:** Sayfa içi butonlardan tehlike (Danger) renkleri kaldırılarak yalnızca onay diyaloglarına sınırlandırıldı; gereksiz görsel stres engellendi.
 
 ---
 
-### 3. Windows 11 SelectorBar Sekme Tasarımı (`Tab.Item`)
-- **Modern Alt Çizgili Vurgu:** 27 sayfa sekmesi (Ağ İzleyici, Çökme Analizörü, Donanım & S.M.A.R.T., Hizmetler, Depolama vb.) eski dolu kutu butonlardan modern Windows 11 SelectorBar (alt accent çizgili) stiline taşındı.
-- **Sade ve Ferah:** Sekmeleri çevreleyen hantal kutu çerçeveler kaldırıldı.
+### 2. Birleşik Özet Şeridi (SummaryStrip Mimarisi)
+- **Ferah ve Alan Tasarruflu:** Etkinlik Merkezi, Analizör, Kurulum Nöbetçisi, Süreçler, Gizlilik ve Program Kaldırıcı sayfalarındaki 4'lü büyük sayı blokları yerine tek kartlık, ince ayırıcılı ve modern Fluent özet şeridine (`SummaryStrip`) geçildi.
+- **Hafifletilmiş Metrik Kartları:** `StatCard` bileşenindeki süs amaçlı renkli kenarlıklar sadeleştirildi.
 
 ---
 
-### 4. WPF-UI Tema Vurgu Rengi Senkronizasyonu (`ThemeService`)
-- **Bileşen Düzeyinde Eşitleme:** Uygulama içi buton, onay kutusu (CheckBox) ve ToggleSwitch bileşenlerinin Windows sistem mavisi yerine seçili tema vurgu rengini alması sağlandı.
+### 3. Süs Amaçlı Renklerin Arındırılması & Gerçek Değerler
+- **Doğal Tonlar:** Kontrol Paneli ve modül başlıklarındaki süs amaçlı 220'den fazla renkli simge ve metin nötr renk tonlarına dönüştürüldü.
+- **Dürüst Donanım Telemetrisi:** Termal sensör bulunmayan sistemlerde yanıltıcı yeşil "Optimum" rozeti yerine yalnızca gerçek donanım değerleri şeffafça sunuldu.
 
 ---
 
-### 5. Depolama & Disk Haritası İlk Başlatma İyileştirmesi
-- **Otomatik Sistem Sürücüsü Seçimi:** Disk haritası açıldığında taranacak sürücünün boş başlaması engellendi; sistem sürücüsü (C:) otomatik seçili getirildi.
-- **Format Düzeltmesi:** Depolama alanındaki `143,2 GB Boş Boş` metin çiftleme hatası giderildi; `StatCard` renkli çerçeveleri sadeleştirildi.
+### 4. Süreçler ve Etkinlik Merkezi İyileştirmeleri
+- **Süreçler Bellek Haritası:** Süreç yöneticisi modülünde kaybolan bellek tüketim kartı restore edilerek canlı telemetri yeniden sağlandı.
+- **Etkinlik Merkezi Komut Çubuğu:** İşlem filtreleri ve geçmiş kayıtları daha kompakt bir komut çubuğu ile düzenlendi.
+
+---
+
+### 5. Temizleyici Modülü Başlık & Eylem Düzeni
+- **Net Başlık ve Eylem Hiyerarşisi:** Temizleme ve analiz butonları arasındaki karmaşa giderildi, sonsuz dönen tarama animasyonları resmi Fluent `ProgressBar` çizgisine dönüştürüldü.
+
+---
+
+### 6. Sade ve Doğal Türkçe Terminoloji (Sentence Case)
+- **Windows 11 Cümle Düzeni:** 600'den fazla başlık ve etiket Windows 11 standartlarına uyarlandı.
+- **Sade İfadeler:** "Röntgen" -> "Ayrıntılar", "Avcı Modu" -> "Pencereden seç", "1000 Mbps ultra gigabit hız testi" -> "Hız testi" gibi abartılı ifadeler sadeleştirildi.
