@@ -75,15 +75,32 @@ namespace Bakım.ViewModels
         public bool IsLargeFilesTab => ActiveSubTab == "LargeFiles";
         public bool IsDuplicatesTab => ActiveSubTab == "Duplicates";
 
+        /// <summary>Üst sekme çubuğu: "Yinelenenler" ve "Boş klasörler" ayrı sekmelerdir, aynı paneli paylaşır.</summary>
+        public bool IsDuplicateFilesTab => IsDuplicatesTab && IsShowingDuplicates;
+        public bool IsEmptyFoldersTab => IsDuplicatesTab && IsShowingEmptyFolders;
+
         partial void OnActiveSubTabChanged(string value)
         {
             OnPropertyChanged(nameof(IsDiskMapTab));
             OnPropertyChanged(nameof(IsLargeFilesTab));
             OnPropertyChanged(nameof(IsDuplicatesTab));
+            OnPropertyChanged(nameof(IsDuplicateFilesTab));
+            OnPropertyChanged(nameof(IsEmptyFoldersTab));
         }
 
+        /// <summary>DiskMap, LargeFiles, Duplicates veya EmptyFolders.</summary>
         [RelayCommand]
-        public void SwitchSubTab(string tab) => ActiveSubTab = tab;
+        public void SwitchSubTab(string tab)
+        {
+            if (tab == "EmptyFolders")
+            {
+                DuplicateViewMode = "EmptyFolders";
+                ActiveSubTab = "Duplicates";
+                return;
+            }
+            if (tab == "Duplicates") DuplicateViewMode = "Duplicates";
+            ActiveSubTab = tab;
+        }
 
         /// <summary>Sistem Bilgisi'ndeki "Büyük dosyaları tara" düğmesi: sürücüyü seçip taramayı başlatır.</summary>
         public async Task ScanDriveAsync(string? driveName)
@@ -775,6 +792,8 @@ namespace Bakım.ViewModels
         {
             OnPropertyChanged(nameof(IsShowingDuplicates));
             OnPropertyChanged(nameof(IsShowingEmptyFolders));
+            OnPropertyChanged(nameof(IsDuplicateFilesTab));
+            OnPropertyChanged(nameof(IsEmptyFoldersTab));
         }
 
         partial void OnDuplicateTypeFilterChanged(string value)

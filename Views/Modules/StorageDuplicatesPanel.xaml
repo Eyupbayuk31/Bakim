@@ -1,0 +1,458 @@
+<UserControl x:Class="Bakım.Views.Modules.StorageDuplicatesPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:helpers="clr-namespace:Bakım.Helpers"
+             xmlns:c="clr-namespace:Bakım.Controls"
+             xmlns:vm="clr-namespace:Bakım.ViewModels"
+             xmlns:models="clr-namespace:Bakım.Models"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:StorageViewModel}"
+             d:DesignHeight="800" d:DesignWidth="1100">
+    <!-- Depolama › Yinelenenler ve boş klasörler (iki üst sekme aynı paneli paylaşır). -->
+    <Grid Grid.IsSharedSizeScope="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Row 0: 4 KPI Metrik Kartları -->
+            <RowDefinition Height="Auto"/> <!-- Row 1: Araç Çubuğu, Filtreler ve Eylemler -->
+            <RowDefinition Height="*"/>    <!-- Row 2: Ana Liste Alanı (Yinelenenler veya Boş Klasörler) -->
+        </Grid.RowDefinitions>
+
+        <!-- Row 0: Özet şeridi (yalnızca yinelenenler görünümünde) -->
+        <c:SummaryStrip Grid.Row="0" Visibility="{Binding IsShowingDuplicates, Converter={StaticResource BoolToVis}}">
+            <c:StatCard Icon="Storage24" Label="Boşa giden alan" Value="{Binding TotalWastedFormatted}"
+                        Caption="{Binding TotalDuplicateCount, StringFormat='{}{0} kopya dosya'}"/>
+            <c:StatCard Icon="DocumentCopy24" Label="Yinelenen grup" Value="{Binding DuplicateGroups.Count}"
+                        Caption="İçerik karşılaştırmalı"/>
+            <c:StatCard Icon="CheckboxChecked24" Label="Seçili" Value="{Binding SelectedDuplicateBytesFormatted}"
+                        Caption="{Binding SelectedDuplicateCount, StringFormat='{}{0} dosya'}"/>
+        </c:SummaryStrip>
+
+        <!-- Row 1: Komut satırı (kartsız) -->
+        <StackPanel Grid.Row="1" Margin="{StaticResource Gap.Bottom.MD}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/> <!-- Konum + tarama -->
+                    <RowDefinition Height="Auto"/> <!-- (boş) -->
+                    <RowDefinition Height="Auto"/> <!-- Filtreler, seçim ve eylemler -->
+                    <RowDefinition Height="Auto"/> <!-- İlerleme -->
+                    <RowDefinition Height="Auto"/> <!-- Sonuç bandı -->
+                </Grid.RowDefinitions>
+
+                <WrapPanel Grid.Row="0" Orientation="Horizontal" Margin="{StaticResource Gap.Bottom.SM}">
+                    <ComboBox ItemsSource="{Binding AvailableDrives}"
+                              SelectedItem="{Binding DuplicateSelectedDrive, Mode=TwoWay}"
+                              MinWidth="120"
+                              Margin="0,0,8,4"
+                              AutomationProperties.Name="Sürücü"
+                              IsEnabled="{Binding IsCustomFolderActive, Converter={StaticResource InverseBool}}"/>
+                    <ui:Button Appearance="Secondary"
+                               Content="Klasör seç"
+                               Icon="{ui:SymbolIcon FolderOpen20}"
+                               Command="{Binding BrowseCustomFolderCommand}"
+                               Margin="0,0,8,4"/>
+                    <Border Visibility="{Binding IsCustomFolderActive, Converter={StaticResource BoolToVis}}"
+                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                            CornerRadius="{StaticResource Radius.XS}"
+                            Padding="8,2,2,2"
+                            Margin="0,0,8,4"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding CustomScanFolderPath}" MaxWidth="260" TextTrimming="CharacterEllipsis" FontSize="{StaticResource Font.Caption}"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" ToolTip="{Binding CustomScanFolderPath}"/>
+                            <ui:Button Appearance="Transparent"
+                                       Icon="{ui:SymbolIcon Dismiss16}"
+                                       Command="{Binding ClearCustomFolderCommand}"
+                                       ToolTip="Klasörü kaldır"
+                                       Padding="4"
+                                       Margin="4,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <ui:Button Appearance="Primary"
+                               Content="Tara"
+                               Icon="{ui:SymbolIcon Search24}"
+                               Command="{Binding StartDuplicateScanCommand}"
+                               Visibility="{Binding IsShowingDuplicates, Converter={StaticResource BoolToVis}}"
+                               IsEnabled="{Binding IsDuplicatesScanning, Converter={StaticResource InverseBool}}"
+                               Margin="0,0,8,4"/>
+                    <ui:Button Appearance="Primary"
+                               Content="Tara"
+                               Icon="{ui:SymbolIcon Search24}"
+                               Command="{Binding StartEmptyFolderScanCommand}"
+                               Visibility="{Binding IsShowingEmptyFolders, Converter={StaticResource BoolToVis}}"
+                               IsEnabled="{Binding IsDuplicatesScanning, Converter={StaticResource InverseBool}}"
+                               Margin="0,0,8,4"/>
+                    <ui:Button Appearance="Secondary"
+                               Content="Durdur"
+                               Command="{Binding CancelDuplicateScanCommand}"
+                               Visibility="{Binding IsDuplicatesScanning, Converter={StaticResource BoolToVis}}"
+                               Margin="0,0,0,4"/>
+                </WrapPanel>
+
+                <!-- Alt Satır: Arama, Filtre Çipleri, Akıllı Seçim ve Silme Butonları -->
+                <Grid Grid.Row="2">
+                    <!-- Yinelenen Dosyalar Alt Çubuğu -->
+                    <Grid Visibility="{Binding IsShowingDuplicates, Converter={StaticResource BoolToVis}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Kategori Çipleri ve Arama Kutusu -->
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Kategori Çipleri -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Tür" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ui:Button Content="Tümü" Appearance="{Binding IsDuplicateFilterAll, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="All" Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="Resimler" Appearance="{Binding IsDuplicateFilterImages, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="Images" Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="Videolar" Appearance="{Binding IsDuplicateFilterVideos, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="Videos" Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="Belgeler" Appearance="{Binding IsDuplicateFilterDocs, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="Documents" Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="Arşivler" Appearance="{Binding IsDuplicateFilterArchives, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="Archives" Padding="8,4" Margin="0,0,4,0"/>
+                                <ui:Button Content="Ses" Appearance="{Binding IsDuplicateFilterAudio, Converter={StaticResource BoolToNavAppearance}}" Command="{Binding SetDuplicateTypeFilterCommand}" CommandParameter="Audio" Padding="8,4"/>
+                            </StackPanel>
+
+                            <!-- Arama Kutusu -->
+                            <ui:TextBox Grid.Column="1"
+                                        Text="{Binding DuplicateSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                        PlaceholderText="Dosya adı veya yol ara"
+                                        Icon="{ui:SymbolIcon Search20}"
+                                        HorizontalAlignment="Right"
+                                        MinWidth="260"
+                                        Padding="8,5"/>
+                        </Grid>
+
+                        <!-- Akıllı Seçim ve Silme Eylemleri -->
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Akıllı Seçim Butonları -->
+                            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Seç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <ui:Button Content="Kopyaları otomatik seç"
+                                           Icon="{ui:SymbolIcon SelectAllOn20}"
+                                           Command="{Binding SelectAllDuplicatesExceptOneCommand}"
+                                           ToolTip="Her grupta en eski orijinal dosyayı korur, diğer kopyaları temizlemek üzere seçer"
+                                           Padding="8,4"
+                                           Margin="0,0,4,0"/>
+                                <ui:Button Content="En yenileri seç"
+                                           Command="{Binding SelectNewestDuplicatesCommand}"
+                                           ToolTip="Her grupta eski dosyaları korur, en yenileri seçer"
+                                           Padding="8,4"
+                                           Margin="0,0,4,0"/>
+                                <ui:Button Content="En eskileri seç"
+                                           Command="{Binding SelectOldestDuplicatesCommand}"
+                                           ToolTip="Her grupta yeni dosyaları korur, en eskileri seçer"
+                                           Padding="8,4"
+                                           Margin="0,0,4,0"/>
+                                <ui:Button Content="Seçimi temizle"
+                                           Appearance="Transparent"
+                                           Command="{Binding ClearDuplicateSelectionCommand}"
+                                           Padding="8,4"/>
+                            </StackPanel>
+
+                            <!-- Güvenli Silme Seçeneği ve Silme Butonu -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <CheckBox IsChecked="{Binding DeletePermanently, Mode=TwoWay}"
+                                          Content="Geri Dönüşüm Kutusu'nu atla"
+                                          VerticalAlignment="Center"
+                                          Margin="0,0,14,0"/>
+
+                                <ui:Button Appearance="Secondary"
+                                           Content="Seçilenleri sil"
+                                           Icon="{ui:SymbolIcon Delete24}"
+                                           Command="{Binding DeleteSelectedDuplicatesCommand}"
+                                           IsEnabled="{Binding SelectedDuplicateCount, Converter={StaticResource PositiveToBool}}"
+                                           Padding="12,6"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Boş Klasörler Alt Çubuğu -->
+                    <Grid Visibility="{Binding IsShowingEmptyFolders, Converter={StaticResource BoolToVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Seç" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ui:Button Content="Tümünü seç"
+                                       Command="{Binding ToggleSelectAllEmptyFoldersCommand}"
+                                       CommandParameter="True"
+                                       Padding="8,4"
+                                       Margin="0,0,4,0"/>
+                            <ui:Button Content="Seçimi kaldır"
+                                       Appearance="Transparent"
+                                       Command="{Binding ToggleSelectAllEmptyFoldersCommand}"
+                                       CommandParameter="False"
+                                       Padding="8,4"/>
+                        </StackPanel>
+
+                        <ui:TextBox Grid.Column="1"
+                                    Text="{Binding EmptyFolderSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="Klasör adı veya yol ara"
+                                    Icon="{ui:SymbolIcon Search20}"
+                                    HorizontalAlignment="Center"
+                                    MinWidth="280"
+                                    Padding="8,5"/>
+
+                        <ui:Button Grid.Column="2"
+                                   Appearance="Secondary"
+                                   Content="Seçilenleri sil"
+                                   Icon="{ui:SymbolIcon Delete24}"
+                                   Command="{Binding DeleteSelectedEmptyFoldersCommand}"
+                                   IsEnabled="{Binding SelectedEmptyFolderCount, Converter={StaticResource PositiveToBool}}"
+                                   Padding="12,6"/>
+                    </Grid>
+                </Grid>
+
+                <!-- İlerleme Çubuğu ve Durum Metni -->
+                <StackPanel Grid.Row="3" Margin="0,10,0,0" Visibility="{Binding IsDuplicatesScanning, Converter={StaticResource BoolToVis}}">
+                    <ProgressBar Value="{Binding DuplicateProgressPercent}" Height="4" Margin="0,0,0,6"/>
+                    <Grid>
+                        <TextBlock Text="{Binding DuplicateProgressText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="{Binding DuplicateCurrentFilePath}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right" MaxWidth="500" TextTrimming="CharacterEllipsis"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- İşlem Sonucu Bilgi Bandı -->
+                <Border Grid.Row="4" Margin="0,10,0,0"
+                        Visibility="{Binding HasDuplicateOperationResult, Converter={StaticResource BoolToVis}}"
+                        Background="{DynamicResource Status.Success.Subtle}"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource Radius.XS}"
+                        Padding="12,8">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="CheckmarkCircle20" Foreground="{DynamicResource Status.Success.Solid}" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding DuplicateOperationResult}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+
+        <!-- Row 2: Ana Görünüm Alanı (Yinelenenler veya Boş Klasörler) -->
+        <Grid Grid.Row="2">
+            <!-- ================== GÖRÜNÜM 1: YİNELENEN DOSYALAR ================== -->
+            <Grid Visibility="{Binding IsShowingDuplicates, Converter={StaticResource BoolToVis}}">
+                <!-- Tarama öncesi -->
+                <c:EmptyState Icon="DocumentCopy24"
+                              Title="Henüz tarama yapılmadı"
+                              Description="Aynı içeriğe sahip dosyaları bulur. Her grupta bir dosya korunur; kopyalar Geri Dönüşüm Kutusu'na taşınır."
+                              Visibility="{Binding HasDuplicateScanned, Converter={StaticResource InverseBoolToVis}}"/>
+
+                <!-- Tarama sonrası sonuç yok -->
+                <Grid Visibility="{Binding HasDuplicateScanned, Converter={StaticResource BoolToVis}}">
+                    <c:EmptyState Icon="CheckmarkCircle24"
+                                  Title="Yinelenen dosya yok"
+                                  Description="Bu konumda aynı içeriğe sahip dosya yok ya da arama ile eşleşen grup bulunmuyor."
+                                  Visibility="{Binding FilteredDuplicateGroups.Count, Converter={StaticResource IntEqualsToVis}, ConverterParameter=0}"/>
+                </Grid>
+
+                <!-- Durum 3: Yinelenen Gruplar Listesi -->
+                <ListView ItemsSource="{Binding FilteredDuplicateGroups}"
+                          Visibility="{Binding FilteredDuplicateGroups.Count, Converter={StaticResource IntToVis}}"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:DuplicateFileGroup}">
+                            <Border Style="{StaticResource Card.Surface}" Padding="16,12,16,8" Margin="0,0,0,8">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/> <!-- Grup Başlığı -->
+                                        <RowDefinition Height="Auto"/> <!-- Grup Dosyaları -->
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Grup Başlığı -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Sol: grup özeti -->
+                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                            <Run Text="{Binding GroupCount, Mode=OneWay}" FontWeight="SemiBold"/><Run Text=" kopya · " FontWeight="SemiBold"/><Run Text="{Binding FileSizeFormatted, Mode=OneWay}" FontWeight="SemiBold"/><Run Text=" (her biri)" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                        </TextBlock>
+
+                                        <!-- Sağ: boşa giden alan ve özet değeri -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TotalWastedFormatted, StringFormat='{}{0} boşa gidiyor'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                            <TextBlock Text="{Binding Hash}" ToolTip="{Binding Hash, StringFormat='SHA-256: {0}'}" MaxWidth="120" TextTrimming="CharacterEllipsis" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Grup İçindeki Dosyalar -->
+                                    <ItemsControl Grid.Row="1" ItemsSource="{Binding Files}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type models:DuplicateFileItem}">
+                                                <Border BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                                        BorderThickness="0,1,0,0"
+                                                        Padding="0,8">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/> <!-- CheckBox -->
+                                                            <ColumnDefinition Width="Auto"/> <!-- Durum Rozeti -->
+                                                            <ColumnDefinition Width="*"/>    <!-- Dosya Adı ve Yolu -->
+                                                            <ColumnDefinition Width="Auto"/> <!-- Tarih ve Boyut -->
+                                                            <ColumnDefinition Width="Auto"/> <!-- Aksiyonlar -->
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- CheckBox -->
+                                                        <CheckBox Grid.Column="0"
+                                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                  VerticalAlignment="Center"
+                                                                  Margin="0,0,10,0"/>
+
+                                                        <!-- Durum Rozeti -->
+                                                        <Border Grid.Column="1"
+                                                                CornerRadius="{StaticResource Radius.XS}"
+                                                                Padding="6,2"
+                                                                Margin="0,0,12,0"
+                                                                VerticalAlignment="Center">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsOriginal}" Value="True">
+                                                                            <Setter Property="Background" Value="{DynamicResource Status.Success.Subtle}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <TextBlock Text="{Binding StatusBadge}" FontSize="{StaticResource Font.Caption}">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsOriginal}" Value="True">
+                                                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                        </Border>
+
+                                                        <!-- Dosya Adı ve Dizin Yolu -->
+                                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding FileName}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="{Binding DirectoryPath}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                                        </StackPanel>
+
+                                                        <!-- Tarih ve Boyut -->
+                                                        <StackPanel Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="14,0,14,0">
+                                                            <TextBlock Text="{Binding CreationTime, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right"/>
+                                                            <TextBlock Text="{Binding FormattedSize}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right" Margin="0,2,0,0"/>
+                                                        </StackPanel>
+
+                                                        <!-- Klasörde Göster Butonu -->
+                                                        <ui:Button Grid.Column="4"
+                                                                   Appearance="Transparent"
+                                                                   Icon="{ui:SymbolIcon FolderOpen20}"
+                                                                   Command="{Binding DataContext.OpenDuplicateFileLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                   CommandParameter="{Binding FilePath}"
+                                                                   ToolTip="Dosyayı klasörde göster"
+                                                                   Padding="6,4"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <!-- ================== GÖRÜNÜM 2: BOŞ KLASÖRLER ================== -->
+            <Grid Visibility="{Binding IsShowingEmptyFolders, Converter={StaticResource BoolToVis}}">
+                <!-- Tarama öncesi -->
+                <c:EmptyState Icon="Folder24"
+                              Title="Henüz tarama yapılmadı"
+                              Description="Kaldırılan uygulamalardan ve taşınan klasörlerden kalan boş klasörleri bulur. Windows ve sistem klasörleri taranmaz."
+                              Visibility="{Binding HasEmptyFolderScanned, Converter={StaticResource InverseBoolToVis}}"/>
+
+                <!-- Tarama sonrası sonuç yok -->
+                <Grid Visibility="{Binding HasEmptyFolderScanned, Converter={StaticResource BoolToVis}}">
+                    <c:EmptyState Icon="CheckmarkCircle24"
+                                  Title="Boş klasör yok"
+                                  Description="Bu konumda silinebilecek boş klasör bulunmuyor."
+                                  Visibility="{Binding FilteredEmptyFolders.Count, Converter={StaticResource IntEqualsToVis}, ConverterParameter=0}"/>
+                </Grid>
+
+                <!-- Durum 3: Boş Klasörler Listesi -->
+                <ListView ItemsSource="{Binding FilteredEmptyFolders}"
+                          Visibility="{Binding FilteredEmptyFolders.Count, Converter={StaticResource IntToVis}}"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling">
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:EmptyFolderItem}">
+                            <Border Padding="12,8" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/> <!-- CheckBox -->
+                                        <ColumnDefinition Width="Auto"/> <!-- Klasör İkonu -->
+                                        <ColumnDefinition Width="*"/>    <!-- Klasör Adı ve Yolu -->
+                                        <ColumnDefinition Width="Auto"/> <!-- Oluşturulma Tarihi -->
+                                        <ColumnDefinition Width="Auto"/> <!-- Klasörde Aç -->
+                                    </Grid.ColumnDefinitions>
+
+                                    <CheckBox Grid.Column="0"
+                                              IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,10,0"/>
+
+                                    <Border Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
+                                        <ui:SymbolIcon Symbol="Folder20" FontSize="20" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FolderName}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding FolderPath}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+                                    </StackPanel>
+
+                                    <TextBlock Grid.Column="3"
+                                               Text="{Binding CreationTime, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
+                                               FontSize="{StaticResource Font.Micro}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Margin="14,0,14,0"/>
+
+                                    <ui:Button Grid.Column="4"
+                                               Appearance="Transparent"
+                                               Icon="{ui:SymbolIcon FolderOpen20}"
+                                               Command="{Binding DataContext.OpenFolderLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                               CommandParameter="{Binding FolderPath}"
+                                               ToolTip="Klasörü aç"
+                                               Padding="6,4"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

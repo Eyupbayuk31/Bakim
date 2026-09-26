@@ -148,6 +148,15 @@ public class SystemInfoRevampTests
         storage.SwitchSubTab("Duplicates");
         Assert.False(storage.IsLargeFilesTab);
         Assert.True(storage.IsDuplicatesTab);
+        Assert.True(storage.IsDuplicateFilesTab);
+
+        // "Boş klasörler" ayrı üst sekmedir ama yinelenenler panelini paylaşır.
+        storage.SwitchSubTab("EmptyFolders");
+        Assert.True(storage.IsDuplicatesTab);
+        Assert.True(storage.IsEmptyFoldersTab);
+        Assert.False(storage.IsDuplicateFilesTab);
+        storage.SwitchSubTab("Duplicates");
+        Assert.True(storage.IsDuplicateFilesTab);
     }
 
     [Fact]

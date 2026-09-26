@@ -2,19 +2,12 @@ using System.Windows.Controls;
 
 namespace Bakım.Views.Modules
 {
-    /// <summary>Depolama. DataContext: <see cref="ViewModels.StorageViewModel"/>.</summary>
+    /// <summary>Depolama: sekme kabuğu; içerik Storage*Panel denetimlerinde. DataContext: <see cref="ViewModels.StorageViewModel"/>.</summary>
     public partial class StorageModuleView : UserControl
     {
         public StorageModuleView()
         {
             InitializeComponent();
-        }
-
-        /// <summary>Treemap yerleşimi alan boyutuna bağlıdır; boyut değişince yeniden hesaplanır.</summary>
-        private void OnDiskMapSizeChanged(object sender, System.Windows.SizeChangedEventArgs e)
-        {
-            if (DataContext is ViewModels.StorageViewModel vm)
-                vm.SetMapViewport(e.NewSize.Width - 2, e.NewSize.Height - 2);
         }
     }
 }

@@ -37,6 +37,7 @@
             <conv:InverseBoolConverter x:Key="InverseBool"/>
             <conv:ProcessGroupSummaryConverter x:Key="ProcessGroupSummary"/>
             <conv:IntToVisConverter x:Key="IntToVis"/>
+            <conv:PositiveToBoolConverter x:Key="PositiveToBool"/>
             <conv:PercentageToBrushConverter x:Key="PercentageToBrush"/>
             <conv:ImpactLevelToBrushConverter x:Key="ImpactLevelToBrush"/>
             <conv:StringToVisConverter x:Key="StringToVis"/>

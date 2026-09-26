@@ -10,6 +10,12 @@ Sabit CornerRadius değerlerini yarıçap token'larına taşır (MASTER_PLAN §3
 """
 import re
 from pathlib import Path
+import sys
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 ROOT = Path(__file__).parent.parent
 SCAN = [ROOT / "Views", ROOT / "Controls", ROOT / "MainWindow.xaml", ROOT / "LoginWindow.xaml"]

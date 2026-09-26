@@ -146,14 +146,18 @@ namespace Bakım.Converters
         }
     }
 
+    /// <summary>
+    /// Parametreli: değer parametreye eşitse görünür. Parametresiz: değer 0'dan büyükse görünür
+    /// (önceden parametresiz kullanımlar her zaman gizliydi; Yinelenenler listesi hiç görünmüyordu).
+    /// </summary>
     public class IntToVisConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is int intVal && parameter != null && int.TryParse(parameter.ToString(), out int targetVal))
-            {
+            if (value is not int intVal) return Visibility.Collapsed;
+            if (parameter == null) return intVal > 0 ? Visibility.Visible : Visibility.Collapsed;
+            if (int.TryParse(parameter.ToString(), out int targetVal))
                 return intVal == targetVal ? Visibility.Visible : Visibility.Collapsed;
-            }
             return Visibility.Collapsed;
         }
 
@@ -161,6 +165,16 @@ namespace Bakım.Converters
         {
             throw new NotImplementedException();
         }
+    }
+
+    /// <summary>Sayı 0'dan büyükse true (ör. "seçili öğe varsa düğme etkin").</summary>
+    public class PositiveToBoolConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value is int i && i > 0;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotSupportedException();
     }
 
     public class PercentageToBrushConverter : IValueConverter
