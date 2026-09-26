@@ -255,8 +255,8 @@
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:InstalledAppItem}">
                             <!-- SATIR KARTI (Responsive Padding & ClipToBounds=False) -->
-                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            <Border Background="{DynamicResource Card.Fill}" 
+                                    BorderBrush="{DynamicResource Card.Stroke.Glass}" 
                                     BorderThickness="1" 
                                     CornerRadius="{StaticResource Radius.MD}" 
                                     Margin="0,0,0,8" 
@@ -524,8 +524,8 @@
                     </ListView.ItemContainerStyle>
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type models:LeftoverItem}">
-                            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            <Border Background="{DynamicResource Card.Fill}" 
+                                    BorderBrush="{DynamicResource Card.Stroke.Glass}" 
                                     BorderThickness="1" 
                                     CornerRadius="{StaticResource Radius.MD}" 
                                     Margin="0,0,0,8" 
@@ -590,8 +590,8 @@
         <Border Grid.Row="4" 
                 Margin="0,12,0,0" 
                 Padding="12,8" 
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                Background="{DynamicResource Card.Fill}" 
+                BorderBrush="{DynamicResource Card.Stroke.Glass}" 
                 BorderThickness="1" 
                 CornerRadius="{StaticResource Radius.MD}">
             <Grid>

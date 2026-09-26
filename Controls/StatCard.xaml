@@ -19,8 +19,8 @@
         -->
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
-                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
+                <Setter Property="Background" Value="{DynamicResource Card.Fill}"/>
                 <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
                 <Setter Property="CornerRadius" Value="{StaticResource Radius.MD}"/>
                 <Setter Property="Padding" Value="{StaticResource Pad.CardCompact}"/>
@@ -28,6 +28,7 @@
                     <!-- Özet şeridi içinde: zemin ve çerçeve şeridin, burada yalnızca sol ayırıcı -->
                     <DataTrigger Binding="{Binding IsEmbedded, ElementName=Root}" Value="True">
                         <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource Divider.Stroke}"/>
                         <Setter Property="BorderThickness" Value="1,0,0,0"/>
                         <Setter Property="CornerRadius" Value="{StaticResource Radius.None}"/>
                         <Setter Property="Padding" Value="20,2,16,2"/>
@@ -48,11 +49,12 @@
                             <Condition Binding="{Binding IsInteractive, ElementName=Root}" Value="True"/>
                             <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
                         </MultiDataTrigger.Conditions>
-                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
                     </MultiDataTrigger>
                     <DataTrigger Binding="{Binding IsSelected, ElementName=Root}" Value="True">
                         <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
-                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                        <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>

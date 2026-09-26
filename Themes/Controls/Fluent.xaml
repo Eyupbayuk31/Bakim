@@ -20,8 +20,8 @@
 
     <!-- ============ AYAR KARTI ============ -->
     <Style x:Key="Card.Setting" TargetType="{x:Type ui:CardControl}" BasedOn="{StaticResource {x:Type ui:CardControl}}">
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource Card.Fill}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
         <Setter Property="Padding" Value="{StaticResource Pad.SettingsCard}"/>
         <Setter Property="MinHeight" Value="{StaticResource Layout.SettingsCardMinHeight}"/>
@@ -39,10 +39,10 @@
         <Setter Property="Cursor" Value="Hand"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{DynamicResource ControlFillColorTertiaryBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource Card.Fill.Secondary}"/>
             </Trigger>
         </Style.Triggers>
     </Style>

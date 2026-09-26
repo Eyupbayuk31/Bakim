@@ -17,7 +17,7 @@
 
     <Style x:Key="Nav.ItemButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="12,0"/>
         <Setter Property="MinHeight" Value="36"/>
@@ -53,20 +53,24 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Surface" Property="Background" Value="{DynamicResource Subtle.Fill.Hover}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </Trigger>
                         <Trigger Property="helpers:NavSelection.IsSelected" Value="True">
                             <Setter TargetName="Surface" Property="Background" Value="{DynamicResource Subtle.Fill.Selected}"/>
                             <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="helpers:NavSelection.IsSelected" Value="True"/>
                                 <Condition Property="IsMouseOver" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter TargetName="Surface" Property="Background" Value="{DynamicResource Subtle.Fill.Hover}"/>
+                            <Setter TargetName="Surface" Property="Background" Value="{DynamicResource Card.Fill}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </MultiTrigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Surface" Property="Background" Value="{DynamicResource Subtle.Fill.Selected}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.4"/>

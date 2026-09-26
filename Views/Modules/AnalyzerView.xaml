@@ -81,8 +81,8 @@
         <!-- 1. Sekmeler: Tarama | Geçmiş | Değişiklikler (Analizör Geçmişi, §6) -->
         <Border Grid.Row="1"
                 HorizontalAlignment="Left"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource Card.Fill}"
+                BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.MD}"
                 Padding="4"
@@ -151,8 +151,8 @@
 
         <!-- 2. Category Toolbar & Options -->
         <Border Grid.Row="3" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}" 
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource Card.Fill}"
+                BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.LG}"
                 Padding="12"
@@ -232,8 +232,8 @@
                           Visibility="{Binding HasNoResults, Converter={StaticResource BoolToVis}}"/>
 
         <Border Visibility="{Binding HasNoResults, Converter={StaticResource InverseBoolToVis}}"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource Card.Fill}"
+                BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.LG}"
                 Padding="8">
@@ -264,13 +264,13 @@
 
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:PersistenceItem}">
-                        <Border Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                        <Border Background="{DynamicResource Card.Fill.Secondary}"
+                                BorderBrush="{DynamicResource Divider.Stroke}"
                                 BorderThickness="1"
                                 CornerRadius="{StaticResource Radius.MD}"
                                 Padding="12,10">
                             <Border.ContextMenu>
-                                <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
+                                <ContextMenu Background="{DynamicResource Acrylic.Fill}" BorderBrush="{DynamicResource Divider.Stroke}">
                                     <MenuItem Header="Sezgisel tehdit analizi yap"
                                               Icon="{ui:SymbolIcon Shield24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -358,8 +358,8 @@
 
                                 <!-- Column 3: Category Badge -->
                                 <Border Grid.Column="3" 
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                        Background="{DynamicResource Card.Fill.Secondary}"
+                                        BorderBrush="{DynamicResource Divider.Stroke}"
                                         BorderThickness="1"
                                         CornerRadius="{StaticResource Radius.SM}"
                                         Padding="8,4"
@@ -543,7 +543,7 @@
                 Margin="24,0"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Stretch"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Background="{DynamicResource Acrylic.Fill}"
                 BorderBrush="{DynamicResource AccentTextFillColorPrimaryBrush}"
                 BorderThickness="2"
                 CornerRadius="{StaticResource Radius.XL}"

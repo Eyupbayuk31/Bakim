@@ -317,8 +317,8 @@
             <!-- Services List -->
             <ListView Grid.Row="1" 
                       ItemsSource="{Binding FilteredServices}"
-                      Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                      BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                      Background="{DynamicResource Card.Fill}"
+                      BorderBrush="{DynamicResource Card.Stroke.Glass}"
                       BorderThickness="1,0,1,1"
                       VirtualizingStackPanel.IsVirtualizing="True"
                       VirtualizingStackPanel.VirtualizationMode="Recycling"
@@ -533,8 +533,8 @@
             <!-- Drivers List -->
             <ListView Grid.Row="1" 
                       ItemsSource="{Binding FilteredDrivers}"
-                      Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                      BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                      Background="{DynamicResource Card.Fill}"
+                      BorderBrush="{DynamicResource Card.Stroke.Glass}"
                       BorderThickness="1,0,1,1"
                       VirtualizingStackPanel.IsVirtualizing="True"
                       VirtualizingStackPanel.VirtualizationMode="Recycling"

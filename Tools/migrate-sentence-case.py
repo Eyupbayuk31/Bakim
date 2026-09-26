@@ -30,7 +30,7 @@ PROTECTED = [
     "Microsoft Defender", "Microsoft OneDrive", "Google Chrome", "Google Drive", "Mozilla Firefox",
     "Visual Studio Code", "Visual Studio", "Epic Games", "Sistem Geri Yükleme",
     "Windows", "Microsoft", "Bakım", "Steam", "Epic", "Edge", "Chrome", "Firefox", "Brave", "Vivaldi", "Opera",
-    "Discord", "Telegram", "Spotify", "Teams", "OneDrive", "Dropbox", "Defender", "Mica", "Fluent", "VirusTotal",
+    "Discord", "Telegram", "Spotify", "Teams", "OneDrive", "Dropbox", "Defender", "Mica Alt", "Mica", "Fluent", "VirusTotal",
     "Sysinternals", "Autoruns", "RAMMap", "NVIDIA", "Intel", "Realtek", "DirectX", "NuGet", "Office", "Outlook",
     "Xbox", "Cortana", "Copilot", "Bing", "Explorer", "TrustedInstaller", "PowerShell", "Ethernet", "Wi-Fi",
     "Hyper-V", "Bluetooth", "Adobe", "Java", "Python", "Winaero", "Türkiye", "Türkçe",

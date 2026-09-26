@@ -109,7 +109,8 @@
                                            AutomationProperties.Name="Oyun Modunu kapat"
                                            Visibility="{Binding IsActive, Converter={StaticResource BoolToVis}}"/>
                                 <!-- Meşgulken düğmenin yerini alır; ikinci tıklama olmaz -->
-                                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                <Border Background="{DynamicResource Control.Fill}"
+                                        CornerRadius="{StaticResource Radius.SM}"
                                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="0,0,8,0"/>

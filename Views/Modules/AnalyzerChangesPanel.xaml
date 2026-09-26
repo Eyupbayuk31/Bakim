@@ -17,8 +17,8 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource Card.Fill}"
+                BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.MD}"
                 Padding="{StaticResource Pad.CardCompact}"
@@ -65,8 +65,8 @@
         </Border>
 
         <Border Grid.Row="1"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource Card.Fill}"
+                BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.MD}">
             <Grid>

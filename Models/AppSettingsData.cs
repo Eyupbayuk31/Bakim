@@ -17,6 +17,12 @@ namespace Bakım.Models
         public string Theme { get; set; } = "MicaDark";
         public bool IsMicaEnabled { get; set; } = true;
 
+        /// <summary>Windows 11 DWM arka plan malzemesi: "Mica", "Tabbed" (Mica Alt), "Acrylic", "None".</summary>
+        public string BackdropMaterial { get; set; } = "Mica";
+
+        /// <summary>Cam kartların arkasındaki ortam ışığı (Ambient Lighting) aurası.</summary>
+        public bool IsAmbientLightEnabled { get; set; } = true;
+
         /// <summary>Vurgu rengi Windows'un vurgu rengini takip eder (§3.1).</summary>
         public bool FollowWindowsAccent { get; set; } = false;
 

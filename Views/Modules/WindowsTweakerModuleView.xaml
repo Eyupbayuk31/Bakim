@@ -249,7 +249,7 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextWrapping="Wrap"/>
-                                        <Border Grid.Column="1" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" Margin="8,0,0,0">
+                                        <Border Grid.Column="1" CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Background="{DynamicResource Card.Fill.Secondary}" BorderBrush="{DynamicResource Divider.Stroke}" BorderThickness="1" Margin="8,0,0,0">
                                             <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                         </Border>
                                     </Grid>

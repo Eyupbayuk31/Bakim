@@ -244,18 +244,20 @@
                                         BorderThickness="1">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                                            <Setter Property="Background" Value="{DynamicResource Card.Fill}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                                                    <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
                                                 </DataTrigger>
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
                                                         <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
                                                         <Condition Binding="{Binding IsSelected}" Value="False"/>
                                                     </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                                                    <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
+                                                    <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
                                                 </MultiDataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -457,21 +459,23 @@
                         <DataTemplate DataType="{x:Type models:StoreAppItem}">
                             <Border Padding="14,10" 
                                     CornerRadius="{StaticResource Radius.MD}" 
-                                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                    Background="{DynamicResource Card.Fill}"
                                     BorderThickness="1">
                                 <Border.Style>
                                     <Style TargetType="Border">
-                                        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                 <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                                                <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
                                             </DataTrigger>
                                             <MultiDataTrigger>
                                                 <MultiDataTrigger.Conditions>
                                                     <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True"/>
                                                     <Condition Binding="{Binding IsSelected}" Value="False"/>
                                                 </MultiDataTrigger.Conditions>
-                                                <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                                                <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
+                                                <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
                                             </MultiDataTrigger>
                                         </Style.Triggers>
                                     </Style>
@@ -606,8 +610,8 @@
                     <Border Margin="0,0,0,20" 
                             Padding="22,18" 
                             CornerRadius="{StaticResource Radius.MD}" 
-                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                            Background="{DynamicResource Card.Fill}"
+                            BorderBrush="{DynamicResource Card.Stroke.Glass}" 
                             BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -681,11 +685,11 @@
                                         BorderThickness="1">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                                            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                                            <Setter Property="Background" Value="{DynamicResource Card.Fill}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke.Glass}"/>
                                             <Style.Triggers>
                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                                                    <Setter Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
                                                 </Trigger>
                                             </Style.Triggers>
                                         </Style>
@@ -895,8 +899,8 @@
                 Margin="0,14,0,0" 
                 Padding="16" 
                 CornerRadius="{StaticResource Radius.MD}" 
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                Background="{DynamicResource Card.Fill}"
+                BorderBrush="{DynamicResource Card.Stroke.Glass}" 
                 BorderThickness="1"
                 Visibility="{Binding IsQueueDrawerOpen, Converter={StaticResource BoolToVis}}">
             <Grid>

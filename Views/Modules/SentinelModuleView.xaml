@@ -104,8 +104,8 @@
 
         <!-- 4. Geçmiş -->
         <Border Grid.Row="4"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                Background="{DynamicResource Card.Fill}"
+                BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.MD}">
             <Grid>

@@ -250,7 +250,7 @@
                             <ItemsControl ItemsSource="{Binding DnsBenchmarkResults}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,8" Margin="0,3">
+                                        <Border Background="{DynamicResource Card.Fill.Secondary}" BorderBrush="{DynamicResource Divider.Stroke}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,8" Margin="0,3">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="140"/>
@@ -319,7 +319,7 @@
                             <ItemsControl ItemsSource="{Binding BakimFirewallRules}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,8" Margin="0,3">
+                                        <Border Background="{DynamicResource Card.Fill.Secondary}" BorderBrush="{DynamicResource Divider.Stroke}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="12,8" Margin="0,3">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto"/>

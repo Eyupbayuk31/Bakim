@@ -17,6 +17,7 @@
         Width="1280" Height="840"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
+        Background="Transparent"
         ExtendsContentIntoTitleBar="True"
         Icon="pack://application:,,,/Bakim;component/Assets/app.ico">
 
@@ -243,7 +244,7 @@
                          <RowDefinition Height="Auto"/> <!-- Bottom Status Card -->
                      </Grid.RowDefinitions>
  
-                     <!-- Top Hamburger & Brand Header -->
+                     <!-- Top Hamburger & Navigation Header -->
                      <Grid Grid.Row="0" Margin="0,0,0,8">
                          <Grid.ColumnDefinitions>
                              <ColumnDefinition Width="Auto"/>
@@ -255,19 +256,18 @@
                                     Appearance="Transparent"
                                     Padding="8,8"
                                     Width="44" Height="36"
-                                    HorizontalAlignment="Center"
+                                    HorizontalAlignment="Left"
                                     Command="{Binding ToggleSidebarCommand}"
                                     ToolTip="Menüyü daralt / genişlet"
                                     Icon="{ui:SymbolIcon Navigation24}" AutomationProperties.Name="Menüyü Daralt / Genişlet"/>
- 
-                         <!-- Brand Title (Visible only when Expanded) -->
+
+                         <!-- Navigation Section Label (Visible only when Expanded) -->
                          <Grid Grid.Column="1" 
-                               Margin="10,0,0,0" 
+                               Margin="8,0,0,0" 
                                VerticalAlignment="Center"
                                Visibility="{Binding IsSidebarExpanded, Converter={StaticResource BoolToVis}}">
-                             <TextBlock Text="Bakım" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
-                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                        ToolTip="{x:Static local:AppInfo.BrandTitle}"/>
+                             <TextBlock Text="Gezinme" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold"
+                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                          </Grid>
                      </Grid>
 
@@ -326,19 +326,19 @@
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <ui:SymbolIcon Grid.Column="0" Symbol="{Binding Icon}" Filled="{Binding IsSelected}" FontSize="20"/>
+                                                            <ui:SymbolIcon Grid.Column="0" Symbol="{Binding Icon}" Filled="{Binding IsSelected}" FontSize="20"
+                                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                                                             <TextBlock Grid.Column="1" Text="{Binding Label}"
                                                                        Margin="10,0,0,0" VerticalAlignment="Center"
                                                                        TextTrimming="CharacterEllipsis"
+                                                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                                                        Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
                                                                 <TextBlock.Style>
                                                                     <Style TargetType="TextBlock">
                                                                         <Setter Property="FontWeight" Value="Normal"/>
-                                                                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
                                                                         <Style.Triggers>
                                                                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                                                 <Setter Property="FontWeight" Value="SemiBold"/>
-                                                                                <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>
@@ -373,28 +373,28 @@
                         <Button DataContext="{Binding SettingsNavItem}"
                                 Style="{StaticResource Nav.ItemButton}"
                                 helpers:NavSelection.IsSelected="{Binding IsSelected}"
-                                Margin="0,0,4,4"
-                                   Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                   CommandParameter="{Binding Key}"
-                                   ToolTip="{Binding Tooltip}"
-                                   AutomationProperties.Name="{Binding Label}">
+                                Margin="0,0,0,2"
+                                Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                CommandParameter="{Binding Key}"
+                                ToolTip="{Binding Tooltip}"
+                                AutomationProperties.Name="{Binding Label}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
-                                <ui:SymbolIcon Symbol="{Binding Icon}" Filled="{Binding IsSelected}" FontSize="20"/>
+                                <ui:SymbolIcon Symbol="{Binding Icon}" Filled="{Binding IsSelected}" FontSize="20"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Label}" Margin="10,0,0,0" VerticalAlignment="Center"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                            Visibility="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVis}}">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="FontWeight" Value="Normal"/>
-                                            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                     <Setter Property="FontWeight" Value="SemiBold"/>
-                                                    <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -422,15 +422,17 @@
                     <!-- Statik Ortam Işıkları (docs/WIN11_CAM_TASARIM_PLANI.md §2.3) -->
                     <!-- Sağ üst köşe radyal ortam ışığı (vurgu rengi) -->
                     <Rectangle HorizontalAlignment="Right" VerticalAlignment="Top"
-                               Width="900" Height="600"
+                               Width="1050" Height="750"
                                Fill="{DynamicResource Surface.AmbientLight}"
-                               IsHitTestVisible="False"/>
+                               IsHitTestVisible="False"
+                               Visibility="{Binding IsAmbientLightEnabled, Converter={StaticResource BoolToVis}}"/>
 
                     <!-- Sol alt köşe radyal ortam ışığı (ikincil renk) -->
                     <Rectangle HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                               Width="700" Height="500"
+                               Width="850" Height="600"
                                Fill="{DynamicResource Surface.AmbientSecondary}"
-                               IsHitTestVisible="False"/>
+                               IsHitTestVisible="False"
+                               Visibility="{Binding IsAmbientLightEnabled, Converter={StaticResource BoolToVis}}"/>
 
                     <ContentControl Content="{Binding CurrentView}" 
                                     HorizontalContentAlignment="Stretch" 
@@ -710,15 +712,15 @@
                     <!-- ═══ Row 3: Footer ═══ -->
                     <Border Grid.Row="3"
                             Background="Transparent"
-                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                            BorderBrush="{DynamicResource Divider.Stroke}"
                             BorderThickness="0,1,0,0"
                             Padding="14,8">
                         <Grid>
                             <!-- Left: Keyboard hints -->
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Border CornerRadius="{StaticResource Radius.XS}" Padding="5,2" Margin="0,0,4,0"
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        Background="{DynamicResource Card.Fill.Secondary}"
+                                        BorderBrush="{DynamicResource Divider.Stroke}"
                                         BorderThickness="1">
                                     <TextBlock Text="↑↓" FontSize="{StaticResource Font.Caption}"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -728,8 +730,8 @@
                                            VerticalAlignment="Center" Margin="0,0,12,0"/>
 
                                 <Border CornerRadius="{StaticResource Radius.XS}" Padding="5,2" Margin="0,0,4,0"
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        Background="{DynamicResource Card.Fill.Secondary}"
+                                        BorderBrush="{DynamicResource Divider.Stroke}"
                                         BorderThickness="1">
                                     <TextBlock Text="Enter" FontSize="{StaticResource Font.Caption}"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -739,8 +741,8 @@
                                            VerticalAlignment="Center" Margin="0,0,12,0"/>
 
                                 <Border CornerRadius="{StaticResource Radius.XS}" Padding="5,2" Margin="0,0,4,0"
-                                        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        Background="{DynamicResource Card.Fill.Secondary}"
+                                        BorderBrush="{DynamicResource Divider.Stroke}"
                                         BorderThickness="1">
                                     <TextBlock Text="Esc" FontSize="{StaticResource Font.Caption}"
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>

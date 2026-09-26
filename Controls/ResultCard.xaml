@@ -7,8 +7,8 @@
         İşlem sonucu (§3.5, §3.7): başarılı / atlanan / başarısız sayıları, nedenleriyle
         genişletilebilir ayrıntı, "Geri al" ve "Etkinlik Merkezi'nde aç".
     -->
-    <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+    <Border Background="{DynamicResource Card.Fill}"
+            BorderBrush="{DynamicResource Card.Stroke.Glass}"
             BorderThickness="1"
             CornerRadius="{StaticResource Radius.MD}"
             Padding="{StaticResource Pad.Card}">

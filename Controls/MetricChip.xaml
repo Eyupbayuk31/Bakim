@@ -20,8 +20,8 @@
 
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource Card.Fill.Secondary}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource Divider.Stroke}"/>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Intent, ElementName=Root}" Value="Accent">
                         <Setter Property="Background" Value="{DynamicResource Brush.Accent.Subtle}"/>

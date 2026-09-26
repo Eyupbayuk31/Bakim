@@ -278,15 +278,45 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- Mica Effect Toggle -->
+                            <!-- Pencere Malzemesi (Cam Derinliği) -->
                             <ui:CardControl Style="{StaticResource Card.Setting}">
                                 <ui:CardControl.Header>
                                     <StackPanel>
-                                        <TextBlock Style="{StaticResource Text.SettingTitle}" Text="Windows 11 Mica arka plan derinliği"/>
-                                        <TextBlock Style="{StaticResource Text.SettingDescription}" Text="Masaüstü duvar kağıdıyla etkileşimli Mica saydamlık katmanını uygular."/>
+                                        <TextBlock Style="{StaticResource Text.SettingTitle}" Text="Pencere malzemesi (Cam derinliği)"/>
+                                        <TextBlock Style="{StaticResource Text.SettingDescription}" Text="Masaüstü duvar kağıdı ile etkileşime giren Windows 11 DWM arka plan malzemesini seçin."/>
                                     </StackPanel>
                                 </ui:CardControl.Header>
-                                <ui:ToggleSwitch IsChecked="{Binding IsMicaEnabled, Mode=TwoWay}" AutomationProperties.Name="Mica arka plan efektini aç veya kapat"/>
+                                <Border Style="{StaticResource FluentSegmentedContainer}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:Button Content="Mica" Appearance="{Binding IsMicaBackdrop, Converter={StaticResource BoolToNavAppearance}}"
+                                                   Padding="10,4" Margin="0,0,2,0"
+                                                   Command="{Binding SetBackdropMaterialCommand}" CommandParameter="Mica"
+                                                   ToolTip="Klasik Windows 11 Mica derinliği (duvar kağıdı rengini yumuşak yansıtır)."/>
+                                        <ui:Button Content="Mica Alt" Appearance="{Binding IsMicaAltBackdrop, Converter={StaticResource BoolToNavAppearance}}"
+                                                   Padding="10,4" Margin="0,0,2,0"
+                                                   Command="{Binding SetBackdropMaterialCommand}" CommandParameter="Tabbed"
+                                                   ToolTip="Windows 11 sekmeli pencereler için daha zengin ve kontrastlı cam malzemesi."/>
+                                        <ui:Button Content="Akrilik" Appearance="{Binding IsAcrylicBackdrop, Converter={StaticResource BoolToNavAppearance}}"
+                                                   Padding="10,4" Margin="0,0,2,0"
+                                                   Command="{Binding SetBackdropMaterialCommand}" CommandParameter="Acrylic"
+                                                   ToolTip="Buzlu cam etkisi (arkadaki açık pencereleri ve masaüstünü bulanıklaştırır)."/>
+                                        <ui:Button Content="Kapalı" Appearance="{Binding IsNoneBackdrop, Converter={StaticResource BoolToNavAppearance}}"
+                                                   Padding="10,4"
+                                                   Command="{Binding SetBackdropMaterialCommand}" CommandParameter="None"
+                                                   ToolTip="Saydamlık efektlerini kapatır ve opak pencere zemini kullanır."/>
+                                    </StackPanel>
+                                </Border>
+                            </ui:CardControl>
+
+                            <!-- Ortam Işığı (Ambient Light) -->
+                            <ui:CardControl Style="{StaticResource Card.Setting}">
+                                <ui:CardControl.Header>
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource Text.SettingTitle}" Text="Ortam ışığı (Ambient Light)"/>
+                                        <TextBlock Style="{StaticResource Text.SettingDescription}" Text="Cam kartların arkasında sağ-üst ve sol-alt köşelerden süzülen radyal ışık aurası."/>
+                                    </StackPanel>
+                                </ui:CardControl.Header>
+                                <ui:ToggleSwitch IsChecked="{Binding IsAmbientLightEnabled, Mode=TwoWay}" AutomationProperties.Name="Ortam ışığını aç veya kapat"/>
                             </ui:CardControl>
 
                             <!-- Windows vurgu rengi (§3.1) -->
@@ -1262,8 +1292,8 @@
                                     <ItemsControl ItemsSource="{Binding ReleaseHistory}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="{x:Type models:ReleaseChangelogItem}">
-                                                <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                                                <Border Background="{DynamicResource Card.Fill.Secondary}"
+                                                        BorderBrush="{DynamicResource Divider.Stroke}"
                                                         BorderThickness="1"
                                                         CornerRadius="{StaticResource Radius.SM}"
                                                         Padding="14,10"

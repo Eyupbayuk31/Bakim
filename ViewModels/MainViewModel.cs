@@ -85,6 +85,7 @@ namespace Bakım.ViewModels
 
             _isGameModeActive = _gameModeService.IsGameModeActive;
             _gameModeService.GameModeChanged += active => OnUiThread(() => IsGameModeActive = active);
+            _isAmbientLightEnabled = _appSettings.Current?.IsAmbientLightEnabled ?? true;
 
             _miniTelemetryTimer = new DispatcherTimer
             {
@@ -145,8 +146,9 @@ namespace Bakım.ViewModels
             _currentView = Dashboard;
             _ = ActivateAsync(Dashboard);
             UpdateNavSelection(AppModule.Dashboard);
-            string last = _appSettings.Current.LastModule;
-            if (_appSettings.Current.OpenLastModuleOnStartup &&
+            string? last = _appSettings.Current?.LastModule;
+            if ((_appSettings.Current?.OpenLastModuleOnStartup ?? false) &&
+                !string.IsNullOrEmpty(last) &&
                 AppModuleRegistry.TryResolve(last, out var lastModule) && lastModule != AppModule.Dashboard)
             {
                 Navigate(last, recordHistory: false);
@@ -214,6 +216,9 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         private bool _isAdmin;
+
+        [ObservableProperty]
+        private bool _isAmbientLightEnabled = true;
 
         [ObservableProperty]
         private string _tweaksBadge = "14 Aktif";

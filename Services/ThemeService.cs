@@ -76,6 +76,11 @@ namespace Bakım.Services
         /// <summary>Mica/Acrylic arka plan efektini açar veya kapatır.</summary>
         void ApplyBackdrop(bool micaEnabled);
 
+        /// <summary>Belirli bir Windows 11 DWM malzeme türünü (Mica, Tabbed/Mica Alt, Acrylic, None) uygular.</summary>
+        void ApplyBackdropType(Wpf.Ui.Controls.WindowBackdropType backdropType);
+
+        Wpf.Ui.Controls.WindowBackdropType CurrentBackdropType { get; }
+
         /// <summary>Vurgu rengi Windows'u takip ediyor mu (§3.1).</summary>
         bool FollowWindowsAccent { get; }
 
@@ -161,7 +166,10 @@ namespace Bakım.Services
             };
 
             ApplyTheme(kind, persist: false);
-            ApplyBackdrop(saved?.IsMicaEnabled ?? true);
+            var backdrop = (saved?.IsMicaEnabled ?? true)
+                ? (Enum.TryParse<Wpf.Ui.Controls.WindowBackdropType>(saved?.BackdropMaterial, true, out var bt) ? bt : Wpf.Ui.Controls.WindowBackdropType.Mica)
+                : Wpf.Ui.Controls.WindowBackdropType.None;
+            ApplyBackdropType(backdrop);
 
             _log.Info($"Kayıtlı tema geri yüklendi: {kind}", nameof(ThemeService));
         }
@@ -362,8 +370,16 @@ namespace Bakım.Services
             ApplyTheme(GetDefinition(CurrentTheme).IsDark ? AppThemeKind.FluentLight : AppThemeKind.MicaDark);
         }
 
+        public Wpf.Ui.Controls.WindowBackdropType CurrentBackdropType { get; private set; } = Wpf.Ui.Controls.WindowBackdropType.Mica;
+
         public void ApplyBackdrop(bool micaEnabled)
         {
+            ApplyBackdropType(micaEnabled ? Wpf.Ui.Controls.WindowBackdropType.Mica : Wpf.Ui.Controls.WindowBackdropType.None);
+        }
+
+        public void ApplyBackdropType(Wpf.Ui.Controls.WindowBackdropType backdropType)
+        {
+            CurrentBackdropType = backdropType;
             var app = Application.Current;
             if (app == null) return;
 
@@ -371,14 +387,10 @@ namespace Bakım.Services
             {
                 try
                 {
-                    var backdrop = micaEnabled
-                        ? Wpf.Ui.Controls.WindowBackdropType.Mica
-                        : Wpf.Ui.Controls.WindowBackdropType.None;
-
                     foreach (Window window in app.Windows)
                     {
                         if (window is Wpf.Ui.Controls.FluentWindow fluent)
-                            fluent.WindowBackdropType = backdrop;
+                            fluent.WindowBackdropType = backdropType;
                     }
                 }
                 catch (Exception ex)
@@ -450,16 +462,16 @@ namespace Bakım.Services
             {
                 var tintA = (byte)Math.Clamp((int)Math.Round(def.TintOpacity * 255), 0, 255);
                 yield return ("Surface.WindowTint", Color.FromArgb(tintA, def.WindowBackground.R, def.WindowBackground.G, def.WindowBackground.B));
-                yield return ("Layer.Fill", WithAlpha(def.OverlayTint, 0x0A));
-                yield return ("Layer.Stroke", WithAlpha(def.OverlayTint, 0x14));
-                yield return ("Card.Fill", WithAlpha(def.OverlayTint, 0x0D));
-                yield return ("Card.Fill.Secondary", WithAlpha(def.OverlayTint, 0x08));
-                yield return ("Card.Fill.Hover", WithAlpha(def.OverlayTint, 0x12));
-                yield return ("Control.Fill", WithAlpha(def.OverlayTint, 0x0F));
-                yield return ("Control.Fill.Secondary", WithAlpha(def.OverlayTint, 0x08));
-                yield return ("Subtle.Fill.Hover", Color.FromArgb(0x0F, 0xFF, 0xFF, 0xFF));
-                yield return ("Subtle.Fill.Selected", Color.FromArgb(0x0F, 0xFF, 0xFF, 0xFF));
-                yield return ("Divider.Stroke", Color.FromArgb(0x0F, 0xFF, 0xFF, 0xFF));
+                yield return ("Layer.Fill", WithAlpha(def.OverlayTint, 0x18));
+                yield return ("Layer.Stroke", WithAlpha(def.OverlayTint, 0x2E));
+                yield return ("Card.Fill", WithAlpha(def.OverlayTint, 0x22));
+                yield return ("Card.Fill.Secondary", WithAlpha(def.OverlayTint, 0x12));
+                yield return ("Card.Fill.Hover", WithAlpha(def.OverlayTint, 0x34));
+                yield return ("Control.Fill", WithAlpha(def.OverlayTint, 0x22));
+                yield return ("Control.Fill.Secondary", WithAlpha(def.OverlayTint, 0x14));
+                yield return ("Subtle.Fill.Hover", Color.FromArgb(0x18, 0xFF, 0xFF, 0xFF));
+                yield return ("Subtle.Fill.Selected", Color.FromArgb(0x20, 0xFF, 0xFF, 0xFF));
+                yield return ("Divider.Stroke", Color.FromArgb(0x18, 0xFF, 0xFF, 0xFF));
                 yield return ("Acrylic.Fill", Color.FromArgb(0xD9, 0x2C, 0x2C, 0x2C));
                 yield return ("Smoke.Fill", Color.FromArgb(0x4D, 0x00, 0x00, 0x00));
             }
@@ -467,16 +479,16 @@ namespace Bakım.Services
             {
                 var tintA = (byte)Math.Clamp((int)Math.Round(def.TintOpacity * 255), 0, 255);
                 yield return ("Surface.WindowTint", Color.FromArgb(tintA, def.WindowBackground.R, def.WindowBackground.G, def.WindowBackground.B));
-                yield return ("Layer.Fill", Color.FromArgb(0x80, 0xFF, 0xFF, 0xFF));
-                yield return ("Layer.Stroke", Color.FromArgb(0x0F, 0x00, 0x00, 0x00));
-                yield return ("Card.Fill", Color.FromArgb(0xB3, 0xFF, 0xFF, 0xFF));
+                yield return ("Layer.Fill", Color.FromArgb(0x99, 0xFF, 0xFF, 0xFF));
+                yield return ("Layer.Stroke", Color.FromArgb(0x14, 0x00, 0x00, 0x00));
+                yield return ("Card.Fill", Color.FromArgb(0xC4, 0xFF, 0xFF, 0xFF));
                 yield return ("Card.Fill.Secondary", Color.FromArgb(0x80, 0xF6, 0xF6, 0xF6));
-                yield return ("Card.Fill.Hover", Color.FromArgb(0xD9, 0xFF, 0xFF, 0xFF));
-                yield return ("Control.Fill", Color.FromArgb(0xB3, 0xFF, 0xFF, 0xFF));
+                yield return ("Card.Fill.Hover", Color.FromArgb(0xE6, 0xFF, 0xFF, 0xFF));
+                yield return ("Control.Fill", Color.FromArgb(0xB8, 0xFF, 0xFF, 0xFF));
                 yield return ("Control.Fill.Secondary", Color.FromArgb(0x80, 0xF6, 0xF6, 0xF6));
-                yield return ("Subtle.Fill.Hover", Color.FromArgb(0x09, 0x00, 0x00, 0x00));
-                yield return ("Subtle.Fill.Selected", Color.FromArgb(0x06, 0x00, 0x00, 0x00));
-                yield return ("Divider.Stroke", Color.FromArgb(0x0F, 0x00, 0x00, 0x00));
+                yield return ("Subtle.Fill.Hover", Color.FromArgb(0x0C, 0x00, 0x00, 0x00));
+                yield return ("Subtle.Fill.Selected", Color.FromArgb(0x0F, 0x00, 0x00, 0x00));
+                yield return ("Divider.Stroke", Color.FromArgb(0x10, 0x00, 0x00, 0x00));
                 yield return ("Acrylic.Fill", Color.FromArgb(0xD9, 0xFC, 0xFC, 0xFC));
                 yield return ("Smoke.Fill", Color.FromArgb(0x4D, 0x00, 0x00, 0x00));
             }
@@ -665,85 +677,85 @@ namespace Bakım.Services
             }
             else if (def.IsDark)
             {
-                // 1. Cam kenar degrade: üst #24FFFFFF -> alt #0AFFFFFF (OverlayTint tonlu)
+                // 1. Cam kenar degrade: üst #59FFFFFF (speküler cam ışığı) -> alt #12FFFFFF (OverlayTint tonlu)
                 var glassStroke = new LinearGradientBrush
                 {
                     StartPoint = new Point(0, 0),
                     EndPoint = new Point(0, 1),
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(def.OverlayTint, 0x24), 0.0),
-                        new GradientStop(WithAlpha(def.OverlayTint, 0x0A), 1.0)
+                        new GradientStop(WithAlpha(def.OverlayTint, 0x59), 0.0),
+                        new GradientStop(WithAlpha(def.OverlayTint, 0x12), 1.0)
                     }
                 };
                 Set(res, "Card.Stroke.Glass", glassStroke);
 
-                // 2. Denetim yükseklik kenarı: üst #18FFFFFF -> alt #0AFFFFFF
+                // 2. Denetim yükseklik kenarı: üst #2EFFFFFF -> alt #10FFFFFF
                 var ctrlElevation = new LinearGradientBrush
                 {
                     StartPoint = new Point(0, 0),
                     EndPoint = new Point(0, 1),
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(def.OverlayTint, 0x18), 0.0),
-                        new GradientStop(WithAlpha(def.OverlayTint, 0x0A), 1.0)
+                        new GradientStop(WithAlpha(def.OverlayTint, 0x2E), 0.0),
+                        new GradientStop(WithAlpha(def.OverlayTint, 0x10), 1.0)
                     }
                 };
                 Set(res, "Control.Stroke.Elevation", ctrlElevation);
 
-                // 3. Kahraman malzemesi dolgu: sol üst %14 vurgu -> sağ alt standart Card.Fill (%5)
+                // 3. Kahraman malzemesi dolgu: sol üst %21 vurgu aurası -> sağ alt standart Card.Fill (%12)
                 var heroFill = new LinearGradientBrush
                 {
                     StartPoint = new Point(0, 0),
                     EndPoint = new Point(1, 1),
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(def.Primary, 0x24), 0.0),
-                        new GradientStop(WithAlpha(def.OverlayTint, 0x0D), 1.0)
+                        new GradientStop(WithAlpha(def.Primary, 0x36), 0.0),
+                        new GradientStop(WithAlpha(def.OverlayTint, 0x1E), 1.0)
                     }
                 };
                 Set(res, "Card.Surface.Hero.Fill", heroFill);
 
-                // Kahraman kenar: üst %30 -> alt %4
+                // Kahraman kenar: üst %45 speküler ışık -> alt %7.8
                 var heroStroke = new LinearGradientBrush
                 {
                     StartPoint = new Point(0, 0),
                     EndPoint = new Point(0, 1),
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(def.OverlayTint, 0x4D), 0.0),
-                        new GradientStop(WithAlpha(def.OverlayTint, 0x0A), 1.0)
+                        new GradientStop(WithAlpha(def.OverlayTint, 0x73), 0.0),
+                        new GradientStop(WithAlpha(def.OverlayTint, 0x14), 1.0)
                     }
                 };
                 Set(res, "Card.Surface.Hero.Stroke", heroStroke);
 
-                // 4. Ortam ışığı: sağ üst köşe radyal degrade, vurgu renginde %10
+                // 4. Ortam ışığı: sağ üst köşe radyal degrade, vurgu renginde %26.7
                 var ambPrimary = def.AmbientPrimary ?? def.Primary;
                 var ambLight = new RadialGradientBrush
                 {
                     Center = new Point(1, 0),
                     GradientOrigin = new Point(1, 0),
-                    RadiusX = 1.2,
-                    RadiusY = 1.2,
+                    RadiusX = 1.35,
+                    RadiusY = 1.35,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambPrimary, 0x1A), 0.0),
+                        new GradientStop(WithAlpha(ambPrimary, 0x44), 0.0),
                         new GradientStop(WithAlpha(ambPrimary, 0x00), 1.0)
                     }
                 };
                 Set(res, "Surface.AmbientLight", ambLight);
 
-                // Sol alt köşe radyal degrade, ikincil renk %6
+                // Sol alt köşe radyal degrade, ikincil renk %16.5
                 var ambSecondary = def.AmbientSecondary ?? def.Accent;
                 var ambSec = new RadialGradientBrush
                 {
                     Center = new Point(0, 1),
                     GradientOrigin = new Point(0, 1),
-                    RadiusX = 1.2,
-                    RadiusY = 1.2,
+                    RadiusX = 1.25,
+                    RadiusY = 1.25,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambSecondary, 0x0F), 0.0),
+                        new GradientStop(WithAlpha(ambSecondary, 0x2A), 0.0),
                         new GradientStop(WithAlpha(ambSecondary, 0x00), 1.0)
                     }
                 };
@@ -759,7 +771,7 @@ namespace Bakım.Services
                     GradientStops = new GradientStopCollection
                     {
                         new GradientStop(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF), 0.0),
-                        new GradientStop(Color.FromArgb(0x14, 0x00, 0x00, 0x00), 1.0)
+                        new GradientStop(Color.FromArgb(0x18, 0x00, 0x00, 0x00), 1.0)
                     }
                 };
                 Set(res, "Card.Stroke.Glass", glassStroke);
@@ -770,8 +782,8 @@ namespace Bakım.Services
                     EndPoint = new Point(0, 1),
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(Color.FromArgb(0x0F, 0x00, 0x00, 0x00), 0.0),
-                        new GradientStop(Color.FromArgb(0x29, 0x00, 0x00, 0x00), 1.0)
+                        new GradientStop(Color.FromArgb(0x14, 0x00, 0x00, 0x00), 0.0),
+                        new GradientStop(Color.FromArgb(0x33, 0x00, 0x00, 0x00), 1.0)
                     }
                 };
                 Set(res, "Control.Stroke.Elevation", ctrlElevation);
@@ -782,8 +794,8 @@ namespace Bakım.Services
                     EndPoint = new Point(1, 1),
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(def.Primary, 0x1A), 0.0),
-                        new GradientStop(Color.FromArgb(0xB3, 0xFF, 0xFF, 0xFF), 1.0)
+                        new GradientStop(WithAlpha(def.Primary, 0x26), 0.0),
+                        new GradientStop(Color.FromArgb(0xCC, 0xFF, 0xFF, 0xFF), 1.0)
                     }
                 };
                 Set(res, "Card.Surface.Hero.Fill", heroFill);
@@ -795,7 +807,7 @@ namespace Bakım.Services
                     GradientStops = new GradientStopCollection
                     {
                         new GradientStop(Color.FromArgb(0xFF, 0xFF, 0xFF, 0xFF), 0.0),
-                        new GradientStop(Color.FromArgb(0x1F, 0x00, 0x00, 0x00), 1.0)
+                        new GradientStop(Color.FromArgb(0x24, 0x00, 0x00, 0x00), 1.0)
                     }
                 };
                 Set(res, "Card.Surface.Hero.Stroke", heroStroke);
@@ -805,11 +817,11 @@ namespace Bakım.Services
                 {
                     Center = new Point(1, 0),
                     GradientOrigin = new Point(1, 0),
-                    RadiusX = 1.2,
-                    RadiusY = 1.2,
+                    RadiusX = 1.35,
+                    RadiusY = 1.35,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambPrimary, 0x0D), 0.0),
+                        new GradientStop(WithAlpha(ambPrimary, 0x1F), 0.0),
                         new GradientStop(WithAlpha(ambPrimary, 0x00), 1.0)
                     }
                 };
@@ -820,11 +832,11 @@ namespace Bakım.Services
                 {
                     Center = new Point(0, 1),
                     GradientOrigin = new Point(0, 1),
-                    RadiusX = 1.2,
-                    RadiusY = 1.2,
+                    RadiusX = 1.25,
+                    RadiusY = 1.25,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambSecondary, 0x08), 0.0),
+                        new GradientStop(WithAlpha(ambSecondary, 0x14), 0.0),
                         new GradientStop(WithAlpha(ambSecondary, 0x00), 1.0)
                     }
                 };
@@ -832,6 +844,10 @@ namespace Bakım.Services
             }
 
             // WPF-UI hazır denetim fırçalarını malzeme token'larıyla yeniden bağla
+            if (res["Surface.WindowTint"] is Brush windowTint)
+            {
+                res["ApplicationBackgroundBrush"] = windowTint;
+            }
             if (res["Card.Fill"] is Brush cardFill)
             {
                 res["CardBackgroundFillColorDefaultBrush"] = cardFill;
@@ -968,7 +984,7 @@ namespace Bakım.Services
                 Caution = Hex("#FBBF24"),
                 Critical = Hex("#F87171"),
                 OverlayTint = Hex("#CBD5E1"),
-                TintOpacity = 0.78,
+                TintOpacity = 0.22,
                 AmbientPrimary = Hex("#2563EB"),
                 AmbientSecondary = Hex("#60A5FA")
             };
@@ -997,7 +1013,7 @@ namespace Bakım.Services
                 Caution = Hex("#FACC15"),
                 Critical = Hex("#FB7185"),
                 OverlayTint = Hex("#D4D4D8"),
-                TintOpacity = 0.92,
+                TintOpacity = 0.45,
                 AmbientPrimary = Hex("#9333EA"),
                 AmbientSecondary = Hex("#C084FC")
             };
@@ -1026,7 +1042,7 @@ namespace Bakım.Services
                 Caution = Hex("#FBBF24"),
                 Critical = Hex("#F43F5E"),
                 OverlayTint = Hex("#DDD6FE"),
-                TintOpacity = 0.80,
+                TintOpacity = 0.25,
                 AmbientPrimary = Hex("#8B5CF6"),
                 AmbientSecondary = Hex("#A78BFA")
             };
