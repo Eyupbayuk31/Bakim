@@ -24,96 +24,37 @@
                 <!-- Sayfa basligi — tasarim sistemi bileseni -->
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
+                         HeaderMargin="0,0,0,16"
                          Title="Kaldırıcı"
                          Description="Programı resmi kaldırıcısıyla kaldırır; kaldırma doğrulanınca geride kalan dosya, kayıt, hizmet ve görevleri kanıtıyla listeler.">
             <c:SectionHeader.Actions>
-                <!-- Header Action Buttons: Hunter Mode, Installation Monitor, Refresh -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <!-- Avcı Modu (Hunter Mode) -->
-                <ui:Button Appearance="Secondary"
-                Command="{Binding LaunchHunterModeCommand}"
-                Padding="12,8"
-                Margin="0,0,8,0"
-                Content="Pencereden seç"
-                ToolTip="Açık pencere veya kısayolu hedef alarak hızlıca kaldırın"
-                Icon="{ui:SymbolIcon Target24}"/>
-
-                <!-- Kurulum İzleyici (Installation Monitor) -->
-                <ui:Button Appearance="Secondary"
-                Command="{Binding LaunchInstallationMonitorCommand}"
-                Padding="12,8"
-                Margin="0,0,8,0"
-                Content="Kurulum izle"
-                ToolTip="Yeni bir kurulum paketini izleyip sıfır kalıntı logu oluşturun"
-                Icon="{ui:SymbolIcon Record24}"/>
-
-
-                <!-- Kaldırma geçmişi: Etkinlik Merkezi (filtreli) -->
-                <ui:Button Appearance="Secondary"
-                Command="{Binding OpenUninstallHistoryCommand}"
-                Padding="12,8"
-                Margin="0,0,8,0"
-                Content="Geçmiş"
-                ToolTip="Kaldırma ve kalıntı temizliği kayıtları; kayıt defteri yedekleri buradan geri yüklenir"
-                Icon="{ui:SymbolIcon History24}"/>
-
-                <!-- Yenile -->
-                <ui:Button Appearance="Secondary"
-                Command="{Binding RefreshAppsCommand}"
-                Padding="12,8"
-                Content="Yenile"
-                Icon="{ui:SymbolIcon ArrowClockwise24}"/>
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding LaunchHunterModeCommand}"
+                               Margin="{StaticResource Gap.Right.SM}"
+                               Content="Pencereden seç"
+                               ToolTip="Açık bir pencereyi ya da kısayolu seçerek o uygulamayı kaldırın"
+                               Icon="{ui:SymbolIcon Target24}"/>
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding LaunchInstallationMonitorCommand}"
+                               Margin="{StaticResource Gap.Right.SM}"
+                               Content="Kurulumu izle"
+                               ToolTip="Yeni bir kurulumu izleyerek neleri değiştirdiğini kaydeder"
+                               Icon="{ui:SymbolIcon Record24}"/>
+                    <ui:DropDownButton Appearance="Secondary"
+                                       Icon="{ui:SymbolIcon MoreHorizontal24}"
+                                       ToolTip="Diğer seçenekler"
+                                       AutomationProperties.Name="Diğer seçenekler">
+                        <ui:DropDownButton.Flyout>
+                            <ContextMenu>
+                                <MenuItem Header="Yenile" Command="{Binding RefreshAppsCommand}" Icon="{ui:SymbolIcon ArrowClockwise20}"/>
+                                <MenuItem Header="Kaldırma geçmişi" Command="{Binding OpenUninstallHistoryCommand}" Icon="{ui:SymbolIcon History20}"/>
+                            </ContextMenu>
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
                 </StackPanel>
             </c:SectionHeader.Actions>
         </c:SectionHeader>
-
-        <!-- 1. Top KPI Metrics -->
-        <!-- 1. Top KPI Metrics (İnteraktif Filtreleme Desteği) -->
-        <c:SummaryStrip Grid.Row="1" Margin="0,0,0,18">
-
-            <!-- Card 1: Kaldırılabilir Programlar (Tıklanabilir Filtre) -->
-            <c:StatCard
-                        Label="Kaldırılabilir programlar"
-                        Value="{Binding UserAppsCount}"
-                        Caption="Kullanıcı yazılımları"
-                        Icon="Apps24"
-                        Intent="Accent"
-                        IsInteractive="True"
-                        IsSelected="{Binding IsUserOnlyFilter}"
-                        ClickCommand="{Binding SetAppFilterCategoryCommand}"
-                        CommandParameter="UserOnly"
-                        ToolTip="Yalnızca kaldırılabilir programları filtrele"/>
-
-            <!-- Card 2: Total Footprint -->
-            <c:StatCard
-                        Label="Toplam kaplanan alan"
-                        Value="{Binding Stats.FormattedTotalFootprint}"
-                        Caption="Diskte kaplanan boyut"
-                        Icon="Desktop24"
-                        Intent="Caution"/>
-
-            <!-- Card 3: Sistem Bileşenleri (Tıklanabilir Filtre) -->
-            <c:StatCard
-                        Label="Sistem bileşenleri"
-                        Value="{Binding SystemAppsCount}"
-                        Caption="Korumalı bileşenler"
-                        Icon="ShieldCheckmark24"
-                        Intent="Caution"
-                        IsInteractive="True"
-                        IsSelected="{Binding IsSystemOnlyFilter}"
-                        ClickCommand="{Binding SetAppFilterCategoryCommand}"
-                        CommandParameter="SystemOnly"
-                        ToolTip="Korumalı sistem bileşenlerini ve kütüphaneleri filtrele"/>
-
-            <!-- Card 4: Leftovers Found -->
-            <c:StatCard
-                        Label="Bulunan kalıntılar"
-                        Value="{Binding Stats.LeftoversFoundCount}"
-                        Caption="{Binding Stats.FormattedTotalLeftovers, StringFormat='Toplam: {0}'}"
-                        Icon="Delete24"
-                        Intent="Critical"/>
-        </c:SummaryStrip>
 
         <!-- 2. Modern 2-Katmanlı Toolbar: Segment Filtreleri, Sıralama & Arama -->
         <Grid Grid.Row="2" Margin="0,0,0,14"
@@ -146,7 +87,7 @@
                         </ui:Button.Style>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Apps24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="{Binding UserAppsCount, StringFormat='Kaldırılabilir Yazılımlar ({0})'}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="{Binding UserAppsCount, StringFormat='Uygulamalar ({0})'}"/>
                         </StackPanel>
                     </ui:Button>
 
@@ -164,7 +105,7 @@
                         </ui:Button.Style>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="ShieldKeyhole20" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="{Binding SystemAppsCount, StringFormat='Korumalı Sistem ({0})'}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="{Binding SystemAppsCount, StringFormat='Sistem bileşenleri ({0})'}"/>
                         </StackPanel>
                     </ui:Button>
 
@@ -182,7 +123,7 @@
                         </ui:Button.Style>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:SymbolIcon Symbol="Grid24" FontSize="15" Margin="0,0,6,0"/>
-                            <TextBlock Text="{Binding Stats.TotalAppsCount, StringFormat='Tümü ({0})'}" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}"/>
+                            <TextBlock Text="{Binding Stats.TotalAppsCount, StringFormat='Tümü ({0})'}"/>
                         </StackPanel>
                     </ui:Button>
                 </WrapPanel>
@@ -190,12 +131,12 @@
                 <!-- Search Box (Sağ Taraf) -->
                 <ui:TextBox Grid.Column="1" 
                             MinWidth="220" MaxWidth="380"
-                            PlaceholderText="Yüklü program veya yayıncı ara..." 
+                            PlaceholderText="Uygulama veya yayıncı ara" 
                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                             ClearButtonEnabled="True"
                             Icon="{ui:SymbolIcon Search24}"
                             VerticalContentAlignment="Center"
-                            Padding="12,8" AutomationProperties.Name="Yüklü program veya yayıncı ara..."/>
+                            Padding="12,8" AutomationProperties.Name="Uygulama ara"/>
             </Grid>
 
             <!-- Katman 2: Sıralama Hapları & Toplu İşlem Butonları -->
@@ -207,68 +148,18 @@
 
                 <!-- Sol Taraf: Sıralama Butonları & Otomatik Temizle -->
                 <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="Sırala:" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,4"/>
-
-                    <!-- Boyut -->
-                    <ui:Button Content="Boyut" Command="{Binding SetSortCommand}" CommandParameter="Size" Padding="10,5" Margin="0,0,4,4">
-                        <ui:Button.Style>
-                            <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Appearance" Value="Secondary"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSortBySize}" Value="True">
-                                        <Setter Property="Appearance" Value="Primary"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-
-                    <!-- İsim -->
-                    <ui:Button Content="İsim" Command="{Binding SetSortCommand}" CommandParameter="Name" Padding="10,5" Margin="0,0,4,4">
-                        <ui:Button.Style>
-                            <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Appearance" Value="Secondary"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSortByName}" Value="True">
-                                        <Setter Property="Appearance" Value="Primary"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-
-                    <!-- Tarih -->
-                    <ui:Button Content="Tarih" Command="{Binding SetSortCommand}" CommandParameter="Date" Padding="10,5" Margin="0,0,4,4">
-                        <ui:Button.Style>
-                            <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Appearance" Value="Secondary"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSortByDate}" Value="True">
-                                        <Setter Property="Appearance" Value="Primary"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
-
-                    <!-- Yayıncı -->
-                    <ui:Button Content="Yayıncı" Command="{Binding SetSortCommand}" CommandParameter="Publisher" Padding="10,5" Margin="0,0,14,4">
-                        <ui:Button.Style>
-                            <Style TargetType="{x:Type ui:Button}" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                <Setter Property="Appearance" Value="Secondary"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSortByPublisher}" Value="True">
-                                        <Setter Property="Appearance" Value="Primary"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ui:Button.Style>
-                    </ui:Button>
+                    <TextBlock Text="Sırala" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,4"/>
+                    <ComboBox SelectedValue="{Binding SelectedSort, Mode=TwoWay}" SelectedValuePath="Tag" MinWidth="140" Margin="0,0,16,4"
+                              AutomationProperties.Name="Sırala">
+                        <ComboBoxItem Content="Boyut" Tag="Size"/>
+                        <ComboBoxItem Content="Ad" Tag="Name"/>
+                        <ComboBoxItem Content="Kurulma tarihi" Tag="Date"/>
+                        <ComboBoxItem Content="Yayıncı" Tag="Publisher"/>
+                    </ComboBox>
 
                     <!-- Auto-Clean Toggle -->
                     <ui:ToggleSwitch IsChecked="{Binding IsAutoCleanEnabled}" AutomationProperties.Name="Kaldırma sonrası kalıntıları otomatik temizle"
-                                     OnContent="Otomatik kalıntı temizle"
-                                     OffContent="Kalıntıları elle onayla"
+                                     Content="Kalıntıları otomatik temizle"
                                      VerticalAlignment="Center"
                                      Margin="0,0,14,4"/>
                 </WrapPanel>
@@ -291,7 +182,7 @@
 
                     <!-- Batch Silent Uninstall Button -->
                     <ui:Button Appearance="Secondary"
-                               Content="{Binding SelectedAppsCount, StringFormat='Seçilenleri Toplu Kaldır ({0})'}"
+                               Content="{Binding SelectedAppsCount, StringFormat='Seçilenleri kaldır ({0})'}"
                                Icon="{ui:SymbolIcon Delete24}"
                                Command="{Binding BatchUninstallCommand}"
                                Padding="12,5"
@@ -422,7 +313,7 @@
                                     <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,16,0">
                                         <!-- Başlık ve Rozetler -->
                                         <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding DisplayName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" 
+                                            <TextBlock Text="{Binding DisplayName}" FontSize="{StaticResource Font.Body}" 
                                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                                        TextTrimming="CharacterEllipsis" 
                                                        VerticalAlignment="Center" 
@@ -433,8 +324,6 @@
                                                 <!-- Kurulum izi (Nöbetçi raporu) -->
                                                 <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,2" Margin="0,0,6,0"
                                                         Background="{DynamicResource SubtleFillColorSecondaryBrush}"
-                                                        BorderBrush="{DynamicResource AccentFillColorDefaultBrush}"
-                                                        BorderThickness="1"
                                                         ToolTip="{Binding SetupTraceText}"
                                                         Visibility="{Binding HasSetupTrace, Converter={StaticResource BoolToVis}}">
                                                     <TextBlock Text="Kurulum izi var" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -488,21 +377,20 @@
 
                                     <!-- Col 3: Boyut (Satırlar Arası Otomatik Senkronize Genişlik) -->
                                     <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,24,0" HorizontalAlignment="Right">
-                                        <TextBlock Text="{Binding FormattedSize}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding FormattedSize}" FontSize="{StaticResource Font.Body}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" HorizontalAlignment="Right"/>
                                         <TextBlock Text="Disk alanı" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Right"/>
                                     </StackPanel>
 
                                     <!-- Col 4: İşlem Butonları (Satırlar Arası Otomatik Senkronize Genişlik) -->
                                     <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                                         <!-- Protected System Component Badge -->
-                                        <Border CornerRadius="{StaticResource Radius.SM}" Padding="12,7" 
-                                                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                                BorderBrush="{DynamicResource SystemFillColorCautionBrush}" 
-                                                BorderThickness="1"
-                                                Visibility="{Binding IsSystemComponent, Converter={StaticResource BoolToVis}}">
+                                        <Border CornerRadius="{StaticResource Radius.XS}" Padding="8,3" 
+                                                Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                                Visibility="{Binding IsSystemComponent, Converter={StaticResource BoolToVis}}"
+                                                ToolTip="Windows bileşeni; kaldırılması sistemi bozabileceği için korunuyor">
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                <ui:SymbolIcon Symbol="ShieldKeyhole20" FontSize="14" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,6,0"/>
-                                                <TextBlock Text="Korumalı sistem bileşeni" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
+                                                <ui:SymbolIcon Symbol="ShieldKeyhole20" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Korumalı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                             </StackPanel>
                                         </Border>
 
@@ -574,7 +462,7 @@
 
                         <StackPanel Grid.Column="0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Kalıntı analizi: " FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Kalıntılar: " FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <TextBlock Text="{Binding SelectedApp.DisplayName}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             </StackPanel>
                             <TextBlock Text="Aşağıdaki dosya ve kayıt defteri anahtarları programın geride bıraktığı yetim kalıntılardır." 

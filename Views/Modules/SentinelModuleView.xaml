@@ -74,7 +74,7 @@
                     <TextBlock Text="{Binding StatusDetail}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
                                Margin="{StaticResource Gap.Top.XS}"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <TextBlock Text="{Binding ActiveSensorsSummary, StringFormat='Aktif Sensörler: {0}'}"
+                    <TextBlock Text="{Binding ActiveSensorsSummary, StringFormat='İzlenenler: {0}'}"
                                FontSize="{StaticResource Font.Caption}"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                Margin="{StaticResource Gap.Top.XS}"/>
@@ -94,7 +94,7 @@
         <!-- 2. Özet -->
         <c:SummaryStrip Grid.Row="2" Margin="{StaticResource Gap.Bottom.MD}">
             <c:StatCard Icon="BoxCheckmark24" Label="Kayıtlı oturum" Value="{Binding TotalCount, StringFormat='{}{0}'}" Intent="Neutral"/>
-            <c:StatCard Icon="CalendarLtr24" Label="Son 30 gün" Value="{Binding Last30Count, StringFormat='{}{0}'}" Intent="Accent"/>
+            <c:StatCard Icon="CalendarLtr24" Label="Son 30 gün" Value="{Binding Last30Count, StringFormat='{}{0}'}" Intent="Neutral"/>
             <c:StatCard Icon="Rocket24" Label="Başlangıca/hizmete ekleyen" Value="{Binding PersistenceCount, StringFormat='{}{0}'}" Intent="Neutral"/>
             <c:StatCard Icon="ShieldError24" Label="Dikkat gerektiren" Value="{Binding RiskyCount, StringFormat='{}{0}'}" Intent="Caution"/>
         </c:SummaryStrip>
@@ -102,9 +102,10 @@
         <!-- 3. Arama -->
         <ui:TextBox Grid.Row="3"
                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                    PlaceholderText="Program adına ya da kurulum dosyasına göre ara…"
+                    PlaceholderText="Program ya da kurulum dosyası ara"
                     Icon="{ui:SymbolIcon Search24}"
                     ClearButtonEnabled="True"
+                    MaxWidth="360" HorizontalAlignment="Left" Width="360"
                     Margin="{StaticResource Gap.Bottom.MD}"
                     AutomationProperties.Name="Kurulum geçmişinde ara"/>
 
