@@ -77,7 +77,8 @@
         <!-- ========================================================================= -->
         <!-- ROW 2: CLEANING TARGETS & TOOLBAR                                         -->
         <!-- ========================================================================= -->
-        <Border Style="{StaticResource Card.Surface}" Grid.Row="2" Margin="0,0,0,16">
+        <!-- Temizlik hedefleri: bölüm başlığı kartın dışında, kategoriler doğrudan kart (kart içinde kart yok) -->
+        <Border Grid.Row="2" Margin="{StaticResource Gap.Bottom.LG}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/> <!-- Title & Toolbar -->
@@ -88,7 +89,8 @@
 
                 <!-- Row 0: Bölüm başlığı -->
                 <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                    <TextBlock Text="Temizlik hedefleri" Style="{StaticResource Text.CardTitle}"/>
+                    <TextBlock Text="Temizlik hedefleri" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     <TextBlock Text="Temizlenecek geçici klasörleri, önbellekleri ve uygulama kalıntılarını seçin."
                                Style="{StaticResource Text.SettingDescription}" MaxWidth="10000"/>
                 </StackPanel>
@@ -154,12 +156,12 @@
                 <ItemsControl Grid.Row="3" ItemsSource="{Binding FilteredCategoriesView}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Columns="4"/>
+                            <c:AdaptiveGrid MinColumnWidth="240" MaxColumns="4" ColumnSpacing="8" RowSpacing="8"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource Card.Surface.Compact}" Margin="3" Cursor="Hand" ClipToBounds="False" ToolTip="{Binding Description}">
+                            <Border Style="{StaticResource Card.Surface.Interactive}" Padding="{StaticResource Pad.CardCompact}" ClipToBounds="False" ToolTip="{Binding Description}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
