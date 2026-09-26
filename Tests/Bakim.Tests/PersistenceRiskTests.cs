@@ -39,7 +39,7 @@ public class PersistenceRiskTests
 
         Assert.Equal(0, item.RiskScore);
         Assert.Equal(Intent.Success, item.RiskIntent);
-        Assert.Equal("GÜVENLİ", item.RiskLabel);
+        Assert.Equal("Temiz", item.RiskLabel);
     }
 
     [Fact]

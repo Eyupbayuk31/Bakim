@@ -514,12 +514,25 @@ namespace Bakım.ViewModels
             catch { }
         }
 
+        /// <summary>
+        /// Dosyayı güvenilir olarak işaretler: Analizör Geçmişi'ndeki son analiz kaydına "Güvenilir" kararı
+        /// yazılır; Analizör listesi bu hash'i bundan sonra güvenilir sayar (VirusTotal uzlaşısı hariç).
+        /// Eskiden yalnızca bu pencerede bir bayrak kuruluyor ama "güvenli listeye eklendi" deniyordu.
+        /// </summary>
         [RelayCommand]
-        public void Whitelist()
+        public async Task WhitelistAsync()
         {
+            var history = App.TryGetService<Services.History.IAnalysisHistoryService>();
+            var record = !string.IsNullOrWhiteSpace(Result.Sha256) ? history?.GetLatestByHash(Result.Sha256, TimeSpan.FromDays(3650)) : null;
+            if (history == null || record == null)
+            {
+                StatusText = "Güven kararı kaydedilemedi: bu dosyanın analiz kaydı bulunamadı.";
+                return;
+            }
+
+            await history.SetDecisionAsync(record.Id, Core.History.UserDecision.Trusted, "Dosya analizi penceresinden güvenilir olarak işaretlendi.");
             IsWhitelisted = true;
-            StatusText = "Dosya bu oturumda güvenli olarak işaretlendi.";
-            MessageBox.Show($"'{FileName}' güvenli listeye eklendi.", "Güvenli İşaretlendi", MessageBoxButton.OK, MessageBoxImage.Information);
+            StatusText = $"'{FileName}' güvenilir olarak işaretlendi. Analizör bu dosyayı bundan sonra güvenilir sayar; kararı Analizör Geçmişi'nden geri alabilirsiniz.";
         }
 
         /// <summary>Segmented sekme çubuğundan sekme değiştirir.</summary>

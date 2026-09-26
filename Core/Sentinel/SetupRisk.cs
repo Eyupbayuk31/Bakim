@@ -97,38 +97,28 @@ namespace Bakım.Core.Sentinel
             bool hasHigh = findings.Any(f => f.Severity == RiskSeverity.High);
 
             if (input.InstallerSigned == true && !hasCritical) score = score * 3 / 4;
-            if (input.InstallerSigned == false && input.InstallerFromInternet && hasHigh) score += 10;
+            if (input.InstallerSigned == false && input.InstallerFromInternet && hasHigh) score += 15;
             score = Math.Clamp(score, 0, 100);
 
             return new SetupRiskResult(score, VerdictFor(score, findings.Count), findings);
         }
 
+        /// <summary>
+        /// Bulgu ağırlıkları tek risk ölçeğine göre (Core.Risk.RiskScale; Dikkat 30, Şüpheli 50, Tehlikeli 75):
+        /// tek Yüksek = Dikkat, iki Yüksek ya da tek Kritik = Şüpheli, iki Kritik = Tehlikeli.
+        /// </summary>
         public static int Weight(RiskSeverity severity) => severity switch
         {
-            RiskSeverity.Critical => 40,
-            RiskSeverity.High => 20,
-            RiskSeverity.Medium => 8,
+            RiskSeverity.Critical => 60,
+            RiskSeverity.High => 30,
+            RiskSeverity.Medium => 12,
             _ => 0
         };
 
-        public static RiskVerdict VerdictFor(int score, int findingCount) => score switch
-        {
-            0 when findingCount == 0 => RiskVerdict.Clean,
-            < 16 => RiskVerdict.Info,
-            < 40 => RiskVerdict.Caution,
-            < 70 => RiskVerdict.Suspicious,
-            _ => RiskVerdict.Dangerous
-        };
+        /// <summary>Tek risk dili (Core.Risk.RiskScale): Analizör ile aynı eşikler ve etiketler.</summary>
+        public static RiskVerdict VerdictFor(int score, int findingCount) => Bakım.Core.Risk.RiskScale.Verdict(score, findingCount > 0);
 
-        public static string VerdictLabel(RiskVerdict verdict) => verdict switch
-        {
-            RiskVerdict.Clean => "Temiz",
-            RiskVerdict.Info => "Bilgi",
-            RiskVerdict.Caution => "Dikkat",
-            RiskVerdict.Suspicious => "Şüpheli",
-            RiskVerdict.Dangerous => "Tehlikeli",
-            _ => "Bilinmiyor"
-        };
+        public static string VerdictLabel(RiskVerdict verdict) => Bakım.Core.Risk.RiskScale.Label(verdict);
 
         public static string SeverityLabel(RiskSeverity severity) => severity switch
         {

@@ -157,6 +157,8 @@ namespace Bakım.Models
             OnPropertyChanged(nameof(RiskIntent));
             OnPropertyChanged(nameof(RiskLabel));
             OnPropertyChanged(nameof(RiskIconSymbol));
+            OnPropertyChanged(nameof(RiskVerdict));
+            OnPropertyChanged(nameof(RiskReasonsText));
             OnPropertyChanged(nameof(IsRisk));
         }
         public bool IsRisk => Signature != SignatureStatus.Verified || MaliciousDetections > 0;
@@ -197,75 +199,48 @@ namespace Bakım.Models
 
         #region Risk Puanlaması
 
+        /// <summary>Kullanıcı bu dosyanın hash'ini güvenilir olarak işaretledi (Analizör Geçmişi kararı).</summary>
+        public bool IsUserTrusted { get; set; }
+
+        private Bakım.Core.Analyzer.PersistenceRiskResult EvaluateRisk() => Bakım.Core.Analyzer.PersistenceRisk.Evaluate(new(
+            Facts.Category,
+            Signature switch
+            {
+                SignatureStatus.Verified => Bakım.Core.Analyzer.SignatureState.Verified,
+                SignatureStatus.InvalidOrTampered => Bakım.Core.Analyzer.SignatureState.Invalid,
+                _ => Bakım.Core.Analyzer.SignatureState.Unsigned
+            },
+            SignatureApplicable, IsMicrosoft,
+            HasFilePath: !string.IsNullOrWhiteSpace(FilePath),
+            FileExists: string.IsNullOrWhiteSpace(FilePath) || HasValidFile,
+            IsEnabled, IsRecentlyAdded,
+            MaliciousDetections, VirusTotalSuspicious, TotalScanners,
+            CollectorRisk, CollectorNotes, DeepRiskScore, IsUserTrusted));
+
         /// <summary>
-        /// 0-100 arası sezgisel risk skoru. Listeyi sıralamak için kullanılır:
+        /// 0-100 arası risk puanı (Core.PersistenceRisk, ANL Faz 2). Listeyi sıralamak için kullanılır:
         /// en tehlikeli girdi en üstte durur, kullanıcı aramak zorunda kalmaz.
         /// </summary>
-        public int RiskScore
+        public int RiskScore => EvaluateRisk().Score;
+
+        /// <summary>"Neden bu puan?" — satırdaki risk rozetinin ipucu.</summary>
+        public string RiskReasonsText => string.Join(Environment.NewLine, EvaluateRisk().Reasons);
+
+        public Bakım.Core.Sentinel.RiskVerdict RiskVerdict => Bakım.Core.Risk.RiskScale.Verdict(RiskScore);
+
+        public Intent RiskIntent => RiskVerdict switch
         {
-            get
-            {
-                if (DeepRiskScore is int deep) return IsEnabled ? deep : (int)(deep * 0.4);
-
-                int score = CollectorRisk;
-
-                if (SignatureApplicable) score += Signature switch
-                {
-                    SignatureStatus.InvalidOrTampered => 60,  // imza var ama bozuk: en kötü işaret
-                    SignatureStatus.Unsigned => 35,
-                    _ => 0
-                };
-
-                // VirusTotal uzlaşısı baskın kanıttır (ANL Z4): imza bunu düşüremez.
-                var vt = Bakım.Core.Analyzer.VirusTotalRules.Evaluate(Math.Max(0, MaliciousDetections), VirusTotalSuspicious, TotalScanners > 0 ? TotalScanners : 70);
-                if (vt is { } floor) score = Math.Max(score + floor.Impact, floor.MinimumScore);
-
-                // Yüksek değerli kalıcılık vektörleri: meşru yazılım burayı nadiren kullanır
-                score += Category switch
-                {
-                    PersistenceCategory.WmiEventConsumer => 20,
-                    PersistenceCategory.WinlogonIfeo => 20,
-                    PersistenceCategory.ShellExtension => 10,
-                    _ => 0
-                };
-
-                if (IsRecentlyAdded) score += 10;
-                if (SignatureApplicable && !IsMicrosoft && Signature == SignatureStatus.Unsigned) score += 5;
-
-                // Dosya artık yoksa girdi bozuk demektir — tehdit değil, temizlik konusu
-                // İmza puanı düşer; yalnızca konumun kendi riski (WMI, Winlogon …) ve toplayıcı bulguları kalır.
-                if (!string.IsNullOrWhiteSpace(FilePath) && !HasValidFile) score = Math.Clamp(score - 40, 5, 20);
-
-                // Devre dışı girdi çalışmıyor: risk büyük ölçüde düşer
-                if (!IsEnabled) score = (int)(score * 0.4);
-
-                return Math.Clamp(score, 0, 100);
-            }
-        }
-
-        public Intent RiskIntent => RiskScore switch
-        {
-            >= 60 => Intent.Critical,
-            >= 30 => Intent.Caution,
-            > 0 => Intent.Accent,
+            Bakım.Core.Sentinel.RiskVerdict.Dangerous or Bakım.Core.Sentinel.RiskVerdict.Suspicious => Intent.Critical,
+            Bakım.Core.Sentinel.RiskVerdict.Caution => Intent.Caution,
+            Bakım.Core.Sentinel.RiskVerdict.Info => Intent.Accent,
             _ => Intent.Success
         };
 
-        public string RiskLabel => RiskScore switch
-        {
-            >= 60 => "YÜKSEK",
-            >= 30 => "ORTA",
-            > 0 => "DÜŞÜK",
-            _ => "GÜVENLİ"
-        };
+        /// <summary>Tek risk dili: Temiz · Bilgi · Dikkat · Şüpheli · Tehlikeli.</summary>
+        public string RiskLabel => Bakım.Core.Risk.RiskScale.Label(RiskVerdict);
 
         /// <summary>Renk körü kullanıcılar için renkten bağımsız risk simgesi.</summary>
-        public string RiskIconSymbol => RiskScore switch
-        {
-            >= 60 => "ShieldDismiss24",
-            >= 30 => "ShieldError24",
-            _ => "ShieldCheckmark24"
-        };
+        public string RiskIconSymbol => Bakım.Core.Risk.RiskScale.Symbol(RiskVerdict);
 
         #endregion
     }

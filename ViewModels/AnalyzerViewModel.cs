@@ -275,9 +275,24 @@ namespace Bakım.ViewModels
             // Zaman çizelgesi sinyali: son 7 günde eklenen kalıcılık girdileri.
             // "Dün ne değişti?" sorusunun cevabı bulaşma tespitinde en hızlı yoldur.
             RecentlyAddedCount = visible.Count(i => i.IsRecentlyAdded);
-            HighRiskCount = visible.Count(i => i.RiskScore >= 60);
+            HighRiskCount = visible.Count(i => i.RiskScore >= Bakım.Core.Risk.RiskScale.Suspicious);
 
             HasNoResults = visible.Count == 0 && !IsScanning;
+        }
+
+        /// <summary>
+        /// Analizör Geçmişi'ndeki "Güvenilir" kararlarını satırlara uygular (ANL Faz 2): güvenilen hash'in
+        /// puanı tabana iner; VirusTotal uzlaşısı bu kararı geçersiz kılar.
+        /// </summary>
+        private void ApplyTrustDecisions()
+        {
+            foreach (var item in Items)
+            {
+                bool trusted = !string.IsNullOrWhiteSpace(item.Sha256Hash) && _history.IsTrustedHash(item.Sha256Hash);
+                if (trusted == item.IsUserTrusted) continue;
+                item.IsUserTrusted = trusted;
+                item.NotifyRiskChanged();
+            }
         }
 
         /// <summary>Listeyi risk skoruna göre sıralar: en tehlikeli en üstte.</summary>
@@ -328,10 +343,11 @@ namespace Bakım.ViewModels
                 });
                 foreach (var item in batch.Concat(inspected)) Items.Add(item);
 
+                ApplyTrustDecisions();
                 ApplyRiskSorting();
                 _lastScanUtc = DateTime.UtcNow;
 
-                int risky = Items.Count(i => i.RiskScore >= 60);
+                int risky = Items.Count(i => i.RiskScore >= Bakım.Core.Risk.RiskScale.Suspicious);
                 ScanStatusText = risky > 0
                     ? $"Tarama tamamlandı. {Items.Count} kalıcılık noktası — {risky} tanesi yüksek riskli, listenin en üstünde."
                     : $"Tarama tamamlandı. {Items.Count} kalıcılık noktası listelendi, yüksek riskli girdi yok.";
@@ -755,6 +771,7 @@ namespace Bakım.ViewModels
                         dialog.Owner = Application.Current.MainWindow;
                     }
                     dialog.ShowDialog();
+                    ApplyTrustDecisions();
                 });
             }
             catch (Exception ex)
@@ -806,7 +823,7 @@ namespace Bakım.ViewModels
                         var report = await _threatAnalyzerService.AnalyzeFileAsync(
                             item.FilePath, item.Arguments, item);
                         ApplyDeepResult(item, report);
-                        if (item.RiskScore >= 60) elevated++;
+                        if (item.RiskScore >= Bakım.Core.Risk.RiskScale.Suspicious) elevated++;
                     }
                     catch (Exception ex)
                     {
@@ -884,6 +901,7 @@ namespace Bakım.ViewModels
                         dialog.Owner = Application.Current.MainWindow;
                     }
                     dialog.ShowDialog();
+                    ApplyTrustDecisions();
                 });
             }
             catch (Exception ex)

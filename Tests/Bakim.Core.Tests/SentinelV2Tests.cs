@@ -131,7 +131,7 @@ public class SentinelV2Tests
         input.SystemChanges.Add(new SystemChange(SystemArea.FirewallRule, ChangeKind.Added, "{1}", null,
             @"v2.30|Action=Allow|Active=TRUE|Dir=In|Protocol=6|LPort=8080|App=C:\Foo\foo.exe|Name=Foo|"));
         var result = SetupRiskEngine.Evaluate(input);
-        Assert.Equal(20 + 8 + 20, result.Score);
+        Assert.Equal(30 + 12 + 30, result.Score);
         Assert.Equal(RiskVerdict.Suspicious, result.Verdict);
         Assert.Contains(result.Findings, f => f.Title.Contains("3 program"));
         Assert.Contains(result.Findings, f => f.Detail.Contains("port 8080"));

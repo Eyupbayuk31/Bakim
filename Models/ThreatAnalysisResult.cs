@@ -217,27 +217,20 @@ namespace Bakım.Models
 
         public int RiskScore { get; set; } // 0 - 100
 
-        public string RiskLevelText => RiskScore switch
-        {
-            <= 25 => "Düşük Risk / Güvenli",
-            <= 60 => "Orta Risk / Şüpheli - İnceleyin",
-            _ => "YÜKSEK RİSK / TEHLİKELİ ZARARLI"
-        };
+        /// <summary>Tek risk dili (Core.Risk.RiskScale): Temiz · Bilgi · Dikkat · Şüpheli · Tehlikeli.</summary>
+        public Bakım.Core.Sentinel.RiskVerdict Verdict => Bakım.Core.Risk.RiskScale.Verdict(RiskScore, Factors.Any(f => f.ScoreImpact > 0));
 
-        public Intent RiskIntent => RiskScore switch
+        public string RiskLevelText => Bakım.Core.Risk.RiskScale.Label(Verdict);
+
+        public Intent RiskIntent => Verdict switch
         {
-            <= 25 => Intent.Success,
-            <= 60 => Intent.Caution,
-            _ => Intent.Critical
+            Bakım.Core.Sentinel.RiskVerdict.Dangerous or Bakım.Core.Sentinel.RiskVerdict.Suspicious => Intent.Critical,
+            Bakım.Core.Sentinel.RiskVerdict.Caution => Intent.Caution,
+            _ => Intent.Success
         };
 
         /// <summary>Risk seviyesini renkten bağımsız anlatan simge.</summary>
-        public string RiskIconSymbol => RiskScore switch
-        {
-            <= 25 => "ShieldCheckmark24",
-            <= 60 => "ShieldError24",
-            _ => "ShieldDismiss24"
-        };
+        public string RiskIconSymbol => Bakım.Core.Risk.RiskScale.Symbol(Verdict);
 
         // Active process info
         public bool IsActiveProcess { get; set; }

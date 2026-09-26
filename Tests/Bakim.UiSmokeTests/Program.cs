@@ -58,7 +58,9 @@ internal static class Program
         if (shotIndex >= 0)
         {
             string dir = shotIndex + 1 < args.Length ? args[shotIndex + 1] : "screenshots";
-            return Screenshots.Run(dir);
+            // --only <Anahtar>: yalnızca adı eşleşen sayfa(lar), tek tema ve tek genişlik (geliştirme sırasında hızlı bakış).
+            int only = Array.IndexOf(args, "--only");
+            return Screenshots.Run(dir, only >= 0 && only + 1 < args.Length ? args[only + 1] : null);
         }
 
         Console.WriteLine($"Kaynak derlemesi: {Application.ResourceAssembly?.GetName().Name ?? "(yok)"}");

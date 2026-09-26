@@ -221,6 +221,10 @@ her fark açıklanabilir.
 
 ### Faz 2 — Birleşik kanıt ve risk motoru (v4.10.0, ~2 hafta)
 
+> **Durum (v4.10.0): uygulandı.** `Core/Risk/RiskScale` (tek ölçek; Analizör, dosya analizi, geçmiş ve
+> Nöbetçi), `Core/Analyzer/PersistenceRisk` (puan + gerekçeler), güven kararı listeye bağlandı. Nöbetçi
+> ağırlıkları 40/20/8 → 60/30/12. Kalibrasyon korpusu (fikstür PE'ler) ve tam kanıt modeline geçiş Faz 8'e kaldı.
+
 - **`Core/Risk/Evidence`:** `{Kind, Weight, Confidence, Dominant, Title, Detail}`. Kanıt türleri: imza
   (geçerli/katalog/geçersiz/yok/süresi dolmuş), yayıncı güveni, VT uzlaşısı, konum, sarmalayıcı/betik,
   gizleme (RLO, çift uzantı), PE (mitigasyon, bölüm başına entropi, içe aktarım birleşimleri), yaş, MOTW,

@@ -445,11 +445,11 @@ namespace Bakım.Services
 
                 // Öneri metni kanıtla orantılı (ANL Z3/Z10): "derhal kalıcı olarak silin" gibi geri
                 // alınamaz öneriler verilmez; önce kaynağın doğrulanması ve geri alınabilir adımlar.
-                if (result.RiskScore >= 61)
+                if (result.RiskScore >= Bakım.Core.Risk.RiskScale.Suspicious)
                 {
                     result.Recommendation = "YÜKSEK RİSK: Dosyada zararlı yazılımlarda sık görülen birden çok güçlü işaret var. Kaynağını tanımıyorsanız süreci durdurun, başlangıç girdisini kapatın ve dosyayı Geri Dönüşüm Kutusu'na taşıyın; emin değilseniz önce VirusTotal ve Windows Defender ile ikinci görüş alın.";
                 }
-                else if (result.RiskScore >= 26)
+                else if (result.RiskScore >= Bakım.Core.Risk.RiskScale.Caution)
                 {
                     result.Recommendation = "DİKKAT: Dosyada gözden geçirilmesi gereken işaretler var (imzasız kod, alışılmadık konum ya da parametreler). Kaynağını biliyorsanız sorun olmayabilir; bilmiyorsanız başlangıç girdisini kapatıp inceleyin.";
                 }

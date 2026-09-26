@@ -30,7 +30,7 @@ internal static class Screenshots
 
     private static readonly int[] Widths = { 1280, 1600 };
 
-    public static int Run(string outDir)
+    public static int Run(string outDir, string? onlyKey = null)
     {
         Directory.CreateDirectory(outDir);
         int saved = 0, failed = 0;
@@ -87,14 +87,19 @@ internal static class Screenshots
 
         var keys = NavCatalog.AllItems(NavCatalog.Build()).Select(i => i.Key)
             .Append(NavCatalog.BuildSettingsItem().Key)
+            .Where(k => onlyKey == null || k.Contains(onlyKey, StringComparison.OrdinalIgnoreCase))
             .ToList();
+        var themes = onlyKey == null ? Themes : Themes.Take(1).ToArray();
+        // Tek sayfa kipinde pencerenin kendi açılış gezintisi (son açık sayfa) önce bitsin; yoksa onu ezer.
+        if (onlyKey != null) Pump(3000);
+        var widths = onlyKey == null ? Widths : Widths.Take(1).ToArray();
 
-        foreach (var (theme, themeName) in Themes)
+        foreach (var (theme, themeName) in themes)
         {
             ThemeService.Shared.ApplyTheme(theme, persist: false);
             ThemeService.Shared.ApplyBackdrop(false);
 
-            foreach (int width in Widths)
+            foreach (int width in widths)
             {
                 main.Width = width;
                 Pump(300);
@@ -106,7 +111,8 @@ internal static class Screenshots
                     try
                     {
                         vm.Navigate(key);
-                        Pump(1600); // Loaded + ilk veri yüklemesi + animasyonlar
+                        // Loaded + ilk veri yüklemesi + animasyonlar; tek sayfa çekiminde tarama bitsin diye daha uzun.
+                        Pump(onlyKey == null ? 1600 : 12000);
                         string path = Path.Combine(outDir, $"{themeName}-{width}-{key}.png");
                         Save(main, path);
                         saved++;
@@ -115,7 +121,7 @@ internal static class Screenshots
                     catch (Exception ex)
                     {
                         failed++;
-                        Console.WriteLine($"  HATA       | {themeName}-{width}-{key}: {ex.GetType().Name}: {ex.Message}");
+                        Console.WriteLine($"  HATA       | {themeName}-{width}-{key}: {ex}");
                     }
                 }
             }
@@ -144,7 +150,8 @@ internal static class Screenshots
         int h = Math.Max(1, (int)Math.Ceiling(root.ActualHeight));
 
         // Mica ekran görüntüsüne çizilmez: pencere zeminini elle doldur.
-        var background = Application.Current.TryFindResource("ApplicationBackgroundBrush") as Brush ?? Brushes.Black;
+        // Pencerenin kaynak zinciri uygulama kaynaklarına da çıkar; Application.Current bu koşucuda null olabilir.
+        var background = window.TryFindResource("ApplicationBackgroundBrush") as Brush ?? Brushes.Black;
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
         {

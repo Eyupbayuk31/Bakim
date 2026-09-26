@@ -43,16 +43,16 @@ namespace Bakım.Core.History
 
     public static class AnalysisVerdicts
     {
-        /// <summary>Risk puanından karar: 0–15 Temiz, –25 Bilgi, –45 Dikkat, –60 Şüpheli, üstü Tehlikeli.</summary>
+        /// <summary>Risk puanından karar — tek ölçek (Core.Risk.RiskScale): 0–9 Temiz, 10–29 Bilgi, 30–49 Dikkat, 50–74 Şüpheli, 75+ Tehlikeli.</summary>
         public static AnalysisVerdict FromScore(int riskScore, bool fileMissing = false)
         {
             if (fileMissing) return AnalysisVerdict.Missing;
-            return riskScore switch
+            return Bakım.Core.Risk.RiskScale.Verdict(riskScore) switch
             {
-                <= 15 => AnalysisVerdict.Clean,
-                <= 25 => AnalysisVerdict.Info,
-                <= 45 => AnalysisVerdict.Caution,
-                <= 60 => AnalysisVerdict.Suspicious,
+                Bakım.Core.Sentinel.RiskVerdict.Clean => AnalysisVerdict.Clean,
+                Bakım.Core.Sentinel.RiskVerdict.Info => AnalysisVerdict.Info,
+                Bakım.Core.Sentinel.RiskVerdict.Caution => AnalysisVerdict.Caution,
+                Bakım.Core.Sentinel.RiskVerdict.Suspicious => AnalysisVerdict.Suspicious,
                 _ => AnalysisVerdict.Dangerous
             };
         }
