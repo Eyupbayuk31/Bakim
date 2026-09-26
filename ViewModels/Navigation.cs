@@ -65,16 +65,17 @@ namespace Bakım.ViewModels
                 Item("Dashboard", "Kontrol Paneli", SymbolRegular.Board24, "Sistem durumu ve hızlı eylemler"),
                 Item("Activity", "Etkinlik Merkezi", SymbolRegular.History24, "Yapılan değişiklikler ve geri alma"),
             }, isFirst: true),
-            new("Temizlik ve depolama", new[]
+            new("Temizlik", new[]
             {
                 Item("Cleaner", "Temizleyici", SymbolRegular.Broom24, "Gereksiz dosyaları güvenle temizler"),
                 Item("Storage", "Depolama", SymbolRegular.HardDrive20, "Büyük dosyalar, yinelenenler ve boş klasörler"),
+                Item("Uninstaller", "Kaldırıcı", SymbolRegular.AppsList24, "Programları kalıntılarıyla kaldırır"),
             }),
             new("Performans", new[]
             {
                 Item("Optimizer", "Süreçler", SymbolRegular.TopSpeed24, "Çalışan süreçler ve kaynak kullanımı"),
                 Item("Startup", "Başlangıç", SymbolRegular.Rocket24, "Windows ile açılan programlar"),
-                Item("ServiceManager", "Hizmetler & Sürücüler", SymbolRegular.DeveloperBoard24, "Windows hizmetleri ve sürücüler"),
+                Item("ServiceManager", "Hizmetler ve sürücüler", SymbolRegular.DeveloperBoard24, "Windows hizmetleri ve sürücüler"),
                 Item("GameMode", "Oyun Modu", SymbolRegular.Games24, "Oyun oturumu için sistem ayarları"),
             }),
             new("Güvenlik", new[]
@@ -83,17 +84,13 @@ namespace Bakım.ViewModels
                 Item("Sentinel", "Kurulum Nöbetçisi", SymbolRegular.ShieldCheckmark24, "Kurulumların yaptığı değişiklikler"),
                 Item("Network", "Ağ İzleyici", SymbolRegular.NetworkCheck24, "Bağlantılar, dinleyen portlar, güvenlik duvarı"),
             }),
-            new("Yazılım", new[]
-            {
-                Item("Uninstaller", "Kaldırıcı", SymbolRegular.AppsList24, "Programları kalıntılarıyla kaldırır"),
-                Item("Store", "Mağaza", SymbolRegular.ArrowDownload24, "Yazılım ve çalışma zamanı paketleri"),
-            }),
             new("Sistem", new[]
             {
                 Item("SystemInfo", "Sistem Bilgisi", SymbolRegular.Info24, "Donanım ve Windows bilgileri"),
-                Item("CrashAnalyzer", "Olaylar & Çökmeler", SymbolRegular.Warning24, "Olay günlüğü ve çökme analizi"),
+                Item("CrashAnalyzer", "Olaylar ve çökmeler", SymbolRegular.Warning24, "Olay günlüğü ve çökme analizi"),
                 Item("Tweaker", "Windows Ayarları", SymbolRegular.Wrench24, "İnce ayarlar ve gizlilik"),
                 Item("WindowsTools", "Windows Araçları", SymbolRegular.Toolbox24, "Klasik yönetim araçları ve konsollar"),
+                Item("Store", "Mağaza", SymbolRegular.ArrowDownload24, "Yazılım ve çalışma zamanı paketleri"),
             }),
         };
 

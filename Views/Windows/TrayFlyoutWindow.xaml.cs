@@ -35,20 +35,10 @@ namespace Bakım.Views.Windows
         public void UpdateState()
         {
             bool isActive = _gameModeService.IsGameModeActive;
-            BtnGameMode.Content = isActive ? "Oyun Modunu kapat" : "Oyun Modunu başlat";
-            if (isActive)
-            {
-                // Fluent: başlatmak birincil eylem (vurgu), kapatmak standart düğme.
-                BtnGameMode.Appearance = ControlAppearance.Secondary;
-                StatusText.Text = "Oyun Modu açık";
-                StatusText.Foreground = (System.Windows.Media.Brush)FindResource("SystemFillColorSuccessBrush");
-            }
-            else
-            {
-                BtnGameMode.Appearance = ControlAppearance.Primary;
-                StatusText.Text = "Arka plan bakımı etkin";
-                StatusText.Foreground = (System.Windows.Media.Brush)FindResource("TextFillColorSecondaryBrush");
-            }
+            // Win11 Hızlı Ayarlar: açık olan kutucuk vurgu dolgulu, kapalı olan standart.
+            BtnGameMode.Appearance = isActive ? ControlAppearance.Primary : ControlAppearance.Secondary;
+            BtnGameMode.ToolTip = isActive ? "Oyun Modu açık. Kapatmak için tıklayın." : "Oyun Modunu başlatır.";
+            StatusText.Text = isActive ? "Oyun Modu açık" : "Arka plan bakımı etkin";
 
             RefreshSentinelAndActivity();
             _ = RefreshTelemetryAsync();
@@ -118,7 +108,7 @@ namespace Bakım.Views.Windows
             try
             {
                 BtnQuickBoost.IsEnabled = false;
-                BtnQuickBoost.Content = "Bakım yapılıyor...";
+                BtnQuickBoost.Content = "Temizleniyor…";
                 var quick = App.TryGetService<IQuickMaintenanceService>();
                 if (quick == null) return;
                 var result = await quick.RunAsync(null, System.Threading.CancellationToken.None);
@@ -129,7 +119,7 @@ namespace Bakım.Views.Windows
             finally
             {
                 BtnQuickBoost.IsEnabled = true;
-                BtnQuickBoost.Content = "Hızlı Bakım";
+                BtnQuickBoost.Content = "Hızlı bakım";
             }
         }
 

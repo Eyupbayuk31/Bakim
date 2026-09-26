@@ -561,11 +561,13 @@
                     VerticalAlignment="Top"
                     Margin="24,80,24,0"
                     HorizontalAlignment="Stretch"
-                    Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
-                    BorderBrush="{DynamicResource Brush.Accent}"
+                    Background="{DynamicResource Surface.Overlay}"
+                    BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                     BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.LG}"
-                    ClipToBounds="True">
+                    CornerRadius="{StaticResource Radius.MD}">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="32" ShadowDepth="8" Direction="270" Opacity="0.28" Color="{DynamicResource Color.Shadow}"/>
+                </Border.Effect>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>  <!-- Search Header -->
@@ -585,19 +587,19 @@
                         <ui:SymbolIcon Grid.Column="0"
                                        Symbol="Search24"
                                        FontSize="20"
-                                       Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,12,0"/>
 
                         <ui:TextBox Grid.Column="1"
-                                    PlaceholderText="Sayfa, ayar veya komut ara... (Örn: RAM, Temizle)"
+                                    PlaceholderText="Sayfa, ayar veya komut ara"
                                     Text="{Binding CommandPaletteQuery, UpdateSourceTrigger=PropertyChanged}"
                                     ClearButtonEnabled="True"
                                     FontSize="{StaticResource Font.Body}"
                                     Padding="0,6"
                                     BorderThickness="0"
                                     Background="Transparent"
-                                    VerticalContentAlignment="Center" AutomationProperties.Name="Sayfa, ayar veya komut ara... (Örn: RAM, Temizle)">
+                                    VerticalContentAlignment="Center" AutomationProperties.Name="Sayfa, ayar veya komut ara">
                             <ui:TextBox.InputBindings>
                                 <KeyBinding Key="Return"
                                             Command="{Binding ExecuteCommandCommand}"
@@ -652,18 +654,21 @@
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="ListViewItem">
-                                            <Border x:Name="ItemContainerBorder"
-                                                    Background="{TemplateBinding Background}"
-                                                    CornerRadius="{StaticResource Radius.MD}"
-                                                    BorderThickness="1"
-                                                    BorderBrush="Transparent"
-                                                    SnapsToDevicePixels="True">
-                                                <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                                            </Border>
+                                            <Grid>
+                                                <Border x:Name="ItemContainerBorder"
+                                                        Background="{TemplateBinding Background}"
+                                                        CornerRadius="{StaticResource Radius.XS}"
+                                                        SnapsToDevicePixels="True">
+                                                    <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <Border x:Name="SelectionPill" Width="3" Height="16" CornerRadius="1.5"
+                                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                        Background="{DynamicResource AccentFillColorDefaultBrush}" Visibility="Collapsed"/>
+                                            </Grid>
                                             <ControlTemplate.Triggers>
                                                 <Trigger Property="IsSelected" Value="True">
-                                                    <Setter TargetName="ItemContainerBorder" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
-                                                    <Setter TargetName="ItemContainerBorder" Property="BorderBrush" Value="{DynamicResource Brush.Accent}"/>
+                                                    <Setter TargetName="ItemContainerBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                                    <Setter TargetName="SelectionPill" Property="Visibility" Value="Visible"/>
                                                 </Trigger>
                                             </ControlTemplate.Triggers>
                                         </ControlTemplate>
@@ -685,7 +690,7 @@
                                         <ControlTemplate TargetType="Button">
                                             <Border x:Name="BtnBorder"
                                                     Background="{TemplateBinding Background}"
-                                                    CornerRadius="{StaticResource Radius.MD}"
+                                                    CornerRadius="{StaticResource Radius.XS}"
                                                     Padding="{TemplateBinding Padding}">
                                                 <ContentPresenter/>
                                             </Border>
@@ -707,21 +712,10 @@
                                             <ColumnDefinition Width="Auto"/>  <!-- Shortcut Pill -->
                                         </Grid.ColumnDefinitions>
 
-                                        <!-- ── Colored Icon Box ── -->
-                                        <Border Grid.Column="0"
-                                                Width="38" Height="38"
-                                                CornerRadius="{StaticResource Radius.MD}"
-                                                Background="{Binding Category, Converter={StaticResource CategoryToBackground}}"
-                                                BorderBrush="{Binding Category, Converter={StaticResource CategoryToForeground}}"
-                                                BorderThickness="1"
-                                                Margin="0,0,12,0"
-                                                VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="{Binding IconName, Converter={StaticResource SafeSymbol}}"
-                                                           FontSize="17"
-                                                           Foreground="{Binding Category, Converter={StaticResource CategoryToForeground}}"
-                                                           HorizontalAlignment="Center"
-                                                           VerticalAlignment="Center"/>
-                                        </Border>
+                                        <!-- Simge -->
+                                        <ui:SymbolIcon Grid.Column="0" Symbol="{Binding IconName, Converter={StaticResource SafeSymbol}}"
+                                                       FontSize="20" Margin="4,0,14,0" VerticalAlignment="Center"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
 
                                         <!-- ── Title + Category Pill + Description ── -->
                                         <StackPanel Grid.Column="1"
@@ -732,25 +726,14 @@
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Title}"
                                                            FontSize="{StaticResource Font.Body}"
-                                                           FontWeight="SemiBold"
                                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                            VerticalAlignment="Center"
                                                            TextTrimming="CharacterEllipsis"/>
 
-                                                <!-- Category Pill -->
-                                                <Border CornerRadius="{StaticResource Radius.LG}"
-                                                        Padding="7,2"
-                                                        Margin="8,0,0,0"
-                                                        VerticalAlignment="Center"
-                                                        Background="{Binding Category, Converter={StaticResource CategoryToBackground}}"
-                                                        BorderBrush="{Binding Category, Converter={StaticResource CategoryToForeground}}"
-                                                        BorderThickness="1">
-                                                    <TextBlock Text="{Binding Category}"
-                                                               FontSize="{StaticResource Font.Micro}"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="{Binding Category, Converter={StaticResource CategoryToForeground}}"
-                                                               VerticalAlignment="Center"/>
-                                                </Border>
+                                                <!-- Kategori: tek renkli etiket -->
+                                                <TextBlock Text="{Binding Category}" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                           FontSize="{StaticResource Font.Caption}"
+                                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                                             </StackPanel>
 
                                             <!-- Description -->
@@ -774,11 +757,10 @@
 
                     <!-- ═══ Row 3: Footer ═══ -->
                     <Border Grid.Row="3"
-                            Background="{DynamicResource ControlFillColorSecondaryBrush}"
-                            BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                             BorderThickness="0,1,0,0"
-                            Padding="14,8"
-                            CornerRadius="0,0,8,8">
+                            Padding="14,8">
                         <Grid>
                             <!-- Left: Keyboard hints -->
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -786,11 +768,10 @@
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                         BorderThickness="1">
-                                    <TextBlock Text="↑↓" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                               FontFamily="Consolas"/>
+                                    <TextBlock Text="↑↓" FontSize="{StaticResource Font.Caption}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </Border>
-                                <TextBlock Text="Seçin" FontSize="{StaticResource Font.Micro}"
+                                <TextBlock Text="Seçin" FontSize="{StaticResource Font.Caption}"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                            VerticalAlignment="Center" Margin="0,0,12,0"/>
 
@@ -798,11 +779,10 @@
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                         BorderThickness="1">
-                                    <TextBlock Text="Enter" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                               FontFamily="Consolas"/>
+                                    <TextBlock Text="Enter" FontSize="{StaticResource Font.Caption}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </Border>
-                                <TextBlock Text="Aç" FontSize="{StaticResource Font.Micro}"
+                                <TextBlock Text="Aç" FontSize="{StaticResource Font.Caption}"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                            VerticalAlignment="Center" Margin="0,0,12,0"/>
 
@@ -810,23 +790,12 @@
                                         Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                                         BorderThickness="1">
-                                    <TextBlock Text="Esc" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                               FontFamily="Consolas"/>
+                                    <TextBlock Text="Esc" FontSize="{StaticResource Font.Caption}"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </Border>
-                                <TextBlock Text="Kapat" FontSize="{StaticResource Font.Micro}"
+                                <TextBlock Text="Kapat" FontSize="{StaticResource Font.Caption}"
                                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                            VerticalAlignment="Center"/>
-                            </StackPanel>
-
-                            <!-- Right: Brand -->
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                <ui:SymbolIcon Symbol="Search24" FontSize="11"
-                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
-                                               Margin="0,0,4,0"/>
-                                <TextBlock Text="Bakım komut paleti"
-                                           FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                             </StackPanel>
                         </Grid>
                     </Border>

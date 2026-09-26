@@ -215,7 +215,7 @@
                                 <!-- Context Menu -->
                                 <Grid.ContextMenu>
                                     <ContextMenu Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                                        <MenuItem Header="Dosya Gezgininde göster"
+                                        <MenuItem Header="Dosya Gezgini'nde göster"
                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                                   Command="{Binding DataContext.OpenLocationCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                   CommandParameter="{Binding}"/>

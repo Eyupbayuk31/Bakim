@@ -152,7 +152,7 @@
                                             <MenuItem Header="IP / host adresini kopyala" 
                                                       Command="{Binding DataContext.CopyIpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                       CommandParameter="{Binding RemoteAddress}"/>
-                                            <MenuItem Header="Güvenlik Duvarı ile Engelle" 
+                                            <MenuItem Header="Güvenlik duvarıyla engelle" 
                                                       Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                       CommandParameter="{Binding}"/>
                                             <Separator/>

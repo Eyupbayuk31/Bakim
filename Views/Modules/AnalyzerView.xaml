@@ -73,7 +73,7 @@
                                        AutomationProperties.Name="VirusTotal ve rapor eylemleri">
                         <ui:DropDownButton.Flyout>
                             <ContextMenu>
-                                <MenuItem Header="VirusTotal ile Toplu Tara"
+                                <MenuItem Header="VirusTotal ile toplu tara"
                                           Command="{Binding ScanAllVisibleWithVirusTotalCommand}"
                                           IsEnabled="{Binding IsVirusTotalScanning, Converter={StaticResource InverseBool}}"
                                           Icon="{ui:SymbolIcon ShieldTask20}"/>
@@ -313,7 +313,7 @@
                                               FontWeight="SemiBold"
                                               Command="{Binding DataContext.AnalyzeThreatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                               CommandParameter="{Binding}"/>
-                                    <MenuItem Header="VirusTotal API ile Doğrula"
+                                    <MenuItem Header="VirusTotal ile doğrula"
                                               Icon="{ui:SymbolIcon Search24}"
                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                               Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -514,7 +514,7 @@
                                                        AutomationProperties.Name="{Binding Name, StringFormat='{}{0} için diğer eylemler'}">
                                         <ui:DropDownButton.Flyout>
                                             <ContextMenu>
-                                                <MenuItem Header="VirusTotal ile Sorgula"
+                                                <MenuItem Header="VirusTotal ile sorgula"
                                                           Command="{Binding DataContext.ScanItemWithVirusTotalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           CommandParameter="{Binding}"
                                                           Icon="{ui:SymbolIcon Shield20}"/>
