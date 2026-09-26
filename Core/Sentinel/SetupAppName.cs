@@ -84,11 +84,20 @@ namespace Bakım.Core.Sentinel
         private static IEnumerable<string> Meaningful(string? text) =>
             NameMatcher.Tokenize(text).Where(t => t.Length >= 3 && !NameMatcher.IsStopWord(t) && !t.All(char.IsDigit));
 
-        private static string FromFileName(string? path)
+        private static string FromFileName(string? path) => FileStem(path).Replace('_', ' ').Trim();
+
+        /// <summary>
+        /// Uzantısız dosya adı. Windows yolları her platformda aynı ayrıştırılır: Linux'ta
+        /// <see cref="Path.GetFileNameWithoutExtension(string)"/> "\" karakterini ayırıcı saymaz
+        /// ve Core testleri Linux'ta da koşar.
+        /// </summary>
+        public static string FileStem(string? path)
         {
             if (string.IsNullOrWhiteSpace(path)) return string.Empty;
-            string name = Path.GetFileNameWithoutExtension(path.Trim());
-            return name.Replace('_', ' ').Trim();
+            string trimmed = path.Trim();
+            string name = trimmed[(trimmed.LastIndexOfAny(new[] { '\\', '/' }) + 1)..];
+            int dot = name.LastIndexOf('.');
+            return dot > 0 ? name[..dot] : name;
         }
     }
 }

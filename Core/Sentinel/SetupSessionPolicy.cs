@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Bakım.Core.Sentinel
@@ -43,7 +42,7 @@ namespace Bakım.Core.Sentinel
         public static bool IsBackgroundLauncher(string? exeName) => BackgroundLaunchers.Contains(NameOf(exeName));
 
         private static string NameOf(string? exeName) =>
-            string.IsNullOrWhiteSpace(exeName) ? string.Empty : Path.GetFileNameWithoutExtension(exeName.Trim());
+            SetupAppName.FileStem(exeName);
 
         /// <summary>
         /// Adayın ata zincirinde (en fazla <paramref name="maxDepth"/> kuşak) arka plan başlatıcısı ya da
@@ -81,7 +80,7 @@ namespace Bakım.Core.Sentinel
                 if (imagePath.StartsWith(root.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) return false;
             }
 
-            string name = Path.GetFileNameWithoutExtension(imagePath).ToLowerInvariant();
+            string name = SetupAppName.FileStem(imagePath).ToLowerInvariant();
             string[] installerWords = { "setup", "install", "unins", "uninst", "kurulum", "msiexec", "bootstrap" };
             return !installerWords.Any(name.Contains);
         }

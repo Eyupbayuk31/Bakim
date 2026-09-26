@@ -205,6 +205,15 @@ public class SentinelFazATests
         Assert.Null(SetupAppName.FromNewPrograms(new[] { "League of Legends", "Teamfight Tactics" }, "DirectX 9 SDK Install", null));
     }
 
+    [Theory]
+    [InlineData(@"C:\ProgramData\Riot Games\DirectX_9_SDK_Install.exe", "DirectX_9_SDK_Install")]
+    [InlineData("C:/Users/u/Downloads/vlc-3.0.20-win64.exe", "vlc-3.0.20-win64")]
+    [InlineData("RiotClientServices.exe", "RiotClientServices")]
+    [InlineData(@"C:\Tools\.hidden", ".hidden")]
+    [InlineData(null, "")]
+    public void FileStem_ParsesWindowsPathsOnEveryPlatform(string? path, string expected) =>
+        Assert.Equal(expected, SetupAppName.FileStem(path));
+
     // ---- A8: arka plan başlatıcıları ----
 
     private static Func<int, (int, string)?> Tree(params (int Pid, int Parent, string Name)[] procs)
