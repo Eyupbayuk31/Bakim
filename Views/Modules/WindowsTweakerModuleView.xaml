@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:helpers="clr-namespace:Bakım.Helpers"
              xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
@@ -16,7 +17,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- 0: Header & Top Actions -->
             <RowDefinition Height="Auto"/> <!-- 1: Result Banner -->
-            <RowDefinition Height="Auto"/> <!-- 2: Metric Cards -->
+            <RowDefinition Height="Auto"/> <!-- 2: (boş) -->
             <RowDefinition Height="*"/>    <!-- 3: Master-Detail Workspace -->
         </Grid.RowDefinitions>
 
@@ -24,53 +25,42 @@
                 <!-- Sayfa basligi — tasarim sistemi bileseni -->
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
-                         HeaderMargin="0,0,0,20"
+                         HeaderMargin="0,0,0,16"
                          Title="Windows Ayarları"
                          Description="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar.">
             <c:SectionHeader.Actions>
-                <!-- Top Actions Toolbar -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <ui:Button Appearance="Secondary"
-                Content="Varsayılanlara dön"
-                Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
-                ToolTip="Tüm ayarları orijinal Windows fabrika değerlerine sıfırlar"
-                Command="{Binding RestoreDefaultsCommand}"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                Padding="14,8"
-                Margin="0,0,8,0"/>
-
-                <ui:Button Appearance="Secondary"
-                Content="Yedekten geri yükle"
-                Icon="{ui:SymbolIcon History24}"
-                ToolTip="Sistemin ilk ayarlar yedeğini (Snapshot) geri yükler"
-                Command="{Binding RestoreFromSnapshotCommand}"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                Padding="14,8"
-                Margin="0,0,8,0"/>
-
-                <ui:Button Appearance="Secondary"
-                Content="Gezgini yeniden başlat"
-                Icon="{ui:SymbolIcon ArrowClockwise24}"
-                ToolTip="Masaüstü ve Görev Çubuğu ayarlarının yansıması için Windows Gezgini'ni yeniden başlatır"
-                Command="{Binding RestartExplorerCommand}"
-                Visibility="{Binding CanRestartExplorer, Converter={StaticResource BoolToVis}}"
-                Padding="14,8"
-                Margin="0,0,8,0"/>
-
-                <ui:Button Appearance="Primary"
-                Content="Önerilenleri uygula"
-                Icon="{ui:SymbolIcon CheckmarkCircle24}"
-                Command="{Binding ApplyAllRecommendedCommand}"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                Padding="16,8"
-                Margin="0,0,8,0"/>
-
-                <ui:Button Appearance="Secondary"
-                Content="Yenile"
-                Icon="{ui:SymbolIcon ArrowClockwise24}"
-                Command="{Binding RefreshAllCommand}"
-                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
-                Padding="14,8"/>
+                    <ui:Button Appearance="Secondary"
+                               Content="Gezgini yeniden başlat"
+                               Icon="{ui:SymbolIcon ArrowClockwise24}"
+                               ToolTip="Masaüstü ve görev çubuğu değişikliklerinin görünmesi için Windows Gezgini'ni yeniden başlatır"
+                               Command="{Binding RestartExplorerCommand}"
+                               Visibility="{Binding CanRestartExplorer, Converter={StaticResource BoolToVis}}"
+                               Margin="{StaticResource Gap.Right.SM}"/>
+                    <ui:Button Appearance="Primary"
+                               Content="Önerilenleri uygula"
+                               Command="{Binding ApplyAllRecommendedCommand}"
+                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
+                               Margin="{StaticResource Gap.Right.SM}"/>
+                    <ui:DropDownButton Appearance="Secondary"
+                                       Icon="{ui:SymbolIcon MoreHorizontal24}"
+                                       ToolTip="Diğer seçenekler"
+                                       AutomationProperties.Name="Diğer seçenekler">
+                        <ui:DropDownButton.Flyout>
+                            <ContextMenu>
+                                <MenuItem Header="Yenile"
+                                          Command="{Binding RefreshAllCommand}"
+                                          Icon="{ui:SymbolIcon ArrowClockwise20}"/>
+                                <Separator/>
+                                <MenuItem Header="Yedekten geri yükle"
+                                          Command="{Binding RestoreFromSnapshotCommand}"
+                                          Icon="{ui:SymbolIcon History20}"/>
+                                <MenuItem Header="Windows varsayılanlarına dön"
+                                          Command="{Binding RestoreDefaultsCommand}"
+                                          Icon="{ui:SymbolIcon ArrowCounterclockwise20}"/>
+                            </ContextMenu>
+                        </ui:DropDownButton.Flyout>
+                    </ui:DropDownButton>
                 </StackPanel>
             </c:SectionHeader.Actions>
         </c:SectionHeader>
@@ -83,132 +73,31 @@
                     Message="{Binding OperationResultBanner}" 
                     Margin="0,0,0,16"/>
 
-        <!-- 2. Metric Overview Cards -->
-        <Grid Grid.Row="2" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="14"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Card 1: Total Tweaks -->
-            <ui:Card Grid.Column="0" Padding="16,14">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Toplam ince ayar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Wrench24" FontSize="24" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
-
-            <!-- Card 2: Active Tweaks -->
-            <ui:Card Grid.Column="2" Padding="16,14">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Aktif özelleştirme" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
-                            <TextBlock Text="{Binding Stats.ActiveTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorSuccessBrush}"/>
-                            <TextBlock Text=" / " FontSize="{StaticResource Font.Subtitle}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding Stats.TotalTweaksCount}" FontSize="{StaticResource Font.Subtitle}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="CheckmarkCircle24" FontSize="24" Foreground="{DynamicResource SystemFillColorSuccessBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
-
-            <!-- Card 3: Windows 11 Ayarları -->
-            <ui:Card Grid.Column="4" Padding="16,14">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Windows 11 ayarları" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.Windows11TweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="AppGeneric24" FontSize="24" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
-
-            <!-- Card 4: Görünüm & Tema -->
-            <ui:Card Grid.Column="6" Padding="16,14">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="Görünüm ve tema" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="{Binding Stats.AppearanceTweaksCount}" FontSize="{StaticResource Font.Title}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,2,0,0"/>
-                    </StackPanel>
-                    <ui:SymbolIcon Grid.Column="1" Symbol="Color24" FontSize="24" Foreground="{DynamicResource SystemFillColorCautionBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </ui:Card>
-        </Grid>
-
         <!-- 3. Master-Detail Workspace -->
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="260"/>
-                <ColumnDefinition Width="18"/>
+                <ColumnDefinition Width="24"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Left Pane: Category Navigation Rail (Column 0) -->
-            <Border Grid.Column="0" 
-                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.LG}"
-                    Padding="8,12">
+            <Border Grid.Column="0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Category Rail Header -->
-                    <Border Grid.Row="0" Padding="10,4,10,12" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <ui:SymbolIcon Grid.Column="0" Symbol="Grid24" FontSize="16" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="1" Text="KATEGORİLER" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
-                            <Border Grid.Column="2" CornerRadius="{StaticResource Radius.LG}" Padding="6,2" Background="{DynamicResource SubtleFillColorTertiaryBrush}">
-                                <TextBlock Text="{Binding CategoryList.Count}" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            </Border>
-                        </Grid>
-                    </Border>
-
                     <!-- Scrollable Categories List -->
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,8,0,0">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <ItemsControl ItemsSource="{Binding CategoryList}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type models:TweakerCategoryModel}">
-                                    <ui:Button Appearance="{Binding IsSelected, Converter={StaticResource BoolToNavAppearance}}"
-                                               HorizontalAlignment="Stretch"
-                                               HorizontalContentAlignment="Stretch"
-                                               Command="{Binding DataContext.SwitchCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                               CommandParameter="{Binding Key}"
-                                               Margin="0,0,0,4"
-                                               Padding="10,8"
+                                    <Button Style="{StaticResource Nav.ItemButton}"
+                                            helpers:NavSelection.IsSelected="{Binding IsSelected}"
+                                            Command="{Binding DataContext.SwitchCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding Key}"
                                                ToolTipService.InitialShowDelay="150"
                                                ToolTipService.ShowDuration="20000"
                                                ToolTipService.BetweenShowDelay="100">
@@ -218,15 +107,13 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <ui:SymbolIcon Grid.Column="0" Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" FontSize="15" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                                            <Border Grid.Column="2" CornerRadius="{StaticResource Radius.MD}" Padding="6,2" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" VerticalAlignment="Center" Margin="6,0,0,0">
-                                                <TextBlock Text="{Binding CountBadge}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            </Border>
+                                            <ui:SymbolIcon Grid.Column="0" Symbol="{Binding IconSymbol, Converter={StaticResource SafeSymbol}}" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="{StaticResource Font.Body}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="2" Text="{Binding CountBadge}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                         </Grid>
 
                                         <!-- Rich Category Hover ToolTip -->
-                                        <ui:Button.ToolTip>
+                                        <Button.ToolTip>
                                             <ToolTip Background="{DynamicResource Brush.Surface.Background}"
                                                      BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                                      BorderThickness="1"
@@ -267,8 +154,8 @@
                                                     </TextBlock>
                                                 </StackPanel>
                                             </ToolTip>
-                                        </ui:Button.ToolTip>
-                                    </ui:Button>
+                                        </Button.ToolTip>
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -292,21 +179,13 @@
 
                     <!-- Active Category Title & Hint -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border CornerRadius="{StaticResource Radius.SM}" Padding="8,4" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="1" Margin="0,0,10,0">
-                            <TextBlock Text="{Binding ActiveCategoryDisplayName}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                        </Border>
-                        <TextBlock Text="Seçili kategorideki ince ayarları yapılandırabilir veya filtreleyebilirsiniz." 
-                                   FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ActiveCategoryDisplayName}" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                     </StackPanel>
 
                     <!-- Global Smart Search Box with Results Badge -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="{DynamicResource Brush.Badge.Background}"
-                                BorderBrush="{DynamicResource Brush.Badge.Border}"
-                                BorderThickness="1"
-                                CornerRadius="{StaticResource Radius.SM}"
-                                Padding="8,4"
-                                Margin="0,0,8,0"
+                        <Border Padding="0"
+                                Margin="0,0,12,0"
                                 Visibility="{Binding IsSearchActive, Converter={StaticResource BoolToVis}}">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Search20" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,4,0"/>
@@ -315,7 +194,7 @@
                         </Border>
 
                         <ui:AutoSuggestBox x:Name="TweakerSearchBox" 
-                                           PlaceholderText="Ayar veya özellik ara... (Ctrl + F)" 
+                                           PlaceholderText="Ayar ara (Ctrl+F)" 
                                            Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                            Icon="{ui:SymbolIcon Search24}"
                                            VerticalContentAlignment="Center"
@@ -339,7 +218,7 @@
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     <Setter Property="VerticalContentAlignment" Value="Center"/>
                     <Setter Property="Padding" Value="0"/>
-                    <Setter Property="Margin" Value="0,0,0,8"/>
+                    <Setter Property="Margin" Value="{StaticResource Gap.Card}"/>
                     <Setter Property="Background" Value="Transparent"/>
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Template">
@@ -354,7 +233,7 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate DataType="{x:Type models:SystemTweakItem}">
-                    <ui:Card Padding="18,14" ClipToBounds="False"
+                    <ui:Card Padding="{StaticResource Pad.SettingsCard}" ClipToBounds="False"
                              ToolTipService.InitialShowDelay="200"
                              ToolTipService.ShowDuration="30000"
                              ToolTipService.BetweenShowDelay="100">
@@ -434,65 +313,9 @@
 
                             <!-- Left Content: Badges, Title, Description -->
                             <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                    <!-- Category Badge -->
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="8,2" 
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                            BorderThickness="1" 
-                                            Margin="0,0,8,0"
-                                            Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
-                                        <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Micro}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </Border>
-
-                                    <!-- Restart Notice Badge -->
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="8,2" 
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                            BorderThickness="1" 
-                                            Margin="0,0,8,0"
-                                            Visibility="{Binding RestartNotice, Converter={StaticResource NullToVisibilityConverter}}">
-                                        <TextBlock Text="{Binding RestartNotice}" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                    </Border>
-
-                                    <!-- Admin Badge (if needed) -->
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="8,2" 
-                                            Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
-                                            BorderThickness="1"
-                                            Margin="0,0,8,0"
-                                            Visibility="{Binding RequiresAdmin, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Yönetici yetkisi" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                                    </Border>
-
-                                    <!-- Güvenlik etkisi rozetleri (S-16) -->
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="8,2"
-                                            Background="{DynamicResource SystemFillColorCriticalBackgroundBrush}"
-                                            BorderBrush="{DynamicResource SystemFillColorCriticalBrush}"
-                                            BorderThickness="1"
-                                            Margin="0,0,8,0"
-                                            ToolTip="{Binding SecurityWarning}"
-                                            Visibility="{Binding ReducesSecurity, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Güvenliği azaltır" FontSize="{StaticResource Font.Micro}" FontWeight="SemiBold" Foreground="{DynamicResource SystemFillColorCriticalBrush}"/>
-                                    </Border>
-                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="8,2"
-                                            Background="{DynamicResource SystemFillColorCautionBackgroundBrush}"
-                                            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                                            BorderThickness="1"
-                                            Margin="0,0,8,0"
-                                            ToolTip="{Binding SecurityWarning}"
-                                            Visibility="{Binding AffectsSecurity, Converter={StaticResource BoolToVis}}">
-                                        <TextBlock Text="Güvenliği etkiler" FontSize="{StaticResource Font.Micro}" Foreground="{DynamicResource SystemFillColorCautionBrush}"/>
-                                    </Border>
-
-                                    <!-- Hover Info Icon -->
-                                    <ui:SymbolIcon Symbol="Info20" FontSize="13" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" ToolTip="Detaylı bilgi için fareyi kartın üzerinde tutun"/>
-                                </StackPanel>
-
                                 <!-- Title -->
                                 <TextBlock Text="{Binding Title}" 
                                            FontSize="{StaticResource Font.Body}" 
-                                           FontWeight="SemiBold" 
                                            Foreground="{DynamicResource TextFillColorPrimaryBrush}" 
                                            TextWrapping="Wrap"/>
 
@@ -501,7 +324,49 @@
                                            FontSize="{StaticResource Font.Caption}" 
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}" 
                                            TextWrapping="Wrap" 
-                                           Margin="0,4,0,0"/>
+                                           Margin="0,2,0,0"/>
+
+                                <WrapPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                    <!-- Category Badge -->
+                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                            Margin="0,0,6,4"
+                                            Visibility="{Binding Category, Converter={StaticResource NullToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding Category}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </Border>
+
+                                    <!-- Restart Notice Badge -->
+                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}" 
+                                            Margin="0,0,6,4"
+                                            Visibility="{Binding RestartNotice, Converter={StaticResource NullToVisibilityConverter}}">
+                                        <TextBlock Text="{Binding RestartNotice}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </Border>
+
+                                    <!-- Admin Badge (if needed) -->
+                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1" 
+                                            Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                            Margin="0,0,6,4"
+                                            Visibility="{Binding RequiresAdmin, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Yönetici gerekir" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </Border>
+
+                                    <!-- Güvenlik etkisi rozetleri (S-16) -->
+                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1"
+                                            Background="{DynamicResource Status.Critical.Subtle}"
+                                            Margin="0,0,6,4"
+                                            ToolTip="{Binding SecurityWarning}"
+                                            Visibility="{Binding ReducesSecurity, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Güvenliği azaltır" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </Border>
+                                    <Border CornerRadius="{StaticResource Radius.XS}" Padding="6,1"
+                                            Background="{DynamicResource Status.Caution.Subtle}"
+                                            Margin="0,0,6,4"
+                                            ToolTip="{Binding SecurityWarning}"
+                                            Visibility="{Binding AffectsSecurity, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Güvenliği etkiler" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                    </Border>
+                                </WrapPanel>
 
                                 <!-- Neyi değiştirir? (veri tabanlı ayarlar: gerçek kayıt yolları, §5.16 şeffaflık) -->
                                 <Expander Header="Neyi değiştirir?" Margin="0,6,0,0" Padding="0"
@@ -566,7 +431,7 @@
                       Visibility="{Binding IsToolsTabVisible, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <!-- Tool 1: Reset Cache Engine -->
-                <ui:Card Padding="18" Margin="0,0,0,14">
+                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -575,14 +440,14 @@
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                 <ui:SymbolIcon Symbol="ArrowSync24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="Önbellek sıfırlama" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Önbellek sıfırlama" Style="{StaticResource Text.SettingTitle}"/>
                             </StackPanel>
                             <TextBlock Text="Bozulmuş simgeleri, beyaz dosya ikonlarını ve siyah küçük resim önizlemelerini onarmak için IconCache.db, Thumbnail ve Tray bildirim önbelleklerini temizleyip Explorer'ı yeniden başlatır." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <ui:Button Grid.Column="1" 
                                    Appearance="Secondary"
-                                   Content="Önbellekleri sıfırla ve Explorer'ı başlat"
+                                   Content="Sıfırla"
                                    Icon="{ui:SymbolIcon ArrowSync24}"
                                    Command="{Binding ResetCachesCommand}"
                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
@@ -592,7 +457,7 @@
                 </ui:Card>
 
                 <!-- Tool 2: Run as TrustedInstaller -->
-                <ui:Card Padding="18" Margin="0,0,0,14">
+                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -601,7 +466,7 @@
                         <StackPanel Grid.Row="0" Margin="0,0,0,10">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                 <ui:SymbolIcon Symbol="ShieldKeyhole24" FontSize="20" Foreground="{DynamicResource SystemFillColorCriticalBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="TrustedInstaller yetkisiyle program / komut çalıştır" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="TrustedInstaller olarak çalıştır" Style="{StaticResource Text.SettingTitle}"/>
                             </StackPanel>
                             <TextBlock Text="SYSTEM kullanıcısının dahi erişemediği kilitli Windows sistem dosyalarını ve kayıt defteri alanlarını yönetmek için NT AUTHORITY\TrustedInstaller imtiyazıyla komut çalıştırır." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -613,13 +478,13 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox Grid.Column="0" 
                                         Text="{Binding TrustedInstallerCommandInput, Mode=TwoWay}"
-                                        PlaceholderText="Çalıştırılacak komut (Örn: cmd.exe, regedit.exe, powershell.exe)"
+                                        PlaceholderText="Komut (ör. cmd.exe, regedit.exe)"
                                         VerticalContentAlignment="Center"
                                         Padding="10,8"
                                         Margin="0,0,12,0" AutomationProperties.Name="Çalıştırılacak komut (Örn: cmd.exe, regedit.exe, powershell.exe)"/>
                             <ui:Button Grid.Column="1" 
                                        Appearance="Secondary"
-                                       Content="TrustedInstaller olarak başlat"
+                                       Content="Çalıştır"
                                        Icon="{ui:SymbolIcon Play24}"
                                        Command="{Binding LaunchTrustedInstallerCommand}"
                                        Padding="16,8"/>
@@ -628,7 +493,7 @@
                 </ui:Card>
 
                 <!-- Tool 3: Elevated Shortcut Creator -->
-                <ui:Card Padding="18" Margin="0,0,0,14">
+                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -637,7 +502,7 @@
                         <StackPanel Grid.Row="0" Margin="0,0,0,10">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                 <ui:SymbolIcon Symbol="Link24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="UAC'siz yönetici kısayolu oluştur (Elevated Shortcut)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Onaysız yönetici kısayolu" Style="{StaticResource Text.SettingTitle}"/>
                             </StackPanel>
                             <TextBlock Text="Görev Zamanlayıcı ile, tıklandığında UAC onayı sormadan yönetici olarak açılan bir masaüstü kısayolu üretir. Güvenlik için yalnızca Program Files ya da Windows altındaki ve standart kullanıcıların değiştiremediği programlar kabul edilir." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
@@ -650,7 +515,7 @@
                             </Grid.ColumnDefinitions>
                             <ui:TextBox Grid.Column="0" 
                                         Text="{Binding ElevatedShortcutTargetPath, Mode=TwoWay}"
-                                        PlaceholderText="Programın tam yolu (Örn: C:\Program Files\App\app.exe)"
+                                        PlaceholderText="Programın tam yolu"
                                         VerticalContentAlignment="Center"
                                         Padding="10,8"
                                         Margin="0,0,10,0" AutomationProperties.Name="Programın tam yolu (Örn: C:\Program Files\App\app.exe)"/>
@@ -662,7 +527,7 @@
                                         Margin="0,0,10,0" AutomationProperties.Name="Kısayol Adı"/>
                             <ui:Button Grid.Column="2" 
                                        Appearance="Secondary"
-                                       Content="Kısayolu oluştur"
+                                       Content="Oluştur"
                                        Icon="{ui:SymbolIcon CheckmarkCircle24}"
                                        Command="{Binding CreateElevatedShortcutCommand}"
                                        Padding="16,8"/>
@@ -671,7 +536,7 @@
                 </ui:Card>
 
                 <!-- Tool 4: OEM & Registered Owner Editor -->
-                <ui:Card Padding="18" Margin="0,0,0,14">
+                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Card}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -681,7 +546,7 @@
                         <StackPanel Grid.Row="0" Margin="0,0,0,12">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                 <ui:SymbolIcon Symbol="Person24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="OEM bilgileri ve kayıtlı kullanıcı değiştirici" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Üretici ve kayıtlı kullanıcı bilgisi" Style="{StaticResource Text.SettingTitle}"/>
                             </StackPanel>
                             <TextBlock Text="Windows Sistem Özellikleri sayfasında görünen Cihaz Üreticisi, Modeli, Destek Bilgileri ve Kayıtlı Kullanıcı/Kurum adını özelleştirin." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
@@ -700,7 +565,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Row="0" Grid.Column="0">
-                                <TextBlock Text="Üretici (Manufacturer)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Üretici" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                                 <ui:TextBox Text="{Binding OemInfo.Manufacturer, Mode=TwoWay}" AutomationProperties.Name="Üretici adı" Padding="10,8"/>
                             </StackPanel>
 
@@ -710,19 +575,19 @@
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="0">
-                                <TextBlock Text="Kayıtlı sahip (Registered Owner)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Kayıtlı sahip" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                                 <ui:TextBox Text="{Binding OemInfo.RegisteredOwner, Mode=TwoWay}" AutomationProperties.Name="Kayıtlı sahip" Padding="10,8"/>
                             </StackPanel>
 
                             <StackPanel Grid.Row="2" Grid.Column="2">
-                                <TextBlock Text="Kayıtlı kurum (Organization)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                                <TextBlock Text="Kurum" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                                 <ui:TextBox Text="{Binding OemInfo.RegisteredOrganization, Mode=TwoWay}" AutomationProperties.Name="Kayıtlı kuruluş" Padding="10,8"/>
                             </StackPanel>
                         </Grid>
 
                         <ui:Button Grid.Row="2" 
                                    Appearance="Secondary"
-                                   Content="OEM ve Kullanıcı Bilgilerini Kaydet"
+                                   Content="Kaydet"
                                    Icon="{ui:SymbolIcon Save24}"
                                    Command="{Binding SaveOemInfoCommand}"
                                    IsEnabled="{Binding OemInfo.IsBusy, Converter={StaticResource InverseBool}}"
@@ -732,7 +597,7 @@
                 </ui:Card>
 
                 <!-- Tool 5: Reset Local Group Policy -->
-                <ui:Card Padding="18">
+                <ui:Card Padding="{StaticResource Pad.SettingsCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -741,14 +606,14 @@
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                 <ui:SymbolIcon Symbol="ShieldDismiss24" FontSize="20" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,8,0"/>
-                                <TextBlock Text="Yerel grup ilkelerini sıfırla (Reset Local GPO)" FontSize="{StaticResource Font.BodyLarge}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Yerel grup ilkelerini sıfırla" Style="{StaticResource Text.SettingTitle}"/>
                             </StackPanel>
                             <TextBlock Text="Kötü amaçlı yazılımlar veya yanlış yapılandırmalar sonucu kilitlenen tüm yerel grup politikalarını ve güvenlik şablonlarını secedit ve gpupdate /force ile sıfırlar." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <ui:Button Grid.Column="1" 
                                    Appearance="Secondary"
-                                   Content="GPO ilkelerini sıfırla"
+                                   Content="Sıfırla"
                                    Icon="{ui:SymbolIcon ArrowCounterclockwise24}"
                                    Command="{Binding ResetLocalGroupPolicyCommand}"
                                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}"
@@ -766,7 +631,7 @@
                       Visibility="{Binding IsAdvancedAppearanceTabVisible, Converter={StaticResource BoolToVis}}">
             <StackPanel>
                 <!-- Hero Info Card -->
-                <ui:Card Padding="20" Margin="0,0,0,16">
+                <ui:Card Padding="{StaticResource Pad.SettingsCard}" Margin="{StaticResource Gap.Bottom.MD}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -774,21 +639,21 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
-                                <ui:SymbolIcon Symbol="FontIncrease24" FontSize="24" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
-                                <TextBlock Text="Gelişmiş görünüm ve pencere metrikleri (WindowMetrics)" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <ui:SymbolIcon Symbol="FontIncrease24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                <TextBlock Text="Pencere ölçüleri" Style="{StaticResource Text.SettingTitle}"/>
                             </StackPanel>
-                            <TextBlock Text="Masaüstü simge aralıkları, pencerelerin kenarlık kalınlıkları, kaydırma çubuğu genişliği, menü ve başlık çubuğu yüksekliklerini doğrudan piksel seviyesinde kontrol edin. Değişiklikler DWM yayın protokolü ile anında uygulanır." 
+                            <TextBlock Text="Masaüstü simge aralığı, kenarlık kalınlığı, kaydırma çubuğu ve başlık çubuğu yüksekliği. Değişiklikler kaydettiğinizde uygulanır." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <ui:Button Appearance="Secondary"
-                                       Content="Metrikleri kaydet ve DWM yenile"
+                                       Content="Kaydet"
                                        Icon="{ui:SymbolIcon Save24}"
                                        Command="{Binding SaveWindowMetricsCommand}"
                                        Padding="16,10"
                                        Margin="0,0,8,0"/>
                             <ui:Button Appearance="Secondary"
-                                       Content="Varsayılanlara sıfırla"
+                                       Content="Varsayılana dön"
                                        Icon="{ui:SymbolIcon ArrowReset24}"
                                        Command="{Binding ResetWindowMetricsToDefaultsCommand}"
                                        Padding="14,10"/>
@@ -805,7 +670,7 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- Left Card: Desktop Icons & Scrollbars -->
-                    <ui:Card Grid.Column="0" Padding="18">
+                    <ui:Card Grid.Column="0" Padding="{StaticResource Pad.Card}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <ui:SymbolIcon Symbol="Desktop24" FontSize="20" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
@@ -813,7 +678,7 @@
                             </StackPanel>
 
                             <!-- Horizontal Icon Spacing -->
-                            <TextBlock Text="Yatay simge boşluğu (Icon Spacing)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Yatay simge boşluğu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,14">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -824,7 +689,7 @@
                             </Grid>
 
                             <!-- Vertical Icon Spacing -->
-                            <TextBlock Text="Dikey simge boşluğu (Icon Vertical Spacing)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Dikey simge boşluğu" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,14">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -835,7 +700,7 @@
                             </Grid>
 
                             <!-- Scrollbar Width -->
-                            <TextBlock Text="Kaydırma çubuğu genişliği (Scrollbar Width)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Kaydırma çubuğu genişliği" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -848,7 +713,7 @@
                     </ui:Card>
 
                     <!-- Right Card: Borders & Title Bars -->
-                    <ui:Card Grid.Column="2" Padding="18">
+                    <ui:Card Grid.Column="2" Padding="{StaticResource Pad.Card}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                 <ui:SymbolIcon Symbol="Window24" FontSize="20" Foreground="{DynamicResource SystemFillColorSuccessBrush}" Margin="0,0,8,0"/>
@@ -856,7 +721,7 @@
                             </StackPanel>
 
                             <!-- Border Width -->
-                            <TextBlock Text="Pencere kenarlık kalınlığı (Border Width)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Pencere kenarlık kalınlığı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,14">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -867,7 +732,7 @@
                             </Grid>
 
                             <!-- Padded Border Width -->
-                            <TextBlock Text="Dolgulu kenarlık kalınlığı (Padded Border)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Dolgulu kenarlık kalınlığı" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,14">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -878,7 +743,7 @@
                             </Grid>
 
                             <!-- Caption Height -->
-                            <TextBlock Text="Pencere başlık çubuğu yüksekliği (Caption Height)" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Pencere başlık çubuğu yüksekliği" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
                             <Grid Margin="0,0,0,6">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -899,7 +764,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                            <TextBlock Text="İnaktif başlık çubuğu rengi (Inactive Title Bar Color)" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
+                            <TextBlock Text="İnaktif başlık çubuğu rengi" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,0,4"/>
                             <TextBlock Text="Arka planda kalan inaktif pencerelerin başlık çubuğu rengini belirleyin (Hex formatında örn: #2B2B2B, #1E293B, #334155)." 
                                        FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,8"/>
                             <StackPanel Orientation="Horizontal">
