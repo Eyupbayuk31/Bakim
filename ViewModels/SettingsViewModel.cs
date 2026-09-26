@@ -1116,17 +1116,17 @@ namespace Bakım.ViewModels
 
             var v460 = new ReleaseChangelogItem
             {
-                Version = "v4.6.2",
+                Version = "v4.6.3",
                 ReleaseDate = "Eylül 2026",
-                Title = "Kompakt Sol Menü (216px Fluent Orantısı) & Akıcı Çalışma Alanı",
+                Title = "Fluent 2 Kontrol Paneli Sağlık Kartı Modernizasyonu & Rafine Kart Satırları",
                 IsLatest = true,
                 IsExpanded = true,
                 Highlights = new List<string>
                 {
-                    "Kompakt ve Orantılı Sol Menü: Eski 260px sabit genişlik, Windows 11 Fluent 2 standardına (216px / 8-grid) uyarlanarak sağa doğru yayılan gereksiz 44px boşluk temizlendi; aktif menü hapları (pill) öğeleri zarifçe sarar hale getirildi.",
-                    "Genişleyen İçerik Alanı: Sol menünün daralmasıyla ana modül sayfalarına (Temizleyici, Depolama, Optimizatör, Ayarlar) +44px daha geniş ve ferah bir çalışma alanı kazandırıldı.",
-                    "Dikey Hizalama Kusursuzluğu: Kaydırma alanı içindeki liste öğeleri ile alt taraftaki Ayarlar butonu arasındaki 4px kenar marjin farkı giderilerek sağ kenar hizası milimetrik olarak eşitlendi.",
-                    "Sıkı Doğrulama: 4 gatekeeper denetimi ve 783 testin tümü yeşil teyit edildi."
+                    "Dinamik Sağlık Göstergesi: Puan halkasına kılavuz zemin dairesi ve sağlık durumuna (İyi / Dikkat / Kritik) göre renk alan dinamik vurgu arkı eklendi; '80 / 100' formatında net tipografi sağlandı.",
+                    "Rafine Kart Satırları: Eski düz ve kopuk 1px çizgili satırlar; durum ve bileşen simgeli 36x36 özel rozet kutuları, iki satırlı başlık/açıklama dikey hiyerarşisi, dinamik renkli puan düşüş hapı ve ikincil eylem butonlarıyla donatılmış interaktif kartlara dönüştürüldü.",
+                    "Akıllı Sağlıklı Bileşenler Genişleticisi: İyi durumdaki bileşenler için alt tarafta yeşil onay rozeti ve minimalist 'Göster / gizle' hapı içeren modern açılır kart yapısı kurgulandı.",
+                    "Sıkı Doğrulama: 4 gatekeeper denetimi ve 783 birim testin tümü yeşil teyit edildi."
                 }
             };
 

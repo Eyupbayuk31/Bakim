@@ -7,7 +7,7 @@
 ; Sürüm iş akışı /DMyAppVersion=X.Y.Z verir. Yerel derleme varsayılanı
 ; Directory.Build.props içindeki BakimVersion ile aynı olmalı (Core testi denetler).
 #ifndef MyAppVersion
-  #define MyAppVersion "4.6.2"
+  #define MyAppVersion "4.6.3"
 #endif
 #define MyAppPublisher "Eyüp"
 #define MyAppURL "https://github.com/Eyupbayuk31/Bakim"

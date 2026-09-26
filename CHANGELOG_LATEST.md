@@ -1,31 +1,37 @@
-# Bakım v4.6.2 - Sürüm Notları
+# Bakım v4.6.3 - Sürüm Notları
 
-## Kompakt Sol Menü (216px Fluent Orantısı), Rafine Hizalama & Genişletilmiş Çalışma Alanı
+## Fluent 2 Kontrol Paneli Sağlık Kartı Modernizasyonu, İnteraktif Kart Satırları & Akıllı Genişletici
 
-Bakım v4.6.2 sürümü; sol menünün sağa doğru aşırı yayvanlaşan 260 piksellik eski sabit genişliğini Windows 11 Fluent 2 standartlarına (216px / 8-grid) uyarlayarak menüyü orantısal olarak sıkılaştırmakta, içerik modüllerine fazladan çalışma alanı kazandırmakta ve dikey liste öğeleri ile alt butonlar arasındaki kenar hizasını milimetrik olarak eşitlemektedir.
-
----
-
-### 1. Kompakt ve Orantılı Sol Menü (216px Fluent 2 Standardı)
-- **44 Piksel İncelme & Akıcı Oran:**
-  - Ana pencere sol gezinme çekmecesi (`NavSidebar`) genişliği 260px'den 216px'e optimize edildi.
-  - Seçili menü hapları (capsule pill) artık içeriğin etrafında gereksiz boşluk bırakmadan öğeleri zarif ve dengeli bir şekilde sarıyor.
-  - Tüm menü metinleri ("Hizmetler ve sürücüler" dahil) kalın (SemiBold) vurguda dahi kesintiye uğramadan, üç nokta (`...`) olmadan tam sığıyor.
-  - Menü daraltma (64px) ve açma (216px) geçiş animasyonu yeni kompakt genişliğe göre güncellendi.
+Bakım v4.6.3 sürümü; Kontrol Paneli'ndeki sistem sağlık kartını Windows 11 Fluent 2 standartlarında modern ve zengin bir gösterge paneline dönüştürmekte, eski 1px çizgili ayrık satırları interaktif kart döşemeleriyle yenilemekte ve sağlıklı bileşenler için şık bir açılır kart mimarisi sunmaktadır.
 
 ---
 
-### 2. Genişletilmiş Ana Çalışma Alanı
-- **Modüllere +44 Piksel Ekstra Alan:**
-  - Sol menünün kompaktlaşması sayesinde sağdaki içerik alanına (Temizleyici, Depolama, Optimizatör, Analizör, Ayarlar) tam 44px daha geniş bir yatay çalışma alanı sağlandı.
-  - Disk haritası kartları, işlem tabloları ve istatistik panelleri daha ferah bir alanda görselleştirildi.
+### 1. Dinamik Çift Katmanlı Sağlık Göstergesi
+- **Kılavuz Zemin Arkı & Anlamsal Renklendirme:**
+  - Puan halkasına (`ui:ProgressRing`) arka plan kılavuz dairesi eklenerek ölçümün 100 üzerinden derinliği belirginleştirildi.
+  - Halkanın ilerleme rengi sistemin sağlık durumuna göre dinamik hale getirildi: İyi durumda yeşil (`Success`), dikkat durumunda kehribar (`Caution`), kritik durumlarda kırmızı (`Critical`).
+  - Merkezdeki sayısal puanın altına `/ 100` alt etiketi eklenerek göstergenin okunabilirliği ve profesyonel görünümü artırıldı.
 
 ---
 
-### 3. Milimetrik Dikey Kenar Hizalaması
-- **Kusursuz Sağ Kenar Çizgisi:**
-  - Üst gezinme listesindeki kaydırma alanı tolerans marjini (`Margin="0,0,4,0"`) kaldırılarak `Margin="0"` yapıldı.
-  - Böylece üstteki modül butonları ile alttaki "Ayarlar" butonunun sağ kenarları dikey eksende 100% eşitlendi.
+### 2. İnteraktif ve Zengin Kart Satırları (Health Tile Rows)
+- **36×36 Durum ve Bileşen Simgeli Rozet Kutuları:**
+  - Kararlılık (son 7 gün), Son temizlik, Microsoft Defender, Sistem sürücüsü ve Başlangıç programları için bağlamsal Fluent simgeleri (`HeartPulse`, `Broom`, `ShieldCheckmark`, `HardDrive`, `Rocket`) içeren yumuşak rozet kutuları oluşturuldu.
+- **İki Satırlı Dikey Hiyerarşi:**
+  - Başlık ve detay metinleri arasındaki 200px'lik yapay boşluk kaldırılarak modern dikey hiyerarşi (SemiBold başlık + ikincil açıklama) kuruldu.
+- **Puan Düşüş Hapı (Deduction Chip):**
+  - Puandan düşülen değerler (`-15 puan`, `-5 puan`) durum rengiyle uyumlu, göze batmayan ince kenarlıklı rozet haplar içerisine alındı.
+- **İkincil Eylem Düğmeleri:**
+  - "Çökmeleri incele" ve "Temizle" gibi bağlantılar, sağ ok simgeli modern ikincil düğmelere (`ui:Button Appearance="Secondary"`) dönüştürüldü.
+- **Mikro Etkileşim:**
+  - Her satıra fare üzerine gelindiğinde devreye giren hafif zemin ve kenarlık aydınlatması eklendi.
+
+---
+
+### 3. Akıllı Sağlıklı Bileşenler Genişleticisi
+- **Minimalist Başarı Kartı:**
+  - İyi durumdaki bileşenler için alt tarafta yeşil onay rozeti ve "Göster / gizle" hapı içeren ayrılmış bir açılır kart tasarlandı.
+  - Açıldığında tüm sağlıklı bileşenler aynı zengin kart satırı mimarisiyle listeleniyor.
 
 ---
 

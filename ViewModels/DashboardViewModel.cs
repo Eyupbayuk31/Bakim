@@ -579,6 +579,17 @@ namespace Bakım.ViewModels
         public string DeductionText => Component.Deduction > 0 ? $"−{Component.Deduction}" : string.Empty;
         public bool HasDeduction => Component.Deduction > 0;
 
+        public Wpf.Ui.Controls.SymbolRegular Icon => Component.Key switch
+        {
+            "disk" => Wpf.Ui.Controls.SymbolRegular.HardDrive20,
+            "startup" => Wpf.Ui.Controls.SymbolRegular.Rocket24,
+            "stability" => Wpf.Ui.Controls.SymbolRegular.HeartPulse24,
+            "defender" => Wpf.Ui.Controls.SymbolRegular.ShieldCheckmark24,
+            "reboot" => Wpf.Ui.Controls.SymbolRegular.ArrowSync24,
+            "cleanup" => Wpf.Ui.Controls.SymbolRegular.Broom24,
+            _ => Wpf.Ui.Controls.SymbolRegular.Info24
+        };
+
         public Models.Intent Intent => Component.Level switch
         {
             Bakım.Core.Health.HealthLevel.Good => Models.Intent.Success,
