@@ -36,7 +36,7 @@
     <sys:Double x:Key="Font.BodyLarge">14</sys:Double>
 
     <!-- Kart içi alt başlık (Fluent Body Large) -->
-    <sys:Double x:Key="Font.Subtitle">18</sys:Double>
+    <sys:Double x:Key="Font.Subtitle">20</sys:Double>
 
     <!-- Kart / bölüm başlığı (Fluent Subtitle) -->
     <sys:Double x:Key="Font.SectionTitle">20</sys:Double>

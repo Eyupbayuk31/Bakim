@@ -25,6 +25,7 @@
                 <ResourceDictionary Source="Themes/Tokens/SegmentedControl.xaml"/>
                 <ResourceDictionary Source="Themes/Controls/NavItem.xaml"/>
                 <ResourceDictionary Source="Themes/Controls/Fluent.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/Layout.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->
