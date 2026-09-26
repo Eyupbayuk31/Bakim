@@ -69,6 +69,7 @@ namespace Bakım.ViewModels
             _settings = settings;
             _isEnabled = sentinel.IsEnabled;
             _notifyLevel = settings.Current.SentinelNotifyLevel;
+            _watchBackgroundInstalls = settings.Current.SentinelWatchBackgroundInstalls;
 
             _sentinel.SetupFinished += report => OnUi(() => { if (_isActive) Refresh(); });
             _sentinel.SetupDetected += session => OnUi(UpdateStatus);
@@ -102,6 +103,15 @@ namespace Bakım.ViewModels
             _settings.Update(d => d.SentinelNotifyLevel = value);
         }
 
+        /// <summary>Oyun başlatıcıları ve güncelleyicilerin kendi başlattığı kurulumlar da izlensin mi (NÖB v3 A8)?</summary>
+        [ObservableProperty] private bool _watchBackgroundInstalls;
+
+        partial void OnWatchBackgroundInstallsChanged(bool value)
+        {
+            if (_settings.Current.SentinelWatchBackgroundInstalls == value) return;
+            _settings.Update(d => d.SentinelWatchBackgroundInstalls = value);
+        }
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasSelection))]
         private SentinelReportRow? _selected;
@@ -112,7 +122,9 @@ namespace Bakım.ViewModels
         public string ProtectionBadgeText => _sentinel.ProtectionStatus?.BadgeText ?? "Temel Mod";
         public string ProtectionDescription => _sentinel.ProtectionStatus?.Description ?? "Standart mod devrede.";
         public bool IsTamKoruma => _sentinel.ProtectionStatus?.Mode == Core.Sentinel.SentinelProtectionMode.TamKoruma;
-        public Intent ProtectionIntent => IsTamKoruma ? Intent.Accent : Intent.Neutral;
+        public Intent ProtectionIntent => _sentinel.ProtectionStatus?.Mode is Core.Sentinel.SentinelProtectionMode.TamKoruma or Core.Sentinel.SentinelProtectionMode.Gelismis
+            ? Intent.Accent
+            : Intent.Neutral;
         public string ActiveSensorsSummary => _sentinel.ProtectionStatus?.ActiveSensorsSummary ?? string.Empty;
 
         partial void OnIsEnabledChanged(bool value)

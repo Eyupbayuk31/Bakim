@@ -177,6 +177,9 @@ namespace Bakım.Core.Text
             return NameMatch.NoMatch;
         }
 
+        /// <summary>Ayırt edici olmayan genel kelime mi ("setup", "x64", "software" …)?</summary>
+        public static bool IsStopWord(string token) => StopWords.Contains(token);
+
         /// <summary>
         /// "VideoLAN VLC_Player-3" → ["video", "lan", "vlc", "player", "3"].
         /// Harf/rakam dışı her şey ayırıcıdır; küçük→büyük harf geçişleri de bölünür.

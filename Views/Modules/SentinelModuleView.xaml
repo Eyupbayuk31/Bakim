@@ -80,6 +80,12 @@
                               MinWidth="240" Margin="{StaticResource Gap.Top.XS}"
                               ToolTip="Kurulum bitince bildirim gösterilsin mi? Raporlar her durumda burada saklanır."
                               AutomationProperties.Name="Kurulum bildirimi seviyesi"/>
+                    <CheckBox IsChecked="{Binding WatchBackgroundInstalls}"
+                              Content="Arka plan kurulumlarını da izle"
+                              HorizontalAlignment="Right"
+                              Margin="{StaticResource Gap.Top.XS}"
+                              ToolTip="Steam, Riot, Epic gibi başlatıcıların ve güncelleyicilerin kendiliğinden başlattığı kurulumlar da raporlansın. Kapalıyken yalnızca sizin başlattığınız kurulumlar izlenir."
+                              AutomationProperties.Name="Başlatıcı ve güncelleyicilerin arka plan kurulumlarını da izle"/>
                 </StackPanel>
             </Grid>
         </Border>

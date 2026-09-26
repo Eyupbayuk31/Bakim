@@ -308,8 +308,8 @@ namespace Bakim.Tests
 
                 var log = new NullLogService();
                 var settings = new AppSettingsService(log);
-                var monitor = new InstallerMonitorService();
-                var sentinel = new SetupSentinelService(monitor, settings, log, store);
+
+                var sentinel = new SetupSentinelService(settings, log, store);
 
                 var asyncReports = await sentinel.LoadSavedReportsAsync();
                 Assert.NotNull(asyncReports);
@@ -355,8 +355,8 @@ namespace Bakim.Tests
 
                 var log = new NullLogService();
                 var settings = new AppSettingsService(log);
-                var monitor = new InstallerMonitorService();
-                var sentinel = new SetupSentinelService(monitor, settings, log, store);
+
+                var sentinel = new SetupSentinelService(settings, log, store);
                 var vm = new SentinelViewModel(sentinel, settings);
 
                 Assert.NotNull(vm.ProtectionBadgeText);

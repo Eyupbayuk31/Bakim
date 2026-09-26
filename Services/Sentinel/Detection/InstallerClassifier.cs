@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Bakım.Core.Sentinel;
 using Bakım.Models;
 
 namespace Bakım.Services.Sentinel.Detection
@@ -77,13 +78,7 @@ namespace Bakım.Services.Sentinel.Detection
                 cmd.Contains("/x") || cmd.Contains("-uninstall") || cmd.Contains("/uninstall"))
             {
                 kind = SessionKind.Uninstall;
-                string fallbackName = (!string.IsNullOrWhiteSpace(windowTitle) && windowTitle.Length > 2)
-                    ? windowTitle!
-                    : (!string.IsNullOrWhiteSpace(exePath) ? (Path.GetFileNameWithoutExtension(exePath) ?? processName ?? "Unknown") : (processName ?? "Unknown"));
-                detectedAppName = (!string.IsNullOrWhiteSpace(productName) && productName.Length > 2)
-                    ? productName!
-                    : fallbackName;
-                if (string.IsNullOrWhiteSpace(detectedAppName)) detectedAppName = processName ?? "Unknown";
+                detectedAppName = SetupAppName.Resolve(productName, fileDescription, windowTitle, exePath, processName);
                 confidenceScore = 90;
                 return true;
             }
@@ -162,14 +157,7 @@ namespace Bakım.Services.Sentinel.Detection
             if (confidenceScore >= 50)
             {
                 kind = SessionKind.Install;
-                string fallbackName = (!string.IsNullOrWhiteSpace(windowTitle) && windowTitle.Length > 2)
-                    ? windowTitle!
-                    : (!string.IsNullOrWhiteSpace(exePath) ? (Path.GetFileNameWithoutExtension(exePath) ?? processName ?? "Unknown") : (processName ?? "Unknown"));
-                detectedAppName = (!string.IsNullOrWhiteSpace(productName) && productName.Length > 2)
-                    ? productName!
-                    : fallbackName;
-                if (string.IsNullOrWhiteSpace(detectedAppName)) detectedAppName = processName ?? "Unknown";
-
+                detectedAppName = SetupAppName.Resolve(productName, fileDescription, windowTitle, exePath, processName);
                 return true;
             }
 

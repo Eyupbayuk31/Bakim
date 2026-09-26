@@ -89,6 +89,12 @@ namespace Bakım.Models
         /// <summary>Yeni kurulum başlatıldığında arka planda otomatik algılayıp izleme.</summary>
         public bool IsSentinelSetupGuardEnabled { get; set; } = true;
 
+        /// <summary>
+        /// Oyun başlatıcıları, güncelleyiciler ve Windows hizmetlerinin kendi başlattığı kurulumlar da
+        /// izlensin mi? Kapalıyken bunlar için oturum açılmaz (NÖB v3 A8).
+        /// </summary>
+        public bool SentinelWatchBackgroundInstalls { get; set; }
+
         // --- Gezinme (Faz 4, §2.3) ---
         /// <summary>Açılışta son açık sayfayı yükle (kapalıysa her zaman Kontrol Paneli).</summary>
         public bool OpenLastModuleOnStartup { get; set; } = true;

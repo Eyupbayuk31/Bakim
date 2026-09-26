@@ -378,10 +378,11 @@ namespace Bakım
 
         private void OnSetupFinished(SetupDeltaReport report)
         {
-            // İptal edilmiş kurulumlar veya yeni dosya/yürütülebilir üretmeyen süreçler için pencere açıp kullanıcıyı rahatsız etme.
-            if (report.AddedFiles.Count == 0 && report.AddedExecutables.Count == 0)
+            // İptal edilmiş ya da iz bırakmayan kurulumlar için pencere açılmaz. Dosya bırakmayıp başlangıç
+            // girdisi, hizmet, sertifika gibi değişiklik yapan kurulumlar yine bildirilir (NÖB v3 A1).
+            if (!SetupRiskPresentation.HasReportableChanges(report))
             {
-                AppLog.Info($"Sentinel: {report.AppName} kurulumunda yeni dosya değişikliği saptanmadığından bildirim gösterilmedi.", "SetupSentinel");
+                AppLog.Info($"Sentinel: {report.AppName} kurulumunda kayda değer değişiklik saptanmadığından bildirim gösterilmedi.", "SetupSentinel");
                 return;
             }
 

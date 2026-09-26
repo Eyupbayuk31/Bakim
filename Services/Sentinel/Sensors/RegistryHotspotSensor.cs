@@ -37,19 +37,19 @@ namespace Bakım.Services.Sentinel.Sensors
         {
             var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            // 1. HKLM Run/RunOnce Deerleri (64 & 32 bit)
+            // 1. HKLM Run/RunOnce değerleri. 32 bit girdiler WOW6432Node yollarıyla 64 bit görünümden
+            //    okunur. Registry32 görünümü ayrıca okunmaz: o görünümde "Software\Microsoft\…\Run"
+            //    aslında WOW6432Node'dur ve 64 bit anahtar adıyla yazılınca 64 bit değerleri eziyordu (A3).
             CaptureRunValues(RegistryHive.LocalMachine, RegistryView.Registry64, "HKLM", map);
-            CaptureRunValues(RegistryHive.LocalMachine, RegistryView.Registry32, "HKLM", map);
 
-            // 2. HKCU Run/RunOnce Deerleri
+            // 2. HKCU Run/RunOnce değerleri
             CaptureRunValues(RegistryHive.CurrentUser, RegistryView.Default, "HKCU", map);
 
             // 3. HKLM Services Anahtarları ve Servis Bilgileri
             CaptureServices(map);
 
-            // 4. Uninstall Anahtarlar (HKLM 64, HKLM 32, HKCU)
+            // 4. Uninstall anahtarları (HKLM 64 + WOW6432Node yolu, HKCU)
             CaptureUninstallKeys(RegistryHive.LocalMachine, RegistryView.Registry64, "HKLM", map);
-            CaptureUninstallKeys(RegistryHive.LocalMachine, RegistryView.Registry32, "HKLM", map);
             CaptureUninstallKeys(RegistryHive.CurrentUser, RegistryView.Default, "HKCU", map);
 
             return map;
@@ -78,8 +78,8 @@ namespace Bakım.Services.Sentinel.Sensors
                 {
                     // Yeni eklenen anahtar veya değer
                     string hive = key.StartsWith("HKLM", StringComparison.OrdinalIgnoreCase) ? "HKLM" : "HKCU";
-                    bool isService = key.Contains(@"\Services\", StringComparison.OrdinalIgnoreCase);
-                    bool isRun = key.Contains(@"\Run", StringComparison.OrdinalIgnoreCase);
+                    bool isService = IsServiceKey(key);
+                    bool isRun = IsRunValueKey(key);
 
                     var rec = new SetupRegistryRecord
                     {
@@ -105,8 +105,8 @@ namespace Bakım.Services.Sentinel.Sensors
                 {
                     // Değiştirilen değer
                     string hive = key.StartsWith("HKLM", StringComparison.OrdinalIgnoreCase) ? "HKLM" : "HKCU";
-                    bool isService = key.Contains(@"\Services\", StringComparison.OrdinalIgnoreCase);
-                    bool isRun = key.Contains(@"\Run", StringComparison.OrdinalIgnoreCase);
+                    bool isService = IsServiceKey(key);
+                    bool isRun = IsRunValueKey(key);
 
                     records.Add(new SetupRegistryRecord
                     {
@@ -121,6 +121,27 @@ namespace Bakım.Services.Sentinel.Sensors
 
             return (records, addedServices, addedStartupEntries);
         }
+
+        /// <summary>
+        /// Anahtar bir Run/RunOnce değeri mi? Tam yol öneki aranır: eskiden "\Run" alt dizesi
+        /// "…\Uninstall\RuneLite" gibi kayıtları da başlangıç girdisi sayıyordu (A4).
+        /// </summary>
+        public static bool IsRunValueKey(string? key)
+        {
+            if (string.IsNullOrWhiteSpace(key)) return false;
+            foreach (string hive in new[] { "HKLM", "HKCU" })
+            {
+                foreach (string runPath in RunSubKeyPaths)
+                {
+                    if (key.StartsWith($@"{hive}\{runPath}\", StringComparison.OrdinalIgnoreCase)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>Anahtar bir hizmet kaydı mı (HKLM\SYSTEM\CurrentControlSet\Services\ad)?</summary>
+        public static bool IsServiceKey(string? key) =>
+            !string.IsNullOrWhiteSpace(key) && key.StartsWith($@"HKLM\{ServicesSubKeyPath}\", StringComparison.OrdinalIgnoreCase);
 
         private static void CaptureRunValues(RegistryHive hive, RegistryView view, string hivePrefix, Dictionary<string, string> map)
         {

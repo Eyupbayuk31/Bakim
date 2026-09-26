@@ -6,6 +6,9 @@ namespace Bakım.Core.Sentinel
     public enum SentinelProtectionMode
     {
         TemelMod,
+        /// <summary>Yönetici: yeni süreçler WMI olaylarıyla anında yakalanır; dosya atfı yok.</summary>
+        Gelismis,
+        /// <summary>Dosya ve kayıt olayları süreçle eşleştirilir (NÖB v3 Faz C; USN/ETW).</summary>
         TamKoruma
     }
 
@@ -17,34 +20,46 @@ namespace Bakım.Core.Sentinel
         bool IsKernelTraceActive,
         string ActiveSensorsSummary);
 
+    /// <summary>
+    /// Nöbetçinin koruma düzeyi. Rozet yalnızca gerçekten çalışan sensörleri söyler (NÖB v3 A2):
+    /// "Tam Koruma" dosya olaylarının süreçle eşleştirildiği moda ayrılmıştır.
+    /// </summary>
     public static class SentinelProtectionPolicy
     {
+        private const string Baseline = "Klasör izleyicisi · Kayıt defteri ve sistem ayarı karşılaştırması";
+        private const string SharedCaveat = "Kurulumla aynı anda çalışan programların yazdıkları da rapora girebilir.";
+
         public static SentinelProtectionStatus Evaluate(bool isAdmin, bool isUsnAvailable, bool isTraceAvailable)
         {
-            if (isAdmin && (isUsnAvailable || isTraceAvailable))
+            if (isAdmin && isUsnAvailable)
             {
-                var sensors = new System.Collections.Generic.List<string>();
-                if (isUsnAvailable) sensors.Add("NTFS USN Değişiklik Günlüğü");
-                if (isTraceAvailable) sensors.Add("Kernel Süreç Başlatma İzleyicisi");
-                sensors.Add("FSW v2 Tamponu (64 KB)");
-                sensors.Add("Kayıt Defteri Hotspot Sensörü");
-
                 return new SentinelProtectionStatus(
                     Mode: SentinelProtectionMode.TamKoruma,
-                    BadgeText: "Tam Koruma Modu",
-                    Description: "Arka plan çekirdek izleyicisi ve NTFS USN günlüğü devrede. Kurulum hareketleri derinlemesine izleniyor.",
-                    IsUsnActive: isUsnAvailable,
+                    BadgeText: "Tam Koruma",
+                    Description: "Dosya değişiklikleri NTFS değişiklik günlüğünden okunuyor, yeni süreçler anında yakalanıyor.",
+                    IsUsnActive: true,
                     IsKernelTraceActive: isTraceAvailable,
-                    ActiveSensorsSummary: string.Join(" · ", sensors));
+                    ActiveSensorsSummary: "NTFS değişiklik günlüğü · " + (isTraceAvailable ? "Anlık süreç olayları · " : "") + Baseline);
+            }
+
+            if (isAdmin && isTraceAvailable)
+            {
+                return new SentinelProtectionStatus(
+                    Mode: SentinelProtectionMode.Gelismis,
+                    BadgeText: "Gelişmiş Mod",
+                    Description: "Yönetici yetkisiyle kurulumun alt süreçleri anında yakalanıyor. Dosya değişiklikleri klasör izleyicisiyle kaydediliyor. " + SharedCaveat,
+                    IsUsnActive: false,
+                    IsKernelTraceActive: true,
+                    ActiveSensorsSummary: "Anlık süreç olayları (WMI) · " + Baseline);
             }
 
             return new SentinelProtectionStatus(
                 Mode: SentinelProtectionMode.TemelMod,
                 BadgeText: "Temel Mod",
-                Description: "Standart kullanıcı modu devrede. Dosya sistemi (64 KB FSW) ve kayıt defteri sensörleri aktiftir.",
+                Description: "Kurulumlar süreç taramasıyla algılanıyor, dosya değişiklikleri klasör izleyicisiyle kaydediliyor. " + SharedCaveat,
                 IsUsnActive: false,
                 IsKernelTraceActive: false,
-                ActiveSensorsSummary: "FSW v2 Tamponu · Kayıt Defteri Hotspot Sensörü · Süreç Ağacı Takibi");
+                ActiveSensorsSummary: "Süreç taraması · " + Baseline);
         }
     }
 

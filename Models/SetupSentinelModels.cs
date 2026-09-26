@@ -14,6 +14,8 @@ namespace Bakım.Models
 
     public class SetupFileEvent
     {
+        /// <summary>Yakalanma sırası. Olaylar eşzamanlı torbada tutulduğu için sıra buradan okunur.</summary>
+        public long Sequence { get; set; }
         public string FilePath { get; set; } = string.Empty;
         public string ChangeType { get; set; } = "Created"; // Created, Changed, Deleted, Renamed
         public string? OldFilePath { get; set; } // For Renamed events
@@ -44,13 +46,16 @@ namespace Bakım.Models
         public SessionKind Kind { get; set; } = SessionKind.Install;
         public DateTime StartTime { get; set; } = DateTime.UtcNow;
         public DateTime? EndTime { get; set; }
-        public bool IsActive { get; set; } = true;
+        private volatile bool _isActive = true;
+        public bool IsActive { get => _isActive; set => _isActive = value; }
         public bool IsPossiblyIncomplete { get; set; }
 
         public ConcurrentDictionary<(int Pid, long CreationTimeTicks), bool> TrackedProcesses { get; } = new();
-        public HashSet<int> TrackedProcessIds { get; } = new(); // Backward compatibility helper
+        /// <summary>Ağaçtaki PID'ler. Nöbetçi döngüsü ve WMI iş parçacığı birlikte yazar.</summary>
+        public ConcurrentDictionary<int, byte> TrackedProcessIds { get; } = new();
+        /// <summary>Kurulumun sonunda başlattığı uygulama: ağaçtan ayrıldı, oturumu açık tutmaz (NÖB v3 A10).</summary>
+        public ConcurrentDictionary<int, byte> DetachedProcessIds { get; } = new();
         public ConcurrentBag<SetupFileEvent> CapturedFileEvents { get; } = new();
-        public InstallationSnapshot? PreSnapshot { get; set; }
 
         /// <summary>Kurulum dosyasının imza, özet, çatı ve indirme kaynağı (arka planda doldurulur).</summary>
         public System.Threading.Tasks.Task<InstallerInfo>? InstallerInfoTask { get; set; }
@@ -91,6 +96,8 @@ namespace Bakım.Models
         public List<string> RenamedFiles { get; set; } = new();
         public List<string> AddedFolders { get; set; } = new();
         public List<string> AddedExecutables { get; set; } = new();
+        /// <summary>Kurulumun oluşturup yine sildiği geçici öğe sayısı (rapora tek tek girmez).</summary>
+        public int TempFileCount { get; set; }
 
         // Kayıt Defteri ve Sistem
         public List<SetupRegistryRecord> AddedRegistryRecords { get; set; } = new();
@@ -129,6 +136,16 @@ namespace Bakım.Models
             Bakım.Core.Sentinel.RiskVerdict.Dangerous => RiskLevel.Critical,
             _ => RiskLevel.Clean
         };
+
+        /// <summary>
+        /// Rapor bildirime değer mi? Dosya bırakmayan ama başlangıç girdisi, hizmet, sertifika,
+        /// Defender istisnası gibi değişiklik yapan kurulumlar da bildirilir (NÖB v3 A1).
+        /// </summary>
+        public static bool HasReportableChanges(SetupDeltaReport report) =>
+            report.CreatedFiles.Count > 0 || report.AddedFiles.Count > 0 || report.AddedExecutables.Count > 0 ||
+            report.AddedStartupEntries.Count > 0 || report.AddedServices.Count > 0 ||
+            report.SystemChanges.Count > 0 || report.NewPrograms.Count > 0 ||
+            (report.RiskEvaluated && report.RiskVerdict >= Bakım.Core.Sentinel.RiskVerdict.Caution);
 
         public static string VerdictText(SetupDeltaReport report) =>
             report.RiskEvaluated ? Bakım.Core.Sentinel.SetupRiskEngine.VerdictLabel(report.RiskVerdict) : "Değerlendirilmedi";

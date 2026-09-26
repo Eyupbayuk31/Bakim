@@ -8,11 +8,11 @@ using System.Runtime.Versioning;
 namespace Bakım.Services.Sentinel.Detection
 {
     /// <summary>
-    /// Kernel ve WMI tabanlı gerçek zamanlı süreç izleme sensörü (NÖB Faz 8 / Tam Koruma Modu).
-    /// Polling gecikmesini sıfıra indirir; kurulum süreçlerinin çocuklarını anında yakalar.
+    /// WMI süreç başlangıç/bitiş olaylarıyla gerçek zamanlı süreç izleme (yönetici gerektirir).
+    /// Kurulum süreçlerinin çocuklarını polling beklemeden yakalar. Çekirdek (ETW) izleyicisi değildir.
     /// </summary>
     [SupportedOSPlatform("windows")]
-    public sealed class KernelTraceSensor : IDisposable
+    public sealed class WmiProcessSensor : IDisposable
     {
         private ManagementEventWatcher? _startWatcher;
         private ManagementEventWatcher? _stopWatcher;
@@ -50,7 +50,7 @@ namespace Bakım.Services.Sentinel.Detection
             }
             catch (Exception ex)
             {
-                AppLog.Debug($"Kernel süreç izleyici başlatılamadı (yetersiz yetki olabilir): {ex.Message}", nameof(KernelTraceSensor));
+                AppLog.Debug($"WMI süreç izleyicisi başlatılamadı (yetersiz yetki olabilir): {ex.Message}", nameof(WmiProcessSensor));
                 Stop();
                 return false;
             }
@@ -74,7 +74,7 @@ namespace Bakım.Services.Sentinel.Detection
             }
             catch (Exception ex)
             {
-                AppLog.Debug($"StartTrace olayı işlenirken hata: {ex.Message}", nameof(KernelTraceSensor));
+                AppLog.Debug($"StartTrace olayı işlenirken hata: {ex.Message}", nameof(WmiProcessSensor));
             }
         }
 
@@ -95,7 +95,7 @@ namespace Bakım.Services.Sentinel.Detection
             }
             catch (Exception ex)
             {
-                AppLog.Debug($"StopTrace olayı işlenirken hata: {ex.Message}", nameof(KernelTraceSensor));
+                AppLog.Debug($"StopTrace olayı işlenirken hata: {ex.Message}", nameof(WmiProcessSensor));
             }
         }
 
@@ -113,7 +113,7 @@ namespace Bakım.Services.Sentinel.Detection
             }
             catch (Exception ex)
             {
-                AppLog.Debug($"StartWatcher kapatılamadı: {ex.Message}", nameof(KernelTraceSensor));
+                AppLog.Debug($"StartWatcher kapatılamadı: {ex.Message}", nameof(WmiProcessSensor));
             }
 
             try
@@ -127,7 +127,7 @@ namespace Bakım.Services.Sentinel.Detection
             }
             catch (Exception ex)
             {
-                AppLog.Debug($"StopWatcher kapatılamadı: {ex.Message}", nameof(KernelTraceSensor));
+                AppLog.Debug($"StopWatcher kapatılamadı: {ex.Message}", nameof(WmiProcessSensor));
             }
         }
 

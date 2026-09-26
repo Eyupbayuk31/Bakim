@@ -1,40 +1,42 @@
-# Bakım v4.6.3 - Sürüm Notları
+# Bakım v4.7.0 - Sürüm Notları
 
-## Fluent 2 Kontrol Paneli Sağlık Kartı Modernizasyonu, İnteraktif Kart Satırları & Akıllı Genişletici
+## Kurulum Nöbetçisi v3 · Faz A: Doğru Raporlar, Dürüst Koruma Rozeti & Arka Plan Gürültüsünün Susturulması
 
-Bakım v4.6.3 sürümü; Kontrol Paneli'ndeki sistem sağlık kartını Windows 11 Fluent 2 standartlarında modern ve zengin bir gösterge paneline dönüştürmekte, eski 1px çizgili ayrık satırları interaktif kart döşemeleriyle yenilemekte ve sağlıklı bileşenler için şık bir açılır kart mimarisi sunmaktadır.
-
----
-
-### 1. Dinamik Çift Katmanlı Sağlık Göstergesi
-- **Kılavuz Zemin Arkı & Anlamsal Renklendirme:**
-  - Puan halkasına (`ui:ProgressRing`) arka plan kılavuz dairesi eklenerek ölçümün 100 üzerinden derinliği belirginleştirildi.
-  - Halkanın ilerleme rengi sistemin sağlık durumuna göre dinamik hale getirildi: İyi durumda yeşil (`Success`), dikkat durumunda kehribar (`Caution`), kritik durumlarda kırmızı (`Critical`).
-  - Merkezdeki sayısal puanın altına `/ 100` alt etiketi eklenerek göstergenin okunabilirliği ve profesyonel görünümü artırıldı.
+Bakım v4.7.0 sürümü, Kurulum Nöbetçisi'nin ürettiği raporları gerçek kurulum davranışına uygun hale getiriyor. Riskli ama dosya bırakmayan kurulumlar artık bildiriliyor. Oyun başlatıcılarının ve güncelleyicilerin arka plan kurulumları kullanıcı kurulumu sanılmıyor. Kurulumun geçici dosyaları "silinen dosya" olarak raporlanmıyor. Ayrıntılı yol haritası: `docs/SENTINEL_V3_MEGA_PLAN.md`.
 
 ---
 
-### 2. İnteraktif ve Zengin Kart Satırları (Health Tile Rows)
-- **36×36 Durum ve Bileşen Simgeli Rozet Kutuları:**
-  - Kararlılık (son 7 gün), Son temizlik, Microsoft Defender, Sistem sürücüsü ve Başlangıç programları için bağlamsal Fluent simgeleri (`HeartPulse`, `Broom`, `ShieldCheckmark`, `HardDrive`, `Rocket`) içeren yumuşak rozet kutuları oluşturuldu.
-- **İki Satırlı Dikey Hiyerarşi:**
-  - Başlık ve detay metinleri arasındaki 200px'lik yapay boşluk kaldırılarak modern dikey hiyerarşi (SemiBold başlık + ikincil açıklama) kuruldu.
-- **Puan Düşüş Hapı (Deduction Chip):**
-  - Puandan düşülen değerler (`-15 puan`, `-5 puan`) durum rengiyle uyumlu, göze batmayan ince kenarlıklı rozet haplar içerisine alındı.
-- **İkincil Eylem Düğmeleri:**
-  - "Çökmeleri incele" ve "Temizle" gibi bağlantılar, sağ ok simgeli modern ikincil düğmelere (`ui:Button Appearance="Secondary"`) dönüştürüldü.
-- **Mikro Etkileşim:**
-  - Her satıra fare üzerine gelindiğinde devreye giren hafif zemin ve kenarlık aydınlatması eklendi.
+### 1. Bildirim ve Karar
+- **Dosyasız ama riskli kurulumlar bildiriliyor:** Yalnızca başlangıç girdisi, hizmet, kök sertifika ya da Defender istisnası ekleyen ya da "Dikkat" ve üstü karar alan kurulumlar artık bildirim gösteriyor. Eskiden yeni dosya yoksa bildirim tamamen susuyordu.
+- **Dürüst koruma rozeti:** Hiçbir zaman doğru çalışmayan NTFS USN bağlantısı kaldırıldı. Yönetici modunda rozet artık "Tam Koruma" yerine **"Gelişmiş Mod"** gösteriyor ve rapora aynı anda çalışan programların yazdıklarının da girebileceğini açıkça söylüyor. "Tam Koruma" adı süreç atıflı yakalamaya (Faz C) ayrıldı.
 
 ---
 
-### 3. Akıllı Sağlıklı Bileşenler Genişleticisi
-- **Minimalist Başarı Kartı:**
-  - İyi durumdaki bileşenler için alt tarafta yeşil onay rozeti ve "Göster / gizle" hapı içeren ayrılmış bir açılır kart tasarlandı.
-  - Açıldığında tüm sağlıklı bileşenler aynı zengin kart satırı mimarisiyle listeleniyor.
+### 2. Doğru Dosya Farkı
+- **Geçici dosyalar ayrıldı:** Kurulumun oluşturup yine sildiği dosyalar "silinen" listesinde değil, ayrı bir sayı olarak tutuluyor.
+- **Yeniden adlandırma destekleniyor:** Geçici adla yazılıp yeniden adlandırılan dosyalar ve klasörler (içerikleriyle birlikte) son adlarıyla rapora giriyor.
+- **Geri alma güvenliği:** Silinip yeniden yazılan ya da var olan bir dosyanın üstüne taşınan dosyalar "değişen" sayılıyor ve geri almada asla silinmiyor.
+- **Son yazmalar kaybolmuyor:** Kurulum bitince beklenen 1,5 saniyede gelen dosya olayları artık kaydediliyor.
+- **Doğru boyut:** Toplam boyut, dosyalar diske yazıldıktan sonra okunuyor (eskiden çoğu dosya 0 bayt sayılıyordu).
+- **Daha hafif izleme:** Dosya olayı iş parçacığında disk erişimi kaldırıldı; büyük kurulumlarda arabellek taşması riski azaldı.
 
 ---
 
-### 4. Sıkı Doğrulama & %100 Test Başarısı
-- **4 Gatekeeper Tam Başarı:** `verify-tokens.py`, `verify-symbols.py`, `verify-design-debt.py` ve `verify-bindings.py` tam puanla geçti.
-- **783 Birim Test Yeşil:** Tüm iş mantığı ve WPF UI testleri 0 hata ile doğrulandı.
+### 3. Kayıt Defteri
+- **32 bit girdiler:** 32 bit başlangıç ve Uninstall kayıtları artık yalnızca doğru `WOW6432Node` yoluyla ve bir kez raporlanıyor; 64 bit değerleri ezmiyor.
+- **Kesin eşleşme:** "RuneLite", "RunAsDate" gibi Uninstall kayıtları artık başlangıç girdisi sayılmıyor.
+
+---
+
+### 4. Oturum Yönetimi
+- **Arka plan kurulumları:** Riot, Steam, Epic, Battle.net gibi başlatıcıların, güncelleyicilerin ve Windows hizmetlerinin başlattığı kurulumlar için varsayılan olarak oturum açılmıyor. Nöbetçi sayfasındaki **"Arka plan kurulumlarını da izle"** seçeneğiyle açılabilir. Terminalden elle başlatılan kurulumlar etkilenmiyor.
+- **Uygulamayı başlatan kurulumlar:** Kurulum bitince açılan uygulama izlemeden ayrılıyor; oturum uygulama kapanana kadar açık kalmıyor.
+- **Doğru uygulama adı:** "7-Zip SFX", "Setup/Uninstall", "Windows Installer" gibi kurulum aracı adları atlanıyor. Kurulumun oluşturduğu Uninstall kaydı varsa ad oradan alınıyor.
+- **Kararlılık:** İzlenen süreç kümesi eşzamanlı yazımlara karşı güvenli hale getirildi; kapanışta çalışan döngü beklenmeden kilit atılmıyor.
+
+---
+
+### 5. Temizlik & Testler
+- Kullanılmayan kurulum öncesi ön görüntüsü (oturum başını geciktiriyordu) ve arayüzden çağrılmayan geri alma yolu kaldırıldı. `KernelTraceSensor` gerçekte yaptığı işe uygun olarak `WmiProcessSensor` adını aldı.
+- Saf mantık Core katmanına taşındı: `SetupDeltaBuilder`, `SetupAppName`, `SetupSessionPolicy`.
+- **822 birim test yeşil** (39 yeni Nöbetçi testi); 4 denetim betiği tam geçti.
