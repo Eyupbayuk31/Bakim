@@ -309,3 +309,20 @@ Her faz ayrı commit dizisi; her sayfa kendi commit'i; her commit'te ekran gör�
 | Serbest Margin / CornerRadius | yüzlerce / 191 | 0 |
 | Başlık çubuğu öğesi | 7 | 3 (arama, Oyun Modu, yönetici) |
 | Görsel doğrulama | Kullanıcı ekran görüntüsü | Her commit'te otomatik PNG |
+
+---
+
+## Durum (uygulandı)
+
+| Faz | Durum | Not |
+|---|---|---|
+| 1 Katman renkleri, tek vurgu, kabuk | ✅ | Pencere < içerik katmanı < kart; WPF-UI vurgu fırçaları uygulama düzeyinde yayınlanıyor (mavi düğme sorunu), başlık çubuğu sadeleşti |
+| 2 Yerleşim bileşenleri | ✅ | ModulePage, Section, AdaptiveGrid, MetricTile, ListCard/ListRow, StatusGlyph, SelectionBar, ThemePreview |
+| 3 Kontrol Paneli | ✅ | Kahraman kart + sorunlar önce, canlı durum kutucukları, etkinlik/kaynak listeleri |
+| 4 Tüm sayfalar ModulePage | ✅ | 18 sayfa aynı başlık, boşluk, eylem yeri; açılışta 167 ms giriş animasyonu |
+| 5 Liste/ızgara sayfaları | ✅ | Temizleyici ve Mağaza AdaptiveGrid; Kaldırıcı ve Mağaza alt seçim çubuğu |
+| 6 Ayar düzenli sayfalar | ✅ | Ayarlar ve Windows Ayarları 1000 px; tema seçimi önizlemeli kutucuklar |
+| 7 Durum dili | ✅ | Sayfa içi dolgulu haplar StatusGlyph'e (kalanlar diyalog ve bilgi bantları) |
+| 8 Cırcırlar | ✅ | ui_card_raw 0, legacy_page_header 0, status_fill_pill azaldı; ekran görüntüsü iş akışı |
+
+Ertelendi: Ayarlar dosyasının kategori UserControl'lerine bölünmesi (davranış riski, görünümü değiştirmiyor).
