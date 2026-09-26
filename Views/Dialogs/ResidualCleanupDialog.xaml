@@ -82,7 +82,7 @@
                            Padding="6,4"
                            Command="{Binding CancelCommand}"
                            Icon="{ui:SymbolIcon Dismiss20}"
-                           ToolTip="Kapat ve Atla" AutomationProperties.Name="Kapat ve Atla"/>
+                           ToolTip="Kapat ve atla" AutomationProperties.Name="Kapat ve Atla"/>
             </Grid>
 
             <!-- 1. Filter & Selection Toolbar -->
@@ -341,7 +341,7 @@
 
                 <!-- Action Buttons -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <ui:Button Content="Atla ve Kapat"
+                    <ui:Button Content="Atla ve kapat"
                                Appearance="Secondary"
                                Command="{Binding CancelCommand}"
                                IsEnabled="{Binding IsCleaning, Converter={StaticResource InverseBool}}"

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:models="clr-namespace:Bakım.Models"
-        Title="Bakım • Kaldırma ve Kalıntı Temizleme Asistanı"
+        Title="Kaldırma sihirbazı"
         Width="880" Height="680"
         MinWidth="780" MinHeight="580"
         WindowStartupLocation="CenterScreen"
@@ -45,7 +45,7 @@
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"/>
                     </Border>
-                    <TextBlock Text="Bakım • Gelişmiş Kaldırma ve Kalıntı Temizleme Asistanı"
+                    <TextBlock Text="Kaldırma sihirbazı"
                                FontSize="{StaticResource Font.Body}"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -58,7 +58,7 @@
                            Padding="8,5"
                            Command="{Binding SkipCleanupCommand}"
                            Icon="{ui:SymbolIcon Dismiss20}"
-                           ToolTip="Kapat ve İptal Et"
+                           ToolTip="Kapat ve iptal et"
                            AutomationProperties.Name="Kapat"/>
             </Grid>
 
@@ -252,7 +252,7 @@
                             CornerRadius="{StaticResource Radius.LG}"
                             Padding="18">
                         <StackPanel>
-                            <TextBlock Text="Kaldırma ve Güvenlik Tercihleri"
+                            <TextBlock Text="Kaldırma ve güvenlik"
                                        FontSize="{StaticResource Font.Body}"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -321,7 +321,7 @@
                         </Grid.ColumnDefinitions>
 
                         <ui:Button Grid.Column="1"
-                                   Content="Programı Kaldır ve Kalıntıları Tara"
+                                   Content="Programı kaldır ve kalıntıları tara"
                                    Appearance="Primary"
                                    Icon="{ui:SymbolIcon Delete20}"
                                    Command="{Binding StartUninstallCommand}"
@@ -756,7 +756,7 @@
 
                         <!-- Action Buttons -->
                         <StackPanel Grid.Column="2" Orientation="Horizontal">
-                            <ui:Button Content="Atla ve Temizleme"
+                            <ui:Button Content="Temizlemeden geç"
                                        Appearance="Secondary"
                                        Command="{Binding SkipCleanupCommand}"
                                        Padding="16,8"
@@ -904,7 +904,7 @@
                                        AutomationProperties.Name="Geri Dönüşüm Kutusunu aç"
                                        Padding="16,10"
                                        Margin="0,0,10,0"/>
-                            <ui:Button Content="Tamamla ve Kapat"
+                            <ui:Button Content="Tamamla ve kapat"
                                        Appearance="Primary"
                                        Command="{Binding CloseCommand}"
                                        Padding="30,10"

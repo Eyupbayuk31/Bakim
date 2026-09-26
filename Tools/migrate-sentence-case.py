@@ -49,8 +49,12 @@ LOWER_MAP = str.maketrans({"I": "ı", "İ": "i"})
 def tr_lower(word):
     return word.translate(LOWER_MAP).lower()
 
+# Bağlaçlar küçük harfle yazılsa da başlığı Büyük Harfli saymayı engellemez ("Dosya Adı ve Konumu").
+CONNECTORS = {"ve", "ile", "için", "veya", "ya", "da", "de", "bir"}
+
 def is_title_case(text):
-    words = [w for w in re.split(r"\s+", text.replace("&amp;", " ").strip()) if w and w[0].isalpha()]
+    words = [w for w in re.split(r"\s+", text.replace("&amp;", " ").strip())
+             if w and w[0].isalpha() and w not in CONNECTORS]
     return len(words) >= 2 and all(w[0].isupper() for w in words)
 
 def convert(text):

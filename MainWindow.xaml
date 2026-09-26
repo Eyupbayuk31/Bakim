@@ -12,7 +12,7 @@
         xmlns:c="clr-namespace:Bakım.Controls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="Bakım - Sistem Temizlik ve Optimizasyon" 
+        Title="Bakım" 
         MinWidth="1020" MinHeight="680"
         Width="1280" Height="840"
         WindowStartupLocation="CenterScreen"

@@ -108,8 +108,8 @@ namespace Bakım.Services
                 // Quick System Actions
                 new()
                 {
-                    Title = "Hızlı Bakım",
-                    Category = "Hızlı Eylem",
+                    Title = "Hızlı bakım",
+                    Category = "Eylem",
                     Description = "Yaş filtreli geçici dosyalar, çökme dökümleri, tarayıcı ve gölgelendirici önbellekleri ile DNS önbelleğini temizler.",
                     IconName = "Broom24",
                     ActionKind = CommandActionKind.QuickAction,
@@ -118,70 +118,71 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Gezgini Yeniden Başlat (Restart Explorer)",
-                    Category = "Hızlı Eylem",
+                    Title = "Gezgini yeniden başlat",
+                    Category = "Eylem",
                     Description = "Windows Gezgini sürecini yeniden başlatarak arayüzü tazeler.",
                     IconName = "ArrowClockwise24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "RestartExplorer",
-                    Keywords = "Action"
+                    Keywords = "Action Restart Explorer"
                 },
                 new()
                 {
-                    Title = "Sistem Geri Yükleme Noktası Oluştur",
+                    Title = "Geri yükleme noktası oluştur",
                     Category = "Güvenlik",
                     Description = "Windows Sistem Koruması ile anlık geri yükleme noktası alır.",
                     IconName = "History24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "CreateRestorePoint",
-                    Keywords = "Backup"
+                    Keywords = "Backup Sistem Geri Yükleme"
                 },
                 new()
                 {
-                    Title = "Yönetici Olarak Yeniden Başlat (UAC)",
+                    Title = "Yönetici olarak yeniden başlat",
                     Category = "Güvenlik",
                     Description = "Uygulamayı Administrator yetkileriyle yeniden başlatır.",
                     IconName = "ShieldKeyhole24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "ElevateAdmin",
-                    Keywords = "UAC"
+                    Keywords = "UAC UAC"
                 },
                 new()
                 {
-                    Title = "Tema Değiştir (Açık / Koyu)",
+                    Title = "Açık veya koyu temaya geç",
                     Category = "Görünüm",
                     Description = "Pencere temasını Açık ve Koyu mod arasında değiştirir.",
                     IconName = "DarkTheme24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "ToggleTheme",
-                    Keywords = "Theme"
+                    Keywords = "Theme tema değiştir"
                 },
                 new()
                 {
-                    Title = "AMOLED Pure Black Tema",
+                    Title = "AMOLED siyah tema",
                     Category = "Görünüm",
                     Description = "OLED ekranlar için tam siyah ve yüksek kontrast teması.",
                     IconName = "DarkTheme24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "Theme:Amoled",
-                    Keywords = "OLED"
+                    Keywords = "OLED Pure Black"
                 },
                 new()
                 {
-                    Title = "Cyberpunk Neon Mor Tema",
+                    Title = "Neon mor tema",
                     Category = "Görünüm",
                     Description = "Mor neon ve fütüristik cam temasına geçiş yapar.",
                     IconName = "Color24",
                     ActionKind = CommandActionKind.QuickAction,
                     TargetParameter = "Theme:Cyberpunk",
-                    Keywords = "Neon"
+                    Keywords = "Neon Cyberpunk"
                 },
 
                 // Module Navigation
                 new()
                 {
-                    Title = "Genel Bakış (Dashboard)",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Kontrol Paneli",
+                    Keywords = "Genel bakış Dashboard",
+                    Category = "Sayfa",
                     Description = "Sistem sağlık skoru, canlı telemetri ve donanım özeti.",
                     IconName = "Home24",
                     ActionKind = CommandActionKind.Navigate,
@@ -190,8 +191,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Sistem Temizliği",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Temizleyici",
+                    Keywords = "sistem temizliği",
+                    Category = "Sayfa",
                     Description = "Geçici dosyalar, web önbelleği ve log kalıntılarını temizler.",
                     IconName = "Delete24",
                     ActionKind = CommandActionKind.Navigate,
@@ -200,8 +202,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Bellek ve Süreç Yöneticisi (RAM)",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Süreçler",
+                    Keywords = "bellek süreç yöneticisi RAM",
+                    Category = "Sayfa",
                     Description = "RAM boşaltma, süreç önceliği ve kaynak canavarlarını izleme.",
                     IconName = "TopSpeed24",
                     ActionKind = CommandActionKind.Navigate,
@@ -210,8 +213,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Başlangıç Programları",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Başlangıç",
+                    Keywords = "başlangıç programları",
+                    Category = "Sayfa",
                     Description = "Windows ile otomatik başlayan programları yönetin ve geciktirin.",
                     IconName = "Apps24",
                     ActionKind = CommandActionKind.Navigate,
@@ -221,7 +225,7 @@ namespace Bakım.Services
                 new()
                 {
                     Title = "Sistem Bilgisi",
-                    Category = "Sayfa Navigasyonu",
+                    Category = "Sayfa",
                     Description = "Donanım özellikleri, sürücüler ve disk S.M.A.R.T sağlığı.",
                     IconName = "Desktop24",
                     ActionKind = CommandActionKind.Navigate,
@@ -230,8 +234,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Ağ ve Port İzleyici",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Ağ İzleyici",
+                    Keywords = "port",
+                    Category = "Sayfa",
                     Description = "Aktif bağlantılar, dinlenen portlar ve güvenlik duvarı bloklama.",
                     IconName = "Globe24",
                     ActionKind = CommandActionKind.Navigate,
@@ -240,8 +245,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Windows Servisleri",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Hizmetler ve sürücüler",
+                    Keywords = "Windows servisleri",
+                    Category = "Sayfa",
                     Description = "Gereksiz servisleri devre dışı bırakma ve başlangıç türü yönetimi.",
                     IconName = "DeveloperBoard24",
                     ActionKind = CommandActionKind.Navigate,
@@ -250,8 +256,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Gizlilik & Debloat",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Gizlilik",
+                    Keywords = "debloat",
+                    Category = "Sayfa",
                     Description = "Telemetri kapatma, Windows Defender ve Cortana ayarları.",
                     IconName = "ShieldKeyhole24",
                     ActionKind = CommandActionKind.Navigate,
@@ -259,8 +266,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Mavi Ekran & Çökme Analizi",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Olaylar ve çökmeler",
+                    Keywords = "mavi ekran BSOD çökme analizi",
+                    Category = "Sayfa",
                     Description = "Minidump analizi, BSOD hata kodları ve sürücü teşhisi.",
                     IconName = "HeartPulse24",
                     ActionKind = CommandActionKind.Navigate,
@@ -268,8 +276,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Derin Program Kaldırıcı (Uninstaller)",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Kaldırıcı",
+                    Keywords = "uninstaller program kaldır",
+                    Category = "Sayfa",
                     Description = "Revo stili otomatik kalıntı temizleme ve sessiz toplu kaldırma.",
                     IconName = "Apps24",
                     ActionKind = CommandActionKind.Navigate,
@@ -277,38 +286,38 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Yazılım & Runtimes Mağazası",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Mağaza",
+                    Category = "Sayfa",
                     Description = "Format sonrası All-in-One VC++ kütüphaneleri, DirectX ve 45+ popüler yazılımı tek tıkla kurun.",
                     IconName = "AppsAddIn24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Store",
-                    Keywords = "Mağaza"
+                    Keywords = "Mağaza yazılım runtime çalışma zamanı"
                 },
                 new()
                 {
-                    Title = "Analizör — Kalıcılık & Dosya Röntgeni",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Analizör",
+                    Category = "Sayfa",
                     Description = "Sysinternals seviyesinde 8 kalıcılık noktası, WinVerifyTrust ve VirusTotal taraması.",
                     IconName = "ShieldCheckmark24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Analyzer",
-                    Keywords = "Analizör"
+                    Keywords = "Analizör kalıcılık dosya analizi"
                 },
                 new()
                 {
-                    Title = "Depolama — Büyük Dosyalar, Yinelenenler, Boş Klasörler",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Depolama",
+                    Category = "Sayfa",
                     Description = "Diskte yer kaplayan büyük dosyaları, yinelenen kopyaları ve boş klasörleri bulur.",
                     IconName = "HardDrive20",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Storage",
-                    Keywords = "Depolama"
+                    Keywords = "Depolama büyük dosyalar yinelenenler boş klasörler disk haritası"
                 },
                 new()
                 {
                     Title = "Oyun Modu",
-                    Category = "Sayfa Navigasyonu",
+                    Category = "Sayfa",
                     Description = "Performans güç planı ve arka plan işlerini duraklatma; son oturumlar.",
                     IconName = "Games24",
                     ActionKind = CommandActionKind.Navigate,
@@ -318,41 +327,42 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Kurulum Nöbetçisi — Kurulum Geçmişi",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Kurulum Nöbetçisi",
+                    Category = "Sayfa",
                     Description = "Kurulumların eklediği dosya, başlangıç girdisi ve hizmetlerin raporları.",
                     IconName = "ShieldCheckmark24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Sentinel",
-                    Keywords = "Nöbetçi"
+                    Keywords = "Nöbetçi kurulum geçmişi"
                 },
                 new()
                 {
-                    Title = "Etkinlik Merkezi — Değişiklikler & Geri Alma",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Etkinlik Merkezi",
+                    Category = "Sayfa",
                     Description = "Bakım'ın yaptığı tüm temizlik, kaldırma, ince ayar, başlangıç ve hizmet değişiklikleri; tek tıkla geri alma.",
                     IconName = "History24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Activity",
-                    Keywords = "Etkinlik"
+                    Keywords = "Etkinlik değişiklikler geri alma"
                 },
                 new()
                 {
-                    Title = "Windows Tweaker (Tüm Ayarlar)",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Windows Ayarları",
+                    Category = "Sayfa",
                     Description = "150+ Windows ince ayarı, görünüm ve davranış özelleştirme.",
                     IconName = "Wrench24",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "WindowsTweaker",
-                    Keywords = "Tweaker",
+                    Keywords = "Tweaker tweaker tüm ayarlar",
                     KeyboardShortcut = "Ctrl+8"
                 },
 
                 // Tweaker Subcategory Shortcuts
                 new()
                 {
-                    Title = "Tweaker: Windows 11 Ayarları",
-                    Category = "Windows Tweaker",
+                    Title = "Windows Ayarları: Windows 11",
+                    Keywords = "tweaker",
+                    Category = "Windows Ayarları",
                     Description = "Klasik görev çubuğu, bağlam menüsü ve widget ayarları.",
                     IconName = "AppGeneric24",
                     ActionKind = CommandActionKind.Navigate,
@@ -360,8 +370,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Tweaker: Görünüm & Tema",
-                    Category = "Windows Tweaker",
+                    Title = "Windows Ayarları: görünüm ve tema",
+                    Keywords = "tweaker",
+                    Category = "Windows Ayarları",
                     Description = "Aero Lite teması, koyu mod ve özel vurgu renkleri.",
                     IconName = "Color24",
                     ActionKind = CommandActionKind.Navigate,
@@ -369,8 +380,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Tweaker: Masaüstü & Görev Çubuğu",
-                    Category = "Windows Tweaker",
+                    Title = "Windows Ayarları: masaüstü ve görev çubuğu",
+                    Keywords = "tweaker",
+                    Category = "Windows Ayarları",
                     Description = "Görev çubuğu saatinde saniyeleri göster, ses karıştırıcısı.",
                     IconName = "Desktop24",
                     ActionKind = CommandActionKind.Navigate,
@@ -378,8 +390,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Tweaker: Sağ Tık Menüsü & Kısayollar",
-                    Category = "Windows Tweaker",
+                    Title = "Windows Ayarları: sağ tık menüsü ve kısayollar",
+                    Keywords = "tweaker",
+                    Category = "Windows Ayarları",
                     Description = "Sahiplik Al menüsü, Komut İstemi ve kısayol okları.",
                     IconName = "CursorClick24",
                     ActionKind = CommandActionKind.Navigate,
@@ -387,8 +400,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Tweaker: Dosya Gezgini",
-                    Category = "Windows Tweaker",
+                    Title = "Windows Ayarları: Dosya Gezgini",
+                    Keywords = "tweaker",
+                    Category = "Windows Ayarları",
                     Description = "Dosya uzantılarını göster, sürücü harflerini başa al.",
                     IconName = "Folder24",
                     ActionKind = CommandActionKind.Navigate,
@@ -396,8 +410,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Tweaker: Microsoft Edge",
-                    Category = "Windows Tweaker",
+                    Title = "Windows Ayarları: Microsoft Edge",
+                    Keywords = "tweaker",
+                    Category = "Windows Ayarları",
                     Description = "Edge kenar çubuğu ve rahatsız edici reklamları devre dışı bırak.",
                     IconName = "Globe24",
                     ActionKind = CommandActionKind.Navigate,
@@ -405,8 +420,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Tweaker: Sistem Araçları",
-                    Category = "Windows Tweaker",
+                    Title = "Windows Ayarları: araçlar",
+                    Keywords = "tweaker sistem araçları",
+                    Category = "Windows Ayarları",
                     Description = "God Mode klasörü, Hosts dosyası düzenleyici ve OEM bilgisi.",
                     IconName = "DeveloperBoard24",
                     ActionKind = CommandActionKind.Navigate,
@@ -414,8 +430,9 @@ namespace Bakım.Services
                 },
                 new()
                 {
-                    Title = "Windows Araçları: Konsollar & Klasik Araçlar",
-                    Category = "Sayfa Navigasyonu",
+                    Title = "Windows Araçları",
+                    Keywords = "konsollar klasik araçlar",
+                    Category = "Sayfa",
                     Description = "Windows yönetim konsolları, klasik Fotoğraf Görüntüleyici ve sistem araçları.",
                     IconName = "Toolbox24",
                     ActionKind = CommandActionKind.Navigate,

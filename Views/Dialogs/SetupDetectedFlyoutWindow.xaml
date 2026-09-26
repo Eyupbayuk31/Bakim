@@ -224,7 +224,7 @@
                                    Padding="12,6">
                             <StackPanel Orientation="Horizontal">
                                 <ui:SymbolIcon Symbol="Shield24" FontSize="15" Margin="0,0,6,0"/>
-                                <TextBlock Text="Analizör ile Tara" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                                <TextBlock Text="Analizör ile tara" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                     </StackPanel>

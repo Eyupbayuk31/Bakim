@@ -19,7 +19,7 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="Sistemdeki Aktif Ağ Arayüzleri ve IP Yapılandırması" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+            <TextBlock Text="Ağ bağdaştırıcıları ve IP yapılandırması" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <ui:Button Appearance="Secondary" 
                            Command="{Binding FlushDnsFromAdaptersCommand}" 
@@ -34,7 +34,7 @@
                            Icon="{ui:SymbolIcon ArrowClockwise20}" 
                            Padding="12,8" 
                            Margin="0,0,8,0"
-                           ToolTip="DHCP Kira Süresini ve IP Adresini Yenile (ipconfig /renew)"/>
+                           ToolTip="IP adresini yenile"/>
                 <ui:Button Appearance="Secondary" 
                            Command="{Binding RefreshCommand}" 
                            Content="Yenile" 

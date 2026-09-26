@@ -70,7 +70,7 @@
                             helpers:NavSelection.IsSelected="{Binding IsGeneralSelected}"
                             Command="{Binding SelectCategoryCommand}"
                             CommandParameter="General"
-                            AutomationProperties.Name="Görünüm &amp; Tema">
+                            AutomationProperties.Name="Görünüm ve tema">
                         <StackPanel Orientation="Horizontal">
                             <ui:SymbolIcon Symbol="DarkTheme24"
                                            FontSize="20"
@@ -171,17 +171,8 @@
                     <StackPanel VerticalAlignment="Top" Visibility="{Binding IsGeneralSelected, Converter={StaticResource BoolToVis}}">
                             <!-- Section Header -->
                             <StackPanel Margin="0,0,0,12">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ui:SymbolIcon Symbol="DarkTheme24"
-                                                   FontSize="20"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                   Margin="0,0,8,0"/>
-                                    <TextBlock Text="Arayüz Görünümü ve Temalar"
-                                               FontSize="{StaticResource Font.Subtitle}"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                </StackPanel>
-                                <TextBlock Text="Windows 11 Mica derinlik efekti ve dinamik renk paleti ile arayüz stilini belirleyin."
+                                <TextBlock Text="Görünüm" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="Uygulamanın temasını ve renklerini seçin."
                                            FontSize="{StaticResource Font.Caption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            Margin="0,4,0,0"/>
@@ -378,16 +369,7 @@
                     <!-- ============================================================ -->
                     <StackPanel VerticalAlignment="Top" Visibility="{Binding IsPerformanceSelected, Converter={StaticResource BoolToVis}}">
                             <StackPanel Margin="0,0,0,12">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ui:SymbolIcon Symbol="TopSpeed24"
-                                                   FontSize="20"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                   Margin="0,0,8,0"/>
-                                    <TextBlock Text="Performans ve Bellek Tercihleri"
-                                               FontSize="{StaticResource Font.Subtitle}"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                </StackPanel>
+                                <TextBlock Text="Performans ve bellek" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <TextBlock Text="Canlı veri yenileme sıklığı ve otomatik RAM optimizasyon aralıkları."
                                            FontSize="{StaticResource Font.Caption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -448,16 +430,7 @@
                     <!-- ============================================================ -->
                     <StackPanel VerticalAlignment="Top" Visibility="{Binding IsStartupSelected, Converter={StaticResource BoolToVis}}">
                             <StackPanel Margin="0,0,0,12">
-                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <ui:SymbolIcon Symbol="Settings24"
-                                                   FontSize="20"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                   Margin="0,0,8,0"/>
-                                    <TextBlock Text="Sistem Başlangıcı ve Davranışı"
-                                               FontSize="{StaticResource Font.Subtitle}"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                </StackPanel>
+                                <TextBlock Text="Başlangıç ve davranış" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <TextBlock Text="Sistem açılışı, arka plan çalışma modu ve oturum temizlik davranışları."
                                            FontSize="{StaticResource Font.Caption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
@@ -481,7 +454,7 @@
                                     </Grid.ColumnDefinitions>
                                     <!-- Title & Toggle -->
                                     <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
-                                        <TextBlock Text="Windows ile Birlikte Başlat"
+                                        <TextBlock Text="Windows ile birlikte başlat"
                                                    FontSize="{StaticResource Font.Body}"
                                                    FontWeight="SemiBold"
                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -1037,16 +1010,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                            <ui:SymbolIcon Symbol="Info24"
-                                                           FontSize="20"
-                                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                           Margin="0,0,8,0"/>
-                                            <TextBlock Text="Uygulama Bilgileri ve Günlük Yönetimi"
-                                                       FontSize="{StaticResource Font.Subtitle}"
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        </StackPanel>
+                                        <TextBlock Text="Hakkında ve günlükler" FontSize="{StaticResource Font.Subtitle}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="Bakım yazılımı sürüm detayları, son yenilikler ve geçmiş sürüm notları."
                                                    FontSize="{StaticResource Font.Caption}"
                                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"

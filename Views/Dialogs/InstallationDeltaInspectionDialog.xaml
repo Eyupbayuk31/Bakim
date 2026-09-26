@@ -233,7 +233,7 @@
 
                                                 <ui:Button Appearance="Primary"
                                                            Padding="8,4"
-                                                           ToolTip="Analizör ile Güvenlik Taraması Yap"
+                                                           ToolTip="Analizör ile güvenlik taraması yap"
                                                            Tag="{Binding FullPath}"
                                                            Click="OnAnalyzeSingleFileClicked">
                                                     <StackPanel Orientation="Horizontal">

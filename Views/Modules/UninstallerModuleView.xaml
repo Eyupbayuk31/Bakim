@@ -397,7 +397,7 @@
                                         <!-- Deep Residual Scan Modal Button -->
                                         <ui:Button Appearance="Secondary" 
                                                    Icon="{ui:SymbolIcon Search20}"
-                                                   ToolTip="Kalıntıları İncele ve Temizle"
+                                                   ToolTip="Kalıntıları incele ve temizle"
                                                    Command="{Binding DataContext.ShowResidualCleanupDialogCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
                                                    Padding="10,8"

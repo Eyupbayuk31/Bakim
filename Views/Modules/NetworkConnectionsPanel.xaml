@@ -215,8 +215,8 @@
 
                                     <!-- Col 5: Quick Action Buttons (Modern Subtle Icon Buttons) -->
                                     <StackPanel Grid.Column="5" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <ui:Button Appearance="Transparent" Padding="5" Margin="0,0,2,0" ToolTip="Güvenlik Duvarı ile Engelle" Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
-                                        <ui:Button Appearance="Transparent" Padding="5" Margin="0,0,2,0" ToolTip="Süreci ve Soketi Sonlandır" Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Dismiss20}"/>
+                                        <ui:Button Appearance="Transparent" Padding="5" Margin="0,0,2,0" ToolTip="Güvenlik duvarıyla engelle" Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
+                                        <ui:Button Appearance="Transparent" Padding="5" Margin="0,0,2,0" ToolTip="Süreci ve soketi sonlandır" Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon Dismiss20}"/>
                                         <ui:Button Appearance="Transparent" Padding="5" ToolTip="Dosya konumunu aç" Command="{Binding DataContext.OpenProcessLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Icon="{ui:SymbolIcon FolderOpen20}"/>
                                     </StackPanel>
                                 </Grid>
@@ -357,7 +357,7 @@
                                        Margin="0,0,0,6"
                                        Command="{Binding DataContext.ToggleBlockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"
-                                       Content="Güvenlik Duvarı ile Engelle" 
+                                       Content="Güvenlik duvarıyla engelle" 
                                        Icon="{ui:SymbolIcon ShieldKeyhole20}"/>
 
                             <ui:Button Appearance="Secondary" 
@@ -366,7 +366,7 @@
                                        Margin="0,0,0,6"
                                        Command="{Binding DataContext.KillProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"
-                                       Content="Süreci ve Soketi Sonlandır" 
+                                       Content="Süreci ve soketi sonlandır" 
                                        Icon="{ui:SymbolIcon Dismiss20}"/>
 
                             <ui:Button Appearance="Secondary" 
@@ -375,7 +375,7 @@
                                        Margin="0,0,0,6"
                                        Command="{Binding DataContext.AnalyzeProcessCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                        CommandParameter="{Binding}"
-                                       Content="Analizör ile Tara" 
+                                       Content="Analizör ile tara" 
                                        Icon="{ui:SymbolIcon ShieldTask20}"/>
 
                             <Grid>

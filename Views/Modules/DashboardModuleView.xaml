@@ -625,7 +625,7 @@
                                Command="{Binding GoToOptimizerCommand}"
                                HorizontalAlignment="Left"
                                Padding="14,7"
-                               Content="Bellek ve Süreç Yöneticisi"
+                               Content="Süreçler"
                                Icon="{ui:SymbolIcon ArrowRight24}"/>
                 </Grid>
             </ui:Card>
