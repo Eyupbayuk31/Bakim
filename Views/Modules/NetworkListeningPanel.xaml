@@ -1,0 +1,158 @@
+<UserControl x:Class="Bakım.Views.Modules.NetworkListeningPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:helpers="clr-namespace:Bakım.Helpers"
+             xmlns:c="clr-namespace:Bakım.Controls"
+             xmlns:vm="clr-namespace:Bakım.ViewModels"
+             xmlns:models="clr-namespace:Bakım.Models"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:NetworkMonitorViewModel}"
+             d:DesignHeight="700" d:DesignWidth="1100">
+    <!-- Ağ İzleyici › Dinleyen portlar -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Search & Controls -->
+            <RowDefinition Height="*"/>    <!-- Listening Ports Table -->
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:TextBox Grid.Column="0" 
+                        PlaceholderText="Dinlenen port numarası, servis adı veya süreç ile filtrele..." 
+                        Text="{Binding ListeningSearchText, UpdateSourceTrigger=PropertyChanged}" 
+                        ClearButtonEnabled="True" 
+                        Padding="12,9" 
+                        Margin="0,0,10,0" 
+                        Icon="{ui:SymbolIcon Search20}" 
+                        VerticalContentAlignment="Center"/>
+
+            <ui:Button Grid.Column="1" 
+                       Appearance="Secondary" 
+                       Command="{Binding RefreshCommand}" 
+                       Padding="14,8" 
+                       Content="Portları tara" 
+                       Icon="{ui:SymbolIcon ArrowClockwise20}"/>
+        </Grid>
+
+        <Border Grid.Row="1" 
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" 
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                BorderThickness="1" 
+                CornerRadius="{StaticResource Radius.MD}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Headers -->
+                <Border Grid.Row="0" 
+                        Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                        BorderThickness="0,0,0,1" 
+                        CornerRadius="8,8,0,0" 
+                        Padding="16,10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.5*"/> <!-- Port & Protocol -->
+                            <ColumnDefinition Width="2.2*"/> <!-- Service & Description -->
+                            <ColumnDefinition Width="2*"/>   <!-- Process Name & PID -->
+                            <ColumnDefinition Width="2*"/>   <!-- Local Binding Address -->
+                            <ColumnDefinition Width="1.8*"/> <!-- Security Exposure Status -->
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="Port ve protokol" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Grid.Column="1" Text="Tanımlı servis" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Grid.Column="2" Text="İlişkili süreç ve PID" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Grid.Column="3" Text="Dinleme soketi" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Grid.Column="4" Text="Erişim durumu" FontWeight="SemiBold" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </Grid>
+                </Border>
+
+                <!-- ListView -->
+                <ListView Grid.Row="1" 
+                          ItemsSource="{Binding FilteredListeningPorts}"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          VirtualizingStackPanel.IsVirtualizing="True"
+                          VirtualizingStackPanel.VirtualizationMode="Recycling"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="MinHeight" Value="44"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListViewItem">
+                                        <Border x:Name="ItemBorder" Background="Transparent" BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1" Padding="16,8">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:ListeningPortItem}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.5*"/>
+                                    <ColumnDefinition Width="2.2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="1.8*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Col 0: Port & Protocol -->
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Port}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" Margin="0,0,6,0"/>
+                                    <TextBlock Text="{Binding Protocol, StringFormat='({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <!-- Col 1: Service Name -->
+                                <TextBlock Grid.Column="1" Text="{Binding ServiceName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+
+                                <!-- Col 2: Process Name & PID -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding ProcessName}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding ProcessId, StringFormat='PID: {0}'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                </StackPanel>
+
+                                <!-- Col 3: Local Address -->
+                                <TextBlock Grid.Column="3" Text="{Binding LocalAddress}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+
+                                <!-- Col 4: Exposure Badge -->
+                                <Border Grid.Column="4" 
+                                        Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
+                                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
+                                        BorderThickness="1" 
+                                        CornerRadius="{StaticResource Radius.SM}" 
+                                        Padding="8,3" 
+                                        VerticalAlignment="Center" 
+                                        HorizontalAlignment="Left">
+                                    <TextBlock Text="{Binding ExposureText}" FontSize="{StaticResource Font.Caption}" FontWeight="Medium" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
