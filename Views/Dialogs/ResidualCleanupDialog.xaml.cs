@@ -8,7 +8,7 @@ using Bakım.ViewModels;
 
 namespace Bakım.Views.Dialogs
 {
-    public partial class ResidualCleanupDialog : Window
+    public partial class ResidualCleanupDialog : Wpf.Ui.Controls.FluentWindow
     {
         public ResidualCleanupViewModel ViewModel { get; }
 

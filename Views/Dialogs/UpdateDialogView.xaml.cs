@@ -6,7 +6,7 @@ using Bakım.Services;
 
 namespace Bakım.Views.Dialogs
 {
-    public partial class UpdateDialogView : Window
+    public partial class UpdateDialogView : Wpf.Ui.Controls.FluentWindow
     {
         private readonly UpdateInfo _updateInfo;
         private bool _isDownloading = false;

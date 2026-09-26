@@ -17,7 +17,7 @@ namespace Bakım.Views.Dialogs
         ThreatAnalysis
     }
 
-    public partial class HunterActionDialog : Window
+    public partial class HunterActionDialog : Wpf.Ui.Controls.FluentWindow
     {
         public HunterTargetInfo TargetInfo { get; }
         public HunterAction SelectedAction { get; private set; } = HunterAction.Cancel;
