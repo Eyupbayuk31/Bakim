@@ -28,7 +28,7 @@
                          Icon="ShieldTask24"
                          HeaderMargin="0,0,0,18"
                          Title="Analizör"
-                         Description="Sysinternals derinliğinde Windows başlangıç vektörleri, WMI kalıcılıkları, dijital imza ve VirusTotal taraması.">
+                         Description="Başlangıç noktalarını, WMI kalıcılığını ve dosya imzalarını tarar; isteğe bağlı VirusTotal denetimi yapar.">
 
             <!-- Canlı VirusTotal tarama göstergesi -->
             <c:SectionHeader.TitleAdornment>

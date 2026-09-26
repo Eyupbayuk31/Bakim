@@ -422,7 +422,7 @@ internal static class Program
 
             ("Controls/SectionHeader",   () => new SectionHeader { Title = "Başlık", Description = "Açıklama", Icon = "Shield24" }),
             ("Controls/MetricChip",      () => new MetricChip { Icon = "TopSpeed24", Label = "RAM:", Value = "%58", Intent = Intent.Accent }),
-            ("Controls/StatCard",        () => new StatCard { Icon = "HardDrive24", Label = "Disk", Value = "%72", Caption = "340 GB / 476 GB", Intent = Intent.Caution }),
+            ("Controls/StatCard",        () => new StatCard { Icon = "HardDrive20", Label = "Disk", Value = "%72", Caption = "340 GB / 476 GB", Intent = Intent.Caution }),
             ("Controls/StatusBadge",     () => new StatusBadge { Text = "Güvenli", Intent = Intent.Success }),
             ("Controls/EmptyState",      () => new EmptyState { Icon = "Search24", Title = "Sonuç yok", Description = "Tarama yapılmadı." }),
         };

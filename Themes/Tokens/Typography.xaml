@@ -116,6 +116,14 @@
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
+    <!-- Kenar çubuğu grup başlığı (Fluent NavigationViewItemHeader): Body Strong, büyük harf yok. -->
+    <Style x:Key="Text.NavGroup" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
     <!-- KPI ve skor: sabit genişlikli rakamlar, sayılar güncellenirken kaymaz. -->
     <Style x:Key="Text.KPI" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{StaticResource Font.Display}"/>

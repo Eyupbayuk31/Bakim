@@ -26,7 +26,7 @@
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
                          Title="Windows Tweaker &amp; İnce Ayarlar"
-                         Description="Winaero Tweaker klon motoru: Sistem davranışları, masaüstü, sağ tık, araçlar ve klasik uygulamalar.">
+                         Description="Sistem davranışı, masaüstü, sağ tık menüsü ve klasik uygulamalar için ince ayarlar.">
             <c:SectionHeader.Actions>
                 <!-- Top Actions Toolbar -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

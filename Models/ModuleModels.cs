@@ -213,7 +213,7 @@ namespace Bakım.Models
         public SymbolRegular CategorySymbol => Category switch
         {
             "Video" => SymbolRegular.Video24,
-            "Disk İmajı" => SymbolRegular.HardDrive24,
+            "Disk İmajı" => SymbolRegular.HardDrive20,
             "Arşiv" => SymbolRegular.FolderZip24,
             "Kurulum / Oyun" => SymbolRegular.AppGeneric24,
             _ => SymbolRegular.Document24

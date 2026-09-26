@@ -159,7 +159,7 @@ namespace Bakım.Services
                         Title = "Disk Yönetimi Konsolu (Disk Management)",
                         Description = "Bölümleri yeniden boyutlandırma, VHD sanal disk bağlama ve sürücü harfi atama konsolu.",
                         Category = "Donanım & Disk",
-                        IconSymbol = "HardDrive24",
+                        IconSymbol = "HardDrive20",
                         ExecutablePath = "diskmgmt.msc",
                         IsActivated = true
                     },

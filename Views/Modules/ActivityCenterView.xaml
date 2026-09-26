@@ -33,7 +33,7 @@
                          Icon="History24"
                          HeaderMargin="0,0,0,18"
                          Title="Etkinlik Merkezi"
-                         Description="Bakım'ın sisteminizde yaptığı her değişiklik: temizlik, kaldırma, ince ayar, başlangıç, hizmet ve güvenlik duvarı. Yedeği olan işlemler tek tıkla geri alınır.">
+                         Description="Bakım'ın sisteminizde yaptığı her değişiklik burada. Yedeği olan işlemler geri alınabilir.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Appearance="Secondary"

@@ -115,6 +115,21 @@ namespace Bakım.Converters
         }
     }
 
+    /// <summary>bool → iki sabit metinden biri (ör. ekran okuyucu durum metni).</summary>
+    public class BoolToTextConverter : IValueConverter
+    {
+        public string TrueText { get; set; } = string.Empty;
+        public string FalseText { get; set; } = string.Empty;
+
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+            value is true ? TrueText : FalseText;
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class IntToVisConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -196,19 +211,24 @@ namespace Bakım.Converters
         }
     }
 
+    /// <summary>
+    /// İki kip:
+    ///   • ConverterParameter varsa: değer parametreye eşitse (büyük/küçük harf duyarsız) görünür.
+    ///   • ConverterParameter yoksa: değer boş olmayan bir dizeyse görünür.
+    /// Invert her iki kipte de sonucu tersine çevirir.
+    /// </summary>
     public class StringToVisConverter : IValueConverter
     {
         public bool Invert { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is string s && parameter is string target)
-            {
-                bool matches = string.Equals(s, target, StringComparison.OrdinalIgnoreCase);
-                if (Invert) matches = !matches;
-                return matches ? Visibility.Visible : Visibility.Collapsed;
-            }
-            return Visibility.Collapsed;
+            string? s = value as string;
+            bool visible = parameter is string target
+                ? s != null && string.Equals(s, target, StringComparison.OrdinalIgnoreCase)
+                : !string.IsNullOrWhiteSpace(s);
+            if (Invert) visible = !visible;
+            return visible ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -87,10 +87,10 @@ Plan, WinUI 3 / Windows 11 Ayarlar uygulamasının tasarım dilini hedefler. Uyg
 | Düğmeler | Tek birincil eylem `Accent`, diğerleri `Standard`; kırmızı yalnızca yıkıcı eylemde | Uyumlu | Kapat = Standard. |
 | Durum bildirimi | `InfoBar`, `InfoBadge`, `ProgressRing`; renk tek başına anlam taşımaz | Özel rozetler | `StatusBadge` Fluent InfoBadge görünümüne yaklaşır. |
 | Hareket | 83 / 167 / 250 / 333 ms, "fast out slow in"; hareket işlevseldir, dekoratif döngü yok | 120/200/300 ms; `InteractiveCard` hover'da kalkıyor ve vurgu çerçevesi alıyor | Süreler güncellenir; kart kalkma efekti kaldırılır (Fluent'te kartlar hover'da yalnızca zemin tonunu değiştirir). |
-| Malzeme | Pencere zemini Mica; kartlar yarı saydam katman (`CardBackgroundFillColorDefault` ≈ %5 beyaz) | Slate paleti (#0F172A / #1E293B) WPF-UI fırçalarını **opak** renklerle eziyor, Mica görünmüyor | **Açık karar**, aşağıda. |
+| Malzeme | Pencere zemini Mica; kartlar yarı saydam katman (`CardBackgroundFillColorDefault` ≈ %5 beyaz) | Slate paleti (#0F172A / #1E293B) WPF-UI fırçalarını **opak** renklerle eziyor, Mica görünmüyor | **Karar: Tam Fluent** (aşağıda). |
 | Simgeler | Fluent System Icons, 16/20/24 px | Uyumlu, ama 13, 15, 18 gibi ara boyutlar var | `Icon.*` ölçeği 12/16/20/24/32/48'e iner. |
 
-**Açık karar — renk paleti:** Bugünkü "Slate Dark" (Tailwind'in lacivert-gri tonları) v4.1'in
+**Karar — renk paleti (26.09.2026: Tam Fluent seçildi, uygulama Faz 1'de):** Bugünkü "Slate Dark" (Tailwind'in lacivert-gri tonları) v4.1'in
 kimliği, ama gerçek Windows 11 görünümü değil. İki yol var:
 
 1. **Tam Fluent:** Varsayılan tema WPF-UI'nın yerel Mica + nötr gri fırçalarını kullanır; Slate Dark
@@ -98,7 +98,7 @@ kimliği, ama gerçek Windows 11 görünümü değil. İki yol var:
 2. **Fluent yapı, Slate renk:** Ölçüler, yerleşim ve bileşenler Fluent; renkler Slate. Marka kimliği
    korunur ama Mica ve saydamlık hissi olmaz.
 
-Öneri: 1. yol. Mica zaten açık (`WindowBackdropType="Mica"`), ama opak renkler yüzünden boşa gidiyor.
+Seçilen: 1. yol. Mica zaten açık (`WindowBackdropType="Mica"`), ama opak renkler yüzünden boşa gidiyor.
 
 
 ---
@@ -172,14 +172,16 @@ kimliği, ama gerçek Windows 11 görünümü değil. İki yol var:
 
 ### Faz 0 — Uygulama geneli hata düzeltmeleri (önce bu; tek başına büyük görsel kazanç)
 
+> **Durum:** Tamamlandı (Windows'ta görsel doğrulama bekliyor). Ek olarak artık görünür olan sayfa açıklamalarından §310'a aykırı ifadeler ("Sysinternals derinliğinde", "Winaero Tweaker klon motoru", "45+", "tek tıkla") ayıklandı.
+
 | İş | Dosya | Ayrıntı |
 |---|---|---|
 | 0.1 `StringToVis` düzelt | `Converters/ValueConverters.cs:199` | Parametre yoksa: `!string.IsNullOrWhiteSpace(s)` → Visible; `Invert` her iki modda da uygulanır; `value` dize değilse (null) boş sayılır. Eşitlik modu (`ConverterParameter`) aynen kalır — `ServiceManagerModuleView` bozulmaz. |
 | 0.2 Birim testi | `Tests/` | 6 durum: boş/dolu × param yok/var × Invert. |
 | 0.3 Görsel regresyon turu | 20 modül | Açıklamaları görünür olan başlıklar artık 1-2 satır ekliyor; taşan/çok uzun açıklamaları kısalt (özellikle sayfa başlıklarında tek cümle kuralı). |
-| 0.4 Kenar çubuğu görünümü | `ValueConverters.cs:241`, `MainWindow.xaml:348-402` | Seçili değil → `Transparent`; seçili → `Transparent` + `Surface.Selected` zemin + sol vurgu çubuğu + SemiBold metin. Hover: `Surface.Hover`. Yani özel bir `NavItemButton` stili (`Themes/Controls/NavItem.xaml`), `BoolToNavAppearance` kaldırılır. |
+| 0.4 Kenar çubuğu görünümü | `Themes/Controls/NavItem.xaml`, `MainWindow.xaml` | `Nav.ItemButton` stili: seçili değil şeffaf; hover/seçili `SubtleFillColorSecondary`, seçili+hover/basılı `SubtleFillColorTertiary`, 3×16 `AccentFillColorDefault` çubuk, 36 px, 4 px köşe. `BoolToNavAppearance` sayfa içi sekmelerde hâlâ kullanılıyor; onlar Faz 6'da Fluent `SelectorBar`/segment görünümüne geçer. |
 | 0.5 Grup başlığı kırpılması | `MainWindow.xaml:296, :336` | Marka bloğu alt boşluğu 14 → 8; ilk grup başlığının üst boşluğu 4; başlık Fluent NavigationView gibi `Body Strong` (14 SemiBold), büyük harf değil, `Text.Secondary` (Typography: `Text.NavGroup` stili). |
-| 0.6 Depolama simgesi | `ViewModels/Navigation.cs:71` | `python Tools/verify-symbols.py` ile doğrula; font'ta yoksa `Storage24` / `HardDrive20`'ye geç. `verify-symbols.py` CI'ya bağlanır. |
+| 0.6 Bozuk simgeler | 13 dosya | **Kök neden:** WPF-UI `SymbolExtensions.GetString` kod noktasını vekil çifte çevirmiyor; 0xFFFF üstü semboller bozuk çiziliyor (`HardDrive24 = 0xF0306` → `U+0306` "˘"). `HardDrive24` → `HardDrive20`, `ArrowRouting20` → `Play20`, `PlayCircleHint24` → `PlayCircle24`. `verify-symbols.py` ve `SymbolValidator` testi artık 0xFFFF üstünü (dolu karşılıklar dahil) reddediyor. |
 | 0.7 Kaydırma kenar solması | `MainWindow.xaml:327` | Nav `ScrollViewer`'a alt/üst `OpacityMask` (LinearGradient) — kesik öğe "devamı var" gibi okunur. |
 | 0.8 Başlık çubuğu hap dili | `MainWindow.xaml:111-236` | Tüm haplar tek stil: `TitleBarButton` (Height 32, `Radius.XS` = 4 — Fluent denetim yarıçapı, hap değil; şeffaf zemin, çerçevesiz, hover'da `SubtleFillColorSecondary`). Oyun Modu hapı: kapalıyken nötr, açıkken yeşil nokta + "Oyun Modu · 42 dk" — renk değil nokta+metin ile durum. |
 
@@ -191,6 +193,7 @@ kimliği, ama gerçek Windows 11 görünümü değil. İki yol var:
 
 | Bileşen / token | Yer | Amaç |
 |---|---|---|
+| **Tam Fluent palet (ilk iş)** | `Services/ThemeService.cs`, `Themes/Tokens/Palette.Bootstrap.xaml` | Varsayılan tema WPF-UI'nın yerel Mica + nötr fırçalarını kullanır (kart ≈ %5 beyaz katman, `CardStrokeColorDefault`); Slate Dark ayrı, isteğe bağlı tema olarak kalır. `ThemeService.SemanticV2` Fluent değerlerinden türetilir; `DesignSystemV2Tests` ve kontrast testleri güncellenir. |
 | **Fluent tip ölçeği ve yarıçap göçü** | `Typography.xaml`, `Spacing.xaml`, `Tools/migrate-*.py` | §1.1 tablosundaki değerler. Anahtar adları korunur, yalnızca değerler değişir; `Font.SectionTitle` → Subtitle 20, `Font.Title` → 28 SemiBold vb. `InteractiveCard` kalkma efekti kaldırılır. |
 | `Style Card.Surface` (Border) | `Themes/Tokens/Surfaces.xaml` (yeni) | Sayfalarda 6 satırlık tekrar eden `Background/BorderBrush/Thickness/CornerRadius/Padding` bloğunu tek stile indirir. `Card.Hero`, `Card.Hero.Active`, `Card.Inset` türevleri. |
 | **`ui:CardControl` / `ui:CardExpander`** (WPF-UI 4.3'te hazır) | `Themes/Controls/SettingsCard.xaml` (yalnızca stil) | Windows 11 Ayarlar'daki SettingsCard / SettingsExpander'ın WPF-UI karşılığı. Özel bileşen **yazılmaz**; yerleşik olanlar Fluent ölçüleriyle stillenir: MinHeight 68, Padding 16, `Radius.XS` (4), simge 20 px, başlık `Body` 14, açıklama `Caption` 12 `Text.Secondary`. Açıklama `MaxWidth=560` → satır uzunluğu sorunu (S3) biter. |

@@ -23,6 +23,7 @@
                 <ResourceDictionary Source="Themes/Tokens/Spacing.xaml"/>
                 <ResourceDictionary Source="Themes/Tokens/Motion.xaml"/>
                 <ResourceDictionary Source="Themes/Tokens/SegmentedControl.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/NavItem.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Converters -->
@@ -43,6 +44,7 @@
             <conv:BoolToNavAppearanceConverter x:Key="BoolToNavAppearance"/>
             <conv:BoolToNavAppearanceConverter x:Key="InverseBoolToNavAppearance" Invert="True"/>
             <conv:SafeSymbolConverter x:Key="SafeSymbol"/>
+            <conv:BoolToTextConverter x:Key="GameModeStatusText" TrueText="Açık" FalseText="Kapalı"/>
             <conv:EventLevelToBrushConverter x:Key="EventLevelToBrush"/>
             <conv:CategoryToForegroundConverter x:Key="CategoryToForeground"/>
             <conv:CategoryToBackgroundConverter x:Key="CategoryToBackground"/>

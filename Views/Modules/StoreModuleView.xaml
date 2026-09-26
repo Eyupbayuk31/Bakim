@@ -26,7 +26,7 @@
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
                          Title="Yazılım &amp; Runtimes Mağazası"
-                         Description="Sisteminiz için en popüler 45+ yazılımı, oyun kütüphanelerini (VC++ AIO, DirectX) ve araç setlerini tek tıkla sessizce kurun.">
+                         Description="Sık kullanılan yazılımları ve çalışma zamanı paketlerini (VC++, DirectX) sessizce kurun.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:Button Appearance="Primary"

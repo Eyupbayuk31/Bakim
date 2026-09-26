@@ -32,7 +32,7 @@
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
                          Title="Genel Bakış"
-                         Description="Gerçek zamanlı sistem telemetrisi, donanım sensörleri ve tek tıkla bellek optimizasyonu.">
+                         Description="Sistem durumu, donanım sensörleri ve hızlı bakım eylemleri.">
             <c:SectionHeader.TitleAdornment>
                 <c:StatusBadge Text="Canlı Telemetri Aktif" Intent="Success"/>
             </c:SectionHeader.TitleAdornment>
@@ -443,7 +443,7 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="HardDrive24" FontSize="16" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,6,0"/>
+                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="16" Foreground="{DynamicResource SystemFillColorCautionBrush}" Margin="0,0,6,0"/>
                             <TextBlock Text="Disk Hızı &amp; C:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource ControlFillColorSecondaryBrush}" CornerRadius="{StaticResource Radius.XS}" Padding="6,1">

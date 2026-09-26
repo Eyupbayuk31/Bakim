@@ -16,7 +16,7 @@
                              Icon="Games24"
                              HeaderMargin="0,0,0,18"
                              Title="Oyun Modu"
-                             Description="Oyun oturumu boyunca performans güç planını açar ve Bakım'ın arka plan işlerini duraklatır. Kapatınca her şey önceki haline döner."/>
+                             Description="Oyun sırasında güç planını yükseltir ve arka plan yükünü azaltır. Kapatınca her şey geri alınır."/>
 
             <!-- Durum kartı -->
             <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"

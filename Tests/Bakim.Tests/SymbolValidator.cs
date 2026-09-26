@@ -13,7 +13,11 @@ namespace Bakim.Tests
         [Fact]
         public void All_Xaml_SymbolRegular_Values_Must_Be_Valid()
         {
-            var validNames = new HashSet<string>(Enum.GetNames(typeof(SymbolRegular)));
+            // WPF-UI GetString kod noktasını vekil çifte çevirmez; 0xFFFF üstü semboller bozuk glif çizer
+            // (HardDrive24 = 0xF0306 → "˘"). Dolu (Filled) karşılığı da BMP içinde olmalı.
+            var validNames = new HashSet<string>(Enum.GetNames<SymbolRegular>()
+                .Where(n => (int)Enum.Parse<SymbolRegular>(n) <= 0xFFFF
+                            && (!Enum.TryParse<SymbolFilled>(n, out var filled) || (int)filled <= 0xFFFF)));
             Assert.NotEmpty(validNames);
 
             // Locate repo root from test assembly location

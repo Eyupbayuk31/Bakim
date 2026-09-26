@@ -19,7 +19,7 @@
 
         <c:SectionHeader Grid.Row="0"
                          IsPageTitle="True"
-                         Icon="HardDrive24"
+                         Icon="HardDrive20"
                          HeaderMargin="0,0,0,20"
                          Title="Depolama"
                          Description="Büyük dosyaları, yinelenen dosyaları ve boş klasörleri bulur. Silinenler varsayılan olarak Geri Dönüşüm Kutusu'na gider.">
@@ -254,7 +254,7 @@
 
                         <!-- Left: Drive Selector -->
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <ui:SymbolIcon Symbol="HardDrive24" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
+                            <ui:SymbolIcon Symbol="HardDrive20" FontSize="18" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,8,0"/>
                             <TextBlock Text="Hedef Sürücü:" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <ComboBox ItemsSource="{Binding AvailableDrives}" AutomationProperties.Name="Sürücü filtresi" 
                                       SelectedItem="{Binding SelectedDriveFilter, Mode=TwoWay}"
@@ -488,7 +488,7 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="HardDrive24" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
+                                        <ui:SymbolIcon Symbol="HardDrive20" FontSize="20" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,0,10,0"/>
                                         <TextBlock FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}" VerticalAlignment="Center">
                                             <Run Text="{Binding SelectedDriveName}"/><Run Text=" ("/><Run Text="{Binding SelectedDriveVolumeLabel}"/><Run Text=") - "/><Run Text="{Binding SelectedDriveFormat}"/>
                                         </TextBlock>
@@ -591,7 +591,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <Border Grid.Column="0" Background="{DynamicResource Chart.Series1.Subtle}" BorderBrush="{DynamicResource Chart.Series1}" BorderThickness="1" CornerRadius="{StaticResource Radius.MD}" Width="38" Height="38" Margin="0,0,12,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <ui:SymbolIcon Symbol="HardDrive24" FontSize="18" Foreground="{DynamicResource Chart.Series1}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <ui:SymbolIcon Symbol="HardDrive20" FontSize="18" Foreground="{DynamicResource Chart.Series1}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                         <TextBlock Text="Sanal Diskler &amp; İmajlar" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -712,7 +712,7 @@
                             <!-- Disk Image -->
                             <Border Background="{DynamicResource Chart.Series1.Subtle}" BorderBrush="{DynamicResource Chart.Series1}" BorderThickness="1" CornerRadius="{StaticResource Radius.SM}" Padding="8,3" Margin="0,0,8,4">
                                 <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon Symbol="HardDrive24" FontSize="14" Foreground="{DynamicResource Chart.Series1}" Margin="0,0,6,0"/>
+                                    <ui:SymbolIcon Symbol="HardDrive20" FontSize="14" Foreground="{DynamicResource Chart.Series1}" Margin="0,0,6,0"/>
                                     <TextBlock Text="Disk İmajı: " FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                     <TextBlock Text="{Binding CategoryStats.DiskImageFormatted}" FontSize="{StaticResource Font.Caption}" FontWeight="Bold" Foreground="{DynamicResource Chart.Series1}"/>
                                 </StackPanel>

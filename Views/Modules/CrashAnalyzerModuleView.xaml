@@ -26,7 +26,7 @@
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,20"
                          Title="Olay Günlüğü &amp; Sistem Sağlığı"
-                         Description="Mavi ekran (BSOD) döküm analizi, Windows hata günlükleri ve tek tıkla sistem dosyası onarımı.">
+                         Description="Mavi ekran dökümleri, Windows hata günlükleri ve sistem dosyası onarımı.">
             <c:SectionHeader.Actions>
                 <!-- Sub-Tab Switcher & Refresh Button -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

@@ -303,7 +303,7 @@ namespace Bakım.Services
                     Title = "Depolama — Büyük Dosyalar, Yinelenenler, Boş Klasörler",
                     Category = "Sayfa Navigasyonu",
                     Description = "Diskte yer kaplayan büyük dosyaları, yinelenen kopyaları ve boş klasörleri bulur.",
-                    IconName = "HardDrive24",
+                    IconName = "HardDrive20",
                     ActionKind = CommandActionKind.Navigate,
                     TargetParameter = "Storage",
                     KeyboardShortcut = "Depolama"

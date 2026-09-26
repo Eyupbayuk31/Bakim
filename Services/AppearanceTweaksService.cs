@@ -76,7 +76,7 @@ namespace Bakım.Services
                         Category = CategoryName,
                         Title = "Pencere Küçültme/Büyütme Animasyonlarını Kapat",
                         Description = "Pencereler küçültülürken veya büyütülürken oynatılan animasyonları kapatarak anlık tepki hızı sağlar.",
-                        IconSymbol = "PlayCircleHint24",
+                        IconSymbol = "PlayCircle24",
                         Type = TweakType.Toggle,
                         RequiresAdmin = false,
                         RequiresRestart = false,

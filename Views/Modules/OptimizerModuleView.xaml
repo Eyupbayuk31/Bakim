@@ -22,7 +22,7 @@
                          IsPageTitle="True"
                          HeaderMargin="0,0,0,16"
                          Title="Bellek ve Süreçler"
-                         Description="Fiziksel bellek dağılımı, Sysinternals RAMMap temizleme motorları ve canlı süreç yöneticisi.">
+                         Description="Çalışan süreçler ve bellek dağılımı; kullanılmayan belleği Windows'a geri verme.">
             <c:SectionHeader.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <ui:ToggleSwitch IsChecked="{Binding IsAutoRefreshEnabled, Mode=TwoWay}" 
