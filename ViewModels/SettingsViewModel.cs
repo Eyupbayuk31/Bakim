@@ -1064,13 +1064,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v420 = new ReleaseChangelogItem
+            {
+                Version = "v4.2.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Bakım 4.2: Yeni Nesil Oyun Modu, Windows 11 Fluent Ayarlar Mimarisi & Akıllı Oyun Kütüphanesi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Windows 11 Fluent 2 Oyun Modu Mimarisi: Sayfa hiyerarşisi sıfırdan inşa edildi. Geniş, göz yoran satırlar yerine kart bazlı eylem planı (CardAction / SettingsCard), kompakt adım listesi (StepList) ve etkileşimli etiket düzenleyicisi (ChipListEditor) getirildi.",
+                    "Akıllı Oyun Kütüphanesi Entegrasyonu (GameLibraryService): Steam (appmanifest / libraryfolders VDF), Epic Games ve Xbox Game Pass kurulu oyunları otomatik olarak algılanır ve otomatik tetikleme listesine tek tıkla eklenebilir.",
+                    "Arka Plan Uygulama Askıya Alma / Kapatma Ayrımı: Windows 11 Fluent kurallarına uygun olarak duraklatılabilir arka plan servisleri ve kapatılabilir pencereli uygulamalar net biçimde kategorilendirildi.",
+                    "Ayarlar Modülü Fluent 2 Revizyonu: Ayarlar sayfası, Windows 11 Ayarlar uygulamasının birebir görsel kılavuzuna (ui:CardControl / SettingsCard, grup başlıkları, kompakt anahtarlar) tam dönüştürüldü.",
+                    "Windows 11 Standart Renk Paleti (Themes/Tokens/Palette.Bootstrap.xaml): Slate Dark ve Mica temalarında renk kontrastı, yüzey derinliği ve stroke değerleri resmi Microsoft tasarım ilkelerine göre kusursuzlaştırıldı.",
+                    "Yeni Fluent Kontrol Seti: Modern klavye kısayol rozeti (KeyCap), adım/aşama listesi (StepList) ve dinamik liste seçim diyalogu (PickListDialog) platforma kazandırıldı."
+                }
+            };
+
             var v412 = new ReleaseChangelogItem
             {
                 Version = "v4.1.2",
                 ReleaseDate = "Eylül 2026",
                 Title = "Fluent UI İyileştirmeleri, Görünmeyen Açıklamalar & Başlıklar Onarımı ve Modern Kenar Çubuğu",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "StringToVisConverter Parametresiz Kullanım Onarımı: Parametresiz kullanımda her zaman Collapsed dönmesi sonucu 66 sayfa ve bölüm başlığının simgeleri, açıklamaları, StatCard/MetricChip değerleri, rozet biçim göstergeleri ve komut paleti kısayollarının gizli kalması sorunu giderildi.",
@@ -1868,8 +1886,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v412;
+            LatestRelease = v420;
 
+            ReleaseHistory.Add(v420);
             ReleaseHistory.Add(v412);
             ReleaseHistory.Add(v411);
             ReleaseHistory.Add(v410);
