@@ -272,6 +272,36 @@ public class SentinelFazATests
         Assert.False(SetupSessionPolicy.IsLaunchedInstalledApp(null, written, temp));
     }
 
+    // ---- MSI güvenlik ağı: bileşen kayıtları ----
+
+    [Theory]
+    [InlineData("{5C6F8543-7EA8-40B9-B78F-04C78300DE7F}", "3458F6C58AE79B047BF8407C3800EDF7")] // Notepad++ (x64), gerçek kayıt
+    [InlineData("5c6f8543-7ea8-40b9-b78f-04c78300de7f", "3458F6C58AE79B047BF8407C3800EDF7")]
+    [InlineData("not-a-guid", null)]
+    [InlineData(null, null)]
+    public void Msi_PackGuid(string? productCode, string? expected) => Assert.Equal(expected, MsiComponents.PackGuid(productCode));
+
+    [Theory]
+    [InlineData(@"C:\Program Files\Notepad++\notepad++.exe", MsiKeyPathKind.File, @"C:\Program Files\Notepad++\notepad++.exe")]
+    [InlineData(@"C:\Program Files\Notepad++\plugins\", MsiKeyPathKind.Folder, @"C:\Program Files\Notepad++\plugins")]
+    [InlineData(@"20:\*\shell\ANotepad++64\", MsiKeyPathKind.Registry, @"HKCR\*\shell\ANotepad++64")]
+    [InlineData(@"02:\SOFTWARE\Vendor\App\Path", MsiKeyPathKind.Registry, @"HKLM\SOFTWARE\Vendor\App\Path")]
+    [InlineData(@"21:\Software\Vendor\App", MsiKeyPathKind.Registry, @"HKCU\Software\Vendor\App")]
+    public void Msi_KeyPath_Parsed(string raw, MsiKeyPathKind kind, string path)
+    {
+        Assert.True(MsiComponents.TryParseKeyPath(raw, out var keyPath));
+        Assert.Equal(kind, keyPath.Kind);
+        Assert.Equal(path, keyPath.Path);
+    }
+
+    [Theory]
+    [InlineData(@"C?\Program Files\App\a.dll")] // yerel kurulu değil (kaynaktan)
+    [InlineData(@"09:\Software\x")]
+    [InlineData(@"02:\")]
+    [InlineData("")]
+    [InlineData(null)]
+    public void Msi_KeyPath_Rejected(string? raw) => Assert.False(MsiComponents.TryParseKeyPath(raw, out _));
+
     // ---- A2: koruma rozeti ----
 
     [Fact]

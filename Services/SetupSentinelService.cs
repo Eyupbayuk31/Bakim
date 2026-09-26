@@ -110,6 +110,18 @@ namespace Bakım.Services
         private bool _isTraceActive;
         private long _eventSequence;
 
+        private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(1500);
+        /// <summary>Yeni süreç olayı nöbetçi turunu beklemeden başlatır (en fazla bir bekleyen sinyal).</summary>
+        private readonly SemaphoreSlim _wake = new(0, 1);
+
+        // Kaçan MSI kurulumları için güvenlik ağı: yalnızca Bakım açıldıktan sonraki kayıtlar.
+        private static readonly TimeSpan MsiPollInterval = TimeSpan.FromSeconds(3);
+        private DateTime _msiCheckedUtc = DateTime.UtcNow;
+        private DateTime _lastMsiPollUtc = DateTime.MinValue;
+        private readonly HashSet<long> _handledMsiRecords = new();
+        /// <summary>Canlı izlenen oturumların zaman aralıkları: içlerindeki MSI kayıtları zaten raporlandı.</summary>
+        private readonly List<(DateTime Start, DateTime End)> _sessionWindows = new();
+
         public SentinelProtectionStatus ProtectionStatus { get; private set; }
 
         public SetupSentinelService(
@@ -208,25 +220,25 @@ namespace Bakım.Services
 
         private async Task PollingLoopAsync(CancellationToken ct)
         {
-            using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(1500));
-
             while (!ct.IsCancellationRequested)
             {
                 try
                 {
-                    if (await timer.WaitForNextTickAsync(ct))
-                    {
-                        if (!_isEnabled || _isDisposed) continue;
+                    // Tur 1,5 sn'de bir döner; yönetici modunda her yeni süreç (WMI) turu hemen başlatır.
+                    // Winget'in sessiz MSI kurulumları ~1 sn sürdüğü için yalnız zamanlayıcıyla kaçıyordu.
+                    await _wake.WaitAsync(PollInterval, ct);
+                    if (!_isEnabled || _isDisposed) continue;
 
-                        if (IsMonitoringActiveSession)
-                        {
-                            await CheckActiveSessionProcessesAsync();
-                        }
-                        else
-                        {
-                            ScanNewProcesses();
-                            RefreshBaselineIfDue();
-                        }
+                    if (IsMonitoringActiveSession)
+                    {
+                        await CheckActiveSessionProcessesAsync();
+                    }
+                    else
+                    {
+                        ScanNewProcesses();
+                        // Taban yenilenmeden önce: kaçan MSI kurulumu varsa eski tabanla karşılaştırılır.
+                        await CheckMissedMsiInstallsAsync();
+                        RefreshBaselineIfDue();
                     }
                 }
                 catch (OperationCanceledException)
@@ -761,7 +773,7 @@ namespace Bakım.Services
                 report.FormattedSize = FormatBytes(totalBytes);
 
                 // Nöbetçi v2: kurulum dosyası, sistem alanları ve risk kararı (NÖB 2–4).
-                await EvaluateRiskAsync(session, report);
+                await EvaluateRiskAsync(session.InstallerInfoTask, _preSystem, report);
 
                 // Uygulama adı: oturumda oluşan Uninstall kaydı en güçlü kanıttır (A9).
                 if (SetupAppName.FromNewPrograms(report.NewPrograms, report.AppName, report.InstallerPath) is { } registeredName &&
@@ -771,22 +783,15 @@ namespace Bakım.Services
                     report.AppName = registeredName;
                 }
 
-                // Raporu Tekil SessionStore'a Kaydet (P0-6)
-                await _sessionStore.SaveReportAsync(report);
-                RecordActivity(report);
-
+                // Bu aralıktaki MSI kayıtları canlı izlendi: güvenlik ağı ikinci rapor üretmez.
+                var windowStart = session.RootProcessCreationTicks > 0 ? new DateTime(session.RootProcessCreationTicks, DateTimeKind.Utc) : session.StartTime;
                 lock (_lock)
                 {
-                    _recentReports.Insert(0, report);
-                    if (_recentReports.Count > 20)
-                    {
-                        _recentReports.RemoveAt(_recentReports.Count - 1);
-                    }
+                    _sessionWindows.Add((windowStart - TimeSpan.FromSeconds(5), DateTime.UtcNow + TimeSpan.FromSeconds(10)));
+                    if (_sessionWindows.Count > 20) _sessionWindows.RemoveAt(0);
                 }
 
-                _log.Info($"Kurulum tamamlandı: {report.AppName} - +{report.CreatedFiles.Count} dosya, +{report.AddedExecutables.Count} yürütülebilir, +{report.AddedStartupEntries.Count} başlangıç girdisi.", nameof(SetupSentinelService));
-
-                SetupFinished?.Invoke(report);
+                await PublishReportAsync(report);
                 return report;
             }
             finally
@@ -799,6 +804,156 @@ namespace Bakım.Services
             }
         }
 
+        /// <summary>Raporu kaydeder, Etkinlik Merkezi'ne yazar ve bildirim olayını yayımlar.</summary>
+        private async Task PublishReportAsync(SetupDeltaReport report)
+        {
+            await _sessionStore.SaveReportAsync(report);
+            RecordActivity(report);
+
+            lock (_lock)
+            {
+                _recentReports.Insert(0, report);
+                if (_recentReports.Count > 20)
+                {
+                    _recentReports.RemoveAt(_recentReports.Count - 1);
+                }
+            }
+
+            _log.Info($"Kurulum tamamlandı: {report.AppName} - +{report.CreatedFiles.Count} dosya, +{report.AddedExecutables.Count} yürütülebilir, +{report.AddedStartupEntries.Count} başlangıç girdisi" +
+                      (report.DetectedAfterInstall ? " (MSI günlüğünden sonradan yakalandı)." : "."), nameof(SetupSentinelService));
+
+            SetupFinished?.Invoke(report);
+        }
+
+        /// <summary>
+        /// Güvenlik ağı: canlı izlenemeyen MSI kurulumlarını Windows Installer günlüğünden yakalar.
+        /// Winget ve benzerleri MSI'ı sessiz kurduğunda süreç ~1 sn yaşar ve iki tarama arasında
+        /// kaçabilir; "ürün yüklendi" (1033) kaydı ise her durumda yazılır.
+        /// </summary>
+        private async Task CheckMissedMsiInstallsAsync()
+        {
+            var now = DateTime.UtcNow;
+            if (now - _lastMsiPollUtc < MsiPollInterval) return;
+            _lastMsiPollUtc = now;
+
+            foreach (var ev in MsiEventLogWatcher.QueryCompletedInstalls(_msiCheckedUtc - TimeSpan.FromSeconds(1)))
+            {
+                if (!_handledMsiRecords.Add(ev.RecordId)) continue;
+                if (ev.TimeUtc > _msiCheckedUtc) _msiCheckedUtc = ev.TimeUtc;
+                if (!ev.Succeeded) continue;
+
+                bool covered;
+                lock (_lock) covered = _sessionWindows.Any(w => ev.TimeUtc >= w.Start && ev.TimeUtc <= w.End);
+                if (covered) continue;
+
+                if (ev.BySystem && !_settingsService.Current.SentinelWatchBackgroundInstalls)
+                {
+                    _log.Info($"Arka plan MSI kurulumu atlandı: {ev.ProductName} {ev.Version} (SYSTEM hesabıyla kuruldu).", nameof(SetupSentinelService));
+                    continue;
+                }
+
+                try
+                {
+                    var report = await BuildMsiReportAsync(ev);
+                    await PublishReportAsync(report);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Kaçan MSI kurulumu raporlanamadı: {ev.ProductName}.", ex, nameof(SetupSentinelService));
+                }
+                _baselineTakenUtc = DateTime.MinValue; // yeni ürün sonraki oturumun tabanına girsin
+            }
+            if (_handledMsiRecords.Count > 512) _handledMsiRecords.Clear();
+        }
+
+        /// <summary>
+        /// Canlı izlenemeyen MSI kurulumunun raporu. Dosyalar Windows Installer'ın bileşen
+        /// kayıtlarından (kesin), kayıt defteri ve sistem farkı kurulumdan önce alınmış tabandan hesaplanır.
+        /// </summary>
+        private async Task<SetupDeltaReport> BuildMsiReportAsync(MsiInstallEvent ev)
+        {
+            var start = MsiEventLogWatcher.FindTransactionStart(ev.TimeUtc + TimeSpan.FromSeconds(1), TimeSpan.FromHours(2));
+            DateTime startUtc = start != null && start.TimeUtc <= ev.TimeUtc ? start.TimeUtc : ev.TimeUtc;
+            // Kurulum işleminin kaydında paket yolu yazar; ürün kodu Uninstall anahtarından bulunur.
+            string? productCode = start?.ProductCode ?? MsiProductInventory.FindProductCode(ev.ProductName, ev.Version);
+            string? initiator = start?.ProcessId is int pid ? ProcessInfoReader.GetProcessExecutablePath(pid) : null;
+
+            _log.Info($"Canlı izlenemeyen MSI kurulumu yakalandı: {ev.ProductName} {ev.Version} ({productCode ?? "ürün kodu yok"}" +
+                      $"{(initiator != null ? ", başlatan: " + Path.GetFileName(initiator) : start?.ProcessId is int p ? $", başlatan PID {p}" : "")}). " +
+                      "Rapor Windows Installer kayıtlarından çıkarılıyor.", nameof(SetupSentinelService));
+
+            var report = new SetupDeltaReport
+            {
+                AppName = ev.ProductName,
+                InstallerPath = start?.PackagePath ?? string.Empty,
+                InstallTime = startUtc,
+                Duration = ev.TimeUtc - startUtc,
+                Kind = SessionKind.Install,
+                DetectedAfterInstall = true,
+                ProductCode = productCode
+            };
+
+            // Kayıt defteri farkı yalnızca taban kurulumdan ÖNCE alındıysa anlamlıdır.
+            var baseline = _baselineHotspot;
+            bool baselineBefore = baseline != null && _baselineTakenUtc <= startUtc;
+            if (baselineBefore)
+            {
+                try
+                {
+                    var (records, services, startups) = RegistryHotspotSensor.ComputeDelta(baseline!, RegistryHotspotSensor.CaptureHotspotSnapshot());
+                    report.AddedRegistryRecords = records;
+                    report.AddedServices = services;
+                    report.AddedStartupEntries = startups;
+                    if (productCode != null && baseline!.Keys.Any(k => k.EndsWith(@"\Uninstall\" + productCode, StringComparison.OrdinalIgnoreCase)))
+                        report.Kind = SessionKind.Update;
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning("MSI kurulumu için kayıt defteri farkı hesaplanamadı.", ex, nameof(SetupSentinelService));
+                }
+            }
+            else
+            {
+                report.IsPossiblyIncomplete = true;
+            }
+
+            // Dosyalar: Windows Installer'ın bu ürün için kaydettiği bileşenler.
+            var footprint = productCode != null ? await Task.Run(() => MsiProductInventory.Read(productCode)) : new MsiProductFootprint();
+            var files = footprint.Files.Where(f => ProbePath(f) == PathState.File).ToList();
+            if (report.Kind == SessionKind.Update) report.ModifiedFiles = files;
+            else report.CreatedFiles = files;
+            report.AddedFiles = report.CreatedFiles;
+            report.AddedFolders = footprint.Folders.Where(f => ProbePath(f) == PathState.Directory).ToList();
+            report.AddedExecutables = report.CreatedFiles
+                .Where(f => ExecutableExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+                .ToList();
+
+            var knownKeys = new HashSet<string>(report.AddedRegistryRecords.Select(r => r.KeyPath), StringComparer.OrdinalIgnoreCase);
+            foreach (string key in footprint.RegistryKeys.Where(knownKeys.Add))
+            {
+                report.AddedRegistryRecords.Add(new SetupRegistryRecord
+                {
+                    Hive = key[..key.IndexOf('\\')],
+                    KeyPath = key,
+                    ChangeKind = "KeyAdded",
+                    IsAutorunOrService = RegistryHotspotSensor.IsRunValueKey(key) || RegistryHotspotSensor.IsServiceKey(key)
+                });
+            }
+            if (footprint.ComponentCount == 0) report.IsPossiblyIncomplete = true;
+
+            long totalBytes = await Task.Run(() => SumFileSizes(report.CreatedFiles));
+            report.TotalSizeBytes = totalBytes;
+            report.FormattedSize = FormatBytes(totalBytes);
+
+            // Paket hâlâ duruyorsa imza ve kaynak okunur (winget kurulumdan sonra siler).
+            Task<InstallerInfo>? installerInfo = File.Exists(report.InstallerPath)
+                ? Task.Run(() => InstallerInspector.Inspect(report.InstallerPath))
+                : null;
+            var preSystem = _baselineSystem != null && _baselineSystem.TakenUtc <= startUtc ? _baselineSystem : null;
+            await EvaluateRiskAsync(installerInfo, preSystem, report);
+            return report;
+        }
+
         private static readonly HashSet<string> MasqueradeExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".txt", ".dat", ".log", ".pdf", ".doc", ".docx",
@@ -809,13 +964,13 @@ namespace Bakım.Services
         /// Kurulum dosyası bilgisi, sistem alanı farkı, yeni programlar ve risk kararı. Hiçbir adım
         /// raporu bozmaz: okunamayan parça rapora girmez, karar eldeki kanıtla verilir.
         /// </summary>
-        private async Task EvaluateRiskAsync(WatchedSetupSession session, SetupDeltaReport report)
+        private async Task EvaluateRiskAsync(Task<InstallerInfo>? installerInfo, SystemStateCapture? pre, SetupDeltaReport report)
         {
             try
             {
-                if (session.InstallerInfoTask != null &&
-                    await Task.WhenAny(session.InstallerInfoTask, Task.Delay(TimeSpan.FromSeconds(10))) == session.InstallerInfoTask)
-                    report.Installer = await session.InstallerInfoTask;
+                if (installerInfo != null &&
+                    await Task.WhenAny(installerInfo, Task.Delay(TimeSpan.FromSeconds(10))) == installerInfo)
+                    report.Installer = await installerInfo;
             }
             catch (Exception ex)
             {
@@ -824,7 +979,6 @@ namespace Bakım.Services
 
             try
             {
-                var pre = _preSystem;
                 if (pre != null)
                 {
                     var post = SystemStateSensor.Capture();
@@ -1037,7 +1191,23 @@ namespace Bakım.Services
         private void OnProcessStartedEvent(int pid, string name, int parentPid)
         {
             var session = _activeSession;
-            if (session == null || !session.IsActive) return;
+            if (session == null || !session.IsActive)
+            {
+                // Boşta: turu hemen başlat, kısa ömürlü kurulum süreci kaçmasın.
+                if (_isEnabled && !_isDisposed && _wake.CurrentCount == 0)
+                {
+                    try
+                    {
+                        _wake.Release();
+                    }
+                    catch (Exception ex) when (ex is SemaphoreFullException or ObjectDisposedException)
+                    {
+                        // Aynı anda gelen iki olay ya da kapanış: tur zaten uyandırıldı / döngü bitti.
+                        _log.Debug($"Nöbetçi turu uyandırılamadı: {ex.GetType().Name}", nameof(SetupSentinelService));
+                    }
+                }
+                return;
+            }
             if (!session.TrackedProcessIds.ContainsKey(parentPid) || session.DetachedProcessIds.ContainsKey(parentPid)) return;
             if (!session.TrackedProcessIds.TryAdd(pid, 0)) return;
 
@@ -1060,7 +1230,11 @@ namespace Bakım.Services
             bool finished = true;
             try { finished = worker?.Wait(TimeSpan.FromSeconds(2)) ?? true; }
             catch (AggregateException) { }
-            if (finished) _finalizeLock.Dispose();
+            if (finished)
+            {
+                _finalizeLock.Dispose();
+                _wake.Dispose();
+            }
         }
     }
 }

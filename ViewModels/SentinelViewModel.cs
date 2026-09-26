@@ -39,7 +39,8 @@ namespace Bakım.ViewModels
         public string Summary =>
             $"+{Report.CreatedFiles.Count:N0} dosya · {Report.FormattedSize} · {Report.AddedExecutables.Count} yürütülebilir" +
             (Report.AddedStartupEntries.Count > 0 ? $" · {Report.AddedStartupEntries.Count} başlangıç" : "") +
-            (Report.AddedServices.Count > 0 ? $" · {Report.AddedServices.Count} hizmet" : "");
+            (Report.AddedServices.Count > 0 ? $" · {Report.AddedServices.Count} hizmet" : "") +
+            (Report.DetectedAfterInstall ? " · MSI günlüğünden sonradan yakalandı" : "");
         public string RiskText => string.IsNullOrWhiteSpace(Report.QuickRiskSummary) ? "" : Report.QuickRiskSummary;
         public bool HasVerdict => Report.RiskEvaluated;
         public RiskLevel VerdictLevel => SetupRiskPresentation.ToLevel(Report.RiskVerdict);

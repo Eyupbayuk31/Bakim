@@ -98,6 +98,13 @@ namespace Bakım.Models
         public List<string> AddedExecutables { get; set; } = new();
         /// <summary>Kurulumun oluşturup yine sildiği geçici öğe sayısı (rapora tek tek girmez).</summary>
         public int TempFileCount { get; set; }
+        /// <summary>
+        /// Kurulum canlı izlenemedi, bittikten sonra Windows Installer günlüğünden yakalandı. Dosyalar
+        /// MSI bileşen kayıtlarından okunur; kayıt defteri farkı son tabana göredir.
+        /// </summary>
+        public bool DetectedAfterInstall { get; set; }
+        /// <summary>MSI ürün kodu (biliniyorsa).</summary>
+        public string? ProductCode { get; set; }
 
         // Kayıt Defteri ve Sistem
         public List<SetupRegistryRecord> AddedRegistryRecords { get; set; } = new();

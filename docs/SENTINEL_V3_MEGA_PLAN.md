@@ -159,7 +159,13 @@ Motor mimarisine dokunmadan bugünkü raporları doğru hale getirir.
 > (`Core/Sentinel/SetupDelta.cs`), `SetupAppName`, `SetupSessionPolicy`. Testler:
 > `SentinelFazATests` (27, Core) ve `SentinelFazAWindowsTests` (Windows). A10'dan sonra
 > `ExcludedProcessNames` içindeki `code`/`discord`/`spotify` yamaları bilerek yerinde bırakıldı;
-> fikstürlerle (B4) doğrulandıktan sonra kaldırılacak. Gerçek kurulumlarla elle deneme henüz yapılmadı.
+> fikstürlerle (B4) doğrulandıktan sonra kaldırılacak.
+>
+> **v4.7.1 ek (sahada bulunan açık):** winget ile kurulan Notepad++ görülmedi. winget MSI'ı `msiexec`
+> başlatmadan kendi sürecinde (Windows Installer API) kuruyor ve işlem ~1,4 sn sürüyor; süreç tabanlı
+> algılama bunu yapısal olarak göremez. Çözüm: MSI olay günlüğü (1033/1040) güvenlik ağı + D3'ün öne
+> çekilen parçası (`MsiComponents`, `MsiProductInventory`: bileşen kayıtlarından kesin dosya listesi) +
+> WMI süreç olayıyla anında tur. Aynı açık MSIX/Store/winget-MSIX için de geçerli (H2 önceliği yükseldi).
 
 | İş | İçerik | Kapattığı |
 |---|---|---|
