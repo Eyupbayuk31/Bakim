@@ -1,7 +1,7 @@
 {
   "xaml_hex_colors": 5,
   "xaml_font_sizes": 1,
-  "xaml_corner_radius": 6,
+  "xaml_corner_radius": 5,
   "code_hex_colors": 16,
   "empty_catch": 227,
   "danger_in_pages": 0,
@@ -9,5 +9,8 @@
   "infinite_animation": 0,
   "gradient_brush": 0,
   "title_case_text": 0,
-  "ampersand_text": 0
+  "ampersand_text": 0,
+  "ui_card_raw": 0,
+  "status_fill_pill": 15,
+  "legacy_page_header": 0
 }

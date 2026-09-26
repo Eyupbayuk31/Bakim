@@ -28,7 +28,7 @@
 
         <!-- Center Card Container -->
         <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="28,10,28,24" MaxWidth="380">
-            <ui:Card Padding="28,24">
+            <Border Style="{StaticResource Card.Surface.Hero}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/> <!-- Brand Header -->
@@ -258,7 +258,7 @@
                                    VerticalAlignment="Center"/>
                     </Grid>
                 </Grid>
-            </ui:Card>
+            </Border>
         </Grid>
     </Grid>
 </ui:FluentWindow>
