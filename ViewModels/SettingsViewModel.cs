@@ -1056,13 +1056,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v412 = new ReleaseChangelogItem
+            {
+                Version = "v4.1.2",
+                ReleaseDate = "Eylül 2026",
+                Title = "Fluent UI İyileştirmeleri, Görünmeyen Açıklamalar & Başlıklar Onarımı ve Modern Kenar Çubuğu",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "StringToVisConverter Parametresiz Kullanım Onarımı: Parametresiz kullanımda her zaman Collapsed dönmesi sonucu 66 sayfa ve bölüm başlığının simgeleri, açıklamaları, StatCard/MetricChip değerleri, rozet biçim göstergeleri ve komut paleti kısayollarının gizli kalması sorunu giderildi.",
+                    "Fluent Sembol Düzeltmeleri: 0xFFFF üzeri gliflerin (HardDrive24 vb.) WPF-UI'da bozuk glif olarak çizilmesi engellendi; BMP içi standart eşleniklerine geçirildi ve sembol doğrulama araçları güncellendi.",
+                    "Windows 11 NavigationView Uyumlu Kenar Çubuğu: Şeffaf menü öğeleri, hafif seçili katman, 3x16 sol vurgu çubuğu (Nav.ItemButton), Body Strong grup başlıkları ve yumuşak kaydırma kenar solması (ScrollFade) entegre edildi.",
+                    "Başlık Çubuğu Düzenlemesi: Tek birleşik arama alanı ve şeffaf butonlar; Oyun Modu anahtarı aşırı dolgu vurgusu yerine durum noktası ve metinle dengelendi.",
+                    "Arayüz Metin Dengelemesi: Sayfa başlıkları ve açıklamalarındaki abartılı ve yapay zeka jeneriği ifadeler temizlendi; sade, profesyonel Fluent 2 tonuna kavuşturuldu.",
+                    "Windows Sandbox Çapraz Platform CI Uyumluluğu: Linux CI derleme sunucularında Windows dosya ayracı uyumsuzluğu giderildi."
+                }
+            };
+
             var v411 = new ReleaseChangelogItem
             {
                 Version = "v4.1.1",
                 ReleaseDate = "Eylül 2026",
                 Title = "Kurulum Nöbetçisi Asenkron Donma & Kilitlenme Onarımı, Bellek İçi Filtreleme ve Güvenlik Güçlendirmesi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Kurulum Nöbetçisi UI Donma & Deadlock Onarımı: Disk üzerindeki geçmiş oturum raporlarının senkron yüklenmesi (GetAwaiter().GetResult()) yerine tamamen asenkron, iş parçacığını kilitlemeyen Task.Run / LoadSavedReportsAsync mimarisine geçilerek sayfa açılışındaki donmalar kökten giderildi.",
@@ -1842,8 +1860,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v411;
+            LatestRelease = v412;
 
+            ReleaseHistory.Add(v412);
             ReleaseHistory.Add(v411);
             ReleaseHistory.Add(v410);
             ReleaseHistory.Add(v400);
