@@ -232,6 +232,12 @@
                             <ui:ToggleSwitch IsChecked="{Binding HideMicrosoftEntries, Mode=TwoWay}" AutomationProperties.Name="İmzası doğrulanmış Microsoft girdilerini gizle" VerticalAlignment="Center"/>
                         </StackPanel>
 
+                        <StackPanel Orientation="Horizontal" Margin="0,0,20,0" VerticalAlignment="Center">
+                            <TextBlock Text="Canlı izleme" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"
+                                       ToolTip="Yeni başlangıç girdisi, hizmet, zamanlanmış görev ya da WMI aboneliği eklendiği anda değerlendirir; riskliyse bildirir ve Etkinlik Merkezi'ne yazar."/>
+                            <ui:ToggleSwitch IsChecked="{Binding LiveWatchEnabled, Mode=TwoWay}" AutomationProperties.Name="Canlı kalıcılık izlemeyi aç veya kapat" VerticalAlignment="Center"/>
+                        </StackPanel>
+
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Yalnızca imzasızları göster" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <ui:ToggleSwitch IsChecked="{Binding ShowOnlyUnsigned, Mode=TwoWay}" AutomationProperties.Name="Yalnızca imzasız girdileri göster" VerticalAlignment="Center"/>
@@ -387,6 +393,13 @@
                                                Foreground="{DynamicResource SystemFillColorCautionBrush}"
                                                TextWrapping="Wrap"
                                                Visibility="{Binding HasCollectorNotes, Converter={StaticResource BoolToVis}}"
+                                               Margin="0,2,0,0"/>
+
+                                    <TextBlock Text="{Binding Provenance}"
+                                               FontSize="{StaticResource Font.Caption}"
+                                               Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               Visibility="{Binding HasProvenance, Converter={StaticResource BoolToVis}}"
                                                Margin="0,2,0,0"/>
 
                                     <TextBlock Text="{Binding HostDisplay}"

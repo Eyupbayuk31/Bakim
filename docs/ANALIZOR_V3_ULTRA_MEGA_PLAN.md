@@ -261,6 +261,10 @@ her fark açıklanabilir.
 
 ### Faz 4 — Canlı kalıcılık izleme (v5.1.0, ~2 hafta)
 
+> **Durum (v4.12.0): uygulandı.** `Services/Analyzer/PersistenceWatchService` (RegNotifyChangeKeyValue: Run +
+> politika + hizmet adları; FSW: başlangıç klasörleri; 5 dk yoklama: görevler + WMI), `Core/Analyzer/PersistenceWatch`
+> (fark, bildirim kararı, `ProvenanceIndex`). Uçtan uca test: gerçek HKCU Run değeri 30 sn içinde yakalanıyor.
+
 - Run anahtarları, hizmetler, görevler ve WMI aboneliği için değişim bildirimi (`RegNotifyChangeKeyValue`,
   görev klasörü izleyicisi, `__InstanceCreationEvent` on `__EventConsumer`).
 - Yeni kalıcılık → anında değerlendirme → risk ≥ Dikkat ise bildirim ("X yeni bir başlangıç girdisi ekledi").

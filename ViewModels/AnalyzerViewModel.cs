@@ -158,6 +158,60 @@ namespace Bakım.ViewModels
 
             _filteredView = CollectionViewSource.GetDefaultView(Items);
             _filteredView.Filter = FilterItem;
+
+            _liveWatchEnabled = App.TryGetService<IAppSettingsService>()?.Current.AnalyzerLiveWatch ?? true;
+            if (App.TryGetService<Bakım.Services.Analyzer.IPersistenceWatchService>() is { } watch)
+                watch.PersistenceAdded += OnPersistenceAdded;
+        }
+
+        /// <summary>Canlı kalıcılık izleme açık mı (ANL Faz 4)? Ayar kalıcıdır.</summary>
+        [ObservableProperty]
+        private bool _liveWatchEnabled;
+
+        partial void OnLiveWatchEnabledChanged(bool value)
+        {
+            App.TryGetService<IAppSettingsService>()?.Update(s => s.AnalyzerLiveWatch = value);
+            var watch = App.TryGetService<Bakım.Services.Analyzer.IPersistenceWatchService>();
+            if (value) watch?.Start();
+            else watch?.Stop();
+        }
+
+        /// <summary>Canlı izleme yeni girdi buldu: liste yüklüyse en üste eklenir.</summary>
+        private void OnPersistenceAdded(PersistenceItem item)
+        {
+            Application.Current?.Dispatcher.BeginInvoke(() =>
+            {
+                if (_lastScanUtc == DateTime.MinValue) return; // liste henüz taranmadı; ilk tarama zaten gösterecek
+                Items.Insert(0, item);
+                ApplyRiskSorting();
+                UpdateStats();
+                ScanStatusText = $"Yeni kalıcılık girdisi eklendi: {item.Name} ({item.RiskLabel}).";
+            });
+        }
+
+        /// <summary>
+        /// Nöbetçi raporlarından "bu girdiyi hangi kurulum ekledi?" bilgisini satırlara yazar (ANL Faz 4).
+        /// </summary>
+        private async Task ApplyProvenanceAsync()
+        {
+            var sentinel = App.TryGetService<ISetupSentinelService>();
+            if (sentinel == null) return;
+            try
+            {
+                var reports = (await sentinel.LoadSavedReportsAsync()).Concat(sentinel.RecentReports)
+                    .GroupBy(r => r.SessionId).Select(g => g.First());
+                var index = Bakım.Core.Analyzer.ProvenanceIndex.Build(reports.Select(Bakım.Services.Analyzer.ProvenanceFromReports.ToTrail));
+                if (index.Count == 0) return;
+                foreach (var item in Items)
+                {
+                    if (index.Find(Bakım.Core.Analyzer.ProvenanceIndex.CandidateKeys(item.RegistryKeyPath, item.RegistryValueName, item.ServiceName, item.TaskPath)) is { } hit)
+                        item.Provenance = Bakım.Services.Analyzer.ProvenanceFromReports.Describe(hit);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                AppLog.Warning("Nöbetçi raporları Analizör'e bağlanamadı.", ex, nameof(AnalyzerViewModel));
+            }
         }
 
         /// <summary>
@@ -344,6 +398,7 @@ namespace Bakım.ViewModels
                 foreach (var item in batch.Concat(inspected)) Items.Add(item);
 
                 ApplyTrustDecisions();
+                await ApplyProvenanceAsync();
                 ApplyRiskSorting();
                 _lastScanUtc = DateTime.UtcNow;
 

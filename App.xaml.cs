@@ -211,6 +211,10 @@ namespace Bakım
             sentinelService.SetupDetected += OnSetupDetected;
             sentinelService.SetupFinished += OnSetupFinished;
 
+            // Analizör canlı kalıcılık izleme (ANL Faz 4): taban açılıştan 45 sn sonra arka planda alınır.
+            if (settingsService.Current.AnalyzerLiveWatch)
+                GetService<Bakım.Services.Analyzer.IPersistenceWatchService>().Start();
+
             // Windows Gezgini Sağ Tık Menüsü ("Bakım ile Kaldır") Varsayılan Entegrasyonu
             if (settingsService.Current.EnableShellContextMenu)
             {
@@ -343,6 +347,7 @@ namespace Bakım
 
                 TryGetService<IBackgroundMaintenanceService>()?.Stop();
                 TryGetService<ISetupSentinelService>()?.Stop();
+                TryGetService<Bakım.Services.Analyzer.IPersistenceWatchService>()?.Stop();
 
                 // Askıya alınmış süreç bırakılmaz (§5.4).
                 SystemCleanService.ResumeAllSuspended();
@@ -503,6 +508,7 @@ namespace Bakım
             services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Sentinel.Actions.RootCertificateUndoHandler>();
             services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Analyzer.QuarantineRestoreUndoHandler>();
             services.AddSingleton<Bakım.Services.Analyzer.ISecondOpinionService, Bakım.Services.Analyzer.SecondOpinionService>();
+            services.AddSingleton<Bakım.Services.Analyzer.IPersistenceWatchService, Bakım.Services.Analyzer.PersistenceWatchService>();
             services.AddSingleton<Bakım.Services.Analyzer.IQuarantineService>(sp => new Bakım.Services.Analyzer.QuarantineService(sp.GetService<Bakım.Services.Activity.IActivityService>()));
             services.AddSingleton<Bakım.Services.Activity.IActivityService>(sp =>
                 new Bakım.Services.Activity.ActivityService(sp.GetServices<Bakım.Services.Activity.IUndoHandler>()));

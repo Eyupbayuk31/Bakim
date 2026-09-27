@@ -46,51 +46,73 @@ namespace Bakım.Services
             _virusTotalService = virusTotalService;
         }
 
+        /// <summary>Canlı izlemede yeniden taranabilen konum grupları (ANL Faz 4).</summary>
+        public enum WatchGroup
+        {
+            RunKeys,
+            StartupFolders,
+            ScheduledTasks,
+            Services,
+            Wmi
+        }
+
+        private (string Status, WatchGroup? Group, Func<ResolverEnvironment, List<PersistenceItem>> Collect)[] Collectors() => new (string, WatchGroup?, Func<ResolverEnvironment, List<PersistenceItem>>)[]
+        {
+            ("Kayıt defteri başlangıç anahtarları taranıyor…", WatchGroup.RunKeys, CollectRunKeys),
+            ("Başlangıç klasörleri taranıyor…", WatchGroup.StartupFolders, CollectStartupFolders),
+            ("Winlogon ve IFEO taranıyor…", null, CollectWinlogonAndIfeo),
+            ("Zamanlanmış görevler taranıyor…", WatchGroup.ScheduledTasks, CollectScheduledTasks),
+            ("Hizmetler ve sürücüler taranıyor…", WatchGroup.Services, CollectServicesAndDrivers),
+            ("WMI abonelikleri taranıyor…", WatchGroup.Wmi, CollectWmiConsumers),
+            ("Gezgin eklentileri taranıyor…", null, CollectShellExtensions),
+            ("Oturum açılışı kancaları taranıyor…", null, CollectLogonHooks),
+            ("Sistem kancaları (LSA, Winsock, AppInit …) taranıyor…", null, CollectSystemHooks),
+            ("Gezgin kancaları taranıyor…", null, CollectExplorerHooks),
+            ("Tarayıcı eklentileri taranıyor…", null, CollectBrowserExtensions),
+            ("Office eklentileri taranıyor…", null, CollectOfficeAddins),
+        };
+
         public async IAsyncEnumerable<PersistenceItem> ScanAllAsync(IProgress<string>? progress = null)
         {
             var env = ResolverEnvironment.ForCurrentSystem();
-            var collectors = new (string Status, Func<ResolverEnvironment, List<PersistenceItem>> Collect)[]
-            {
-                ("Kayıt defteri başlangıç anahtarları taranıyor…", CollectRunKeys),
-                ("Başlangıç klasörleri taranıyor…", CollectStartupFolders),
-                ("Winlogon ve IFEO taranıyor…", CollectWinlogonAndIfeo),
-                ("Zamanlanmış görevler taranıyor…", CollectScheduledTasks),
-                ("Hizmetler ve sürücüler taranıyor…", CollectServicesAndDrivers),
-                ("WMI abonelikleri taranıyor…", CollectWmiConsumers),
-                ("Gezgin eklentileri taranıyor…", CollectShellExtensions),
-                ("Oturum açılışı kancaları taranıyor…", CollectLogonHooks),
-                ("Sistem kancaları (LSA, Winsock, AppInit …) taranıyor…", CollectSystemHooks),
-                ("Gezgin kancaları taranıyor…", CollectExplorerHooks),
-                ("Tarayıcı eklentileri taranıyor…", CollectBrowserExtensions),
-                ("Office eklentileri taranıyor…", CollectOfficeAddins),
-            };
-
-            foreach (var (status, collect) in collectors)
+            foreach (var (status, _, collect) in Collectors())
             {
                 progress?.Report(status);
-                var items = await Task.Run(() =>
-                {
-                    List<PersistenceItem> list;
-                    try
-                    {
-                        list = collect(env);
-                    }
-                    catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
-                    {
-                        // Tek bir konumun hatası taramanın geri kalanını düşürmez.
-                        AppLog.Warning($"Kalıcılık toplayıcısı başarısız: {status}", ex, nameof(AutorunsScannerEngine));
-                        return new List<PersistenceItem>();
-                    }
-                    Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 4 }, item =>
-                    {
-                        Enrich(item);
-                        ApplyScriptRules(item);
-                    });
-                    return list;
-                });
-
-                foreach (var item in items) yield return item;
+                foreach (var item in await Task.Run(() => RunCollector(status, collect, env))) yield return item;
             }
+        }
+
+        /// <summary>Yalnızca verilen grupların toplayıcıları (canlı izlemede değişen konumu yeniden taramak için).</summary>
+        public async Task<List<PersistenceItem>> ScanGroupsAsync(IReadOnlyCollection<WatchGroup> groups)
+        {
+            var env = ResolverEnvironment.ForCurrentSystem();
+            var result = new List<PersistenceItem>();
+            foreach (var (status, group, collect) in Collectors())
+            {
+                if (group is { } g && groups.Contains(g)) result.AddRange(await Task.Run(() => RunCollector(status, collect, env)));
+            }
+            return result;
+        }
+
+        private List<PersistenceItem> RunCollector(string status, Func<ResolverEnvironment, List<PersistenceItem>> collect, ResolverEnvironment env)
+        {
+            List<PersistenceItem> list;
+            try
+            {
+                list = collect(env);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException and not StackOverflowException)
+            {
+                // Tek bir konumun hatası taramanın geri kalanını düşürmez.
+                AppLog.Warning($"Kalıcılık toplayıcısı başarısız: {status}", ex, nameof(AutorunsScannerEngine));
+                return new List<PersistenceItem>();
+            }
+            Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 4 }, item =>
+            {
+                Enrich(item);
+                ApplyScriptRules(item);
+            });
+            return list;
         }
 
         #region Toplayıcılar

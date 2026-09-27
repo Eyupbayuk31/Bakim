@@ -142,6 +142,10 @@ namespace Bakım.Models
         public string? CollectorNotes { get; set; }
         public bool HasCollectorNotes => !string.IsNullOrWhiteSpace(CollectorNotes);
 
+        /// <summary>Girdiyi ekleyen kurulum (Kurulum Nöbetçisi raporu ya da canlı izleme sırasında süren oturum).</summary>
+        public string? Provenance { get; set; }
+        public bool HasProvenance => !string.IsNullOrWhiteSpace(Provenance);
+
         /// <summary>Derin analizin puanı (varsa satır puanı budur: daha fazla kanıta dayanır).</summary>
         public int? DeepRiskScore { get; set; }
 

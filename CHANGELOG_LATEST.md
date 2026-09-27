@@ -1,38 +1,23 @@
-# Bakım v4.11.0 - Sürüm Notları
+# Bakım v4.12.0 - Sürüm Notları
 
-## Analizör v3 · Faz 3: Antivirüs İkinci Görüşü, Betik Analizi ve Karantina
+## Analizör v3 · Faz 4: Canlı Kalıcılık İzleme ve Kurulum Bağlantısı
 
-### Windows Defender ikinci görüşü
-- **Otomatik tarama:** Analizör'de tek dosya analizi (satırdan "Analiz et", "Dosya İncele", Kurulum Nöbetçisi'nden gelen dosya) Windows Defender'ın kendi motoruyla da taranıyor. Diğer girişler için dosya analizi penceresine "Windows Defender ile tara" menü öğesi eklendi.
-- **Tehdit bulunursa:** Defender'ın verdiği tehdit adıyla birlikte puan en az 90 oluyor ve karar yeniden yazılıyor.
-- **Defender kapalıysa:** "İkinci görüş alınamadı" deniyor ve puan değişmiyor. Defender kapalıyken komut satırı aracı hiçbir şey taramadan "başarılı" döner; Bakım bunu "temiz" saymaz.
+### Canlı izleme
+Bakım artık bir programın kendini başlangıca eklediği anı yakalıyor. Analizör sayfasında "Canlı izleme" anahtarı var; varsayılan olarak açık.
 
-### Betik analizi
-- **Desteklenen türler:** PowerShell, VBScript, JScript, toplu iş (.bat/.cmd) ve HTA dosyaları içerikleriyle inceleniyor.
-- **Güçlü sinyaller (birleşimler):**
-  - indir + çalıştır,
-  - Defender istisnası ekleme veya korumayı kapatma,
-  - gölge kopya/günlük silme,
-  - kimlik bilgisi çalma araçları (mimikatz, LSASS dökümü).
-- **Zayıf sinyaller:** kodlanmış (base64) yük, karartılmış kod ve kalıcılık oluşturma.
-- **Karartma temizliği:** PowerShell ters tırnağı, cmd şapkası ve bölünmüş dizeler temizlenerek gizleme atlatılıyor.
-- **Tek başına kanıt değil:** Tek bir anahtar kelime puan üretmiyor. Normal kurulum ve güncelleme betikleri temiz kalıyor.
-- **AMSI:** Betik içeriği sistemdeki antivirüsün AMSI arayüzüyle de taranıyor; tespit edilirse puan en az 90 oluyor.
-- **Gömülü komutlar:** Kalıcılık girdilerindeki gömülü komutlar (`cmd /c`, çözülmüş `powershell -enc`, WMI ActiveScript metni) ve hedefi betik olan girdiler de aynı kurallardan geçiyor.
+- **Nasıl izleniyor:**
+  - Run/RunOnce (HKCU, HKLM, 32 bit) ve politika anahtarları ile hizmet eklemeleri: Windows'un kayıt defteri değişim bildirimiyle, anında.
+  - Başlangıç klasörleri: dosya izleyicisiyle.
+  - Zamanlanmış görevler ve WMI abonelikleri: 5 dakikada bir hafif yoklamayla.
+- **Nasıl değerlendiriliyor:** Değişiklikler 3 saniye birleştiriliyor ve yalnızca değişen konum yeniden taranıyor. Yeni girdi (ya da hedefi değiştirilmiş mevcut bir Run değeri) diğer satırlarla aynı risk ölçüsüyle değerlendiriliyor.
+- **Nereye yazılıyor:**
+  - Doğrulanmış Microsoft imzalı olmayan her ekleme Etkinlik Merkezi'ne yazılıyor.
+  - Dikkat ve üstündekiler tepsi bildirimiyle haber veriliyor (Oyun Modu'nda yalnızca Tehlikeli).
+  - Analizör açıksa yeni girdi listeye anında ekleniyor.
+- **Açılışı yavaşlatmıyor:** İzleme tabanı, uygulama açıldıktan 45 saniye sonra arka planda alınıyor.
 
-### Karantina
-- **Yeni düğme:** Dosya analizi penceresinde "Karantinaya al".
-- **Nasıl çalışıyor:**
-  - Dosya, çalıştırma izni kaldırılmış bir karantina klasörüne taşınıyor.
-  - Bağlı başlangıç girdisi (izin veriliyorsa) kapatılıyor.
-  - İşlem Etkinlik Merkezi'ne kaydediliyor; "Geri al" dosyayı özgün yerine döndürüyor.
-- **Korumalar:**
-  - Korumalı konumlardaki (Windows klasörü …) dosyalar reddediliyor.
-  - Özgün konumda yeni bir dosya varsa geri yükleme üzerine yazmıyor.
-- **Geçmişe yansıyor:** Karar Analizör Geçmişi'ne "Karantina" olarak yazılıyor.
-- **Öneri metni:** Yüksek risk önerisi artık silme yerine geri alınabilir karantinayı öneriyor.
+### "Bu girdiyi hangi kurulum ekledi?"
+- **Nöbetçi raporlarıyla eşleştirme:** Analizör satırları Kurulum Nöbetçisi raporlarıyla (başlangıç girdileri, hizmetler, görevler) eşleştiriliyor. Eşleşen satırda örneğin "Notepad++ kurulumu ekledi (26 Eylül 2026)" yazıyor.
+- **Canlı izleme sırasında:** Bir kurulum oturumu sürerken eklenen girdi "… kurulumu sırasında eklendi" olarak işaretleniyor.
 
-### Puanlama
-- Doğrulanmış Microsoft imzalı Active Setup/Winlogon girdileri "nadir konum" riski almıyor (ör. Edge'in Active Setup girdisi artık "Dikkat" değil); başka doğrulanmış imzalarda bu risk yarıya iniyor.
-
-**Testler:** 931 birim test yeşil; 4 denetim betiği tam geçti.
+**Testler:** 939 birim test yeşil; canlı izleme gerçek bir HKCU Run değeriyle uçtan uca doğrulandı (değer test sonunda siliniyor). 4 denetim betiği tam geçti.
