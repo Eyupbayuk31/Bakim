@@ -6,8 +6,37 @@ namespace Bakım.Core.Shell
     /// <summary>
     /// Sağ tık bağlam menüsü ve kabuk komut satırı argümanlarını ayrıştıran saf mantık sınıfı (KAL C3).
     /// </summary>
+    /// <summary>Sağ tık menüsünün istediği eylem.</summary>
+    public enum ShellVerb
+    {
+        Activate,
+        Uninstall,
+        Analyze
+    }
+
     public static class ShellTargetParser
     {
+        /// <summary>
+        /// "--uninstall-target yol" → Kaldır, "--analyze-target yol" → Analiz et (ANL Faz 5), bayraksız
+        /// yol → Kaldır (eski davranış), boş → Etkinleştir.
+        /// </summary>
+        public static (ShellVerb Verb, string? Target) ParseRequest(string[]? args)
+        {
+            if (args != null)
+            {
+                for (int i = 0; i < args.Length; i++)
+                {
+                    string arg = args[i].Trim('\"');
+                    if (arg.Equals("--analyze-target", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+                        return (ShellVerb.Analyze, CleanPath(args[i + 1]));
+                    if (arg.StartsWith("--analyze-target=", StringComparison.OrdinalIgnoreCase))
+                        return (ShellVerb.Analyze, CleanPath(arg["--analyze-target=".Length..]));
+                }
+            }
+            string? target = ParseTarget(args);
+            return string.IsNullOrWhiteSpace(target) ? (ShellVerb.Activate, null) : (ShellVerb.Uninstall, target);
+        }
+
         public static string? ParseTarget(string[]? args)
         {
             if (args == null || args.Length == 0) return null;

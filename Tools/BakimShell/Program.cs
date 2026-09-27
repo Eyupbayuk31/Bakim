@@ -14,14 +14,8 @@ namespace BakimShell
         {
             try
             {
-                string? target = Bakım.Core.Shell.ShellTargetParser.ParseTarget(args);
-                if (string.IsNullOrWhiteSpace(target))
-                {
-                    // Hedef yoksa doğrudan Bakım'ı aktifleştir ya da aç
-                    return RouteRequest(null);
-                }
-
-                return RouteRequest(target);
+                var (verb, target) = Bakım.Core.Shell.ShellTargetParser.ParseRequest(args);
+                return RouteRequest(verb, target);
             }
             catch
             {
@@ -29,14 +23,14 @@ namespace BakimShell
             }
         }
 
-        private static int RouteRequest(string? target)
+        private static int RouteRequest(Bakım.Core.Shell.ShellVerb verb, string? target)
         {
             string baseDir = AppContext.BaseDirectory;
             string bakimExe = Path.Combine(baseDir, "Bakim.exe");
 
             if (IsPrimaryRunning())
             {
-                if (SendIpcRequest(target))
+                if (SendIpcRequest(verb, target))
                 {
                     return 0;
                 }
@@ -48,7 +42,8 @@ namespace BakimShell
                 var psi = new ProcessStartInfo
                 {
                     FileName = bakimExe,
-                    Arguments = string.IsNullOrWhiteSpace(target) ? string.Empty : $"--uninstall-target \"{target}\"",
+                    Arguments = string.IsNullOrWhiteSpace(target) ? string.Empty
+                        : verb == Bakım.Core.Shell.ShellVerb.Analyze ? $"--analyze-target \"{target}\"" : $"--uninstall-target \"{target}\"",
                     UseShellExecute = true,
                     WorkingDirectory = baseDir
                 };
@@ -80,7 +75,7 @@ namespace BakimShell
             }
         }
 
-        private static bool SendIpcRequest(string? target)
+        private static bool SendIpcRequest(Bakım.Core.Shell.ShellVerb verb, string? target)
         {
             try
             {
@@ -88,7 +83,8 @@ namespace BakimShell
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bakim", "ipc");
                 Directory.CreateDirectory(inbox);
 
-                int kind = string.IsNullOrWhiteSpace(target) ? 0 : 1; // 0: Activate, 1: UninstallTarget
+                // IpcRequestKind ile aynı sayılar: 0 Activate, 1 UninstallTarget, 2 AnalyzeTarget.
+                int kind = string.IsNullOrWhiteSpace(target) ? 0 : verb == Bakım.Core.Shell.ShellVerb.Analyze ? 2 : 1;
                 var payload = new
                 {
                     Kind = kind,

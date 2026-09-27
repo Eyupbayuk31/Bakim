@@ -92,14 +92,8 @@ namespace Bakım.ViewModels
             StatusText = "Windows Sandbox hazırlanıyor...";
             var outcome = await sandbox.LaunchInstallerPreviewAsync(FilePath, enableNetworking: false);
             StatusText = outcome.Message;
-            if (outcome.Succeeded)
-            {
-                MessageBox.Show("Windows Sandbox yalıtılmış ortamında güvenle başlatıldı.", "Sandbox Önizleme", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                MessageBox.Show(outcome.Message, "Sandbox Başlatılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+            if (!outcome.Succeeded)
+                await Bakım.Helpers.FluentDialog.InfoAsync("Sandbox başlatılamadı", outcome.Message);
         }
 
         // PE Binary Röntgen Properties
@@ -170,13 +164,9 @@ namespace Bakım.ViewModels
         {
             if (!Result.IsActiveProcess || IsProcessKilled) return;
 
-            var confirm = MessageBox.Show(
-                $"Çalışan '{FileName}' (PID: {ActiveProcessId}) süreci ve alt süreç ağacı zorla sonlandırılacaktır.\n\nİşlemi onaylıyor musunuz?",
-                "Süreci Sonlandır",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (confirm != MessageBoxResult.Yes) return;
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Süreci sonlandır",
+                    $"Çalışan '{FileName}' (PID: {ActiveProcessId}) süreci ve alt süreçleri zorla sonlandırılacak. Kaydedilmemiş veriler kaybolabilir.",
+                    primaryText: "Sonlandır", destructive: true)) return;
 
             StatusText = "Süreç sonlandırılıyor...";
             var result = await _analyzerService.KillProcessAsync(ActiveProcessId);
@@ -186,7 +176,6 @@ namespace Bakım.ViewModels
                 IsProcessKilled = true;
                 OnPropertyChanged(nameof(HasActiveProcess));
                 StatusText = $"Süreç (PID: {ActiveProcessId}) sonlandırıldı.";
-                MessageBox.Show($"'{FileName}' süreci sonlandırıldı.", "Süreç Durduruldu", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
@@ -194,7 +183,7 @@ namespace Bakım.ViewModels
                     ? "Bu bir Windows sistem sürecidir; sistem kararlılığı için sonlandırılamaz."
                     : result.Message;
                 StatusText = $"Süreç sonlandırılamadı: {reason}";
-                MessageBox.Show($"Süreç sonlandırılamadı.\n\n{reason}", "Süreci Sonlandır", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Süreç sonlandırılamadı", reason);
             }
         }
 
@@ -205,7 +194,7 @@ namespace Bakım.ViewModels
 
             if (_autorunsEngine == null)
             {
-                MessageBox.Show("Başlangıç yöneticisi motoruna erişilemedi.", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                StatusText = "Başlangıç yöneticisi motoruna erişilemedi.";
                 return;
             }
 
@@ -218,12 +207,11 @@ namespace Bakım.ViewModels
                 Result.OriginAutorunItem.IsEnabled = false;
                 OnPropertyChanged(nameof(CanDisableStartup));
                 StatusText = "Başlangıç girdisi başarıyla pasifleştirildi.";
-                MessageBox.Show($"'{Result.OriginAutorunItem.Name}' başlangıçtan devre dışı bırakıldı.", "Pasifleştirildi", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
                 StatusText = "Başlangıç girdisi pasifleştirilemedi.";
-                MessageBox.Show("Başlangıç girdisi değiştirilemedi. Kayıt defteri veya görev izinlerini kontrol edin.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Başlangıç girdisi kapatılamadı", "Yönetici izni verilmemiş olabilir ya da girdi artık yok.");
             }
         }
 
@@ -232,13 +220,9 @@ namespace Bakım.ViewModels
         {
             if (IsFileDeleted || !File.Exists(FilePath)) return;
 
-            var confirm = MessageBox.Show(
-                $"'{FilePath}' dosyası Geri Dönüşüm Kutusu'na taşınacak.\n\nYanlışlıkla silerseniz oradan geri yükleyebilirsiniz. Dosya kullanımdaysa bir sonraki yeniden başlatmada silinir.\n\nDevam edilsin mi?",
-                "Dosyayı Kaldır",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (confirm != MessageBoxResult.Yes) return;
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Dosyayı kaldır",
+                    $"'{FilePath}' Geri Dönüşüm Kutusu'na taşınacak; oradan geri yükleyebilirsiniz. Dosya kullanımdaysa bir sonraki yeniden başlatmada silinir.\n\nYanlış alarm olabilecekse karantina daha güvenlidir.",
+                    primaryText: "Kaldır", destructive: true)) return;
 
             StatusText = "Dosya kaldırılıyor...";
             var result = await _analyzerService.RemoveFileAsync(FilePath);
@@ -250,23 +234,21 @@ namespace Bakım.ViewModels
                 case DeleteOutcome.NotFound:
                     IsFileDeleted = true;
                     StatusText = "Dosya Geri Dönüşüm Kutusu'na taşındı.";
-                    MessageBox.Show($"'{FileName}' Geri Dönüşüm Kutusu'na taşındı.", "Dosya Kaldırıldı", MessageBoxButton.OK, MessageBoxImage.Information);
                     break;
 
                 case DeleteOutcome.ScheduledForReboot:
                     IsFileDeleted = true;
                     StatusText = "Dosya kullanımda; yeniden başlatmada silinecek.";
-                    MessageBox.Show("Dosya kullanımda olduğu için hemen silinemedi; bilgisayar yeniden başlatıldığında silinecek.", "Yeniden Başlatmada Silinecek", MessageBoxButton.OK, MessageBoxImage.Warning);
                     break;
 
                 case DeleteOutcome.Blocked:
                     StatusText = "Korumalı konum; dosya silinmedi.";
-                    MessageBox.Show($"Bu dosya korumalı bir konumda olduğu için silinmedi.\n\n{result.Message}", "Korumalı Konum", MessageBoxButton.OK, MessageBoxImage.Stop);
+                    await Bakım.Helpers.FluentDialog.InfoAsync("Korumalı konum", $"Bu dosya korumalı bir konumda olduğu için silinmedi.\n\n{result.Message}");
                     break;
 
                 default:
                     StatusText = $"Dosya kaldırılamadı: {result.Message}";
-                    MessageBox.Show($"Dosya kaldırılamadı.\n\n{result.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await Bakım.Helpers.FluentDialog.InfoAsync("Dosya kaldırılamadı", result.Message);
                     break;
             }
         }
@@ -292,12 +274,11 @@ namespace Bakım.ViewModels
         public async Task QuarantineAsync()
         {
             if (!CanQuarantine) return;
-            var confirm = MessageBox.Show(
-                $"'{FilePath}' karantinaya alınacak: çalıştırılamayan bir klasöre taşınır" +
-                (Result.OriginAutorunItem is { CanToggle: true } ? " ve başlangıç girdisi kapatılır" : string.Empty) +
-                ".\n\nYanlış alarmsa Etkinlik Merkezi'nden tek tıkla eski yerine döner. Devam edilsin mi?",
-                "Karantinaya al", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (confirm != MessageBoxResult.Yes) return;
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Karantinaya al",
+                    $"'{FilePath}' çalıştırılamayan bir klasöre taşınacak" +
+                    (Result.OriginAutorunItem is { CanToggle: true } ? " ve başlangıç girdisi kapatılacak" : string.Empty) +
+                    ".\n\nYanlış alarmsa Etkinlik Merkezi'nden tek tıkla eski yerine döner.",
+                    primaryText: "Karantinaya al")) return;
 
             StatusText = "Dosya karantinaya alınıyor…";
             var outcome = await _analyzerService.QuarantineFileAsync(FilePath, $"Risk {Result.RiskScore}/100 · {Result.RiskLevelText}");
@@ -342,7 +323,7 @@ namespace Bakım.ViewModels
         {
             if (string.IsNullOrWhiteSpace(FilePath) || !File.Exists(FilePath))
             {
-                MessageBox.Show("Dosya bulunamadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Warning);
+                StatusText = "Dosya bulunamadı.";
                 return;
             }
 
@@ -357,7 +338,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Konum açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                StatusText = $"Konum açılamadı: {ex.Message}";
             }
         }
 
@@ -386,15 +367,12 @@ namespace Bakım.ViewModels
 
             if (hasKey && size <= 32 * 1024 * 1024)
             {
-                var ask = MessageBox.Show(
-                    $"Bu dosya daha önce VirusTotal'e hiç gönderilmemiş (VT veritabanında kaydı yok).\n\n" +
-                    $"Dosyayı VirusTotal API üzerinden doğrudan yükleyip 70 antivirüs motoruyla taratmak ister misiniz?\n\n" +
-                    $"(Dosya Boyutu: {Result.FileSizeFormatted})",
-                    "VirusTotal'e Gönder ve Tara",
-                    MessageBoxButton.YesNoCancel,
-                    MessageBoxImage.Question);
+                bool upload = await Bakım.Helpers.FluentDialog.ConfirmAsync("VirusTotal'e gönder",
+                    $"Bu dosya VirusTotal'de hiç taranmamış. Dosyanın kendisi VirusTotal'e yüklenecek ve ~70 antivirüs motoruyla taranacak " +
+                    $"({Result.FileSizeFormatted}). Yüklenen dosyalar VirusTotal'in iş ortaklarıyla paylaşılır; kişisel belge yüklemeyin.",
+                    primaryText: "Yükle ve tara");
 
-                if (ask == MessageBoxResult.Yes)
+                if (upload)
                 {
                     try
                     {
@@ -407,24 +385,14 @@ namespace Bakım.ViewModels
                         if (uploadRes.Success && !string.IsNullOrWhiteSpace(uploadRes.StatusUrl))
                         {
                             StatusText = "Yükleme başarılı! VirusTotal analiz sayfası açılıyor...";
-                            MessageBox.Show(
-                                "Dosya VirusTotal bulutuna başarıyla yüklendi!\n\nTarama kuyruğa alındı, analiz sonuç sayfası tarayıcınızda açılıyor.",
-                                "Yükleme Tamamlandı",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Information);
-
                             _virusTotalService.OpenInBrowser(uploadRes.StatusUrl);
                         }
                         else
                         {
                             StatusText = $"Yükleme başarısız: {uploadRes.ErrorMessage}";
-                            var fallback = MessageBox.Show(
-                                $"API ile yükleme başarısız oldu: {uploadRes.ErrorMessage}\n\nVirusTotal web yükleme sayfası açılsın mı? (Dosya yolu panoya kopyalanıp Explorer açılacaktır)",
-                                "Alternatif Yükleme",
-                                MessageBoxButton.YesNo,
-                                MessageBoxImage.Warning);
-
-                            if (fallback == MessageBoxResult.Yes)
+                            if (await Bakım.Helpers.FluentDialog.ConfirmAsync("Yükleme başarısız",
+                                    $"API ile yükleme başarısız oldu: {uploadRes.ErrorMessage}\n\nVirusTotal web yükleme sayfası açılsın mı? Dosya yolu panoya kopyalanır ve Gezgin'de seçilir.",
+                                    primaryText: "Web sayfasını aç"))
                             {
                                 _virusTotalService.OpenUploadPage(FilePath);
                             }
@@ -440,12 +408,7 @@ namespace Bakım.ViewModels
                     }
                     return;
                 }
-                else if (ask == MessageBoxResult.No)
-                {
-                    _virusTotalService.OpenUploadPage(FilePath);
-                    return;
-                }
-                return;
+                return; // Vazgeç: hiçbir şey açılmaz
             }
 
             // No API key or size > 32 MB -> Open Web upload assist
@@ -479,7 +442,6 @@ namespace Bakım.ViewModels
             {
                 Clipboard.SetText(sb.ToString());
                 StatusText = "Tüm hash değerleri panoya kopyalandı.";
-                MessageBox.Show("Tüm kriptografik hash değerleri panoya kopyalandı!", "Hash Değerleri Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch { }
         }
@@ -575,7 +537,6 @@ namespace Bakım.ViewModels
             {
                 Clipboard.SetText(sb.ToString());
                 StatusText = "Rapor panoya kopyalandı.";
-                MessageBox.Show("Kapsamlı analiz raporu panoya kopyalandı!", "Rapor Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch { }
         }

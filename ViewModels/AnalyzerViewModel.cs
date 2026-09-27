@@ -478,11 +478,7 @@ namespace Bakım.ViewModels
                     // Revert state on failure
                     item.IsEnabled = !targetState;
                     string reason = "Yönetici izni verilmemiş olabilir ya da girdi artık yok (listeyi yenileyin).";
-                    MessageBox.Show(
-                        $"{item.Name} durumu değiştirilemedi.\n\n{reason}",
-                        "Değiştirilemedi",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                    await Bakım.Helpers.FluentDialog.InfoAsync("Değiştirilemedi", $"{item.Name} durumu değiştirilemedi.\n\n{reason}");
                 }
                 else
                 {
@@ -505,17 +501,13 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            var confirm = MessageBox.Show(
-                $"Başlangıç girdisi kaldırılsın mı?\n\n" +
-                $"Girdi: {item.Name}\n" +
-                $"Kaynak: {item.LocationSource}\n\n" +
+            bool confirmed = await Bakım.Helpers.FluentDialog.ConfirmAsync(
+                "Başlangıç girdisini kaldır",
+                $"Girdi: {item.Name}\nKaynak: {item.LocationSource}\n\n" +
                 "Yalnızca başlangıç kaydı kaldırılır; programın kendisine dokunulmaz. Kayıt defteri girdisi önce " +
-                "yedeklenir, başlangıç klasörü kısayolu Geri Dönüşüm Kutusu'na gider. Devam edilsin mi?",
-                "Kalıcılık Girişini Sil",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (confirm != MessageBoxResult.Yes) return;
+                "yedeklenir, başlangıç klasörü kısayolu Geri Dönüşüm Kutusu'na gider. İşlem Etkinlik Merkezi'nden geri alınabilir.",
+                primaryText: "Kaldır", destructive: true);
+            if (!confirmed) return;
 
             item.IsBusy = true;
             try
@@ -543,11 +535,11 @@ namespace Bakım.ViewModels
                         Items.Remove(item);
                     });
                     UpdateStats();
-                    MessageBox.Show($"{item.Name} başarıyla silindi.", "Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ScanStatusText = $"'{item.Name}' başlangıç girdisi kaldırıldı (Etkinlik Merkezi'nden geri alınabilir).";
                 }
                 else
                 {
-                    MessageBox.Show("Girdi kaldırılamadı. Yönetici izni gerekebilir ya da girdi artık yok (listeyi yenileyin).", "Kaldırılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    await Bakım.Helpers.FluentDialog.InfoAsync("Kaldırılamadı", "Girdi kaldırılamadı. Yönetici izni verilmemiş olabilir ya da girdi artık yok (listeyi yenileyin).");
                 }
             }
             finally
@@ -561,7 +553,7 @@ namespace Bakım.ViewModels
         {
             if (item == null || string.IsNullOrWhiteSpace(item.Sha256Hash))
             {
-                MessageBox.Show("Dosyanın SHA-256 hash'i bulunamadı veya dosya mevcut değil.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Information);
+                ScanStatusText = "Bu girdinin dosyası yok ya da SHA-256 özeti hesaplanamadı; VirusTotal'da aranamaz.";
                 return;
             }
 
@@ -613,7 +605,7 @@ namespace Bakım.ViewModels
         {
             if (item == null || string.IsNullOrWhiteSpace(item.Sha256Hash))
             {
-                MessageBox.Show("Dosyanın SHA-256 hash'i bulunamadı veya dosya mevcut değil.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Information);
+                ScanStatusText = "Bu girdinin dosyası yok ya da SHA-256 özeti hesaplanamadı; VirusTotal'da aranamaz.";
                 return;
             }
 
@@ -671,7 +663,7 @@ namespace Bakım.ViewModels
 
             if (itemsToScan.Count == 0)
             {
-                MessageBox.Show("Taranacak uygun veya yeni bir girdi bulunamadı.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Information);
+                ScanStatusText = "VirusTotal'da sorgulanacak yeni bir girdi yok (görünen girdilerin hepsi sorgulanmış ya da dosyası yok).";
                 return;
             }
 
@@ -731,13 +723,13 @@ namespace Bakım.ViewModels
                     }
                     else
                     {
-                        MessageBox.Show("Dosya veya dizin mevcut değil.", "Hata", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ScanStatusText = "Dosya ya da klasörü artık yok.";
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Dosya konumu açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                ScanStatusText = $"Dosya konumu açılamadı: {ex.Message}";
             }
         }
 
@@ -749,7 +741,7 @@ namespace Bakım.ViewModels
             try
             {
                 Clipboard.SetText(item.Sha256Hash);
-                MessageBox.Show($"SHA-256 Panoya Kopyalandı:\n{item.Sha256Hash}", "Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                ScanStatusText = $"SHA-256 panoya kopyalandı: {item.Sha256Hash}";
             }
             catch { }
         }
@@ -793,12 +785,12 @@ namespace Bakım.ViewModels
                     }
 
                     File.WriteAllText(sfd.FileName, sb.ToString(), Encoding.UTF8);
-                    MessageBox.Show($"Kalıcılık raporu başarıyla dışa aktarıldı:\n{sfd.FileName}", "Dışa Aktarma Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ScanStatusText = $"Kalıcılık raporu dışa aktarıldı: {sfd.FileName}";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Rapor kaydedilemedi: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                ScanStatusText = $"Rapor kaydedilemedi: {ex.Message}";
             }
         }
 
@@ -834,7 +826,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Analiz sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Analiz yapılamadı", $"Dosya analiz edilirken hata oluştu: {ex.Message}");
             }
             finally
             {
@@ -966,7 +958,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Analiz sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Analiz yapılamadı", $"Dosya analiz edilirken hata oluştu: {ex.Message}");
             }
             finally
             {
@@ -1008,7 +1000,7 @@ namespace Bakım.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Analiz sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                    await Bakım.Helpers.FluentDialog.InfoAsync("Analiz yapılamadı", $"Dosya analiz edilirken hata oluştu: {ex.Message}");
                 }
                 return;
             }

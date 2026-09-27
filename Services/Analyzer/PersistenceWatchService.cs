@@ -43,6 +43,8 @@ namespace Bakım.Services.Analyzer
         private readonly Dictionary<WatchGroup, HashSet<string>> _baseline = new();
         private readonly List<FileSystemWatcher> _watchers = new();
         private readonly SemaphoreSlim _signal = new(0, 1);
+        /// <summary>Kayıt defteri bildirimleri kuruldu (taban "hazır" ancak bundan sonra sayılır).</summary>
+        private readonly ManualResetEventSlim _armed = new(false);
 
         private CancellationTokenSource? _cts;
         private Task? _loop;
@@ -98,10 +100,12 @@ namespace Bakım.Services.Analyzer
                 foreach (WatchGroup group in Enum.GetValues<WatchGroup>())
                     _baseline[group] = (await _engine.ScanGroupsAsync(new[] { group })).Select(KeyOf).ToHashSet();
                 _log.Info($"Kalıcılık tabanı alındı: {_baseline.Sum(b => b.Value.Count)} girdi.", nameof(PersistenceWatchService));
-                IsBaselineReady = true;
 
                 StartRegistryWatch(ct);
                 StartFolderWatch();
+                // Bildirimler kurulmadan "hazır" denmez: aradaki değişiklik kaçardı (yarış durumu).
+                _armed.Wait(TimeSpan.FromSeconds(10), ct);
+                IsBaselineReady = true;
                 var lastPoll = DateTime.UtcNow;
 
                 while (!ct.IsCancellationRequested)
@@ -110,8 +114,8 @@ namespace Bakım.Services.Analyzer
                     if (DateTime.UtcNow - lastPoll >= PollInterval)
                     {
                         lastPoll = DateTime.UtcNow;
-                        _pending.TryAdd(WatchGroup.ScheduledTasks, 0);
-                        _pending.TryAdd(WatchGroup.Wmi, 0);
+                        // Görevler ve WMI yalnızca yoklamayla; Run ve başlangıç klasörleri için de güvenlik ağı.
+                        foreach (WatchGroup g in Enum.GetValues<WatchGroup>()) _pending.TryAdd(g, 0);
                     }
                     if (_pending.IsEmpty) continue;
 
@@ -232,53 +236,102 @@ namespace Bakım.Services.Analyzer
             _registryThread.Start();
         }
 
+        /// <summary>İzlenen tek bir kayıt anahtarı. Hedef henüz yoksa var olan en yakın üst anahtar izlenir.</summary>
+        private sealed class RegistryWatch : IDisposable
+        {
+            public required RegistryHive Hive { get; init; }
+            public required string TargetPath { get; init; }
+            public required bool Subtree { get; init; }
+            public required WatchGroup Group { get; init; }
+            public AutoResetEvent Event { get; } = new(false);
+            public RegistryKey? Key { get; set; }
+            /// <summary>Hedef anahtar yoktu; üst anahtar izleniyor (anahtar oluşunca hedefe geçilir).</summary>
+            public bool WatchingAncestor { get; set; }
+
+            public void Dispose()
+            {
+                Key?.Dispose();
+                Event.Dispose();
+            }
+        }
+
         private void RegistryLoop(CancellationToken ct)
         {
-            var keys = new List<(RegistryKey Key, AutoResetEvent Event, bool Subtree, WatchGroup Group)>();
+            var watches = new List<RegistryWatch>();
             try
             {
                 foreach (var w in WatchedKeys)
                 {
-                    try
-                    {
-                        var key = RegistryKey.OpenBaseKey(w.Hive, RegistryView.Registry64).OpenSubKey(w.Path);
-                        if (key == null) continue;
-                        var ev = new AutoResetEvent(false);
-                        if (Arm(key, ev, w.Subtree, w.Group)) keys.Add((key, ev, w.Subtree, w.Group));
-                        else { key.Dispose(); ev.Dispose(); }
-                    }
-                    catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
-                    {
-                        _log.Debug($"Kayıt anahtarı izlenemiyor: {w.Path} — {ex.Message}", nameof(PersistenceWatchService));
-                    }
+                    var watch = new RegistryWatch { Hive = w.Hive, TargetPath = w.Path, Subtree = w.Subtree, Group = w.Group };
+                    if (Open(watch) && Arm(watch)) watches.Add(watch);
+                    else watch.Dispose();
                 }
-                if (keys.Count == 0) return;
+                _armed.Set();
+                if (watches.Count == 0) return;
 
-                var handles = keys.Select(k => (WaitHandle)k.Event).Append(ct.WaitHandle).ToArray();
+                var handles = watches.Select(k => (WaitHandle)k.Event).Append(ct.WaitHandle).ToArray();
                 while (!ct.IsCancellationRequested)
                 {
                     int index = WaitHandle.WaitAny(handles);
                     if (index == handles.Length - 1) break;
-                    var (key, ev, subtree, group) = keys[index];
-                    Signal(group);
-                    Arm(key, ev, subtree, group); // bildirim tek seferlik: yeniden kurulur
+                    var watch = watches[index];
+                    Signal(watch.Group);
+                    // Üst anahtar izleniyorsa hedef oluşmuş olabilir: hedefe geç.
+                    if (watch.WatchingAncestor)
+                    {
+                        watch.Key?.Dispose();
+                        watch.Key = null;
+                        Open(watch);
+                    }
+                    Arm(watch); // bildirim tek seferlik: yeniden kurulur
                 }
             }
             finally
             {
-                foreach (var (key, ev, _, _) in keys)
-                {
-                    key.Dispose();
-                    ev.Dispose();
-                }
+                foreach (var watch in watches) watch.Dispose();
             }
         }
 
-        private bool Arm(RegistryKey key, AutoResetEvent ev, bool subtree, WatchGroup group)
+        /// <summary>
+        /// Hedef anahtarı açar; yoksa var olan en yakın üst anahtarı açar. Temiz bir kullanıcı hesabında
+        /// HKCU\…\Run bulunmayabilir: ilk program kendini eklediğinde anahtar yeni oluşur ve yalnız hedefi
+        /// izleyen bir izleyici bunu hiç görmezdi.
+        /// </summary>
+        private bool Open(RegistryWatch watch)
         {
-            uint filter = group == WatchGroup.Services ? RegNotifyChangeName : RegNotifyChangeName | RegNotifyChangeLastSet;
-            int rc = RegNotifyChangeKeyValue(key.Handle, subtree, filter, ev.SafeWaitHandle, true);
-            if (rc != 0) _log.Debug($"Kayıt değişim bildirimi kurulamadı ({key.Name}): {rc}", nameof(PersistenceWatchService));
+            try
+            {
+                var root = RegistryKey.OpenBaseKey(watch.Hive, RegistryView.Registry64);
+                string path = watch.TargetPath;
+                while (true)
+                {
+                    var key = path.Length == 0 ? root : root.OpenSubKey(path);
+                    if (key != null)
+                    {
+                        if (!ReferenceEquals(key, root)) root.Dispose();
+                        watch.Key = key;
+                        watch.WatchingAncestor = !string.Equals(path, watch.TargetPath, StringComparison.OrdinalIgnoreCase);
+                        return true;
+                    }
+                    int slash = path.LastIndexOf('\\');
+                    path = slash > 0 ? path[..slash] : string.Empty;
+                }
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                _log.Debug($"Kayıt anahtarı izlenemiyor: {watch.TargetPath} — {ex.Message}", nameof(PersistenceWatchService));
+                return false;
+            }
+        }
+
+        private bool Arm(RegistryWatch watch)
+        {
+            if (watch.Key == null) return false;
+            // Üst anahtar izlenirken alt anahtar oluşumu (ad) alt ağaçta aranır.
+            bool subtree = watch.Subtree || watch.WatchingAncestor;
+            uint filter = watch.Group == WatchGroup.Services && !watch.WatchingAncestor ? RegNotifyChangeName : RegNotifyChangeName | RegNotifyChangeLastSet;
+            int rc = RegNotifyChangeKeyValue(watch.Key.Handle, subtree, filter, watch.Event.SafeWaitHandle, true);
+            if (rc != 0) _log.Debug($"Kayıt değişim bildirimi kurulamadı ({watch.Key.Name}): {rc}", nameof(PersistenceWatchService));
             return rc == 0;
         }
 

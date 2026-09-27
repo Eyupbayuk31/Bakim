@@ -261,7 +261,7 @@ her fark açıklanabilir.
 
 ### Faz 4 — Canlı kalıcılık izleme (v5.1.0, ~2 hafta)
 
-> **Durum (v4.12.0): uygulandı.** `Services/Analyzer/PersistenceWatchService` (RegNotifyChangeKeyValue: Run +
+> **Durum (v4.13.0; v4.12.0 yayın testinde yarış durumu yakalandı, düzeltildi): uygulandı.** `Services/Analyzer/PersistenceWatchService` (RegNotifyChangeKeyValue: Run +
 > politika + hizmet adları; FSW: başlangıç klasörleri; 5 dk yoklama: görevler + WMI), `Core/Analyzer/PersistenceWatch`
 > (fark, bildirim kararı, `ProvenanceIndex`). Uçtan uca test: gerçek HKCU Run değeri 30 sn içinde yakalanıyor.
 
@@ -272,6 +272,11 @@ her fark açıklanabilir.
   (26 Eylül)" bağlantısı; Nöbetçi raporundan Analizör satırına ve tersine geçiş.
 
 ### Faz 5 — Arayüz v3 (v5.1–v5.2, ~2 hafta, Fluent 2 cam sistemiyle)
+
+> **Durum (v4.13.0): kısmen.** Yapıldı: Fluent onay/bilgi pencereleri (`Helpers/FluentDialog`, Analizör kapsamında
+> 44 MessageBox), sürükle-bırak, Gezgin "Bakım ile analiz et" (BakimShell + IPC `AnalyzeTarget`), satır risk
+> rozeti ve gerekçe ipucu (Faz 2), kaynak satırı (Faz 4). Kalan: ana-ayrıntı düzeni ve kanıt paneli, sayfa içi
+> analiz görünümü, toplu eylemler, uygulamanın geri kalanındaki ~145 MessageBox.
 
 - **Ana-ayrıntı düzeni:** Solda gruplanmış liste (kategori/yayıncı/karar), sağda kanıt paneli (kanıtlar,
   ham komut ↔ çözümlenmiş hedef, imza zinciri, VT, geçmiş, izinli eylemler).

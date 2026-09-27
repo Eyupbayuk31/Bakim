@@ -59,3 +59,20 @@ public class AnalyzerFaz4Tests
         Assert.Null(index.Find(ProvenanceIndex.CandidateKeys(@"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "Other", null, null)));
     }
 }
+
+/// <summary>Analizör v3 Faz 5: sağ tık "Bakım ile analiz et" istek ayrıştırması.</summary>
+public class AnalyzerFaz5ShellTests
+{
+    [Theory]
+    [InlineData(new[] { "--analyze-target", @"C:\a\b c.exe" }, Bakım.Core.Shell.ShellVerb.Analyze, @"C:\a\b c.exe")]
+    [InlineData(new[] { @"--analyze-target=""C:\x.ps1""" }, Bakım.Core.Shell.ShellVerb.Analyze, @"C:\x.ps1")]
+    [InlineData(new[] { "--uninstall-target", @"C:\app.lnk" }, Bakım.Core.Shell.ShellVerb.Uninstall, @"C:\app.lnk")]
+    [InlineData(new[] { @"C:\app.exe" }, Bakım.Core.Shell.ShellVerb.Uninstall, @"C:\app.exe")]
+    [InlineData(new string[0], Bakım.Core.Shell.ShellVerb.Activate, null)]
+    public void ParseRequest(string[] args, Bakım.Core.Shell.ShellVerb verb, string? target)
+    {
+        var (v, t) = Bakım.Core.Shell.ShellTargetParser.ParseRequest(args);
+        Assert.Equal(verb, v);
+        Assert.Equal(target, t);
+    }
+}

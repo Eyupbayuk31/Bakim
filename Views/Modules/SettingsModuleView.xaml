@@ -610,7 +610,7 @@
                                                 </StackPanel>
                                             </Border>
                                         </StackPanel>
-                                        <TextBlock Text="Masaüstü, klasör ve program dosyalarına (.exe, .lnk) sağ tıklandığında 'Bakım ile Kaldır' seçeneğini Windows bağlam menüsüne ekler."
+                                        <TextBlock Text="Program dosyalarına (.exe, .lnk, .msi) sağ tıklandığında 'Bakım ile Kaldır', tüm dosyalarda 'Bakım ile analiz et' seçeneğini Windows bağlam menüsüne ekler."
                                                    FontSize="{StaticResource Font.Caption}"
                                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                    Margin="0,2,0,0"/>
@@ -829,7 +829,7 @@
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>
-                                            <TextBlock Text="Dosya, klasör ve kısayollara sağ tıklandığında 'Bakım ile Kaldır' seçeneğini ekler."
+                                            <TextBlock Text="Sağ tık menüsüne 'Bakım ile Kaldır' (programlar) ve 'Bakım ile analiz et' (tüm dosyalar) seçeneklerini ekler."
                                                        FontSize="{StaticResource Font.Caption}"
                                                        Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                                        Margin="0,2,0,0"/>

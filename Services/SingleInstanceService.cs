@@ -6,7 +6,8 @@ using System.Threading;
 
 namespace Bakım.Services
 {
-    public enum IpcRequestKind { Activate, UninstallTarget }
+    /// <summary>Sayılar BakimShell ile ortaktır: 0 Activate, 1 UninstallTarget, 2 AnalyzeTarget.</summary>
+    public enum IpcRequestKind { Activate, UninstallTarget, AnalyzeTarget }
 
     public sealed record IpcRequest(IpcRequestKind Kind, string? Target, DateTime CreatedUtc);
 

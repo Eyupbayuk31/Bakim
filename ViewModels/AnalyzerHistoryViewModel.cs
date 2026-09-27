@@ -425,9 +425,7 @@ namespace Bakım.ViewModels
         private async Task RemoveSelectedAsync()
         {
             if (Selected == null) return;
-            var confirm = MessageBox.Show($"'{Selected.FileName}' analizi geçmişten kaldırılsın mı?", "Geçmişten Kaldır",
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (confirm != MessageBoxResult.Yes) return;
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Geçmişten kaldır", $"'{Selected.FileName}' analizi geçmişten kaldırılsın mı?", primaryText: "Kaldır")) return;
             await _history.RemoveAsync(new[] { Selected.Id });
             StatusText = "Kayıt geçmişten kaldırıldı.";
         }
@@ -435,10 +433,9 @@ namespace Bakım.ViewModels
         [RelayCommand]
         private async Task ClearAllAsync()
         {
-            var confirm = MessageBox.Show(
-                "Analizör geçmişinin tamamı (tüm analizler, kararlar, notlar ve kalıcılık tarama anlık görüntüleri) silinecek. Bu işlem geri alınamaz.\n\nDevam edilsin mi?",
-                "Geçmişi Temizle", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
-            if (confirm != MessageBoxResult.Yes) return;
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Geçmişi temizle",
+                    "Analizör geçmişinin tamamı (tüm analizler, kararlar, notlar ve kalıcılık tarama anlık görüntüleri) silinecek. Bu işlem geri alınamaz.",
+                    primaryText: "Tümünü sil", destructive: true)) return;
             await _history.ClearAllAsync();
             StatusText = "Analizör geçmişi temizlendi.";
         }

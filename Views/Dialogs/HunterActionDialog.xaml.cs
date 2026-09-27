@@ -120,7 +120,7 @@ namespace Bakım.Views.Dialogs
             Close();
         }
 
-        private void KillProcess_Click(object sender, RoutedEventArgs e)
+        private async void KillProcess_Click(object sender, RoutedEventArgs e)
         {
             string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
             if (Bakım.Core.Safety.CriticalProcessPolicy.IsProtected(
@@ -130,26 +130,30 @@ namespace Bakım.Views.Dialogs
                 winDir,
                 Environment.ProcessId))
             {
-                MessageBox.Show($"'{TargetInfo.ProcessName}' kritik bir Windows sistem bileşenidir. Sistem kararlılığı ve güvenliği nedeniyle sonlandırılamaz.", "Kritik Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Kritik sistem koruması", $"'{TargetInfo.ProcessName}' kritik bir Windows sistem bileşenidir; sistem kararlılığı için sonlandırılamaz.");
                 return;
             }
+
+            // Eskiden onaysız sonlandırıyordu.
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Süreci sonlandır",
+                    $"{TargetInfo.ProcessName} (PID: {TargetInfo.ProcessId}) zorla sonlandırılacak. Kaydedilmemiş veriler kaybolabilir.",
+                    primaryText: "Sonlandır", destructive: true)) return;
 
             try
             {
                 var proc = Process.GetProcessById(TargetInfo.ProcessId);
                 proc.Kill();
-                MessageBox.Show($"{TargetInfo.ProcessName} (PID: {TargetInfo.ProcessId}) süreci başarıyla sonlandırıldı.", "Süreç Sonlandırıldı", MessageBoxButton.OK, MessageBoxImage.Information);
                 SelectedAction = HunterAction.KillProcess;
                 DialogResult = true;
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Süreç sonlandırılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Süreç sonlandırılamadı", ex.Message);
             }
         }
 
-        private void OpenFileLocation_Click(object sender, RoutedEventArgs e)
+        private async void OpenFileLocation_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -168,7 +172,7 @@ namespace Bakım.Views.Dialogs
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Dosya konumu açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Dosya konumu açılamadı", ex.Message);
             }
         }
 
@@ -177,7 +181,7 @@ namespace Bakım.Views.Dialogs
             string exe = TargetInfo.ExecutablePath;
             if (string.IsNullOrWhiteSpace(exe) || !File.Exists(exe))
             {
-                MessageBox.Show("Hedef çalıştırılabilir dosyası bulunamadı.", "Hata", MessageBoxButton.OK, MessageBoxImage.Warning);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Dosya bulunamadı", "Hedef çalıştırılabilir dosya bulunamadı.");
                 return;
             }
 
@@ -197,7 +201,7 @@ namespace Bakım.Views.Dialogs
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Analiz başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                await Bakım.Helpers.FluentDialog.InfoAsync("Analiz başlatılamadı", ex.Message);
             }
         }
 

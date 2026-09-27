@@ -45,6 +45,58 @@ namespace Bakım.Services
 
         private static string CommandFor(string exePath) => $"\"{exePath}\" --uninstall-target \"%1\"";
 
+        /// <summary>"Bakım ile analiz et" (ANL Faz 5): tüm dosya türlerinde, Analizör'de dosya analizi açar.</summary>
+        private const string AnalyzeKeyName = "BakimAnalyze";
+        private const string AnalyzeMenuText = "Bakım ile analiz et";
+        private const string AnalyzeTarget = @"*\shell";
+
+        private static string AnalyzeCommandFor(string exePath) => $"\"{exePath}\" --analyze-target \"%1\"";
+
+        private static bool IsAnalyzeRegistered(string exePath)
+        {
+            try
+            {
+                using var cmd = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{AnalyzeTarget}\{AnalyzeKeyName}\command");
+                return string.Equals(cmd?.GetValue("") as string, AnalyzeCommandFor(exePath), StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                AppLog.Debug($"Analiz menüsü okunamadı: {ex.Message}", nameof(ShellContextMenuService));
+                return false;
+            }
+        }
+
+        private static bool RegisterAnalyze(string exePath)
+        {
+            try
+            {
+                using var baseKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{AnalyzeTarget}\{AnalyzeKeyName}");
+                baseKey.SetValue("", AnalyzeMenuText);
+                baseKey.SetValue("Icon", $"\"{exePath}\",0");
+                using var cmdKey = baseKey.CreateSubKey("command");
+                cmdKey.SetValue("", AnalyzeCommandFor(exePath));
+                return true;
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                AppLog.Warning("\"Bakım ile analiz et\" menüsü yazılamadı.", ex, nameof(ShellContextMenuService));
+                return false;
+            }
+        }
+
+        private static void UnregisterAnalyze()
+        {
+            try
+            {
+                using var classes = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{AnalyzeTarget}", writable: true);
+                classes?.DeleteSubKeyTree(AnalyzeKeyName, throwOnMissingSubKey: false);
+            }
+            catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+            {
+                AppLog.Warning("\"Bakım ile analiz et\" menüsü kaldırılamadı.", ex, nameof(ShellContextMenuService));
+            }
+        }
+
         /// <summary>
         /// Kayıtlı ve komut GÜNCEL Bakım yolunu gösteriyorsa true (S-8). Bakım taşındı ya da
         /// güncellendiyse false döner; açılıştaki otomatik kayıt menüyü kendiliğinden onarır.
@@ -53,7 +105,9 @@ namespace Bakım.Services
         {
             try
             {
-                string expected = CommandFor(GetExePath());
+                string exe = GetExePath();
+                if (!IsAnalyzeRegistered(exe)) return false;
+                string expected = CommandFor(exe);
                 foreach (var (key, _) in Targets)
                 {
                     using var cmd = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{key}\{KeyName}\command");
@@ -77,7 +131,7 @@ namespace Bakım.Services
             string exePath = GetExePath();
             string commandStr = CommandFor(exePath);
             string iconStr = $"\"{exePath}\",0";
-            bool allSuccess = true;
+            bool allSuccess = RegisterAnalyze(exePath);
 
             foreach (var (key, extendedOnly) in Targets)
             {
@@ -119,6 +173,7 @@ namespace Bakım.Services
         public bool UnregisterContextMenu()
         {
             bool anySuccess = false;
+            UnregisterAnalyze();
 
             foreach (var (key, _) in Targets)
             {

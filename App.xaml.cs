@@ -176,6 +176,10 @@ namespace Bakım
                 return;
             }
 
+            // Sağ tık → "Bakım ile analiz et" (ANL Faz 5): açık örneğe iletilir ya da açılışta analiz edilir.
+            var (shellVerb, shellTarget) = Core.Shell.ShellTargetParser.ParseRequest(e.Args);
+            string? analyzeTarget = shellVerb == Core.Shell.ShellVerb.Analyze ? shellTarget : null;
+
             bool isSilentStart = e.Args != null && Array.Exists(e.Args, arg =>
                 arg.Equals("--autostart", StringComparison.OrdinalIgnoreCase) ||
                 arg.Equals("--minimized", StringComparison.OrdinalIgnoreCase) ||
@@ -185,8 +189,10 @@ namespace Bakım
             _singleInstance = new SingleInstanceService();
             if (!_singleInstance.TryBecomePrimary())
             {
-                bool forwarded = isSilentStart ||
-                                 _singleInstance.Send(new IpcRequest(IpcRequestKind.Activate, null, DateTime.UtcNow), TimeSpan.FromSeconds(3));
+                bool forwarded = (isSilentStart && analyzeTarget == null) ||
+                                 _singleInstance.Send(analyzeTarget != null
+                                     ? new IpcRequest(IpcRequestKind.AnalyzeTarget, analyzeTarget, DateTime.UtcNow)
+                                     : new IpcRequest(IpcRequestKind.Activate, null, DateTime.UtcNow), TimeSpan.FromSeconds(3));
                 if (forwarded)
                 {
                     _logService.Info("Bakım zaten çalışıyor; açık örnek öne getirildi, bu süreç kapanıyor.", "Startup");
@@ -251,6 +257,7 @@ namespace Bakım
             }
 
             _singleInstance.Listen(request => Dispatcher.BeginInvoke(() => HandleInstanceRequest(request)));
+            if (analyzeTarget != null) Dispatcher.BeginInvoke(() => AnalyzeFromShellAsync(analyzeTarget));
 
             _logService.Info("Başlangıç tamamlandı.", "Startup");
         }
@@ -264,6 +271,11 @@ namespace Bakım
             try
             {
                 TryGetService<ITrayIconService>()?.RestoreWindow();
+                if (request.Kind == IpcRequestKind.AnalyzeTarget && !string.IsNullOrWhiteSpace(request.Target))
+                {
+                    await AnalyzeFromShellAsync(request.Target);
+                    return;
+                }
                 if (request.Kind != IpcRequestKind.UninstallTarget || string.IsNullOrWhiteSpace(request.Target)) return;
 
                 AppLog.Info($"Sağ tık kaldırma isteği alındı: {request.Target}", "SingleInstance");
@@ -286,6 +298,26 @@ namespace Bakım
             catch (Exception ex)
             {
                 AppLog.Error("Tek örnek isteği işlenemedi.", ex, "SingleInstance");
+            }
+        }
+
+        /// <summary>Gezgin sağ tık → "Bakım ile analiz et": Analizör'e geçer ve dosyayı analiz eder.</summary>
+        private async Task AnalyzeFromShellAsync(string path)
+        {
+            try
+            {
+                AppLog.Info($"Sağ tık analiz isteği: {path}", "SingleInstance");
+                if (!System.IO.File.Exists(path)) return;
+                TryGetService<ViewModels.MainViewModel>()?.Navigate("Analyzer");
+                var analyzer = GetService<ViewModels.AnalyzerViewModel>();
+                using (Core.History.AnalysisContext.Begin(Core.History.AnalysisSource.Analyzer, "Gezgin sağ tık"))
+                {
+                    await analyzer.AnalyzeSpecificFilesAsync(new[] { path });
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Sağ tık analiz isteği işlenemedi.", ex, "SingleInstance");
             }
         }
 

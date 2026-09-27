@@ -10,10 +10,13 @@
              xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:local="clr-namespace:Bakım.Views.Modules"
              mc:Ignorable="d" 
-             d:DesignHeight="850" d:DesignWidth="1100">
+             d:DesignHeight="850" d:DesignWidth="1100"
+             AllowDrop="True"
+             DragOver="OnDragOver"
+             Drop="OnDrop">
 
     <c:ModulePage Title="Analizör"
-                  Subtitle="Başlangıç noktalarını, WMI kalıcılığını ve dosya imzalarını tarar; isteğe bağlı VirusTotal denetimi yapar."
+                  Subtitle="Başlangıç noktalarını, WMI kalıcılığını ve dosya imzalarını tarar; isteğe bağlı VirusTotal denetimi yapar. Dosyaları analiz için buraya sürükleyebilirsiniz."
                   IsScrollable="False">
     <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
