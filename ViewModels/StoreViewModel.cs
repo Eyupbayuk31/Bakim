@@ -360,6 +360,66 @@ namespace Bakım.ViewModels
                     "vscode", "git_for_windows", "python_3", "nodejs_lts", "windows_terminal", "powertoys", "seven_zip"
                 }
             });
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "security_privacy",
+                Title = "Güvenlik & Gizlilik",
+                Subtitle = "Malwarebytes, Bitwarden, Proton VPN, Cloudflare WARP, Portmaster",
+                Badge = "Koruma",
+                Description = "İkinci görüş kötü amaçlı yazılım tarayıcısı, şifreli parola yöneticisi, kayıt tutmayan VPN, şifreli DNS ve hangi programın internete bağlandığını gösteren uygulama güvenlik duvarı.",
+                IconSymbol = SymbolRegular.ShieldCheckmark24,
+                IncludedApps = new List<string> { "Malwarebytes", "Bitwarden", "Proton VPN", "Cloudflare WARP", "Portmaster" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "malwarebytes", "bitwarden", "protonvpn", "cloudflare_warp", "portmaster"
+                }
+            });
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "streamer_creator",
+                Title = "Yayıncı & İçerik Üreticisi",
+                Subtitle = "OBS Studio, Voicemeeter, Kdenlive, Audacity, GIMP, ShareX, HandBrake",
+                Badge = "Yayın & Kurgu",
+                Description = "Yayın ve kayıt, ayrı ses kanalları için sanal mikser, video kurgusu, ses düzenleme, küçük resim tasarımı, ekran görüntüsü ve video sıkıştırma araçları.",
+                IconSymbol = SymbolRegular.Live24,
+                IncludedApps = new List<string> { "OBS Studio", "Voicemeeter", "Kdenlive", "Audacity", "GIMP", "ShareX", "HandBrake" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "obs_studio", "voicemeeter", "kdenlive", "audacity", "gimp", "sharex", "handbrake"
+                }
+            });
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "hardware_diagnostics",
+                Title = "Donanım Teşhis & İzleme",
+                Subtitle = "HWiNFO, CPU-Z, GPU-Z, CrystalDiskInfo, CrystalDiskMark, Core Temp, WizTree",
+                Badge = "Sistem Sağlığı",
+                Description = "Sıcaklık, voltaj ve fan değerleri, işlemci ve ekran kartı bilgileri, disk sağlığı (SMART) ve hız testi ile diski dolduran klasörleri bulan araçlar.",
+                IconSymbol = SymbolRegular.DeveloperBoard24,
+                IncludedApps = new List<string> { "HWiNFO", "CPU-Z", "GPU-Z", "CrystalDiskInfo", "CrystalDiskMark", "Core Temp", "WizTree" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "hwinfo64", "cpuz", "gpuz", "crystaldiskinfo", "crystaldiskmark", "coretemp", "wiztree"
+                }
+            });
+
+            Presets.Add(new StorePresetItem
+            {
+                Id = "student_office",
+                Title = "Öğrenci & Ücretsiz Ofis",
+                Subtitle = "LibreOffice, SumatraPDF, PDFsam, Obsidian, Google Drive, DeepL, LocalSend",
+                Badge = "Ders & Ödev",
+                Description = "Lisans gerektirmeyen ofis paketi, hafif PDF okuyucu ve düzenleyici, not uygulaması, bulut yedekleme, çeviri ve telefondan bilgisayara kablosuz dosya aktarımı.",
+                IconSymbol = SymbolRegular.HatGraduation24,
+                IncludedApps = new List<string> { "LibreOffice", "SumatraPDF", "PDFsam", "Obsidian", "Google Drive", "DeepL", "LocalSend" },
+                TargetIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "libreoffice", "sumatrapdf", "pdfsam", "obsidian", "google_drive", "deepl", "localsend"
+                }
+            });
         }
 
         private void UpdatePresetMetrics()

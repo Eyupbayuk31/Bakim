@@ -173,7 +173,7 @@ namespace Bakım.Services
                     Publisher = "Eclipse Foundation",
                     SizeText = "170 MB",
                     WingetId = "EclipseAdoptium.Temurin.17.JRE",
-                    RegistryDetectKeyword = "Eclipse Temurin"
+                    RegistryDetectKeyword = "Eclipse Temurin JRE with Hotspot 17|Eclipse Temurin JDK with Hotspot 17"
                 },
 
                 // ==========================================
@@ -491,8 +491,8 @@ namespace Bakım.Services
                     Id = "rufus",
                     Name = "Rufus",
                     Description = "Windows ve Linux kurulum USB'leri hazırlamak için güvenli, hızlı ve tek parça önyükleme aracı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "UsbStick24",
                     Publisher = "Pete Batard",
                     SizeText = "1.7 MB",
@@ -504,8 +504,8 @@ namespace Bakım.Services
                     Id = "cpuz",
                     Name = "CPU-Z",
                     Description = "İşlemci mimarisi, çekirdek saat hızları, anakart ve bellek zamanlamalarını gösteren donanım kimlik aracı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "DeveloperBoard24",
                     Publisher = "CPUID",
                     SizeText = "3 MB",
@@ -517,8 +517,8 @@ namespace Bakım.Services
                     Id = "gpuz",
                     Name = "GPU-Z",
                     Description = "Ekran kartı çipi, VRAM tipi, saat frekansları ve sıcaklık sensörlerini canlı raporlayan grafik aracı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "Desktop24",
                     Publisher = "TechPowerUp",
                     SizeText = "9 MB",
@@ -530,8 +530,8 @@ namespace Bakım.Services
                     Id = "hwmonitor",
                     Name = "HWMonitor",
                     Description = "İşlemci, ekran kartı ve anakart sıcaklıklarını, fan hızlarını ve güç tüketimini canlı izleme programı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "HeartPulse24",
                     Publisher = "CPUID",
                     SizeText = "2 MB",
@@ -556,8 +556,8 @@ namespace Bakım.Services
                     Id = "hwinfo64",
                     Name = "HWiNFO64",
                     Description = "Dünyanın 1 numaralı donanım teşhis, ayrıntılı bileşen sensörü, voltaj ve sıcaklık izleme yazılımı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "DeveloperBoard24",
                     Publisher = "REALiX",
                     SizeText = "12 MB",
@@ -569,8 +569,8 @@ namespace Bakım.Services
                     Id = "crystaldiskinfo",
                     Name = "CrystalDiskInfo",
                     Description = "SSD ve sabit disklerin S.M.A.R.T. sağlık durumunu, ömür yüzdesini ve sıcaklığını takip eden teşhis aracı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "HardDrive20",
                     Publisher = "CrystalDewWorld",
                     SizeText = "6 MB",
@@ -582,8 +582,8 @@ namespace Bakım.Services
                     Id = "crystaldiskmark",
                     Name = "CrystalDiskMark",
                     Description = "NVMe, SSD ve HDD sürücülerinin sıralı ve rastgele gerçek okuma/yazma hızlarını ölçen benchmark aracı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "TopSpeed24",
                     Publisher = "CrystalDewWorld",
                     SizeText = "4 MB",
@@ -595,8 +595,8 @@ namespace Bakım.Services
                     Id = "furmark2",
                     Name = "Geeks3D FurMark 2",
                     Description = "Ekran kartının sınırlarını zorlayan, aşırı yük altında GPU sıcaklık ve güç kararlılığını test eden benchmark.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "Fire24",
                     Publisher = "Geeks3D",
                     SizeText = "15 MB",
@@ -608,8 +608,8 @@ namespace Bakım.Services
                     Id = "ventoy",
                     Name = "Ventoy",
                     Description = "USB belleği bir kez formatlayıp içine birden fazla Windows/Linux ISO dosyasını kopyalayarak önyükleme yapan dahi araç.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "UsbStick24",
                     Publisher = "Ventoy Team",
                     SizeText = "16 MB",
@@ -621,8 +621,8 @@ namespace Bakım.Services
                     Id = "balena_etcher",
                     Name = "balenaEtcher",
                     Description = "SD kart ve USB disklere güvenli, doğrulamalı ve tek tıkla işletim sistemi imajı (ISO/IMG) yazma yazılımı.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "HardDrive20",
                     Publisher = "Balena",
                     SizeText = "140 MB",
@@ -634,8 +634,8 @@ namespace Bakım.Services
                     Id = "ddu",
                     Name = "Display Driver Uninstaller (DDU)",
                     Description = "Ekran kartı sürücüsü değişimi ve çökme sorunlarında eski sürücüleri güvenli modda kalıntısız ve tertemiz kaldıran araç.",
-                    Category = StoreCategory.Software,
-                    CategoryDisplayName = "Yazılım & Araçlar",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
                     IconSymbol = "Desktop24",
                     Publisher = "Wagnardsoft",
                     SizeText = "2 MB",
@@ -821,7 +821,7 @@ namespace Bakım.Services
                     Publisher = "Git Community",
                     SizeText = "65 MB",
                     WingetId = "Git.Git",
-                    RegistryDetectKeyword = "Git"
+                    RegistryDetectKeyword = "=Git"
                 },
                 new()
                 {
@@ -861,6 +861,1193 @@ namespace Bakım.Services
                     SizeText = "40 MB",
                     WingetId = "Microsoft.WindowsTerminal",
                     RegistryDetectKeyword = "Windows Terminal"
+                },
+                // ==========================================
+                // GÜVENLİK & GİZLİLİK
+                // ==========================================
+                new()
+                {
+                    Id = "malwarebytes",
+                    Name = "Malwarebytes",
+                    Description = "Casus, fidye ve reklam yazılımlarını tarayıp temizleyen ikinci görüş güvenlik tarayıcısı.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "ShieldCheckmark24",
+                    Publisher = "Malwarebytes",
+                    SizeText = "≈ 250 MB",
+                    WingetId = "Malwarebytes.Malwarebytes",
+                    RegistryDetectKeyword = "Malwarebytes"
+                },
+                new()
+                {
+                    Id = "bitwarden",
+                    Name = "Bitwarden",
+                    Description = "Açık kaynaklı, uçtan uca şifreli ve cihazlar arasında eşitlenen ücretsiz parola yöneticisi.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "Password24",
+                    Publisher = "Bitwarden Inc.",
+                    SizeText = "1 MB",
+                    WingetId = "Bitwarden.Bitwarden",
+                    RegistryDetectKeyword = "Bitwarden"
+                },
+                new()
+                {
+                    Id = "keepassxc",
+                    Name = "KeePassXC",
+                    Description = "Parolaları buluta göndermeden yerel ve şifreli bir kasada saklayan açık kaynaklı parola yöneticisi.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "LockClosed24",
+                    Publisher = "KeePassXC Team",
+                    SizeText = "34 MB",
+                    WingetId = "KeePassXCTeam.KeePassXC",
+                    RegistryDetectKeyword = "KeePassXC"
+                },
+                new()
+                {
+                    Id = "protonvpn",
+                    Name = "Proton VPN",
+                    Description = "İsviçre merkezli, kayıt tutmayan ve ücretsiz planında veri sınırı olmayan VPN istemcisi.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "ShieldGlobe24",
+                    Publisher = "Proton AG",
+                    SizeText = "124 MB",
+                    WingetId = "Proton.ProtonVPN",
+                    RegistryDetectKeyword = "Proton VPN|ProtonVPN"
+                },
+                new()
+                {
+                    Id = "cloudflare_warp",
+                    Name = "Cloudflare WARP (1.1.1.1)",
+                    Description = "DNS sorgularını ve trafiği şifreleyen, bağlantıyı hızlandıran ücretsiz 1.1.1.1 istemcisi.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "GlobeShield24",
+                    Publisher = "Cloudflare, Inc.",
+                    SizeText = "57 MB",
+                    WingetId = "Cloudflare.Warp",
+                    RegistryDetectKeyword = "Cloudflare WARP|Cloudflare One"
+                },
+                new()
+                {
+                    Id = "wireguard",
+                    Name = "WireGuard",
+                    Description = "Hızlı ve modern VPN protokolünün resmi istemcisi; kendi VPN sunucunuza bağlanmak için.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "Key24",
+                    Publisher = "WireGuard LLC",
+                    SizeText = "3 MB",
+                    WingetId = "WireGuard.WireGuard",
+                    RegistryDetectKeyword = "WireGuard"
+                },
+                new()
+                {
+                    Id = "tailscale",
+                    Name = "Tailscale",
+                    Description = "Bilgisayarınızı ve telefonunuzu ayar gerektirmeyen, şifreli özel bir ağda birleştirir.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "PlugConnected24",
+                    Publisher = "Tailscale Inc.",
+                    SizeText = "37 MB",
+                    WingetId = "Tailscale.Tailscale",
+                    RegistryDetectKeyword = "Tailscale"
+                },
+                new()
+                {
+                    Id = "veracrypt",
+                    Name = "VeraCrypt",
+                    Description = "Diskleri, USB bellekleri ve şifreli kapsayıcıları güçlü şifrelemeyle koruyan açık kaynaklı araç.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "LockShield24",
+                    Publisher = "IDRIX",
+                    SizeText = "50 MB",
+                    WingetId = "IDRIX.VeraCrypt",
+                    RegistryDetectKeyword = "VeraCrypt"
+                },
+                new()
+                {
+                    Id = "portmaster",
+                    Name = "Portmaster",
+                    Description = "Hangi uygulamanın nereye bağlandığını gösteren ve izleyicileri engelleyen ücretsiz uygulama güvenlik duvarı.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "ShieldTask24",
+                    Publisher = "Safing",
+                    SizeText = "89 MB",
+                    WingetId = "Safing.Portmaster",
+                    RegistryDetectKeyword = "Portmaster"
+                },
+                new()
+                {
+                    Id = "simplewall",
+                    Name = "simplewall",
+                    Description = "Windows Güvenlik Duvarı ile hangi programın internete çıkabileceğini seçmenizi sağlayan hafif araç.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "ShieldProhibited24",
+                    Publisher = "Henry++",
+                    SizeText = "1 MB",
+                    WingetId = "Henry++.simplewall",
+                    RegistryDetectKeyword = "simplewall"
+                },
+                new()
+                {
+                    Id = "sandboxie",
+                    Name = "Sandboxie Plus",
+                    Description = "Şüpheli programları sisteme dokunmadan yalıtılmış bir kum havuzunda çalıştırır.",
+                    Category = StoreCategory.Security,
+                    CategoryDisplayName = "Güvenlik",
+                    IconSymbol = "Box24",
+                    Publisher = "Xanasoft",
+                    SizeText = "24 MB",
+                    WingetId = "Sandboxie.Plus",
+                    RegistryDetectKeyword = "Sandboxie"
+                },
+
+                // ==========================================
+                // OFİS & VERİMLİLİK
+                // ==========================================
+                new()
+                {
+                    Id = "libreoffice",
+                    Name = "LibreOffice",
+                    Description = "Word, Excel ve PowerPoint dosyalarını açıp düzenleyen ücretsiz ve açık kaynaklı ofis paketi.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "DocumentText24",
+                    Publisher = "The Document Foundation",
+                    SizeText = "358 MB",
+                    WingetId = "TheDocumentFoundation.LibreOffice",
+                    RegistryDetectKeyword = "LibreOffice"
+                },
+                new()
+                {
+                    Id = "onlyoffice",
+                    Name = "ONLYOFFICE Desktop Editors",
+                    Description = "Microsoft Office biçimleriyle yüksek uyumlu, modern arayüzlü ücretsiz ofis paketi.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "DocumentText24",
+                    Publisher = "Ascensio System SIA",
+                    SizeText = "356 MB",
+                    WingetId = "ONLYOFFICE.DesktopEditors",
+                    RegistryDetectKeyword = "ONLYOFFICE"
+                },
+                new()
+                {
+                    Id = "sumatrapdf",
+                    Name = "SumatraPDF",
+                    Description = "PDF, EPUB ve CBZ dosyalarını anında açan çok hafif ve reklamsız okuyucu.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "DocumentPdf24",
+                    Publisher = "Krzysztof Kowalczyk",
+                    SizeText = "11 MB",
+                    WingetId = "SumatraPDF.SumatraPDF",
+                    RegistryDetectKeyword = "SumatraPDF"
+                },
+                new()
+                {
+                    Id = "acrobat_reader",
+                    Name = "Adobe Acrobat Reader",
+                    Description = "Form doldurma, imzalama ve yorum ekleme destekli standart PDF okuyucu.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "DocumentPdf24",
+                    Publisher = "Adobe",
+                    SizeText = "822 MB",
+                    WingetId = "Adobe.Acrobat.Reader.64-bit",
+                    RegistryDetectKeyword = "Adobe Acrobat"
+                },
+                new()
+                {
+                    Id = "pdfsam",
+                    Name = "PDFsam Basic",
+                    Description = "PDF dosyalarını birleştiren, bölen, döndüren ve sayfa ayıklayan ücretsiz araç.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "DocumentSplitHint24",
+                    Publisher = "Sober Lemur",
+                    SizeText = "94 MB",
+                    WingetId = "PDFsam.PDFsam",
+                    RegistryDetectKeyword = "PDFsam"
+                },
+                new()
+                {
+                    Id = "obsidian",
+                    Name = "Obsidian",
+                    Description = "Notları kendi bilgisayarınızda Markdown dosyası olarak tutan, bağlantılı not uygulaması.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "Notebook24",
+                    Publisher = "Obsidian",
+                    SizeText = "316 MB",
+                    WingetId = "Obsidian.Obsidian",
+                    RegistryDetectKeyword = "Obsidian"
+                },
+                new()
+                {
+                    Id = "notion",
+                    Name = "Notion",
+                    Description = "Not, görev, veritabanı ve wiki’yi tek çalışma alanında birleştiren üretkenlik aracı.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "Notebook24",
+                    Publisher = "Notion Labs",
+                    SizeText = "104 MB",
+                    WingetId = "Notion.Notion",
+                    RegistryDetectKeyword = "Notion"
+                },
+                new()
+                {
+                    Id = "joplin",
+                    Name = "Joplin",
+                    Description = "Uçtan uca şifreli eşitleme destekli, açık kaynaklı not ve yapılacaklar uygulaması.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "NoteEdit24",
+                    Publisher = "Laurent Cozic",
+                    SizeText = "344 MB",
+                    WingetId = "Joplin.Joplin",
+                    RegistryDetectKeyword = "Joplin"
+                },
+                new()
+                {
+                    Id = "google_drive",
+                    Name = "Google Drive",
+                    Description = "Drive dosyalarınızı bilgisayarda bir sürücü gibi gösterir ve klasörleri otomatik yedekler.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "Cloud24",
+                    Publisher = "Google LLC",
+                    SizeText = "278 MB",
+                    WingetId = "Google.GoogleDrive",
+                    RegistryDetectKeyword = "Google Drive"
+                },
+                new()
+                {
+                    Id = "dropbox",
+                    Name = "Dropbox",
+                    Description = "Dosyaları bulutla eşitleyen ve bağlantıyla paylaşmayı kolaylaştıran depolama istemcisi.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "CloudArrowUp24",
+                    Publisher = "Dropbox, Inc.",
+                    SizeText = "290 MB",
+                    WingetId = "Dropbox.Dropbox",
+                    RegistryDetectKeyword = "Dropbox"
+                },
+                new()
+                {
+                    Id = "localsend",
+                    Name = "LocalSend",
+                    Description = "Aynı ağdaki telefon ve bilgisayarlar arasında internetsiz dosya aktarımı (AirDrop alternatifi).",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "ArrowSwap24",
+                    Publisher = "Tien Do Nam",
+                    SizeText = "18 MB",
+                    WingetId = "LocalSend.LocalSend",
+                    RegistryDetectKeyword = "LocalSend"
+                },
+                new()
+                {
+                    Id = "deepl",
+                    Name = "DeepL",
+                    Description = "Seçili metni kısayolla çeviren, doğal sonuçlarıyla bilinen yapay zekâ çevirmeni.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "Translate24",
+                    Publisher = "DeepL SE",
+                    SizeText = "5 MB",
+                    WingetId = "DeepL.DeepL",
+                    RegistryDetectKeyword = "DeepL"
+                },
+                new()
+                {
+                    Id = "calibre",
+                    Name = "calibre",
+                    Description = "E-kitap kütüphanesi yöneticisi; EPUB, MOBI ve PDF dönüştürür, e-okuyucuya aktarır.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "Book24",
+                    Publisher = "Kovid Goyal",
+                    SizeText = "216 MB",
+                    WingetId = "calibre.calibre",
+                    RegistryDetectKeyword = "calibre"
+                },
+                new()
+                {
+                    Id = "flow_launcher",
+                    Name = "Flow Launcher",
+                    Description = "Alt+Boşluk ile uygulama, dosya ve web aramasını anında yapan hızlı başlatıcı.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "Search24",
+                    Publisher = "Flow-Launcher Team",
+                    SizeText = "97 MB",
+                    WingetId = "Flow-Launcher.Flow-Launcher",
+                    RegistryDetectKeyword = "Flow Launcher|Flow-Launcher"
+                },
+                new()
+                {
+                    Id = "ditto",
+                    Name = "Ditto",
+                    Description = "Kopyaladığınız her şeyi saklayan, aranabilir pano geçmişi yöneticisi.",
+                    Category = StoreCategory.Productivity,
+                    CategoryDisplayName = "Ofis & Verimlilik",
+                    IconSymbol = "ClipboardPaste24",
+                    Publisher = "Scott Brogden",
+                    SizeText = "6 MB",
+                    WingetId = "Ditto.Ditto",
+                    RegistryDetectKeyword = "Ditto"
+                },
+
+                // ==========================================
+                // GRAFİK & TASARIM
+                // ==========================================
+                new()
+                {
+                    Id = "gimp",
+                    Name = "GIMP",
+                    Description = "Katman, maske ve eklenti desteğiyle Photoshop’a ücretsiz ve açık kaynaklı alternatif.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "PaintBrush24",
+                    Publisher = "The GIMP Team",
+                    SizeText = "182 MB",
+                    WingetId = "GIMP.GIMP.3",
+                    RegistryDetectKeyword = "GIMP"
+                },
+                new()
+                {
+                    Id = "paintdotnet",
+                    Name = "Paint.NET",
+                    Description = "Katman ve efekt destekli; hızlı, sade ve hafif fotoğraf düzenleyici.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "PaintBrush24",
+                    Publisher = "dotPDN LLC",
+                    SizeText = "96 MB",
+                    WingetId = "dotPDN.PaintDotNet",
+                    RegistryDetectKeyword = "paint.net"
+                },
+                new()
+                {
+                    Id = "krita",
+                    Name = "Krita",
+                    Description = "Dijital çizim ve illüstrasyon için profesyonel, ücretsiz boyama programı.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Pen24",
+                    Publisher = "Krita Foundation",
+                    SizeText = "158 MB",
+                    WingetId = "KDE.Krita",
+                    RegistryDetectKeyword = "Krita"
+                },
+                new()
+                {
+                    Id = "inkscape",
+                    Name = "Inkscape",
+                    Description = "Logo, ikon ve illüstrasyon için vektör çizim programı (Illustrator alternatifi).",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Shapes24",
+                    Publisher = "Inkscape",
+                    SizeText = "162 MB",
+                    WingetId = "Inkscape.Inkscape",
+                    RegistryDetectKeyword = "Inkscape"
+                },
+                new()
+                {
+                    Id = "blender",
+                    Name = "Blender",
+                    Description = "3B modelleme, animasyon, render ve video kurgu için ücretsiz profesyonel paket.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Cube24",
+                    Publisher = "Blender Foundation",
+                    SizeText = "348 MB",
+                    WingetId = "BlenderFoundation.Blender",
+                    RegistryDetectKeyword = "Blender"
+                },
+                new()
+                {
+                    Id = "figma",
+                    Name = "Figma",
+                    Description = "Arayüz tasarımı ve prototipleme için ekip odaklı tasarım aracının masaüstü uygulaması.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "DesignIdeas24",
+                    Publisher = "Figma, Inc.",
+                    SizeText = "148 MB",
+                    WingetId = "Figma.Figma",
+                    RegistryDetectKeyword = "Figma"
+                },
+                new()
+                {
+                    Id = "irfanview",
+                    Name = "IrfanView",
+                    Description = "Neredeyse her görüntü biçimini anında açan, toplu dönüştürme destekli hızlı görüntüleyici.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Image24",
+                    Publisher = "Irfan Skiljan",
+                    SizeText = "4 MB",
+                    WingetId = "IrfanSkiljan.IrfanView",
+                    RegistryDetectKeyword = "IrfanView"
+                },
+                new()
+                {
+                    Id = "xnviewmp",
+                    Name = "XnView MP",
+                    Description = "500’den fazla biçimi açan fotoğraf tarayıcısı; toplu dönüştürme ve yeniden adlandırma.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "ImageMultiple24",
+                    Publisher = "Pierre-e Gougelet",
+                    SizeText = "58 MB",
+                    WingetId = "XnSoft.XnViewMP",
+                    RegistryDetectKeyword = "XnView"
+                },
+                new()
+                {
+                    Id = "darktable",
+                    Name = "darktable",
+                    Description = "RAW fotoğraf geliştirme ve düzenleme için açık kaynaklı Lightroom alternatifi.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Camera24",
+                    Publisher = "darktable team",
+                    SizeText = "133 MB",
+                    WingetId = "darktable.darktable",
+                    RegistryDetectKeyword = "darktable"
+                },
+                new()
+                {
+                    Id = "greenshot",
+                    Name = "Greenshot",
+                    Description = "Ekran görüntüsü alıp üzerine ok, metin ve bulanıklaştırma ekleyen hafif araç.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Screenshot24",
+                    Publisher = "Greenshot",
+                    SizeText = "4 MB",
+                    WingetId = "Greenshot.Greenshot",
+                    RegistryDetectKeyword = "Greenshot"
+                },
+                new()
+                {
+                    Id = "flameshot",
+                    Name = "Flameshot",
+                    Description = "Anında işaretleme araçlarıyla güçlü ve açık kaynaklı ekran görüntüsü aracı.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Screenshot24",
+                    Publisher = "flameshot-org",
+                    SizeText = "18 MB",
+                    WingetId = "Flameshot.Flameshot",
+                    RegistryDetectKeyword = "Flameshot"
+                },
+                new()
+                {
+                    Id = "upscayl",
+                    Name = "Upscayl",
+                    Description = "Düşük çözünürlüklü fotoğrafları yapay zekâ ile bilgisayarınızda büyütüp netleştirir.",
+                    Category = StoreCategory.Graphics,
+                    CategoryDisplayName = "Grafik & Tasarım",
+                    IconSymbol = "Sparkle24",
+                    Publisher = "Nayam Amarshe",
+                    SizeText = "249 MB",
+                    WingetId = "Upscayl.Upscayl",
+                    RegistryDetectKeyword = "Upscayl"
+                },
+
+                // ==========================================
+                // SİSTEM & DONANIM
+                // ==========================================
+                new()
+                {
+                    Id = "treesize",
+                    Name = "TreeSize Free",
+                    Description = "Diskte en çok yer kaplayan klasörleri hızla bulan disk alanı çözümleyici.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "DataTreemap24",
+                    Publisher = "JAM Software",
+                    SizeText = "16 MB",
+                    WingetId = "JAMSoftware.TreeSize.Free",
+                    RegistryDetectKeyword = "TreeSize"
+                },
+                new()
+                {
+                    Id = "wiztree",
+                    Name = "WizTree",
+                    Description = "Tüm diski saniyeler içinde tarayan, en hızlı disk alanı çözümleyicilerinden biri.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "DataTreemap24",
+                    Publisher = "Antibody Software",
+                    SizeText = "5 MB",
+                    WingetId = "AntibodySoftware.WizTree",
+                    RegistryDetectKeyword = "WizTree"
+                },
+                new()
+                {
+                    Id = "windirstat",
+                    Name = "WinDirStat",
+                    Description = "Disk kullanımını renkli ağaç haritasıyla gösteren klasik açık kaynaklı araç.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "DataTreemap24",
+                    Publisher = "The WinDirStat Team",
+                    SizeText = "3 MB",
+                    WingetId = "WinDirStat.WinDirStat",
+                    RegistryDetectKeyword = "WinDirStat"
+                },
+                new()
+                {
+                    Id = "coretemp",
+                    Name = "Core Temp",
+                    Description = "İşlemcinin her çekirdeğinin sıcaklığını ve yükünü anlık olarak izler.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "Temperature24",
+                    Publisher = "ALCPU",
+                    SizeText = "2 MB",
+                    WingetId = "ALCPU.CoreTemp",
+                    RegistryDetectKeyword = "Core Temp"
+                },
+                new()
+                {
+                    Id = "fancontrol",
+                    Name = "Fan Control",
+                    Description = "Fan hızlarını sıcaklığa göre özel eğrilerle yöneten gelişmiş ve ücretsiz araç.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "WeatherHaze24",
+                    Publisher = "Rem0o",
+                    SizeText = "19 MB",
+                    WingetId = "Rem0o.FanControl",
+                    RegistryDetectKeyword = "FanControl|Fan Control"
+                },
+                new()
+                {
+                    Id = "nvcleanstall",
+                    Name = "NVCleanstall",
+                    Description = "NVIDIA sürücüsünü telemetri ve gereksiz bileşenler olmadan, özelleştirerek kurar.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "DeveloperBoard24",
+                    Publisher = "TechPowerUp",
+                    SizeText = "≈ 2 MB",
+                    WingetId = "TechPowerUp.NVCleanstall",
+                    RegistryDetectKeyword = "NVCleanstall"
+                },
+                new()
+                {
+                    Id = "open_shell",
+                    Name = "Open-Shell",
+                    Description = "Klasik Windows 7 tarzı Başlat menüsünü geri getirir.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "Navigation24",
+                    Publisher = "Open-Shell Team",
+                    SizeText = "9 MB",
+                    WingetId = "Open-Shell.Open-Shell-Menu",
+                    RegistryDetectKeyword = "Open-Shell"
+                },
+                new()
+                {
+                    Id = "twinkle_tray",
+                    Name = "Twinkle Tray",
+                    Description = "Harici monitörlerin parlaklığını görev çubuğundan ayarlamanızı sağlar.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "BrightnessHigh24",
+                    Publisher = "Xander Frangos",
+                    SizeText = "88 MB",
+                    WingetId = "xanderfrangos.twinkletray",
+                    RegistryDetectKeyword = "Twinkle Tray"
+                },
+                new()
+                {
+                    Id = "flux",
+                    Name = "f.lux",
+                    Description = "Ekran rengini günün saatine göre ısıtarak göz yorgunluğunu azaltır.",
+                    Category = StoreCategory.Hardware,
+                    CategoryDisplayName = "Sistem & Donanım",
+                    IconSymbol = "WeatherMoon24",
+                    Publisher = "f.lux Software",
+                    SizeText = "1 MB",
+                    WingetId = "flux.flux",
+                    RegistryDetectKeyword = "f.lux"
+                },
+
+                // ==========================================
+                // MÜZİK & MEDYA (EK)
+                // ==========================================
+                new()
+                {
+                    Id = "kdenlive",
+                    Name = "Kdenlive",
+                    Description = "Çok izli zaman çizelgesi ve efektlerle ücretsiz, açık kaynaklı video düzenleyici.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "VideoClip24",
+                    Publisher = "KDE e.V.",
+                    SizeText = "129 MB",
+                    WingetId = "KDE.Kdenlive",
+                    RegistryDetectKeyword = "Kdenlive"
+                },
+                new()
+                {
+                    Id = "shotcut",
+                    Name = "Shotcut",
+                    Description = "Geniş biçim desteğine sahip, öğrenmesi kolay ücretsiz video düzenleyici.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "VideoClip24",
+                    Publisher = "Meltytech",
+                    SizeText = "155 MB",
+                    WingetId = "Meltytech.Shotcut",
+                    RegistryDetectKeyword = "Shotcut"
+                },
+                new()
+                {
+                    Id = "mpc_hc",
+                    Name = "MPC-HC",
+                    Description = "Çok hafif, reklamsız ve hızlı klasik video oynatıcı.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "Video24",
+                    Publisher = "MPC-HC Team",
+                    SizeText = "22 MB",
+                    WingetId = "clsid2.mpc-hc",
+                    RegistryDetectKeyword = "MPC-HC"
+                },
+                new()
+                {
+                    Id = "potplayer",
+                    Name = "PotPlayer",
+                    Description = "Donanım hızlandırmalı, gelişmiş altyazı ve ses ayarlarına sahip güçlü video oynatıcı.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "Video24",
+                    Publisher = "Kakao Corp.",
+                    SizeText = "47 MB",
+                    WingetId = "Daum.PotPlayer",
+                    RegistryDetectKeyword = "PotPlayer"
+                },
+                new()
+                {
+                    Id = "foobar2000",
+                    Name = "foobar2000",
+                    Description = "FLAC ve kayıpsız biçimler için özelleştirilebilir, çok hafif müzik çalar.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "MusicNote224",
+                    Publisher = "Peter Pawlowski",
+                    SizeText = "7 MB",
+                    WingetId = "PeterPawlowski.foobar2000",
+                    RegistryDetectKeyword = "foobar2000"
+                },
+                new()
+                {
+                    Id = "klite_codec",
+                    Name = "K-Lite Codec Pack",
+                    Description = "Açılmayan video ve ses biçimleri için gereken kodekleri tek pakette kurar.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "Filmstrip24",
+                    Publisher = "KLCP",
+                    SizeText = "39 MB",
+                    WingetId = "CodecGuide.K-LiteCodecPack.Standard",
+                    RegistryDetectKeyword = "K-Lite"
+                },
+                new()
+                {
+                    Id = "stremio",
+                    Name = "Stremio",
+                    Description = "Film ve dizileri tek yerde toplayan, eklenti tabanlı medya merkezi.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "Tv24",
+                    Publisher = "Smart Code",
+                    SizeText = "117 MB",
+                    WingetId = "Stremio.Stremio",
+                    RegistryDetectKeyword = "Stremio"
+                },
+                new()
+                {
+                    Id = "voicemeeter",
+                    Name = "Voicemeeter",
+                    Description = "Mikrofon, oyun ve müzik seslerini ayrı ayrı yöneten sanal ses mikseri (yayıncılar için).",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "SlideMicrophone24",
+                    Publisher = "VB-Audio",
+                    SizeText = "21 MB",
+                    WingetId = "VB-Audio.Voicemeeter",
+                    RegistryDetectKeyword = "Voicemeeter"
+                },
+                new()
+                {
+                    Id = "streamlabs",
+                    Name = "Streamlabs Desktop",
+                    Description = "Hazır sahneler, uyarılar ve bağış araçlarıyla Twitch/YouTube yayın programı.",
+                    Category = StoreCategory.Music,
+                    CategoryDisplayName = "Müzik & Medya",
+                    IconSymbol = "Live24",
+                    Publisher = "Streamlabs",
+                    SizeText = "273 MB",
+                    WingetId = "Streamlabs.Streamlabs",
+                    RegistryDetectKeyword = "Streamlabs"
+                },
+
+                // ==========================================
+                // OYUN (EK)
+                // ==========================================
+                new()
+                {
+                    Id = "playnite",
+                    Name = "Playnite",
+                    Description = "Steam, Epic, GOG, Riot ve diğer tüm oyunlarınızı tek kütüphanede toplayan başlatıcı.",
+                    Category = StoreCategory.Gaming,
+                    CategoryDisplayName = "Oyun",
+                    IconSymbol = "Library24",
+                    Publisher = "Josef Nemec",
+                    SizeText = "148 MB",
+                    WingetId = "Playnite.Playnite",
+                    RegistryDetectKeyword = "Playnite"
+                },
+                new()
+                {
+                    Id = "heroic",
+                    Name = "Heroic Games Launcher",
+                    Description = "Epic, GOG ve Amazon Prime Gaming oyunları için hafif ve açık kaynaklı başlatıcı.",
+                    Category = StoreCategory.Gaming,
+                    CategoryDisplayName = "Oyun",
+                    IconSymbol = "Games24",
+                    Publisher = "Heroic",
+                    SizeText = "148 MB",
+                    WingetId = "HeroicGamesLauncher.HeroicGamesLauncher",
+                    RegistryDetectKeyword = "Heroic"
+                },
+                new()
+                {
+                    Id = "prism_launcher",
+                    Name = "Prism Launcher",
+                    Description = "Birden çok Minecraft sürümünü ve mod paketini ayrı ayrı yöneten başlatıcı.",
+                    Category = StoreCategory.Gaming,
+                    CategoryDisplayName = "Oyun",
+                    IconSymbol = "Cube24",
+                    Publisher = "Prism Launcher",
+                    SizeText = "23 MB",
+                    WingetId = "PrismLauncher.PrismLauncher",
+                    RegistryDetectKeyword = "Prism Launcher|PrismLauncher"
+                },
+                new()
+                {
+                    Id = "parsec",
+                    Name = "Parsec",
+                    Description = "Düşük gecikmeli uzaktan oyun; arkadaşınızla internet üzerinden yerel çok oyunculu oynayın.",
+                    Category = StoreCategory.Gaming,
+                    CategoryDisplayName = "Oyun",
+                    IconSymbol = "Desktop24",
+                    Publisher = "Parsec Cloud",
+                    SizeText = "4 MB",
+                    WingetId = "Parsec.Parsec",
+                    RegistryDetectKeyword = "Parsec"
+                },
+                new()
+                {
+                    Id = "moonlight",
+                    Name = "Moonlight",
+                    Description = "Oyun bilgisayarınızdaki oyunları evdeki başka bir cihaza akıtan istemci (Sunshine ile).",
+                    Category = StoreCategory.Gaming,
+                    CategoryDisplayName = "Oyun",
+                    IconSymbol = "WeatherMoon24",
+                    Publisher = "Moonlight",
+                    SizeText = "41 MB",
+                    WingetId = "MoonlightGameStreamingProject.Moonlight",
+                    RegistryDetectKeyword = "Moonlight"
+                },
+                new()
+                {
+                    Id = "rtss",
+                    Name = "RivaTuner Statistics Server",
+                    Description = "FPS sınırlayıcı ve oyun içi performans göstergesi (MSI Afterburner ile birlikte çalışır).",
+                    Category = StoreCategory.Gaming,
+                    CategoryDisplayName = "Oyun",
+                    IconSymbol = "TopSpeed24",
+                    Publisher = "Unwinder",
+                    SizeText = "≈ 20 MB",
+                    WingetId = "Guru3D.RTSS",
+                    RegistryDetectKeyword = "RivaTuner Statistics"
+                },
+
+                // ==========================================
+                // YAZILIM & ARAÇLAR (EK)
+                // ==========================================
+                new()
+                {
+                    Id = "peazip",
+                    Name = "PeaZip",
+                    Description = "200’den fazla arşiv biçimini açan, şifreleme destekli ücretsiz arşiv yöneticisi.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "FolderZip24",
+                    Publisher = "Giorgio Tani",
+                    SizeText = "11 MB",
+                    WingetId = "Giorgiotani.Peazip",
+                    RegistryDetectKeyword = "PeaZip"
+                },
+                new()
+                {
+                    Id = "teracopy",
+                    Name = "TeraCopy",
+                    Description = "Dosya kopyalamayı hızlandırır, doğrular ve hatalı dosyada takılmadan devam eder.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "Copy24",
+                    Publisher = "Code Sector",
+                    SizeText = "15 MB",
+                    WingetId = "CodeSector.TeraCopy",
+                    RegistryDetectKeyword = "TeraCopy"
+                },
+                new()
+                {
+                    Id = "fdm",
+                    Name = "Free Download Manager",
+                    Description = "İndirmeleri hızlandıran, duraklatıp sürdürebilen ve torrent destekli indirme yöneticisi.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "ArrowDownload24",
+                    Publisher = "Softdeluxe",
+                    SizeText = "49 MB",
+                    WingetId = "SoftDeluxe.FreeDownloadManager",
+                    RegistryDetectKeyword = "Free Download Manager"
+                },
+                new()
+                {
+                    Id = "jdownloader",
+                    Name = "JDownloader 2",
+                    Description = "Dosya barındırma sitelerinden toplu indirme ve otomatik arşiv açma yapan indirme yöneticisi.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "ArrowDownload24",
+                    Publisher = "AppWork",
+                    SizeText = "29 MB",
+                    WingetId = "AppWork.JDownloader",
+                    RegistryDetectKeyword = "JDownloader"
+                },
+                new()
+                {
+                    Id = "teamviewer",
+                    Name = "TeamViewer",
+                    Description = "Uzaktaki bir bilgisayara bağlanıp destek vermek için yaygın uzaktan erişim aracı.",
+                    Category = StoreCategory.Software,
+                    CategoryDisplayName = "Yazılım & Araçlar",
+                    IconSymbol = "Desktop24",
+                    Publisher = "TeamViewer",
+                    SizeText = "90 MB",
+                    WingetId = "TeamViewer.TeamViewer",
+                    RegistryDetectKeyword = "TeamViewer"
+                },
+
+                // ==========================================
+                // İLETİŞİM (EK)
+                // ==========================================
+                new()
+                {
+                    Id = "slack",
+                    Name = "Slack",
+                    Description = "Kanallar, görüntülü toplantı ve entegrasyonlarla ekip iletişim platformu.",
+                    Category = StoreCategory.Social,
+                    CategoryDisplayName = "İletişim",
+                    IconSymbol = "Chat24",
+                    Publisher = "Slack Technologies",
+                    SizeText = "159 MB",
+                    WingetId = "SlackTechnologies.Slack",
+                    RegistryDetectKeyword = "Slack"
+                },
+                new()
+                {
+                    Id = "signal",
+                    Name = "Signal",
+                    Description = "Uçtan uca şifreli, gizlilik odaklı mesajlaşma uygulamasının masaüstü sürümü.",
+                    Category = StoreCategory.Social,
+                    CategoryDisplayName = "İletişim",
+                    IconSymbol = "Chat24",
+                    Publisher = "Signal Messenger",
+                    SizeText = "269 MB",
+                    WingetId = "OpenWhisperSystems.Signal",
+                    RegistryDetectKeyword = "Signal"
+                },
+                new()
+                {
+                    Id = "teamspeak",
+                    Name = "TeamSpeak",
+                    Description = "Oyuncular için düşük gecikmeli, sunucu tabanlı sesli sohbet.",
+                    Category = StoreCategory.Social,
+                    CategoryDisplayName = "İletişim",
+                    IconSymbol = "Headset24",
+                    Publisher = "TeamSpeak Systems",
+                    SizeText = "108 MB",
+                    WingetId = "TeamSpeakSystems.TeamSpeakClient",
+                    RegistryDetectKeyword = "TeamSpeak"
+                },
+                new()
+                {
+                    Id = "viber",
+                    Name = "Viber",
+                    Description = "Ücretsiz sesli/görüntülü arama ve mesajlaşma uygulamasının masaüstü sürümü.",
+                    Category = StoreCategory.Social,
+                    CategoryDisplayName = "İletişim",
+                    IconSymbol = "Call24",
+                    Publisher = "Rakuten",
+                    SizeText = "142 MB",
+                    WingetId = "Rakuten.Viber",
+                    RegistryDetectKeyword = "Viber"
+                },
+                new()
+                {
+                    Id = "thunderbird",
+                    Name = "Thunderbird",
+                    Description = "Birden çok e-posta hesabını, takvimi ve kişileri yöneten ücretsiz e-posta istemcisi.",
+                    Category = StoreCategory.Social,
+                    CategoryDisplayName = "İletişim",
+                    IconSymbol = "Mail24",
+                    Publisher = "Mozilla",
+                    SizeText = "80 MB",
+                    WingetId = "Mozilla.Thunderbird",
+                    RegistryDetectKeyword = "Thunderbird"
+                },
+
+                // ==========================================
+                // TARAYICILAR (EK)
+                // ==========================================
+                new()
+                {
+                    Id = "librewolf",
+                    Name = "LibreWolf",
+                    Description = "İzleyicileri varsayılan olarak engelleyen, telemetrisiz ve gizlilik odaklı Firefox sürümü.",
+                    Category = StoreCategory.Browsers,
+                    CategoryDisplayName = "Tarayıcılar",
+                    IconSymbol = "Globe24",
+                    Publisher = "LibreWolf",
+                    SizeText = "160 MB",
+                    WingetId = "LibreWolf.LibreWolf",
+                    RegistryDetectKeyword = "LibreWolf"
+                },
+                new()
+                {
+                    Id = "zen_browser",
+                    Name = "Zen Browser",
+                    Description = "Dikey sekmeler ve bölünmüş görünümle sade, Firefox tabanlı modern tarayıcı.",
+                    Category = StoreCategory.Browsers,
+                    CategoryDisplayName = "Tarayıcılar",
+                    IconSymbol = "Globe24",
+                    Publisher = "Zen OSS Team",
+                    SizeText = "110 MB",
+                    WingetId = "Zen-Team.Zen-Browser",
+                    RegistryDetectKeyword = "Zen Browser"
+                },
+                new()
+                {
+                    Id = "floorp",
+                    Name = "Floorp",
+                    Description = "Yoğun özelleştirme seçenekleri sunan, Firefox tabanlı tarayıcı.",
+                    Category = StoreCategory.Browsers,
+                    CategoryDisplayName = "Tarayıcılar",
+                    IconSymbol = "Globe24",
+                    Publisher = "Ablaze",
+                    SizeText = "103 MB",
+                    WingetId = "Ablaze.Floorp",
+                    RegistryDetectKeyword = "Floorp"
+                },
+
+                // ==========================================
+                // GELİŞTİRİCİ (EK)
+                // ==========================================
+                new()
+                {
+                    Id = "cursor",
+                    Name = "Cursor",
+                    Description = "Yapay zekâ destekli, VS Code tabanlı kod editörü.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "Code24",
+                    Publisher = "Anysphere",
+                    SizeText = "196 MB",
+                    WingetId = "Anysphere.Cursor",
+                    RegistryDetectKeyword = "Cursor"
+                },
+                new()
+                {
+                    Id = "jetbrains_toolbox",
+                    Name = "JetBrains Toolbox",
+                    Description = "IntelliJ IDEA, PyCharm ve Rider gibi JetBrains IDE’lerini kurar ve günceller.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "Toolbox24",
+                    Publisher = "JetBrains",
+                    SizeText = "142 MB",
+                    WingetId = "JetBrains.Toolbox",
+                    RegistryDetectKeyword = "JetBrains Toolbox"
+                },
+                new()
+                {
+                    Id = "github_desktop",
+                    Name = "GitHub Desktop",
+                    Description = "Git depolarını komut satırı olmadan yönetmek için görsel istemci.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "BranchFork24",
+                    Publisher = "GitHub",
+                    SizeText = "293 MB",
+                    WingetId = "GitHub.GitHubDesktop",
+                    RegistryDetectKeyword = "GitHub Desktop"
+                },
+                new()
+                {
+                    Id = "docker_desktop",
+                    Name = "Docker Desktop",
+                    Description = "Konteyner oluşturma ve çalıştırma için Docker motoru ve arayüzü (WSL 2 gerektirir).",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "BoxMultiple24",
+                    Publisher = "Docker Inc.",
+                    SizeText = "599 MB",
+                    WingetId = "Docker.DockerDesktop",
+                    RegistryDetectKeyword = "Docker Desktop"
+                },
+                new()
+                {
+                    Id = "postman",
+                    Name = "Postman",
+                    Description = "REST ve GraphQL API’lerini test etmek ve belgelemek için API istemcisi.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "PlugConnected24",
+                    Publisher = "Postman",
+                    SizeText = "200 MB",
+                    WingetId = "Postman.Postman",
+                    RegistryDetectKeyword = "Postman"
+                },
+                new()
+                {
+                    Id = "dotnet_sdk_10",
+                    Name = ".NET SDK 10",
+                    Description = "C# ve .NET uygulamaları geliştirmek için derleyici ve komut satırı araçları.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "Code24",
+                    Publisher = "Microsoft Corporation",
+                    SizeText = "205 MB",
+                    WingetId = "Microsoft.DotNet.SDK.10",
+                    RegistryDetectKeyword = "Microsoft .NET SDK 10."
+                },
+                new()
+                {
+                    Id = "virtualbox",
+                    Name = "VirtualBox",
+                    Description = "Windows içinde Linux ya da başka bir Windows’u sanal makinede çalıştırır.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "Server24",
+                    Publisher = "Oracle",
+                    SizeText = "170 MB",
+                    WingetId = "Oracle.VirtualBox",
+                    RegistryDetectKeyword = "VirtualBox"
+                },
+                new()
+                {
+                    Id = "dbeaver",
+                    Name = "DBeaver Community",
+                    Description = "MySQL, PostgreSQL, SQLite ve daha fazlası için evrensel veritabanı aracı.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "Database24",
+                    Publisher = "DBeaver Corp",
+                    SizeText = "112 MB",
+                    WingetId = "DBeaver.DBeaver.Community",
+                    RegistryDetectKeyword = "DBeaver"
+                },
+                new()
+                {
+                    Id = "android_studio",
+                    Name = "Android Studio",
+                    Description = "Android uygulamaları geliştirmek için resmi IDE ve emülatör.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "PhoneLaptop24",
+                    Publisher = "Google LLC",
+                    SizeText = "1,4 GB",
+                    WingetId = "Google.AndroidStudio",
+                    RegistryDetectKeyword = "Android Studio"
+                },
+                new()
+                {
+                    Id = "winscp",
+                    Name = "WinSCP",
+                    Description = "SFTP, FTP ve SCP ile sunucuya dosya aktarmak için istemci.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "ArrowSwap24",
+                    Publisher = "Martin Prikryl",
+                    SizeText = "12 MB",
+                    WingetId = "WinSCP.WinSCP",
+                    RegistryDetectKeyword = "WinSCP"
+                },
+                new()
+                {
+                    Id = "putty",
+                    Name = "PuTTY",
+                    Description = "Sunuculara SSH ve Telnet ile bağlanmak için klasik terminal istemcisi.",
+                    Category = StoreCategory.Developer,
+                    CategoryDisplayName = "Geliştirici",
+                    IconSymbol = "WindowConsole20",
+                    Publisher = "Simon Tatham",
+                    SizeText = "4 MB",
+                    WingetId = "PuTTY.PuTTY",
+                    RegistryDetectKeyword = "PuTTY"
+                },
+
+                // ==========================================
+                // RUNTIMES (EK)
+                // ==========================================
+                new()
+                {
+                    Id = "temurin_21",
+                    Name = "Java JRE (Eclipse Temurin 21)",
+                    Description = "Güncel Minecraft sürümleri ve modern Java uygulamaları için gereken Java 21 çalışma ortamı.",
+                    Category = StoreCategory.Runtimes,
+                    CategoryDisplayName = "Runtimes",
+                    IconSymbol = "Code24",
+                    Publisher = "Eclipse Foundation",
+                    SizeText = "33 MB",
+                    WingetId = "EclipseAdoptium.Temurin.21.JRE",
+                    RegistryDetectKeyword = "Eclipse Temurin JRE with Hotspot 21|Eclipse Temurin JDK with Hotspot 21"
+                },
+                new()
+                {
+                    Id = "physx",
+                    Name = "NVIDIA PhysX System Software",
+                    Description = "Eski oyunların (Borderlands, Mirror’s Edge vb.) fizik efektleri için gereken PhysX bileşeni.",
+                    Category = StoreCategory.Runtimes,
+                    CategoryDisplayName = "Runtimes",
+                    IconSymbol = "DeveloperBoard24",
+                    Publisher = "NVIDIA Corporation",
+                    SizeText = "33 MB",
+                    WingetId = "Nvidia.PhysX",
+                    RegistryDetectKeyword = "PhysX"
                 }
             };
         }
@@ -904,10 +2091,21 @@ namespace Bakım.Services
 
                     foreach (var app in items)
                     {
-                        if (string.IsNullOrWhiteSpace(app.RegistryDetectKeyword)) continue;
-
-                        var keywords = app.RegistryDetectKeyword.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                        bool found = installedNames.Any(n => keywords.Any(k => n.Contains(k, StringComparison.OrdinalIgnoreCase)));
+                        bool found;
+                        if (app.InstallerType == StoreInstallerType.DirectXWeb)
+                        {
+                            // DirectX çalışma zamanı kaldırma kaydı bırakmaz; "DirectX" anahtarı Windows SDK
+                            // bileşenlerini kurulu sayıyordu. Eksik D3DX DLL'lerinin ikisi de yerindeyse kuruludur.
+                            found = File.Exists(Path.Combine(Environment.SystemDirectory, "d3dx9_43.dll")) &&
+                                    (!Environment.Is64BitOperatingSystem ||
+                                     File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), "d3dx9_43.dll")));
+                        }
+                        else
+                        {
+                            if (string.IsNullOrWhiteSpace(app.RegistryDetectKeyword)) continue;
+                            var keywords = app.RegistryDetectKeyword.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                            found = installedNames.Any(n => keywords.Any(k => MatchesDetectKeyword(n, k)));
+                        }
                         app.IsInstalled = found;
                         if (found && app.Status == StoreInstallStatus.Idle)
                         {
@@ -923,6 +2121,15 @@ namespace Bakım.Services
                 }
             });
         }
+
+        /// <summary>
+        /// Kaldırma kaydındaki ad algılama anahtarıyla eşleşiyor mu. Anahtar "=" ile başlıyorsa ad birebir aynı olmalı:
+        /// "Git" gibi kısa adlar alt dize olarak "GitHub Desktop" ya da "Digital…" kayıtlarını da kurulu sayıyordu.
+        /// </summary>
+        public static bool MatchesDetectKeyword(string displayName, string keyword) =>
+            keyword.StartsWith('=')
+                ? string.Equals(displayName.Trim(), keyword[1..].Trim(), StringComparison.OrdinalIgnoreCase)
+                : displayName.Contains(keyword, StringComparison.OrdinalIgnoreCase);
 
         public async Task<bool> InstallAppAsync(StoreAppItem app, Action<int, string>? progress = null, CancellationToken cancellationToken = default)
         {

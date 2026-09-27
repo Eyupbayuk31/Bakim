@@ -132,11 +132,39 @@
                                 <TextBlock Text="Müzik ve medya" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
+                        <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Graphics'}" 
+                                   Command="{Binding SetCategoryCommand}" CommandParameter="Graphics" Margin="0,0,6,6" Padding="12,6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="PaintBrush24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Grafik ve tasarım" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </ui:Button>
+                        <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Productivity'}" 
+                                   Command="{Binding SetCategoryCommand}" CommandParameter="Productivity" Margin="0,0,6,6" Padding="12,6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="DocumentText24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Ofis ve verimlilik" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Software'}" 
                                    Command="{Binding SetCategoryCommand}" CommandParameter="Software" Margin="0,0,6,6" Padding="12,6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ui:SymbolIcon Symbol="Wrench24" FontSize="15" Margin="0,0,6,0"/>
                                 <TextBlock Text="Yazılım ve araçlar" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </ui:Button>
+                        <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Hardware'}" 
+                                   Command="{Binding SetCategoryCommand}" CommandParameter="Hardware" Margin="0,0,6,6" Padding="12,6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="DeveloperBoard24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Sistem ve donanım" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </ui:Button>
+                        <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Security'}" 
+                                   Command="{Binding SetCategoryCommand}" CommandParameter="Security" Margin="0,0,6,6" Padding="12,6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:SymbolIcon Symbol="ShieldCheckmark24" FontSize="15" Margin="0,0,6,0"/>
+                                <TextBlock Text="Güvenlik ve gizlilik" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"/>
                             </StackPanel>
                         </ui:Button>
                         <ui:Button Appearance="{Binding SelectedCategory, Converter={StaticResource StringToNavAppearance}, ConverterParameter='Browsers'}" 

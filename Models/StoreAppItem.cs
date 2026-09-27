@@ -15,7 +15,11 @@ namespace Bakım.Models
         Software,
         Browsers,
         Social,
-        Developer
+        Developer,
+        Security,
+        Productivity,
+        Graphics,
+        Hardware
     }
 
     /// <summary>
