@@ -451,6 +451,10 @@ namespace Bakım
                 TryGetService<ISetupSentinelService>()?.Stop();
                 TryGetService<Bakım.Services.Analyzer.IPersistenceWatchService>()?.Stop();
                 TryGetService<Bakım.Services.Uninstall.IUninstallWatchService>()?.Stop();
+                // Açık Oyun Modu oturumu düzgün kapanır: güç planı, öncelikler ve Windows Oyun Modu geri döner.
+                // (Eskiden kapanışta — güncelleme dahil — oturum açık kalıyor, güç planı Yüksek Performans'ta takılıyordu.)
+                try { TryGetService<IGameModeService>()?.DisableGameMode(); }
+                catch (Exception ex) { AppLog.Warning("Kapanışta Oyun Modu kapatılamadı.", ex, "Shutdown"); }
 
                 // Askıya alınmış süreç bırakılmaz (§5.4).
                 SystemCleanService.ResumeAllSuspended();

@@ -20,14 +20,28 @@ namespace Bakım.Core.GameMode
     public sealed record GameModeStep(string Id, string Icon, string Title, string Detail, GameModeStepState State);
 
     /// <summary>Kullanıcının Oyun Modu profili (ayarlardan).</summary>
+    /// <param name="TrimMemory">v2: yalnızca bellek sıkışınca (≥ %85) ve yalnızca arka plan uygulamaları kırpılır.</param>
+    /// <param name="Prioritize">Oyun "Normalin üstü", arka plan uygulamaları "Normalin altı" önceliğe alınır.</param>
+    /// <param name="WindowsGameMode">Windows'un kendi Oyun Modu kapalıysa oturum boyunca açılır.</param>
+    /// <param name="AutoLibrary">Otomatik başlatmada kütüphanede (Steam, Epic, Riot) bulunan oyunlar da izlenir.</param>
     public sealed record GameModeProfile(
         string PowerPlan,
         bool TrimMemory,
         IReadOnlyList<string> SuspendApps,
         bool AutoStart,
-        IReadOnlyList<string> AutoStartGames);
+        IReadOnlyList<string> AutoStartGames,
+        bool Prioritize = true,
+        bool WindowsGameMode = true,
+        bool AutoLibrary = true);
 
     /// <summary>Etkin bir oturumda gerçekten ne yapıldığı.</summary>
+    /// <param name="FreedBytes">Bellek sıkışmasında arka plan uygulamalarından geri alınan bellek (anlık).</param>
+    /// <param name="PrioritizedGame">Önceliği yükseltilen oyun süreci (bulunamadıysa null).</param>
+    /// <param name="LoweredCount">Önceliği düşürülen arka plan süreci sayısı.</param>
+    /// <param name="WindowsGameModeTurnedOn">Windows Oyun Modu bu oturumda açıldıysa true; zaten açıksa false; profilde kapalıysa null.</param>
+    /// <param name="BaselineBackgroundCpu">Oyun Modu açılmadan hemen önceki arka plan işlemci yüzdesi.</param>
+    /// <param name="SessionBackgroundCpu">Oturum boyunca arka plan işlemci ortalaması.</param>
+    /// <param name="MemoryTrimSkipped">Bellek sıkışık olmadığı için kırpma yapılmadı.</param>
     public sealed record GameModeSessionInfo(
         DateTime StartedAtUtc,
         string? TriggerGame,
@@ -35,7 +49,13 @@ namespace Bakım.Core.GameMode
         bool PowerPlanFailed,
         long FreedBytes,
         IReadOnlyList<string> SuspendedApps,
-        int SuspendedProcessCount)
+        int SuspendedProcessCount,
+        string? PrioritizedGame = null,
+        int LoweredCount = 0,
+        bool? WindowsGameModeTurnedOn = null,
+        double? BaselineBackgroundCpu = null,
+        double? SessionBackgroundCpu = null,
+        bool MemoryTrimSkipped = false)
     {
         public bool IsAutomatic => TriggerGame != null;
     }
@@ -89,18 +109,45 @@ namespace Bakım.Core.GameMode
                 "Otomatik bellek temizliği ve bakım denetimleri oyun sırasında çalışmaz.",
                 active ? GameModeStepState.Applied : GameModeStepState.WillApply));
 
-            // 3) Bellek
-            if (!profile.TrimMemory)
-                steps.Add(new GameModeStep("memory", "Ram20", "Arka plan belleği boşaltılmaz", "Profilde kapalı.", GameModeStepState.Skipped));
+            // 3) Windows Oyun Modu
+            if (!profile.WindowsGameMode)
+                steps.Add(new GameModeStep("wingame", "Games24", "Windows Oyun Modu'na dokunulmaz", "Profilde kapalı.", GameModeStepState.Skipped));
             else if (active)
-                steps.Add(new GameModeStep("memory", "Ram20", "Arka plan belleği boşaltıldı",
-                    session!.FreedBytes > 0 ? $"{Text.ByteFormatter.Format(session.FreedBytes)} Windows'a geri verildi." : "Geri verilecek kayda değer bellek yoktu.",
-                    GameModeStepState.Applied));
+                steps.Add(session!.WindowsGameModeTurnedOn == true
+                    ? new GameModeStep("wingame", "Games24", "Windows Oyun Modu açıldı", "Kapatınca önceki ayar geri yüklenir.", GameModeStepState.Applied)
+                    : new GameModeStep("wingame", "Games24", "Windows Oyun Modu zaten açıktı", "Oyuna öncelik verir, oyun sırasında güncelleme kurulumunu erteler.", GameModeStepState.Applied));
             else
-                steps.Add(new GameModeStep("memory", "Ram20", "Arka plan belleği boşaltılır",
-                    "Kullanılmayan bellek Windows'a geri verilir; etkisi geçicidir.", GameModeStepState.WillApply));
+                steps.Add(new GameModeStep("wingame", "Games24", "Windows Oyun Modu açık tutulur",
+                    "Kapalıysa oturum boyunca açılır: oyuna öncelik verir, oyun sırasında güncelleme kurulumunu erteler.", GameModeStepState.WillApply));
 
-            // 4) Askıya alınacak uygulamalar
+            // 4) Önceliklendirme
+            if (!profile.Prioritize)
+                steps.Add(new GameModeStep("priority", "ArrowSortUp24", "Öncelik değiştirilmez", "Profilde kapalı.", GameModeStepState.Skipped));
+            else if (active)
+                steps.Add(session!.PrioritizedGame is { } game
+                    ? new GameModeStep("priority", "ArrowSortUp24", $"{game} önceliği yükseltildi",
+                        session.LoweredCount > 0 ? $"{session.LoweredCount} arka plan süreci düşük önceliğe alındı." : "Düşürülecek arka plan uygulaması çalışmıyordu.",
+                        GameModeStepState.Applied)
+                    : new GameModeStep("priority", "ArrowSortUp24", "Oyun bekleniyor",
+                        "Listedeki ya da kütüphanedeki bir oyun başlayınca önceliği yükseltilir.", GameModeStepState.WillApply));
+            else
+                steps.Add(new GameModeStep("priority", "ArrowSortUp24", "Oyun öne alınır",
+                    "Oyun \"Normalin üstü\", arka plan uygulamaları \"Normalin altı\" önceliğe alınır; kapatınca eski hâline döner.", GameModeStepState.WillApply));
+
+            // 5) Bellek: yalnızca sıkışmada ve yalnızca arka plan uygulamaları (v1 her şeyi kırpıyordu)
+            if (!profile.TrimMemory)
+                steps.Add(new GameModeStep("memory", "Ram20", "Bellek kırpılmaz", "Profilde kapalı.", GameModeStepState.Skipped));
+            else if (active)
+                steps.Add(session!.MemoryTrimSkipped
+                    ? new GameModeStep("memory", "Ram20", "Bellek yeterliydi", "Kırpmaya gerek olmadı.", GameModeStepState.Skipped)
+                    : new GameModeStep("memory", "Ram20", "Arka plan uygulamaları kırpıldı",
+                        session.FreedBytes > 0 ? $"{Text.ByteFormatter.Format(session.FreedBytes)} oyuna bırakıldı." : "Geri alınacak kayda değer bellek yoktu.",
+                        GameModeStepState.Applied));
+            else
+                steps.Add(new GameModeStep("memory", "Ram20", "Bellek sıkışırsa arka plan kırpılır",
+                    $"Bellek %{GameModeRules.MemoryPressureThreshold} üstündeyse; oyuna ve ön plandaki pencereye dokunulmaz.", GameModeStepState.WillApply));
+
+            // 6) Askıya alınacak uygulamalar
             if (profile.SuspendApps.Count == 0)
                 steps.Add(new GameModeStep("suspend", "PauseCircle24", "Uygulama askıya alınmaz", "Listeye uygulama eklenmedi.", GameModeStepState.Skipped));
             else if (active)

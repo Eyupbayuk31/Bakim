@@ -52,7 +52,15 @@ namespace Bakım.ViewModels
             _navigation = navigation;
 
             _clock = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromSeconds(1) };
-            _clock.Tick += (_, _) => OnPropertyChanged(nameof(ElapsedText));
+            // Süre ve canlı ölçümler (arka plan işlemci, sonradan bulunan oyun) her saniye tazelenir.
+            _clock.Tick += (_, _) =>
+            {
+                OnPropertyChanged(nameof(ElapsedText));
+                OnPropertyChanged(nameof(Session));
+                OnPropertyChanged(nameof(GameMetric));
+                OnPropertyChanged(nameof(BackgroundCpuMetric));
+                RebuildSteps();
+            };
 
             SuspendAppItems.CollectionChanged += (_, _) => OnProfileChanged();
             AutoStartGameItems.CollectionChanged += (_, _) => OnProfileChanged();
@@ -75,7 +83,8 @@ namespace Bakım.ViewModels
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(StatusCaption), nameof(StatusTitle), nameof(StatusDetail), nameof(ElapsedText),
-            nameof(StepsHeader), nameof(Session), nameof(PowerPlanMetric), nameof(FreedMemoryMetric), nameof(SuspendedMetric))]
+            nameof(StepsHeader), nameof(Session), nameof(PowerPlanMetric), nameof(FreedMemoryMetric), nameof(SuspendedMetric),
+            nameof(GameMetric), nameof(BackgroundCpuMetric))]
         private bool _isActive;
 
         [ObservableProperty]
@@ -122,6 +131,21 @@ namespace Bakım.ViewModels
 
         public string FreedMemoryMetric => Session is { FreedBytes: > 0 } s ? ByteFormatter.Format(s.FreedBytes, Tr) : "—";
 
+        /// <summary>Öne alınan oyun; henüz bulunmadıysa "Bekleniyor".</summary>
+        public string GameMetric => Session switch
+        {
+            null => string.Empty,
+            { PrioritizedGame: { } game } => game,
+            _ => Prioritize ? "Bekleniyor" : "Kapalı"
+        };
+
+        /// <summary>Arka plan işlemci: açılmadan önce → oturum ortalaması (ör. "%12 → %4").</summary>
+        public string BackgroundCpuMetric => Session is { } s
+            ? (GameModeRules.CpuChangeText(s.BaselineBackgroundCpu, s.SessionBackgroundCpu) is { Length: > 0 } text
+                ? text
+                : s.BaselineBackgroundCpu is { } b ? $"%{b:F0} → ölçülüyor" : "—")
+            : string.Empty;
+
         public string SuspendedMetric => Session is { } s
             ? (s.SuspendedApps.Count == 0 ? "Yok" : s.SuspendedApps.Count == 1 ? "1 uygulama" : $"{s.SuspendedApps.Count} uygulama")
             : string.Empty;
@@ -146,6 +170,9 @@ namespace Bakım.ViewModels
             (PowerPlanOptions.FirstOrDefault(o => o.Key == PowerPlan)?.Description ?? string.Empty) +
             (PowerPlan == GameModePlan.Keep ? string.Empty : " Kapatınca önceki plan geri yüklenir.");
         [ObservableProperty] private bool _trimMemory = true;
+        [ObservableProperty] private bool _prioritize = true;
+        [ObservableProperty] private bool _windowsGameMode = true;
+        [ObservableProperty] private bool _autoLibrary = true;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(AutoStartHint))]
         private bool _autoStart;
@@ -153,6 +180,17 @@ namespace Bakım.ViewModels
         public string AutoStartHint => AutoStart
             ? "Bu oyunlardan biri çalışınca Oyun Modu başlar."
             : "Anahtarı açınca bu oyunlar izlenir.";
+
+        /// <summary>Kütüphane anahtarının alt satırı: kaç oyun bulunduğu.</summary>
+        public string AutoLibraryHint => GameSuggestions.Count switch
+        {
+            0 => "Steam, Epic Games ve Riot Games kütüphanelerindeki oyunlar da izlenir.",
+            int n => $"Kütüphanede {n} oyun bulundu: {string.Join(", ", GameDisplayNames.Take(4))}{(n > 4 ? "…" : "")}"
+        };
+
+        private IReadOnlyList<string> GameDisplayNames { get; set; } = Array.Empty<string>();
+
+        partial void OnGameSuggestionsChanged(IReadOnlyList<string> value) => OnPropertyChanged(nameof(AutoLibraryHint));
 
         /// <summary>Oyun süresince askıya alınacak uygulamalar (çip listesi).</summary>
         public ObservableCollection<string> SuspendAppItems { get; } = new();
@@ -176,6 +214,9 @@ namespace Bakım.ViewModels
                 var d = _settings.Current;
                 PowerPlan = d.GameModePowerPlan;
                 TrimMemory = d.GameModeTrimMemory;
+                Prioritize = d.GameModePrioritize;
+                WindowsGameMode = d.GameModeWindowsGameMode;
+                AutoLibrary = d.GameModeAutoLibrary;
                 AutoStart = d.GameModeAutoStart;
                 Replace(SuspendAppItems, ProcessNameList.Parse(d.GameModeSuspendApps));
                 Replace(AutoStartGameItems, ProcessNameList.Parse(d.GameModeAutoStartExes));
@@ -200,6 +241,9 @@ namespace Bakım.ViewModels
             {
                 d.GameModePowerPlan = PowerPlan;
                 d.GameModeTrimMemory = TrimMemory;
+                d.GameModePrioritize = Prioritize;
+                d.GameModeWindowsGameMode = WindowsGameMode;
+                d.GameModeAutoLibrary = AutoLibrary;
                 d.GameModeSuspendApps = ProcessNameList.Format(SuspendAppItems);
                 d.GameModeAutoStart = AutoStart;
                 d.GameModeAutoStartExes = ProcessNameList.Format(AutoStartGameItems);
@@ -208,10 +252,13 @@ namespace Bakım.ViewModels
 
         partial void OnPowerPlanChanged(string value) => OnProfileChanged();
         partial void OnTrimMemoryChanged(bool value) => OnProfileChanged();
+        partial void OnPrioritizeChanged(bool value) => OnProfileChanged();
+        partial void OnWindowsGameModeChanged(bool value) => OnProfileChanged();
+        partial void OnAutoLibraryChanged(bool value) => OnProfileChanged();
         partial void OnAutoStartChanged(bool value) => OnProfileChanged();
 
         private GameModeProfile CurrentProfile() =>
-            new(PowerPlan, TrimMemory, SuspendAppItems.ToList(), AutoStart, AutoStartGameItems.ToList());
+            new(PowerPlan, TrimMemory, SuspendAppItems.ToList(), AutoStart, AutoStartGameItems.ToList(), Prioritize, WindowsGameMode, AutoLibrary);
 
         #endregion
 
@@ -302,6 +349,7 @@ namespace Bakım.ViewModels
 
                 IsScanningLibrary = true;
                 var games = await _library.DetectGamesAsync();
+                GameDisplayNames = games.Select(g => g.DisplayName).ToList();
                 GameSuggestions = games.Select(g => g.ProcessName).ToList();
             }
             catch (Exception ex)
@@ -382,8 +430,8 @@ namespace Bakım.ViewModels
                 .ToList();
             var picked = PickListDialog.Show(Application.Current?.MainWindow, "Oyun kütüphanesi",
                 "Otomatik tetikleyecek oyunları seçin",
-                "Steam ve Epic Games kütüphanelerinde bulunan oyunlar. Listede olmayan bir oyunu adını yazarak ekleyebilirsiniz.",
-                items, "Steam ya da Epic Games kütüphanesinde oyun bulunamadı.");
+                "Steam, Epic Games ve Riot Games kütüphanelerinde bulunan oyunlar. Listede olmayan bir oyunu adını yazarak ekleyebilirsiniz.",
+                items, "Steam, Epic Games ya da Riot Games kütüphanesinde oyun bulunamadı.");
             foreach (var name in picked) ProcessNameList.AddTo(AutoStartGameItems, name);
         }
 

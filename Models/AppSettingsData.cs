@@ -51,8 +51,20 @@ namespace Bakım.Models
         /// <summary>"HighPerformance", "Ultimate" (yoksa Yüksek Performans) ya da "Keep" (dokunma).</summary>
         public string GameModePowerPlan { get; set; } = "HighPerformance";
 
-        /// <summary>Açılırken arka plan süreçlerinin çalışma kümelerini kırp.</summary>
+        /// <summary>
+        /// Oyun Modu v2: bellek sıkışınca (≥ %85) yalnızca arka plan uygulamalarının çalışma kümelerini kırp.
+        /// (v1 her açılışta tüm süreçleri kırpıyordu; oyunun kendisi dahil.)
+        /// </summary>
         public bool GameModeTrimMemory { get; set; } = true;
+
+        /// <summary>Oyun "Normalin üstü", arka plan uygulamaları "Normalin altı" önceliğe alınır; oturum bitince geri döner.</summary>
+        public bool GameModePrioritize { get; set; } = true;
+
+        /// <summary>Windows'un kendi Oyun Modu kapalıysa oturum boyunca açılır, sonra önceki ayar geri yüklenir.</summary>
+        public bool GameModeWindowsGameMode { get; set; } = true;
+
+        /// <summary>Otomatik başlatmada kütüphanede (Steam, Epic, Riot) bulunan oyunlar da izlenir.</summary>
+        public bool GameModeAutoLibrary { get; set; } = true;
 
         /// <summary>Oyun Modu boyunca askıya alınacak uygulamalar (süreç adları, virgülle). Kapanınca devam ettirilir.</summary>
         public string GameModeSuspendApps { get; set; } = string.Empty;

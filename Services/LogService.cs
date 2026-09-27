@@ -49,11 +49,14 @@ namespace Bakım.Services
         private bool _disposed;
 
         public FileLogService()
+            : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bakim", "Logs"))
         {
-            _logDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Bakim",
-                "Logs");
+        }
+
+        /// <summary>Belirli bir klasöre yazar (testler gerçek günlük klasörüne dokunmasın).</summary>
+        public FileLogService(string logDirectory)
+        {
+            _logDirectory = logDirectory;
 
             try
             {
@@ -102,6 +105,11 @@ namespace Bakım.Services
                     EnsureWriter();
                     if (_writer == null) return;
 
+                    // Her satırdan önce dosya sonuna: aynı güne ait dosyaya ikinci bir Bakım süreci de yazar
+                    // (tek örnek denetimi, yönetici yeniden başlatma, güncelleme). Akış bir kez açılıp kendi
+                    // konumundan yazdığı için iki süreç birbirinin satırlarını eziyordu. Tampon her satırda
+                    // boşaltıldığı için konum değiştirmek güvenlidir.
+                    _writer.BaseStream.Seek(0, SeekOrigin.End);
                     _writer.Write(line);
                     // Her satırda flush: bakım aracı süreci beklenmedik şekilde sonlanırsa
                     // son satırlar kaybolmamalı.

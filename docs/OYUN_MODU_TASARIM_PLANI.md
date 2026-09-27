@@ -384,3 +384,23 @@ Her geçiş ayrı küçük commit; `verify-design-debt.py --update` ile eşik d�
 | Liste düzenleme | Virgüllü metin | Çip + öneri + seçici |
 | Görünmeyen başlık açıklaması / rozet noktası | 14 bağlamada gizli | 0 |
 | Kenar çubuğu dolu blok sayısı | 20 | 1 (seçili öğe, soluk zemin) |
+
+
+---
+
+## v2 (v4.19.0) — ölçülebilir etki
+
+v1 değerlendirmesi: güç planı değişimi masaüstü işlemcilerde çok küçük fark yaratıyordu; "arka plan belleğini boşalt"
+TÜM süreçlerin (oyun dahil) çalışma kümesini kırpıyordu. Bellek gerçekte boşalmıyor, sayfalar geri çekilirken takılma
+oluyordu ("4,65 GB boşaldı" yanıltıcıydı). Askıya alma listesi boştu, otomatik başlatma Riot oyunlarını görmüyordu.
+
+v2:
+- **Windows Oyun Modu** kapalıysa oturum boyunca açılır, önceki değer geri yüklenir.
+- **Önceliklendirme:** oyun "Normalin üstü", bilinen arka plan uygulamaları "Normalin altı"; ön plandaki pencere,
+  Bakım, kritik süreçler ve kullanıcının Normal dışı önceliklerine dokunulmaz; PID yeniden kullanıldıysa geri yüklenmez.
+- **Bellek:** yalnızca yük ≥ %85 iken ve yalnızca arka plan uygulamaları (`GameModeRules`).
+- **Ölçüm:** arka plan işlemci (sistem meşgul − oyun) açılış öncesi 1 sn taban → 5 sn'lik oturum ortalaması.
+- **Kütüphane:** Riot Games (VALORANT, League of Legends, TFT) eklendi; otomatik başlatma kütüphanedeki oyunları da izler.
+- **Kapanış güvenliği:** `OnExit` oturumu kapatır; çökmede durum dosyası güç planını ve Windows Oyun Modu'nu geri yükler.
+- **Testler:** sistem etkileri `IGameModeSystem` arkasında; birim testleri sahte sistemle çalışır (v1 testleri gerçek
+  güç planını değiştiriyordu).

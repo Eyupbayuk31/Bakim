@@ -20,7 +20,7 @@ namespace Bakım.Services
 
     public interface IGameLibraryService
     {
-        /// <summary>Steam ve Epic kütüphanelerindeki kurulu oyunlar. Sonuç önbelleğe alınır.</summary>
+        /// <summary>Steam, Epic ve Riot kütüphanelerindeki kurulu oyunlar. Sonuç önbelleğe alınır.</summary>
         Task<IReadOnlyList<DetectedGame>> DetectGamesAsync(bool refresh = false, CancellationToken ct = default);
 
         /// <summary>Askıya alınabilecek, kullanıcı oturumunda çalışan uygulamalar (kritik süreçler hariç).</summary>
@@ -58,7 +58,7 @@ namespace Bakım.Services
             try
             {
                 if (!refresh && _cache != null) return _cache;
-                var games = await Task.Run(() => ScanSteam(ct).Concat(ScanEpic(ct)).ToList(), ct).ConfigureAwait(false);
+                var games = await Task.Run(() => ScanSteam(ct).Concat(ScanEpic(ct)).Concat(ScanRiot(ct)).ToList(), ct).ConfigureAwait(false);
                 _cache = games
                     .GroupBy(g => g.ProcessName, StringComparer.OrdinalIgnoreCase)
                     .Select(g => g.First())
@@ -100,6 +100,34 @@ namespace Bakım.Services
                     string? process = GameLibraryParser.PickGameProcess(ListExecutables(dir), manifest.Name, manifest.InstallDir);
                     if (process != null) yield return new DetectedGame(manifest.Name, process, "Steam");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Riot Games (VALORANT, League of Legends, TFT): Riot bir kütüphane dosyası tutmaz; kurulum yolu
+        /// %ProgramData%\Riot Games\Metadata\&lt;ürün&gt;\*.product_settings.yaml içindedir.
+        /// </summary>
+        private IEnumerable<DetectedGame> ScanRiot(CancellationToken ct)
+        {
+            string metadata = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Riot Games", "Metadata");
+            if (!Directory.Exists(metadata)) yield break;
+
+            foreach (var product in Core.GameMode.RiotGames.Known)
+            {
+                ct.ThrowIfCancellationRequested();
+                string settings = Path.Combine(metadata, product.Id, product.Id + ".product_settings.yaml");
+                string? install = null;
+                try
+                {
+                    if (File.Exists(settings)) install = Core.GameMode.RiotGames.ParseInstallPath(File.ReadAllText(settings));
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    _log.Debug($"Riot kurulum bilgisi okunamadı ({product.Id}): {ex.Message}", nameof(GameLibraryService));
+                }
+                if (install == null || !File.Exists(Path.Combine(install, product.RelativeExe))) continue;
+                yield return new DetectedGame(product.DisplayName, Path.GetFileNameWithoutExtension(product.RelativeExe), "Riot");
             }
         }
 

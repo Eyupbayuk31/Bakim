@@ -156,20 +156,22 @@
                         </Border>
                         <Border Style="{StaticResource Card.Inset}" Margin="0,0,8,0">
                             <StackPanel>
-                                <TextBlock Text="Boşaltılan bellek" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{Binding FreedMemoryMetric}" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
+                                <TextBlock Text="Öne alınan oyun" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding GameMetric}" Style="{StaticResource Text.Value}" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
+                                           ToolTip="{Binding GameMetric}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card.Inset}" Margin="0,0,8,0"
+                                ToolTip="Oyun dışındaki tüm süreçlerin işlemci kullanımı: Oyun Modu açılmadan hemen önce → oturum ortalaması.">
+                            <StackPanel>
+                                <TextBlock Text="Arka plan işlemci" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <TextBlock Text="{Binding BackgroundCpuMetric}" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card.Inset}" Margin="0,0,8,0">
                             <StackPanel>
                                 <TextBlock Text="Askıdaki uygulamalar" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Text="{Binding SuspendedMetric}" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource Card.Inset}">
-                            <StackPanel>
-                                <TextBlock Text="Bakım'ın arka plan işleri" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="Duraklatıldı" Style="{StaticResource Text.Value}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                     </UniformGrid>
@@ -221,15 +223,37 @@
                                   AutomationProperties.Name="Oyun Modu güç planı"/>
                     </ui:CardControl>
 
-                    <ui:CardControl Style="{StaticResource Card.Setting}" Icon="{ui:SymbolIcon Ram20, FontSize=20}">
+                    <ui:CardControl Style="{StaticResource Card.Setting}" Icon="{ui:SymbolIcon Games24, FontSize=20}">
                         <ui:CardControl.Header>
                             <StackPanel>
-                                <TextBlock Text="Arka plan belleğini boşalt" Style="{StaticResource Text.SettingTitle}"/>
-                                <TextBlock Text="Arka plandaki uygulamaların kullanmadığı belleği Windows'a geri verir. Etkisi geçicidir."
+                                <TextBlock Text="Windows Oyun Modu" Style="{StaticResource Text.SettingTitle}"/>
+                                <TextBlock Text="Kapalıysa oturum boyunca açılır: Windows oyuna öncelik verir ve oyun sırasında güncelleme kurulumunu erteler. Sonra önceki ayar geri gelir."
                                            Style="{StaticResource Text.SettingDescription}"/>
                             </StackPanel>
                         </ui:CardControl.Header>
-                        <ui:ToggleSwitch IsChecked="{Binding TrimMemory}" AutomationProperties.Name="Arka plan belleğini boşalt"/>
+                        <ui:ToggleSwitch IsChecked="{Binding WindowsGameMode}" AutomationProperties.Name="Oturum boyunca Windows Oyun Modunu aç"/>
+                    </ui:CardControl>
+
+                    <ui:CardControl Style="{StaticResource Card.Setting}" Icon="{ui:SymbolIcon ArrowSortUp24, FontSize=20}">
+                        <ui:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock Text="Oyunu öne al" Style="{StaticResource Text.SettingTitle}"/>
+                                <TextBlock Text="Oyun &quot;Normalin üstü&quot;, Discord ve tarayıcı gibi arka plan uygulamaları &quot;Normalin altı&quot; önceliğe alınır. Ön plandaki pencereye ve sizin ayarladığınız önceliklere dokunulmaz."
+                                           Style="{StaticResource Text.SettingDescription}"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ui:ToggleSwitch IsChecked="{Binding Prioritize}" AutomationProperties.Name="Oyunu öne al"/>
+                    </ui:CardControl>
+
+                    <ui:CardControl Style="{StaticResource Card.Setting}" Icon="{ui:SymbolIcon Ram20, FontSize=20}">
+                        <ui:CardControl.Header>
+                            <StackPanel>
+                                <TextBlock Text="Bellek sıkışırsa arka planı kırp" Style="{StaticResource Text.SettingTitle}"/>
+                                <TextBlock Text="Yalnızca bellek %85'in üstündeyse ve yalnızca arka plan uygulamalarında; oyuna ve ön plandaki pencereye dokunulmaz."
+                                           Style="{StaticResource Text.SettingDescription}"/>
+                            </StackPanel>
+                        </ui:CardControl.Header>
+                        <ui:ToggleSwitch IsChecked="{Binding TrimMemory}" AutomationProperties.Name="Bellek sıkışırsa arka plan uygulamalarını kırp"/>
                     </ui:CardControl>
 
                     <TextBlock Text="Arka plan uygulamaları" Style="{StaticResource Text.SectionLabel}"/>
@@ -279,7 +303,7 @@
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                     <TextBlock Text="Oyun açılınca otomatik başlat" Style="{StaticResource Text.SettingTitle}"/>
-                                    <TextBlock Text="Listedeki bir oyun açılınca başlar, hepsi kapanınca durur. Elle başlattıysanız otomatik kapanmaz."
+                                    <TextBlock Text="İzlenen bir oyun açılınca başlar, hepsi kapanınca durur. Elle başlattıysanız otomatik kapanmaz."
                                                Style="{StaticResource Text.SettingDescription}"/>
                                 </StackPanel>
                                 <ui:ToggleSwitch Grid.Column="2" Margin="12,0,0,0" VerticalAlignment="Center"
@@ -288,6 +312,20 @@
                             </Grid>
 
                             <Border Height="1" Margin="-16,16,-16,14" Background="{DynamicResource CardStrokeColorDefaultBrush}"/>
+
+                            <Grid Margin="34,0,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Kütüphanedeki oyunlar" Style="{StaticResource Text.SettingTitle}"/>
+                                    <TextBlock Text="{Binding AutoLibraryHint}" Style="{StaticResource Text.SettingDescription}" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <ui:ToggleSwitch Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                                                 IsChecked="{Binding AutoLibrary}"
+                                                 AutomationProperties.Name="Kütüphanedeki oyunları da izle"/>
+                            </Grid>
 
                             <Grid Margin="34,0,0,0">
                                 <Grid.Style>
@@ -317,7 +355,7 @@
                                     <ui:Button Icon="{ui:SymbolIcon Library24, FontSize=16}"
                                                Content="Kütüphaneden seç"
                                                Command="{Binding PickFromLibraryCommand}"
-                                               AutomationProperties.Name="Steam ve Epic kütüphanesinden oyun seç"/>
+                                               AutomationProperties.Name="Steam, Epic ve Riot kütüphanesinden oyun seç"/>
                                 </StackPanel>
                                 <c:ChipListEditor Grid.Row="1" Grid.ColumnSpan="2" Margin="0,12,0,0"
                                                   Items="{Binding AutoStartGameItems}"
@@ -345,7 +383,7 @@
                                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 <TextBlock Grid.Column="1" TextWrapping="Wrap" FontSize="{StaticResource Font.Caption}"
                                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Text="Kapatınca önceki güç planı geri yüklenir ve askıdaki uygulamalar devam eder. Bakım kapanır ya da çökerse bir sonraki açılışta onarılır."/>
+                                           Text="Kapatınca güç planı, öncelikler ve Windows Oyun Modu geri yüklenir, askıdaki uygulamalar devam eder. Bakım kapanırken oturum düzgün kapatılır; çökerse bir sonraki açılışta onarılır."/>
                             </Grid>
                         </StackPanel>
                     </Border>
