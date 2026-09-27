@@ -294,6 +294,11 @@ her fark açıklanabilir.
 - **`RiskScore` önbelleği:** `HasValidFile` tarama anında bir kez hesaplanır, özellik değişince `PropertyChanged`.
 - **Hedef:** Sıcak tarama < 1,5 sn, soğuk < 5 sn (bugün 4,96 sn), UI donması < 50 ms.
 
+> **Durum (v4.14.0): kalıcı önbellek uygulandı.** `PersistentFacts` (`AutorunsScannerEngine.cs`): `(yol, boyut,
+> mtime)` → imza durumu, imzalayan, SHA-256, oluşturma zamanı; `History/Analyzer/enrich-cache.json`, en çok 6000
+> kayıt, atomik yazma, tarama sonunda yalnızca değiştiyse. Ölçüm (bu makine): uygulamanın ilk soğuk taraması
+> 4,52 sn → önbellekle yeni süreçte 1,47 sn; sıcak tarama 0,8 sn. Kalan: tembel hash, UI donma ölçümü.
+
 ### Faz 7 — Geçmiş ve Değişiklikler v2 (v4.9 ile birlikte)
 
 - **Ayrıştırıcı sürümü:** Anlık görüntüye `ParserVersion` yazılır. Faz 0 sonrası ilk tarama eski görüntüyle
@@ -308,6 +313,11 @@ her fark açıklanabilir.
 - Toplayıcılar için kayıt defteri/görev XML fikstürleri (sanal kaynak arayüzü; gerçek kayıt defterine dokunmaz).
 - Risk kalibrasyonu (Faz 2 korpusu) ve eylem politikası tabloları (her kategori × durum).
 - UI bağlama testleri (`verify-bindings.py`) ve ekran görüntüsü testleri.
+
+> **Durum (v4.14.0): kısmen.** `CommandLineCorpusTests`: Run, görev, hizmet ImagePath, sürücü (`System32\drivers`,
+> `\SystemRoot`, `\??\`, DriverStore), Winlogon, 8.3 kısa ad, sarmalayıcı ve yetim desenlerinden 29 durum; Faz 0
+> testleriyle birlikte çözümleyici için toplam ~77 durum (hedef 150). Risk kalibrasyonu ve eylem politikası
+> tabloları Faz 2/0 testlerinde. Kalan: toplayıcı fikstürleri (sanal kayıt defteri), derlemi 150'ye çıkarmak.
 
 ---
 

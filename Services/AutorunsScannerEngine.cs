@@ -8,6 +8,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
@@ -80,6 +81,7 @@ namespace Bakım.Services
                 progress?.Report(status);
                 foreach (var item in await Task.Run(() => RunCollector(status, collect, env))) yield return item;
             }
+            await Task.Run(PersistentFacts.SaveIfDirty);
         }
 
         /// <summary>Yalnızca verilen grupların toplayıcıları (canlı izlemede değişen konumu yeniden taramak için).</summary>
@@ -91,6 +93,7 @@ namespace Bakım.Services
             {
                 if (group is { } g && groups.Contains(g)) result.AddRange(await Task.Run(() => RunCollector(status, collect, env)));
             }
+            await Task.Run(PersistentFacts.SaveIfDirty);
             return result;
         }
 
@@ -596,6 +599,10 @@ namespace Bakım.Services
 
         private FileFacts ReadFacts(string path, FileInfo info)
         {
+            // Diskteki önbellek (ANL Faz 6): imza doğrulaması ilk taramanın en pahalı adımı (408 dosya ~5,6 sn).
+            if (PersistentFacts.TryGet(path, info.Length, info.LastWriteTimeUtc.Ticks) is { } saved)
+                return new FileFacts(saved.Status, saved.Signer, saved.Sha256, ExtractFileIcon(path), saved.CreatedUtc);
+
             var signature = SignatureInspector.Inspect(path);
             string hash = info.Length <= MaxEagerHashBytes ? _virusTotalService.ComputeSha256(path) : string.Empty;
             DateTime? created = null;
@@ -607,6 +614,7 @@ namespace Bakım.Services
             {
                 AppLog.Debug($"Oluşturma zamanı okunamadı: {path}", nameof(AutorunsScannerEngine));
             }
+            PersistentFacts.Put(path, info.Length, info.LastWriteTimeUtc.Ticks, new PersistentFacts.Entry(signature.Status, signature.Signer ?? string.Empty, hash, created, DateTime.UtcNow));
             return new FileFacts(signature.Status, signature.Signer ?? string.Empty, hash, ExtractFileIcon(path), created);
         }
 
@@ -872,6 +880,84 @@ namespace Bakım.Services
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// İmza ve hash sonuçlarının diskteki önbelleği (ANL Faz 6): (yol, boyut, değişim zamanı) → sonuç.
+    /// Dosya değişirse anahtar değişir ve yeniden hesaplanır. En çok 6000 kayıt; en eski kullanılanlar atılır.
+    /// %LocalAppData%\Bakim\History\Analyzer\enrich-cache.json
+    /// </summary>
+    internal static class PersistentFacts
+    {
+        public sealed record Entry(SignatureStatus Status, string Signer, string Sha256, DateTime? CreatedUtc, DateTime LastUsedUtc);
+
+        private sealed record Row(string Path, long Size, long Ticks, SignatureStatus Status, string Signer, string Sha256, DateTime? CreatedUtc, DateTime LastUsedUtc);
+
+        private const int MaxEntries = 6000;
+        private static readonly string FilePath = Path.Combine(Core.History.AnalysisHistoryStore.DefaultDirectory(), "enrich-cache.json");
+        private static readonly Lazy<ConcurrentDictionary<string, Entry>> Map = new(Load);
+        private static int _dirty;
+
+        private static string Key(string path, long size, long ticks) => $"{path.ToLowerInvariant()}|{size}|{ticks}";
+
+        public static Entry? TryGet(string path, long size, long ticks)
+        {
+            if (!Map.Value.TryGetValue(Key(path, size, ticks), out var entry)) return null;
+            // Kullanım zamanı günde bir tazelenir: her taramada tüm dosyayı yeniden yazmamak için.
+            if (DateTime.UtcNow - entry.LastUsedUtc > TimeSpan.FromDays(1))
+            {
+                Map.Value[Key(path, size, ticks)] = entry with { LastUsedUtc = DateTime.UtcNow };
+                Interlocked.Exchange(ref _dirty, 1);
+            }
+            return entry;
+        }
+
+        public static void Put(string path, long size, long ticks, Entry entry)
+        {
+            Map.Value[Key(path, size, ticks)] = entry;
+            Interlocked.Exchange(ref _dirty, 1);
+        }
+
+        private static ConcurrentDictionary<string, Entry> Load()
+        {
+            var map = new ConcurrentDictionary<string, Entry>(StringComparer.Ordinal);
+            try
+            {
+                if (!File.Exists(FilePath)) return map;
+                var rows = JsonSerializer.Deserialize<List<Row>>(File.ReadAllText(FilePath)) ?? new List<Row>();
+                foreach (var r in rows) map[Key(r.Path, r.Size, r.Ticks)] = new Entry(r.Status, r.Signer, r.Sha256, r.CreatedUtc, r.LastUsedUtc);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+            {
+                AppLog.Debug($"Analizör önbelleği okunamadı (yeniden oluşturulacak): {ex.Message}", nameof(PersistentFacts));
+            }
+            return map;
+        }
+
+        public static void SaveIfDirty()
+        {
+            if (Interlocked.Exchange(ref _dirty, 0) == 0) return;
+            try
+            {
+                var rows = Map.Value
+                    .OrderByDescending(kv => kv.Value.LastUsedUtc)
+                    .Take(MaxEntries)
+                    .Select(kv =>
+                    {
+                        string[] parts = kv.Key.Split('|');
+                        return new Row(parts[0], long.Parse(parts[1]), long.Parse(parts[2]), kv.Value.Status, kv.Value.Signer, kv.Value.Sha256, kv.Value.CreatedUtc, kv.Value.LastUsedUtc);
+                    })
+                    .ToList();
+                Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+                string tmp = FilePath + ".tmp";
+                File.WriteAllText(tmp, JsonSerializer.Serialize(rows));
+                File.Move(tmp, FilePath, overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                AppLog.Debug($"Analizör önbelleği yazılamadı: {ex.Message}", nameof(PersistentFacts));
+            }
+        }
     }
 
     /// <summary>
