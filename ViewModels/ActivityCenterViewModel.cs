@@ -159,6 +159,28 @@ namespace Bakım.ViewModels
 
         public bool HasSelection => Selected != null;
 
+        // Özet kartları hızlı filtredir: tıklanan kart yalnızca kendi ölçütünü uygular, diğerlerini sıfırlar.
+        [RelayCommand]
+        private void ShowAll() => ApplyQuickFilter(range: "All");
+
+        [RelayCommand]
+        private void ShowToday() => ApplyQuickFilter(range: "Today");
+
+        [RelayCommand]
+        private void ShowUndoable() => ApplyQuickFilter(range: "All", undoableOnly: true);
+
+        [RelayCommand]
+        private void ShowFailed() => ApplyQuickFilter(range: "All", outcome: ActivityOutcome.Failed);
+
+        private void ApplyQuickFilter(string range, bool undoableOnly = false, ActivityOutcome? outcome = null)
+        {
+            SearchText = string.Empty;
+            SelectedKind = null;
+            SelectedOutcome = outcome;
+            UndoableOnly = undoableOnly;
+            Range = range;
+        }
+
         partial void OnSearchTextChanged(string value) => ScheduleRefresh();
         partial void OnSelectedKindChanged(ActivityKind? value) => Refresh();
         partial void OnSelectedOutcomeChanged(ActivityOutcome? value) => Refresh();

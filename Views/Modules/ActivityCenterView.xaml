@@ -49,6 +49,18 @@
             <RowDefinition Height="Auto"/> <!-- 4: Durum -->
         </Grid.RowDefinitions>
 
+        <!-- 1. Özet: sayılar aynı zamanda hızlı filtredir -->
+        <c:SummaryStrip Grid.Row="1" Margin="{StaticResource Gap.Bottom.LG}">
+            <c:StatCard Icon="History24" Intent="Accent" Label="Toplam işlem" Value="{Binding TotalCount}"
+                        Caption="Tüm filtreleri temizle" IsInteractive="True" ClickCommand="{Binding ShowAllCommand}"/>
+            <c:StatCard Icon="CalendarToday24" Intent="Neutral" Label="Bugün" Value="{Binding TodayCount}"
+                        Caption="Yalnızca bugünkü işlemler" IsInteractive="True" ClickCommand="{Binding ShowTodayCommand}"/>
+            <c:StatCard Icon="ArrowUndo24" Intent="Success" Label="Geri alınabilir" Value="{Binding UndoableCount}"
+                        Caption="Yedeği olan değişiklikler" IsInteractive="True" ClickCommand="{Binding ShowUndoableCommand}"/>
+            <c:StatCard Icon="ErrorCircle24" Intent="Critical" Label="Başarısız" Value="{Binding FailedCount}"
+                        Caption="Tamamlanamayan işlemler" IsInteractive="True" ClickCommand="{Binding ShowFailedCommand}"/>
+        </c:SummaryStrip>
+
         <!-- 2. Komut çubuğu: arama ve filtreler tek satırda (çerçevesiz, Fluent) -->
         <Grid Grid.Row="2" Margin="{StaticResource Gap.Bottom.MD}">
             <Grid.ColumnDefinitions>
@@ -99,114 +111,97 @@
                       VerticalAlignment="Center"/>
         </Grid>
 
-        <!-- 3. Zaman çizelgesi + ayrıntı -->
+        <!-- 3. Zaman çizelgesi (kartlar) + ayrıntı -->
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*" MinWidth="380"/>
-                <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="2*" MinWidth="300"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="2*" MinWidth="320"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
-                    Background="{DynamicResource Card.Fill}"
-                    BorderBrush="{DynamicResource Card.Stroke.Glass}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}">
-                <Grid>
-                    <ListBox ItemsSource="{Binding Source={StaticResource GroupedRows}}"
-                             SelectedItem="{Binding Selected}"
-                             BorderThickness="0"
-                             Background="Transparent"
-                             HorizontalContentAlignment="Stretch"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             VirtualizingPanel.IsVirtualizing="True"
-                             VirtualizingPanel.IsVirtualizingWhenGrouping="True"
-                             VirtualizingPanel.VirtualizationMode="Recycling"
-                             AutomationProperties.Name="Etkinlik zaman çizelgesi">
-                        <ListBox.GroupStyle>
-                            <GroupStyle>
-                                <GroupStyle.HeaderTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}"
-                                                   FontSize="{StaticResource Font.Body}"
-                                                   FontWeight="SemiBold"
-                                                   Margin="12,16,0,6"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    </DataTemplate>
-                                </GroupStyle.HeaderTemplate>
-                            </GroupStyle>
-                        </ListBox.GroupStyle>
-                        <ListBox.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:ActivityRow}">
-                                <Grid Margin="4,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="28"/>
-                                        <ColumnDefinition Width="44"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <ui:SymbolIcon Grid.Column="0" Symbol="{Binding KindSymbol}" FontSize="18"
-                                                   VerticalAlignment="Top" Margin="0,1,0,0"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Grid.Column="1" Text="{Binding TimeText}"
-                                               FontSize="{StaticResource Font.Body}"
-                                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                               VerticalAlignment="Top" Margin="0,2,0,0"/>
-                                    <StackPanel Grid.Column="2" Margin="{StaticResource Gap.Right.SM}">
-                                        <TextBlock FontSize="{StaticResource Font.BodyLarge}" TextTrimming="CharacterEllipsis"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                                            <Run Text="{Binding Module, Mode=OneWay}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            <Run Text=" · " Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                                            <Run Text="{Binding Title, Mode=OneWay}"/>
-                                        </TextBlock>
-                                        <TextBlock Text="{Binding Summary}" FontSize="{StaticResource Font.Body}" TextTrimming="CharacterEllipsis"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                   Visibility="{Binding HasSummary, Converter={StaticResource BoolToVis}}"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
-                                        <c:StatusBadge Text="{Binding OutcomeText}" Intent="{Binding OutcomeIntent}" Margin="{StaticResource Gap.Right.XS}"
-                                                       Visibility="{Binding ShowOutcome, Converter={StaticResource BoolToVis}}"/>
-                                        <c:StatusBadge Text="{Binding UndoText}" Intent="{Binding UndoIntent}" Margin="{StaticResource Gap.Right.XS}"
-                                                       Visibility="{Binding HasUndoText, Converter={StaticResource BoolToVis}}"/>
-                                        <ui:Button Appearance="Secondary" Padding="8,4"
-                                                   Icon="{ui:SymbolIcon ArrowUndo16}"
-                                                   Content="{Binding UndoButtonText}"
-                                                   Visibility="{Binding CanUndo, Converter={StaticResource BoolToVis}}"
-                                                   Command="{Binding DataContext.UndoCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                                   CommandParameter="{Binding}"
-                                                   AutomationProperties.Name="Bu işlemi geri al"/>
-                                        <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="8,0,0,0"
-                                                         Visibility="{Binding IsUndoing, Converter={StaticResource BoolToVis}}"/>
-                                    </StackPanel>
-                                </Grid>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+            <Grid Grid.Column="0">
+                <ListBox ItemsSource="{Binding Source={StaticResource GroupedRows}}"
+                         SelectedItem="{Binding Selected}"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         HorizontalContentAlignment="Stretch"
+                         ItemContainerStyle="{StaticResource ListItem.Card}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         AutomationProperties.Name="Etkinlik zaman çizelgesi">
+                    <ListBox.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource ListItem.Card.GroupHeader}"/>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListBox.GroupStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:ActivityRow}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                    <c:EmptyState Icon="History24"
-                                  Title="Henüz kayıtlı etkinlik yok"
-                                  Description="Temizlik, program kaldırma, ince ayar, başlangıç ve hizmet değişiklikleri yapıldıkça burada listelenir. Filtre kullanıyorsanız temizlemeyi deneyin."
-                                  Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
-                </Grid>
-            </Border>
+                                <!-- Tür simgesi kutusu -->
+                                <Border Width="36" Height="36" CornerRadius="{StaticResource Radius.MD}"
+                                        Background="{DynamicResource Subtle.Fill.Hover}"
+                                        Margin="{StaticResource Gap.Right.MD}" VerticalAlignment="Top">
+                                    <ui:SymbolIcon Symbol="{Binding KindSymbol}" FontSize="18"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Border>
 
-            <!-- Ayrıntı -->
-            <Border Grid.Column="2"
-                    Background="{DynamicResource Card.Fill}"
-                    BorderBrush="{DynamicResource Card.Stroke.Glass}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource Radius.MD}"
-                    Padding="{StaticResource Pad.Card}">
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}">
+                                    <TextBlock Text="{Binding Title}" Style="{StaticResource Text.BodyStrong}" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Style="{StaticResource Text.Caption}" TextTrimming="CharacterEllipsis" Margin="{StaticResource Gap.Top.XS}">
+                                        <Run Text="{Binding TimeText, Mode=OneWay}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding Module, Mode=OneWay}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Summary}" Style="{StaticResource Text.BodySecondary}" TextTrimming="CharacterEllipsis"
+                                               Margin="{StaticResource Gap.Top.XS}"
+                                               Visibility="{Binding HasSummary, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <c:StatusBadge Text="{Binding OutcomeText}" Intent="{Binding OutcomeIntent}" Margin="{StaticResource Gap.Right.XS}"
+                                                   Visibility="{Binding ShowOutcome, Converter={StaticResource BoolToVis}}"/>
+                                    <c:StatusBadge Text="{Binding UndoText}" Intent="{Binding UndoIntent}" Margin="{StaticResource Gap.Right.XS}"
+                                                   Visibility="{Binding HasUndoText, Converter={StaticResource BoolToVis}}"/>
+                                    <ui:Button Appearance="Secondary" Padding="8,4"
+                                               Icon="{ui:SymbolIcon ArrowUndo16}"
+                                               Content="{Binding UndoButtonText}"
+                                               Visibility="{Binding CanUndo, Converter={StaticResource BoolToVis}}"
+                                               Command="{Binding DataContext.UndoCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                               CommandParameter="{Binding}"
+                                               AutomationProperties.Name="Bu işlemi geri al"/>
+                                    <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" Margin="{StaticResource Gap.Right.XS}"
+                                                     Visibility="{Binding IsUndoing, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <c:EmptyState Icon="History24"
+                              Title="Henüz kayıtlı etkinlik yok"
+                              Description="Temizlik, program kaldırma, ince ayar, başlangıç ve hizmet değişiklikleri yapıldıkça burada listelenir. Filtre kullanıyorsanız temizlemeyi deneyin."
+                              Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}"/>
+            </Grid>
+
+            <!-- Ayrıntı paneli -->
+            <Border Grid.Column="2" Style="{StaticResource Card.Surface}">
                 <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="260"
-                                Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}">
-                        <ui:SymbolIcon Symbol="DocumentBulletList24" FontSize="32" HorizontalAlignment="Center"
-                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
-                        <TextBlock Text="Bir etkinlik seçin" HorizontalAlignment="Center" Margin="{StaticResource Gap.Top.MD}"
-                                   Style="{StaticResource Text.BodyStrong}"/>
-                        <TextBlock Text="Ne değiştiği, hangi öğeleri etkilediği ve geri alınıp alınamayacağı burada görünür."
-                                   Style="{StaticResource Text.BodySecondary}" TextAlignment="Center" Margin="{StaticResource Gap.Top.XS}"/>
-                    </StackPanel>
+                    <c:EmptyState IsEmbedded="True" Icon="DocumentBulletList24"
+                                  Title="Bir etkinlik seçin"
+                                  Description="Ne değiştiği, hangi öğeleri etkilediği ve geri alınıp alınamayacağı burada görünür."
+                                  Visibility="{Binding HasSelection, Converter={StaticResource InverseBoolToVis}}"/>
 
                     <Grid Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
                         <Grid.RowDefinitions>
@@ -216,72 +211,107 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
-                            <TextBlock Text="{Binding Selected.Title}" FontSize="{StaticResource Font.SectionTitle}" FontWeight="SemiBold"
-                                       TextWrapping="Wrap" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                            <TextBlock Text="{Binding Selected.Summary}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="{StaticResource Gap.Top.XS}"/>
-                            <WrapPanel Margin="{StaticResource Gap.Top.SM}">
-                                <c:StatusBadge Text="{Binding Selected.KindText}" Intent="Neutral" Margin="{StaticResource Gap.Right.XS}"/>
+                            <!-- Başlık: simge kutusu + başlık -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource Card.IconTile}" Margin="{StaticResource Gap.Right.MD}" VerticalAlignment="Top">
+                                    <ui:SymbolIcon Symbol="{Binding Selected.KindSymbol}" FontSize="24"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Selected.Title}" Style="{StaticResource Text.CardTitle}" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Selected.Summary}" Style="{StaticResource Text.BodySecondary}" TextWrapping="Wrap"
+                                               Margin="{StaticResource Gap.Top.XS}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <WrapPanel Margin="{StaticResource Gap.Top.MD}">
                                 <c:StatusBadge Text="{Binding Selected.OutcomeText}" Intent="{Binding Selected.OutcomeIntent}" Margin="{StaticResource Gap.Right.XS}"/>
                                 <c:StatusBadge Text="{Binding Selected.UndoText}" Intent="{Binding Selected.UndoIntent}"
                                                Visibility="{Binding Selected.HasUndoText, Converter={StaticResource BoolToVis}}"/>
                             </WrapPanel>
-                            <TextBlock FontSize="{StaticResource Font.Body}" Margin="{StaticResource Gap.Top.XS}"
-                                       Foreground="{DynamicResource TextFillColorTertiaryBrush}">
-                                <Run Text="{Binding Selected.DateText, Mode=OneWay}"/>
-                                <Run Text=" · "/>
-                                <Run Text="{Binding Selected.Module, Mode=OneWay}"/>
-                            </TextBlock>
+
+                            <!-- Bilgi tablosu -->
+                            <Border Style="{StaticResource Card.Inset}" Margin="{StaticResource Gap.Top.MD}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="Tarih" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Right.MD}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Selected.DateText}" Style="{StaticResource Text.Body}"/>
+                                    <TextBlock Grid.Row="1" Text="Modül" Style="{StaticResource Text.Caption}" Margin="0,6,12,0"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Selected.Module}" Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.XS}"/>
+                                    <TextBlock Grid.Row="2" Text="Tür" Style="{StaticResource Text.Caption}" Margin="0,6,12,0"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Selected.KindText}" Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.XS}"/>
+                                </Grid>
+                            </Border>
 
                             <Border Margin="{StaticResource Gap.Top.SM}"
-                                    Padding="{StaticResource Pad.CardCompact}"
-                                    CornerRadius="{StaticResource Radius.SM}"
-                                    Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                    Style="{StaticResource Card.Inset}"
                                     Visibility="{Binding Selected.HasUndoMessage, Converter={StaticResource BoolToVis}}">
-                                <TextBlock TextWrapping="Wrap" FontSize="{StaticResource Font.Body}"
-                                           Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                                <TextBlock TextWrapping="Wrap" Style="{StaticResource Text.Body}">
                                     <Run Text="Geri alma sonucu: " FontWeight="SemiBold"/>
                                     <Run Text="{Binding Selected.UndoMessage, Mode=OneWay}"/>
                                 </TextBlock>
                             </Border>
 
-                            <TextBlock Text="{Binding Selected.ItemsHeader}" Style="{StaticResource Text.Label}" Margin="{StaticResource Gap.Top.MD}"
+                            <TextBlock Text="{Binding Selected.ItemsHeader}" Style="{StaticResource Text.SectionLabel}" Margin="{StaticResource Gap.Top.MD}"
                                        Visibility="{Binding Selected.HasItems, Converter={StaticResource BoolToVis}}"/>
                         </StackPanel>
 
-                        <ListBox Grid.Row="1"
-                                 ItemsSource="{Binding Selected.Items}"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Margin="{StaticResource Gap.Top.XS}"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 VirtualizingPanel.IsVirtualizing="True"
-                                 AutomationProperties.Name="Etkinliğin öğeleri">
-                            <ListBox.ItemTemplate>
+                        <!-- Etkilenen öğeler: her biri iç kart -->
+                        <ItemsControl Grid.Row="1"
+                                      ItemsSource="{Binding Selected.Items}"
+                                      Margin="{StaticResource Gap.Top.SM}"
+                                      VirtualizingPanel.IsVirtualizing="True"
+                                      ScrollViewer.CanContentScroll="True"
+                                      AutomationProperties.Name="Etkinliğin öğeleri">
+                            <ItemsControl.Template>
+                                <ControlTemplate TargetType="ItemsControl">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="0,2">
-                                        <TextBlock Text="{Binding Target}" FontSize="{StaticResource Font.Body}" TextWrapping="Wrap"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                        <TextBlock FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}">
-                                            <Run Text="{Binding Action, Mode=OneWay}"/>
-                                            <Run Text=" · "/>
-                                            <Run Text="{Binding Result, Mode=OneWay}"/>
-                                            <Run Text="{Binding Detail, Mode=OneWay, StringFormat=' · {0}'}"/>
-                                        </TextBlock>
-                                    </StackPanel>
+                                    <Border Style="{StaticResource Card.Inset}" Padding="{StaticResource Pad.Row}" Margin="{StaticResource Gap.Bottom.XS}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Target}" Style="{StaticResource Text.Mono}" TextWrapping="Wrap"/>
+                                            <TextBlock Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="{StaticResource Gap.Top.XS}">
+                                                <Run Text="{Binding Action, Mode=OneWay}"/>
+                                                <Run Text=" · "/>
+                                                <Run Text="{Binding Result, Mode=OneWay}"/>
+                                                <Run Text="{Binding Detail, Mode=OneWay, StringFormat=' · {0}'}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
                                 </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
                         <WrapPanel Grid.Row="2" Margin="{StaticResource Gap.Top.MD}">
-                            <ui:Button Appearance="Primary" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                            <ui:Button Appearance="Primary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
                                        Icon="{ui:SymbolIcon ArrowUndo20}"
                                        Content="{Binding Selected.UndoButtonText}"
                                        Visibility="{Binding Selected.CanUndo, Converter={StaticResource BoolToVis}}"
                                        Command="{Binding UndoCommand}"
                                        CommandParameter="{Binding Selected}"/>
-                            <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="0,0,8,8"
+                            <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}"
                                        Icon="{ui:SymbolIcon Open20}"
                                        Content="Modülde aç"
                                        Visibility="{Binding Selected.HasDeepLink, Converter={StaticResource BoolToVis}}"

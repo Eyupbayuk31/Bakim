@@ -58,5 +58,16 @@ namespace Bakım.Controls
             get => GetValue(ActionsProperty);
             set => SetValue(ActionsProperty, value);
         }
+
+        /// <summary>Kart içinde kullanılıyorsa true: kendi zemini ve kenarlığı çizilmez.</summary>
+        public static readonly DependencyProperty IsEmbeddedProperty =
+            DependencyProperty.Register(nameof(IsEmbedded), typeof(bool), typeof(EmptyState),
+                new PropertyMetadata(false));
+
+        public bool IsEmbedded
+        {
+            get => (bool)GetValue(IsEmbeddedProperty);
+            set => SetValue(IsEmbeddedProperty, value);
+        }
     }
 }

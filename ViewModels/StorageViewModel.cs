@@ -1399,6 +1399,15 @@ namespace Bakım.ViewModels
 
         public ObservableCollection<TreemapTile> Tiles { get; } = new();
         public ObservableCollection<Bakım.Core.Storage.FolderNode> Breadcrumb { get; } = new();
+        /// <summary>Sağ paneldeki "En büyükler" sıralaması (geçerli klasörün çocukları).</summary>
+        public ObservableCollection<DiskMapRankRow> TopItems { get; } = new();
+
+        [ObservableProperty] private string _currentFolderName = string.Empty;
+        [ObservableProperty] private string _currentFolderSizeText = "—";
+        [ObservableProperty] private string _currentFileCountText = "—";
+        [ObservableProperty] private string _currentSubfolderCountText = "—";
+        [ObservableProperty] private string _currentLargestText = "—";
+        [ObservableProperty] private string _currentLargestCaption = string.Empty;
 
         [ObservableProperty] private string _diskMapTarget = string.Empty;
         [ObservableProperty] private bool _isDiskMapScanning;
@@ -1469,6 +1478,30 @@ namespace Bakım.ViewModels
             Breadcrumb.Clear();
             for (var n = node; n != null; n = n.Parent) Breadcrumb.Insert(0, n);
             CurrentFolderSummary = $"{node.FullPath} · {Core.Text.ByteFormatter.Format(node.SizeBytes)} · {node.FileCount:N0} dosya";
+
+            // Özet şeridi ve "En büyükler" listesi
+            var children = node.Children.Where(c => c.SizeBytes > 0).OrderByDescending(c => c.SizeBytes).ToList();
+            CurrentFolderName = string.IsNullOrEmpty(node.Name) ? node.FullPath : node.Name;
+            CurrentFolderSizeText = Core.Text.ByteFormatter.Format(node.SizeBytes);
+            CurrentFileCountText = node.FileCount.ToString("N0");
+            CurrentSubfolderCountText = children.Count(c => !c.IsAggregate).ToString("N0");
+            var largest = children.FirstOrDefault(c => !c.IsAggregate);
+            CurrentLargestText = largest?.Name ?? "—";
+            CurrentLargestCaption = largest == null || node.SizeBytes <= 0 ? string.Empty
+                : $"{Core.Text.ByteFormatter.Format(largest.SizeBytes)} · %{100.0 * largest.SizeBytes / node.SizeBytes:F0}";
+
+            TopItems.Clear();
+            long top = children.Count > 0 ? children[0].SizeBytes : 0;
+            for (int i = 0; i < children.Count && i < 15; i++)
+            {
+                var c = children[i];
+                TopItems.Add(new DiskMapRankRow(c,
+                    colorIndex: c.IsAggregate ? -1 : i % 6,
+                    sizeText: Core.Text.ByteFormatter.Format(c.SizeBytes),
+                    percentOfFolder: node.SizeBytes > 0 ? 100.0 * c.SizeBytes / node.SizeBytes : 0,
+                    percentOfLargest: top > 0 ? 100.0 * c.SizeBytes / top : 0));
+            }
+
             LayoutTiles();
         }
 
@@ -1485,8 +1518,44 @@ namespace Bakım.ViewModels
                 var r = rects[i];
                 if (r.Width < 1 || r.Height < 1) continue;
                 double percent = _currentNode.SizeBytes > 0 ? 100.0 * children[i].SizeBytes / _currentNode.SizeBytes : 0;
-                Tiles.Add(new TreemapTile(children[i], r.X, r.Y, r.Width, r.Height, i % 6, Core.Text.ByteFormatter.Format(children[i].SizeBytes), percent));
+                int color = children[i].IsAggregate ? -1 : i % 6;
+                Tiles.Add(new TreemapTile(children[i], r.X, r.Y, r.Width, r.Height, color, Core.Text.ByteFormatter.Format(children[i].SizeBytes), percent,
+                    NestedTiles(children[i], r.Width, r.Height, color)));
             }
+        }
+
+        /// <summary>Başlık şeridinin yüksekliği: alt kutular bunun altından başlar.</summary>
+        private const double TileHeader = 40;
+
+        /// <summary>
+        /// Büyük kutunun içine bir alt düzeyin kutuları (klasik treemap görünümü): neyin şiştiği içine girmeden görünür.
+        /// Küçük kutularda çizilmez; alt kutular tıklamayı üst kutuya bırakır.
+        /// </summary>
+        private static IReadOnlyList<TreemapSubTile> NestedTiles(Bakım.Core.Storage.FolderNode node, double width, double height, int color)
+        {
+            if (node.IsAggregate || node.Children.Count == 0 || width < 140 || height < 96) return Array.Empty<TreemapSubTile>();
+            var kids = node.Children.Where(c => c.SizeBytes > 0).OrderByDescending(c => c.SizeBytes).Take(24).ToList();
+            if (kids.Count == 0) return Array.Empty<TreemapSubTile>();
+            var area = new Bakım.Core.Storage.TreemapRect(6, TileHeader, width - 14, height - TileHeader - 8);
+            if (area.Width < 20 || area.Height < 20) return Array.Empty<TreemapSubTile>();
+            var rects = Bakım.Core.Storage.Treemap.Layout(kids.Select(k => (double)k.SizeBytes).ToList(), area);
+            var list = new List<TreemapSubTile>(kids.Count);
+            for (int i = 0; i < kids.Count; i++)
+            {
+                var r = rects[i];
+                if (r.Width < 6 || r.Height < 6) continue;
+                list.Add(new TreemapSubTile(r.X, r.Y, Math.Max(0, r.Width - 2), Math.Max(0, r.Height - 2), kids[i].Name, color,
+                    ShowLabel: r.Width >= 64 && r.Height >= 22));
+            }
+            return list;
+        }
+
+        /// <summary>"En büyükler" listesinden ya da haritadan bir klasörün içine girer (birleştirilmiş öğelere girilemez).</summary>
+        [RelayCommand]
+        private void OpenNode(Bakım.Core.Storage.FolderNode? node)
+        {
+            if (node == null || node.IsAggregate || node.Children.Count == 0) return;
+            ShowNode(node);
         }
 
         [RelayCommand]
@@ -1569,12 +1638,40 @@ namespace Bakım.ViewModels
 
 namespace Bakım.ViewModels
 {
+    /// <summary>Büyük kutunun içindeki alt klasör kutusu (yalnızca görsel; koordinatlar kutuya göredir).</summary>
+    public sealed record TreemapSubTile(double X, double Y, double Width, double Height, string Name, int ColorIndex, bool ShowLabel);
+
+    /// <summary>"En büyükler" listesinde bir satır: oran çubuğu en büyük öğeye göre ölçeklenir.</summary>
+    public sealed class DiskMapRankRow
+    {
+        public DiskMapRankRow(Bakım.Core.Storage.FolderNode node, int colorIndex, string sizeText, double percentOfFolder, double percentOfLargest)
+        {
+            Node = node;
+            ColorIndex = colorIndex;
+            SizeText = sizeText;
+            PercentOfFolder = percentOfFolder;
+            PercentOfLargest = percentOfLargest;
+        }
+
+        public Bakım.Core.Storage.FolderNode Node { get; }
+        public int ColorIndex { get; }
+        public string Name => Node.Name;
+        public string SizeText { get; }
+        public double PercentOfFolder { get; }
+        public double PercentOfLargest { get; }
+        public string PercentText => $"%{PercentOfFolder:F1}";
+        public string FileCountText => $"{Node.FileCount:N0} dosya";
+        public bool CanDrill => !Node.IsAggregate && Node.Children.Count > 0;
+        public string Tooltip => Node.FullPath + (CanDrill ? "\nİçine girmek için tıklayın" : string.Empty);
+    }
+
     /// <summary>Disk haritasındaki bir dikdörtgen.</summary>
     public sealed class TreemapTile
     {
         public TreemapTile(Bakım.Core.Storage.FolderNode node, double x, double y, double width, double height,
-            int colorIndex, string sizeText, double percent)
+            int colorIndex, string sizeText, double percent, IReadOnlyList<TreemapSubTile>? children = null)
         {
+            Children = children ?? Array.Empty<TreemapSubTile>();
             Node = node;
             X = x;
             Y = y;
@@ -1595,6 +1692,11 @@ namespace Bakım.ViewModels
         public double Percent { get; }
         public string Name => Node.Name;
         public bool ShowLabel => Width >= 70 && Height >= 36;
+        /// <summary>Boyut ve yüzde satırı için yeterince büyük.</summary>
+        public bool ShowDetail => Width >= 90 && Height >= 52;
+        public string PercentText => $"%{Percent:F1}";
+        public IReadOnlyList<TreemapSubTile> Children { get; }
+        public bool IsAggregate => Node.IsAggregate;
         public bool CanDrill => !Node.IsAggregate && Node.Children.Count > 0;
         public string Tooltip => $"{Node.FullPath}\n{SizeText} · %{Percent:F1} · {Node.FileCount:N0} dosya" +
                                  (Node.IsAggregate ? "\n(Küçük öğeler birleştirildi)" : CanDrill ? "\nİçine girmek için tıklayın" : "");

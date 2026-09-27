@@ -10,12 +10,23 @@
         her zaman bir simge, bir başlık, bir açıklama ve (varsa) çıkış yolu sunar.
     -->
 
-    <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-            BorderThickness="{StaticResource Stroke.Thin}"
-            CornerRadius="{StaticResource Radius.MD}"
+    <!-- IsEmbedded: zaten bir kartın içindeyse kendi yüzeyini çizmez (kart içinde kart görünmesin). -->
+    <Border CornerRadius="{StaticResource Radius.MD}"
             Padding="{StaticResource Pad.Dialog}"
             MinHeight="160">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorSecondaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
+                <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsEmbedded, ElementName=Root}" Value="True">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="{StaticResource Stroke.None}"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
 
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420">
 

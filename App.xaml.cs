@@ -45,11 +45,19 @@ namespace Bakım
         /// </summary>
         public static void SetServicesForTesting(IServiceProvider provider) => Services = provider;
 
+        /// <summary>
+        /// Test düzenekleri (XAML duman testi, ekran görüntüleri) App'i Run() olmadan kurar; ilk modal pencere ya da
+        /// mesaj pompası WPF'in kuyruktaki başlangıç işini yine de çalıştırır. Bu bayrak açılışı atlatır: tek örnek
+        /// denetimi (açık Bakım'a etkinleştirme mesajı), arka plan servisleri ve "son sayfaya git" çalışmaz.
+        /// </summary>
+        public static bool SkipStartupForTesting { get; set; }
+
         private FileLogService? _logService;
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            if (SkipStartupForTesting) return;
 
             // Başlangıç kayıt / onarım parametresi (Tek seferlik UAC işçisi)
             if (e.Args != null && e.Args.Length > 0)

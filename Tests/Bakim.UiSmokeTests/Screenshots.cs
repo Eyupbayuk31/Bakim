@@ -30,6 +30,26 @@ internal static class Screenshots
 
     private static readonly int[] Widths = { 1280, 1600 };
 
+    /// <summary>Veri gerektiren görünümler: çekimden önce örnek durum hazırlanır (yalnızca tek sayfa kipinde ağır işler).</summary>
+    public static string? PrepareFolder { get; set; }
+
+    private static void Prepare(MainViewModel vm, string key)
+    {
+        if (key.Equals("Storage", StringComparison.OrdinalIgnoreCase) && PrepareFolder != null)
+        {
+            var storage = vm.Storage;
+            storage.DiskMapTarget = PrepareFolder;
+            storage.ScanDiskMapCommand.Execute(null);
+            for (int i = 0; i < 120 && (storage.IsDiskMapScanning || !storage.HasDiskMap); i++) Pump(500);
+        }
+        else if (key.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) && PrepareFolder == "history")
+        {
+            vm.Analyzer.SwitchTabCommand.Execute("History");
+            Pump(1500);
+            if (vm.Analyzer.History.Rows.Count > 0) vm.Analyzer.History.Selected = vm.Analyzer.History.Rows[0];
+        }
+    }
+
     public static int Run(string outDir, string? onlyKey = null)
     {
         Directory.CreateDirectory(outDir);
@@ -46,6 +66,10 @@ internal static class Screenshots
         }) { IsBackground = true };
         watchdog.Start();
 
+        Bakım.App.SkipStartupForTesting = true;
+        // Run() çağrılmadığı için WPF bağlamı kurulmaz; await sonrası kod arayüz iş parçacığına dönsün.
+        System.Threading.SynchronizationContext.SetSynchronizationContext(
+            new System.Windows.Threading.DispatcherSynchronizationContext(System.Windows.Threading.Dispatcher.CurrentDispatcher));
         var app = new Bakım.App();
         app.InitializeComponent();
 
@@ -111,6 +135,7 @@ internal static class Screenshots
                     try
                     {
                         vm.Navigate(key);
+                        Prepare(vm, key);
                         // Loaded + ilk veri yüklemesi + animasyonlar; tek sayfa çekiminde tarama bitsin diye daha uzun.
                         Pump(onlyKey == null ? 1600 : 12000);
                         string path = Path.Combine(outDir, $"{themeName}-{width}-{key}.png");
@@ -151,7 +176,10 @@ internal static class Screenshots
 
         // Mica ekran görüntüsüne çizilmez: pencere zeminini elle doldur.
         // Pencerenin kaynak zinciri uygulama kaynaklarına da çıkar; Application.Current bu koşucuda null olabilir.
-        var background = window.TryFindResource("ApplicationBackgroundBrush") as Brush ?? Brushes.Black;
+        // Zemin fırçası Mica için yarı saydamdır (alfa 0'a kadar); görüntüde beyaz çıkmasın diye opak boyanır.
+        Brush background = window.TryFindResource("ApplicationBackgroundBrush") is SolidColorBrush solid
+            ? new SolidColorBrush(Color.FromRgb(solid.Color.R, solid.Color.G, solid.Color.B))
+            : Brushes.Black;
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
         {

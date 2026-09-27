@@ -119,6 +119,136 @@
         <Setter Property="Background" Value="{DynamicResource Subtle.Fill.Hover}"/>
     </Style>
 
+    <!-- ============ LİSTE KARTI ============
+         Her öğe ayrı cam kart (Kaldırıcı satırlarıyla aynı dil). Eskiden geçmiş listeleri tek kutu içinde
+         kenarsız satırlardı ve seçili satır baştan sona vurgu rengine boyanıyordu.
+         Üzerine gelince: Card.Fill.Hover · Seçili: vurgu kenarı + soldaki gösterge hapı · Klavye: odak halkası. -->
+    <Style x:Key="ListItem.Card" TargetType="ListBoxItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Margin" Value="{StaticResource Gap.Bottom.XS}"/>
+        <Setter Property="Padding" Value="{StaticResource Pad.Row}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border x:Name="Card"
+                                Background="{DynamicResource Card.Fill}"
+                                BorderBrush="{DynamicResource Card.Stroke.Glass}"
+                                BorderThickness="{StaticResource Stroke.Thin}"
+                                CornerRadius="{StaticResource Radius.MD}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        </Border>
+                        <Border x:Name="Indicator" Width="3" Height="18" Margin="1,0,0,0"
+                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                                CornerRadius="{StaticResource Radius.Indicator}"
+                                Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                Visibility="Collapsed"/>
+                        <Border x:Name="FocusRing" Margin="-2" BorderThickness="2"
+                                CornerRadius="{StaticResource Radius.LG}"
+                                BorderBrush="{DynamicResource FocusStrokeColorOuterBrush}"
+                                Visibility="Collapsed" IsHitTestVisible="False"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Card" Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Card" Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
+                            <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusRing" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============ FİLTRE ÇİPİ ============
+         Fluent 2 filtre çipi: hap biçimli seçim. RadioButton (tek seçim: tarih aralığı) ve CheckBox
+         (çoklu seçim: risk düzeyleri) ikisi de ToggleButton'dan türediği için aynı stil ikisine de uygulanır.
+         Seçili: vurgu dolgusu. Eskiden dağınık radyo düğmeleri ve onay kutularıydı. -->
+    <Style x:Key="Chip.Filter" TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource Subtle.Fill.Hover}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Divider.Stroke}"/>
+        <Setter Property="BorderThickness" Value="{StaticResource Stroke.Thin}"/>
+        <Setter Property="Padding" Value="{StaticResource Pad.Chip}"/>
+        <Setter Property="Margin" Value="{StaticResource Gap.Right.XS}"/>
+        <Setter Property="FontSize" Value="{StaticResource Font.Body}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid>
+                        <Border x:Name="Chip"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource Radius.Pill}"
+                                Padding="{TemplateBinding Padding}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon x:Name="Check" Symbol="Checkmark16" FontSize="12"
+                                               Margin="{StaticResource Gap.IconText}" Visibility="Collapsed"
+                                               Foreground="{TemplateBinding Foreground}"/>
+                                <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                            </StackPanel>
+                        </Border>
+                        <Border x:Name="FocusRing" Margin="-3" BorderThickness="2"
+                                CornerRadius="{StaticResource Radius.Pill}"
+                                BorderBrush="{DynamicResource FocusStrokeColorOuterBrush}"
+                                Visibility="Collapsed" IsHitTestVisible="False"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chip" Property="Background" Value="{DynamicResource Card.Fill.Hover}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chip" Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                            <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource AccentFillColorDefaultBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusRing" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Filtre çubuğunda grup etiketi (Tarih, Risk) ve gruplar arası ince ayraç -->
+    <Style x:Key="Chip.GroupLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="{StaticResource Gap.Right.SM}"/>
+    </Style>
+    <Style x:Key="Chip.Divider" TargetType="Border">
+        <Setter Property="Width" Value="1"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="Margin" Value="8,0,12,0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Background" Value="{DynamicResource Divider.Stroke}"/>
+    </Style>
+
+    <!-- Liste kartı grubunun başlığı (Bugün, Dün…): kartlarla hizalı, üst boşluklu -->
+    <Style x:Key="ListItem.Card.GroupHeader" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Font.Caption}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+        <Setter Property="Margin" Value="{StaticResource Gap.ListGroupHeader}"/>
+    </Style>
+
     <!-- ============ ÖZET ŞERİDİ ============ -->
     <Style TargetType="{x:Type c:SummaryStrip}">
         <Setter Property="Focusable" Value="False"/>

@@ -63,6 +63,8 @@ internal static class Program
             string dir = shotIndex + 1 < args.Length ? args[shotIndex + 1] : "screenshots";
             // --only <Anahtar>: yalnızca adı eşleşen sayfa(lar), tek tema ve tek genişlik (geliştirme sırasında hızlı bakış).
             int only = Array.IndexOf(args, "--only");
+            int prep = Array.IndexOf(args, "--prepare");
+            if (prep >= 0 && prep + 1 < args.Length) Screenshots.PrepareFolder = args[prep + 1];
             return Screenshots.Run(dir, only >= 0 && only + 1 < args.Length ? args[only + 1] : null);
         }
 
@@ -79,6 +81,7 @@ internal static class Program
         // App.InitializeComponent() App.xaml'i yükler: WPF-UI sözlükleri, token
         // sözlükleri ve dönüştürücüler. Run() çağrılmadığı için OnStartup çalışmaz —
         // servisler ayağa kalkmaz, pencere açılmaz, kullanıcı ayarları değişmez.
+        Bakım.App.SkipStartupForTesting = true;
         var app = new Bakım.App();
         app.InitializeComponent();
         // Kontrol pencereleri kapandıkça "son pencere kapanınca çık" kuralı uygulamayı sessizce kapatıyordu;
@@ -562,6 +565,15 @@ internal static class Program
             ("SettingsModuleView",       () => new SettingsModuleView()),
             ("StoreModuleView",          () => new StoreModuleView()),
             ("SentinelModuleView",       () => new SentinelModuleView()),
+            ("ActivityCenterView",       () => new ActivityCenterView()),
+            ("StorageModuleView",        () => new StorageModuleView()),
+            ("StorageDiskMapPanel",      () => new StorageDiskMapPanel()),
+            ("StorageLargeFilesPanel",   () => new StorageLargeFilesPanel()),
+            ("StorageDuplicatesPanel",   () => new StorageDuplicatesPanel()),
+            ("AnalyzerHistoryPanel",     () => new AnalyzerHistoryPanel()),
+            ("AnalyzerChangesPanel",     () => new AnalyzerChangesPanel()),
+            ("GameModeModuleView",       () => new GameModeModuleView()),
+            ("WindowsToolsModuleView",   () => new WindowsToolsModuleView()),
 
             ("Controls/SectionHeader",   () => new SectionHeader { Title = "Başlık", Description = "Açıklama", Icon = "Shield24" }),
             ("Controls/MetricChip",      () => new MetricChip { Icon = "TopSpeed24", Label = "RAM:", Value = "%58", Intent = Intent.Accent }),
@@ -646,7 +658,9 @@ internal static class Program
                 var def = ThemeService.GetDefinition(kind);
                 var missing = probes.Where(k => app.Resources[k] == null).ToList();
                 var bg = (System.Windows.Media.SolidColorBrush)app.Resources["ApplicationBackgroundBrush"]!;
-                bool matches = bg.Color == def.WindowBackground;
+                // Mica/cam için pencere zemini bilerek yarı saydam yazılır (alfa temaya göre değişir):
+                // renk kimliği RGB'dir. Eskiden alfa da karşılaştırılıyor ve 5 tema her çalıştırmada "kaldı" görünüyordu.
+                bool matches = bg.Color.R == def.WindowBackground.R && bg.Color.G == def.WindowBackground.G && bg.Color.B == def.WindowBackground.B;
 
                 if (missing.Count == 0 && matches && ResourceErrors.Count == before)
                 {
@@ -654,7 +668,7 @@ internal static class Program
                 }
                 else
                 {
-                    Console.WriteLine($"  KALDI  | {def.DisplayName}  eksik=[{string.Join(",", missing)}] eslesme={matches}");
+                    Console.WriteLine($"  KALDI  | {def.DisplayName}  eksik=[{string.Join(",", missing)}] eslesme={matches} fircada={bg.Color} beklenen={def.WindowBackground}");
                     Failures.Add($"tema:{kind}");
                 }
             }

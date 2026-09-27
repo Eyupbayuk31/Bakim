@@ -242,8 +242,30 @@ namespace Bakım.ViewModels
             _refreshDebounce.Start();
         }
 
+        private bool _refreshing;
+
         [RelayCommand]
         public void Refresh()
+        {
+            // Yeniden giriş koruması: Rows.Add sırasında seçim/bağlama bildirimleri Refresh'i yeniden tetikleyebiliyordu;
+            // iç çağrı listeyi baştan doldurunca dış döngü eklemeye devam ediyor ve satırlar ikileniyordu ("34 / 17").
+            if (_refreshing)
+            {
+                ScheduleRefresh();
+                return;
+            }
+            _refreshing = true;
+            try
+            {
+                RefreshCore();
+            }
+            finally
+            {
+                _refreshing = false;
+            }
+        }
+
+        private void RefreshCore()
         {
             string? selectedId = Selected?.Id;
             var verdicts = new List<AnalysisVerdict>();

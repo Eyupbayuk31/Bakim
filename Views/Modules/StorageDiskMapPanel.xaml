@@ -4,45 +4,84 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:helpers="clr-namespace:Bakım.Helpers"
              xmlns:c="clr-namespace:Bakım.Controls"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
-             xmlns:models="clr-namespace:Bakım.Models"
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance Type=vm:StorageViewModel}"
              d:DesignHeight="800" d:DesignWidth="1100">
-    <!-- Depolama › Disk haritası: klasör boyutları treemap olarak. -->
+
+    <!-- Depolama › Disk haritası: iç içe treemap + "En büyükler" paneli + özet şeridi.
+         Renkler: seri renkleri kutu başına döner (ColorIndex 0–5); -1 = birleştirilmiş öğeler (nötr). -->
+    <UserControl.Resources>
+        <!-- Kutu gövdesi: serinin hafif tonu -->
+        <Style x:Key="Tile.Body" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Chart.Series1.Subtle}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="1"><Setter Property="Background" Value="{DynamicResource Chart.Series2.Subtle}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="2"><Setter Property="Background" Value="{DynamicResource Chart.Series3.Subtle}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="3"><Setter Property="Background" Value="{DynamicResource Chart.Series4.Subtle}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="4"><Setter Property="Background" Value="{DynamicResource Chart.Series5.Subtle}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="5"><Setter Property="Background" Value="{DynamicResource Chart.Series6.Subtle}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="-1"><Setter Property="Background" Value="{DynamicResource Subtle.Fill.Hover}"/></DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Serinin dolgun rengi: kutu üst şeridi, alt kutular ve liste çubuğu -->
+        <Style x:Key="Tile.Accent" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource Chart.Series1}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="1"><Setter Property="Background" Value="{DynamicResource Chart.Series2}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="2"><Setter Property="Background" Value="{DynamicResource Chart.Series3}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="3"><Setter Property="Background" Value="{DynamicResource Chart.Series4}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="4"><Setter Property="Background" Value="{DynamicResource Chart.Series5}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="5"><Setter Property="Background" Value="{DynamicResource Chart.Series6}"/></DataTrigger>
+                <DataTrigger Binding="{Binding ColorIndex}" Value="-1"><Setter Property="Background" Value="{DynamicResource Border.Strong}"/></DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- Araç çubuğu -->
-            <RowDefinition Height="Auto"/> <!-- Yol (breadcrumb) -->
-            <RowDefinition Height="*"/>    <!-- Harita -->
-            <RowDefinition Height="Auto"/> <!-- Durum -->
+            <RowDefinition Height="Auto"/> <!-- 0: Araç çubuğu -->
+            <RowDefinition Height="Auto"/> <!-- 1: Özet -->
+            <RowDefinition Height="Auto"/> <!-- 2: Yol -->
+            <RowDefinition Height="*"/>    <!-- 3: Harita + en büyükler -->
+            <RowDefinition Height="Auto"/> <!-- 4: Durum -->
         </Grid.RowDefinitions>
 
-        <!-- Komut satırı: kartsız, sayfa zeminine oturur -->
-        <Border Grid.Row="0" Margin="{StaticResource Gap.Bottom.SM}">
-            <WrapPanel VerticalAlignment="Center">
-                <TextBlock Text="Sürücü" FontSize="{StaticResource Font.Body}" VerticalAlignment="Center" Margin="{StaticResource Gap.Right.SM}"
-                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                <ComboBox ItemsSource="{Binding DiskMapTargets}" SelectedItem="{Binding DiskMapTarget}" MinWidth="120"
-                          Margin="{StaticResource Gap.Right.SM}" AutomationProperties.Name="Haritası çıkarılacak sürücü"/>
-                <ui:Button Appearance="Primary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
-                           Icon="{ui:SymbolIcon Grid20}" Content="Haritayı çıkar"
-                           Command="{Binding ScanDiskMapCommand}"
-                           IsEnabled="{Binding IsDiskMapScanning, Converter={StaticResource InverseBool}}"/>
-                <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
-                           Content="İptal" Command="{Binding CancelDiskMapCommand}"
-                           Visibility="{Binding IsDiskMapScanning, Converter={StaticResource BoolToVis}}"/>
-                <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" VerticalAlignment="Center"
-                                 Visibility="{Binding IsDiskMapScanning, Converter={StaticResource BoolToVis}}"/>
-            </WrapPanel>
-        </Border>
+        <!-- 0. Komut satırı: kartsız, sayfa zeminine oturur -->
+        <WrapPanel Grid.Row="0" Margin="{StaticResource Gap.Bottom.MD}" VerticalAlignment="Center">
+            <TextBlock Text="Sürücü" Style="{StaticResource Chip.GroupLabel}"/>
+            <ComboBox ItemsSource="{Binding DiskMapTargets}" SelectedItem="{Binding DiskMapTarget}" MinWidth="120"
+                      Margin="{StaticResource Gap.Right.SM}" AutomationProperties.Name="Haritası çıkarılacak sürücü"/>
+            <ui:Button Appearance="Primary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
+                       Icon="{ui:SymbolIcon Grid20}" Content="Haritayı çıkar"
+                       Command="{Binding ScanDiskMapCommand}"
+                       IsEnabled="{Binding IsDiskMapScanning, Converter={StaticResource InverseBool}}"/>
+            <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
+                       Content="İptal" Command="{Binding CancelDiskMapCommand}"
+                       Visibility="{Binding IsDiskMapScanning, Converter={StaticResource BoolToVis}}"/>
+            <ui:ProgressRing IsIndeterminate="True" Width="16" Height="16" VerticalAlignment="Center"
+                             Visibility="{Binding IsDiskMapScanning, Converter={StaticResource BoolToVis}}"/>
+        </WrapPanel>
 
-        <!-- Yol -->
-        <DockPanel Grid.Row="1" Margin="{StaticResource Gap.Bottom.SM}" LastChildFill="True"
+        <!-- 1. Özet: geçerli klasör -->
+        <c:SummaryStrip Grid.Row="1" Margin="{StaticResource Gap.Bottom.MD}"
+                        Visibility="{Binding HasDiskMap, Converter={StaticResource BoolToVis}}">
+            <c:StatCard Icon="Folder24" Intent="Accent" Label="{Binding CurrentFolderName}" Value="{Binding CurrentFolderSizeText}"
+                        Caption="Bu klasörün toplam boyutu"/>
+            <c:StatCard Icon="Document24" Intent="Neutral" Label="Dosya" Value="{Binding CurrentFileCountText}"
+                        Caption="Alt klasörler dahil"/>
+            <c:StatCard Icon="FolderOpen24" Intent="Neutral" Label="Alt klasör" Value="{Binding CurrentSubfolderCountText}"
+                        Caption="Doğrudan içindekiler"/>
+            <c:StatCard Icon="ArrowTrendingLines24" Intent="Caution" Label="En büyük" Value="{Binding CurrentLargestText}"
+                        Caption="{Binding CurrentLargestCaption}"/>
+        </c:SummaryStrip>
+
+        <!-- 2. Yol -->
+        <DockPanel Grid.Row="2" Margin="{StaticResource Gap.Bottom.SM}" LastChildFill="True"
                    Visibility="{Binding HasDiskMap, Converter={StaticResource BoolToVis}}">
-            <ui:Button DockPanel.Dock="Left" Appearance="Transparent" Padding="6,2" Margin="{StaticResource Gap.Right.XS}"
+            <ui:Button DockPanel.Dock="Left" Appearance="Secondary" Padding="6,4" Margin="{StaticResource Gap.Right.SM}"
                        Icon="{ui:SymbolIcon ArrowUp20}" ToolTip="Üst klasör" Command="{Binding DiskMapUpCommand}"
                        AutomationProperties.Name="Üst klasöre çık"/>
             <ItemsControl ItemsSource="{Binding Breadcrumb}" VerticalAlignment="Center" Focusable="False">
@@ -52,109 +91,212 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <ui:Button Appearance="Transparent" Padding="6,2" Content="{Binding Name}"
+                            <ui:Button Appearance="Transparent" Padding="6,2"
                                        Command="{Binding DataContext.NavigateCrumbCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                       CommandParameter="{Binding}"/>
-                            <TextBlock Text="›" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                       CommandParameter="{Binding}">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Folder16" FontSize="14" Margin="{StaticResource Gap.IconText}"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource Text.Body}"/>
+                                </StackPanel>
+                            </ui:Button>
+                            <ui:SymbolIcon Symbol="ChevronRight16" FontSize="12" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </DockPanel>
 
-        <!-- Harita -->
-        <Border Grid.Row="2" x:Name="DiskMapHost"
-                Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="{StaticResource Radius.MD}"
-                ClipToBounds="True"
-                SizeChanged="OnDiskMapSizeChanged">
-            <Grid>
-                <ItemsControl ItemsSource="{Binding Tiles}" Focusable="False">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemContainerStyle>
-                        <Style TargetType="ContentPresenter">
-                            <Setter Property="Canvas.Left" Value="{Binding X}"/>
-                            <Setter Property="Canvas.Top" Value="{Binding Y}"/>
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:TreemapTile}">
-                            <Button Width="{Binding Width}" Height="{Binding Height}" Padding="0"
-                                    Command="{Binding DataContext.OpenTileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                    CommandParameter="{Binding}"
-                                    ToolTip="{Binding Tooltip}"
-                                    AutomationProperties.Name="{Binding Name}"
-                                    AutomationProperties.HelpText="{Binding SizeText}"
-                                    Cursor="Hand">
-                                <Button.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Header="Klasörü aç"
-                                                  Command="{Binding PlacementTarget.Tag.OpenTileInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  CommandParameter="{Binding}"/>
-                                        <MenuItem Header="Geri Dönüşüm Kutusu'na taşı…"
-                                                  Command="{Binding PlacementTarget.Tag.RecycleTileCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  CommandParameter="{Binding}"/>
-                                    </ContextMenu>
-                                </Button.ContextMenu>
-                                <Button.Tag>
-                                    <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
-                                </Button.Tag>
-                                <Button.Template>
-                                    <ControlTemplate TargetType="Button">
-                                        <Border x:Name="Tile" CornerRadius="{StaticResource Radius.XS}" Padding="6,4" BorderThickness="1"
-                                                BorderBrush="{DynamicResource Border.Subtle}">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="{DynamicResource Chart.Series1.Subtle}"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding ColorIndex}" Value="1"><Setter Property="Background" Value="{DynamicResource Chart.Series2.Subtle}"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding ColorIndex}" Value="2"><Setter Property="Background" Value="{DynamicResource Chart.Series3.Subtle}"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding ColorIndex}" Value="3"><Setter Property="Background" Value="{DynamicResource Chart.Series4.Subtle}"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding ColorIndex}" Value="4"><Setter Property="Background" Value="{DynamicResource Chart.Series5.Subtle}"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding ColorIndex}" Value="5"><Setter Property="Background" Value="{DynamicResource Chart.Series6.Subtle}"/></DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <StackPanel Visibility="{Binding ShowLabel, Converter={StaticResource BoolToVis}}">
-                                                <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
-                                                           TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                                <TextBlock Text="{Binding SizeText}" FontSize="{StaticResource Font.Micro}"
-                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            </StackPanel>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Tile" Property="BorderBrush" Value="{DynamicResource Border.Focus}"/>
-                                            </Trigger>
-                                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                                <Setter TargetName="Tile" Property="BorderBrush" Value="{DynamicResource Border.Focus}"/>
-                                                <Setter TargetName="Tile" Property="BorderThickness" Value="2"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Button.Template>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+        <!-- 3. Harita + en büyükler -->
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                <c:EmptyState Icon="Grid24"
-                              Title="Disk haritası henüz çıkarılmadı"
-                              Description="Bir sürücü seçip &quot;Haritayı çıkar&quot;a basın. Klasörler boyutlarıyla orantılı kutular olarak görünür; bir kutuya tıklayarak içine girebilir, sağ tıkla klasörü açabilirsiniz."
-                              Visibility="{Binding HasDiskMap, Converter={StaticResource InverseBoolToVis}}"/>
-            </Grid>
-        </Border>
+            <Border x:Name="DiskMapHost"
+                    Style="{StaticResource Card.Surface}"
+                    Padding="{StaticResource Pad.None}"
+                    ClipToBounds="True"
+                    SizeChanged="OnDiskMapSizeChanged">
+                <Grid>
+                    <ItemsControl ItemsSource="{Binding Tiles}" Focusable="False" Margin="1">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemContainerStyle>
+                            <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                            </Style>
+                        </ItemsControl.ItemContainerStyle>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:TreemapTile}">
+                                <Button Width="{Binding Width}" Height="{Binding Height}" Padding="0"
+                                        Command="{Binding DataContext.OpenTileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip="{Binding Tooltip}"
+                                        AutomationProperties.Name="{Binding Name}"
+                                        AutomationProperties.HelpText="{Binding SizeText}"
+                                        Cursor="Hand">
+                                    <Button.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Klasörü aç" Icon="{ui:SymbolIcon FolderOpen20}"
+                                                      Command="{Binding PlacementTarget.Tag.OpenTileInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding}"/>
+                                            <MenuItem Header="Geri Dönüşüm Kutusu'na taşı…" Icon="{ui:SymbolIcon Delete20}"
+                                                      Command="{Binding PlacementTarget.Tag.RecycleTileCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding}"/>
+                                        </ContextMenu>
+                                    </Button.ContextMenu>
+                                    <Button.Tag>
+                                        <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                    </Button.Tag>
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Grid>
+                                                <Border x:Name="Tile" Style="{StaticResource Tile.Body}"
+                                                        CornerRadius="{StaticResource Radius.SM}"
+                                                        BorderThickness="{StaticResource Stroke.Thin}"
+                                                        BorderBrush="{DynamicResource Border.Subtle}"
+                                                        ClipToBounds="True">
+                                                    <Grid>
+                                                        <!-- Üst renk şeridi -->
+                                                        <Border Style="{StaticResource Tile.Accent}" Height="3" VerticalAlignment="Top"/>
 
-        <TextBlock Grid.Row="3" Margin="{StaticResource Gap.Top.SM}" TextTrimming="CharacterEllipsis"
-                   FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                   AutomationProperties.LiveSetting="Polite">
-            <Run Text="{Binding CurrentFolderSummary, Mode=OneWay}"/>
-            <LineBreak/>
-            <Run Text="{Binding DiskMapStatus, Mode=OneWay}"/>
-        </TextBlock>
+                                                        <!-- İç içe alt klasörler -->
+                                                        <ItemsControl ItemsSource="{Binding Children}" IsHitTestVisible="False" Focusable="False">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate><Canvas/></ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemContainerStyle>
+                                                                <Style TargetType="ContentPresenter">
+                                                                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                                                                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                                                                </Style>
+                                                            </ItemsControl.ItemContainerStyle>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate DataType="{x:Type vm:TreemapSubTile}">
+                                                                    <Grid Width="{Binding Width}" Height="{Binding Height}">
+                                                                        <Border Style="{StaticResource Tile.Accent}" Opacity="0.32"
+                                                                                CornerRadius="{StaticResource Radius.XS}"/>
+                                                                        <Border BorderBrush="{DynamicResource Border.Subtle}" BorderThickness="{StaticResource Stroke.Thin}"
+                                                                                CornerRadius="{StaticResource Radius.XS}"/>
+                                                                        <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Micro}" Margin="4,2"
+                                                                                   TextTrimming="CharacterEllipsis"
+                                                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                                   Visibility="{Binding ShowLabel, Converter={StaticResource BoolToVis}}"/>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+
+                                                        <!-- Ad, boyut, yüzde -->
+                                                        <StackPanel Margin="8,7,8,0" VerticalAlignment="Top"
+                                                                    Visibility="{Binding ShowLabel, Converter={StaticResource BoolToVis}}">
+                                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Caption}" FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                                            <TextBlock FontSize="{StaticResource Font.Micro}" TextTrimming="CharacterEllipsis"
+                                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                                       Visibility="{Binding ShowDetail, Converter={StaticResource BoolToVis}}">
+                                                                <Run Text="{Binding SizeText, Mode=OneWay}"/>
+                                                                <Run Text=" · "/>
+                                                                <Run Text="{Binding PercentText, Mode=OneWay}"/>
+                                                            </TextBlock>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                                <Border x:Name="Highlight" CornerRadius="{StaticResource Radius.SM}"
+                                                        BorderThickness="2" BorderBrush="{DynamicResource Border.Focus}"
+                                                        Visibility="Collapsed" IsHitTestVisible="False"/>
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Highlight" Property="Visibility" Value="Visible"/>
+                                                </Trigger>
+                                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                                    <Setter TargetName="Highlight" Property="Visibility" Value="Visible"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <c:EmptyState Icon="Grid24" IsEmbedded="True"
+                                  Title="Disk haritası henüz çıkarılmadı"
+                                  Description="Bir sürücü seçip &quot;Haritayı çıkar&quot;a basın. Klasörler boyutlarıyla orantılı kutular olarak görünür; büyük kutuların içinde alt klasörleri de görürsünüz. Kutuya tıklayarak içine girebilir, sağ tıkla klasörü açabilirsiniz."
+                                  Visibility="{Binding HasDiskMap, Converter={StaticResource InverseBoolToVis}}"/>
+                </Grid>
+            </Border>
+
+            <!-- En büyükler -->
+            <Border Grid.Column="2" Width="300" Margin="16,0,0,0"
+                    Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.CardCompact}"
+                    Visibility="{Binding HasDiskMap, Converter={StaticResource BoolToVis}}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="En büyükler" Style="{StaticResource Text.CardTitle}"
+                               Margin="{StaticResource Gap.Bottom.SM}"/>
+                    <ListBox ItemsSource="{Binding TopItems}"
+                             BorderThickness="0" Background="Transparent"
+                             HorizontalContentAlignment="Stretch"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             AutomationProperties.Name="Bu klasördeki en büyük öğeler">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource ListItem.Card}">
+                                <Setter Property="Padding" Value="10,8"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:DiskMapRankRow}">
+                                <Grid ToolTip="{Binding Tooltip}" Background="Transparent">
+                                    <Grid.InputBindings>
+                                        <MouseBinding Gesture="LeftClick"
+                                                      Command="{Binding DataContext.OpenNodeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      CommandParameter="{Binding Node}"/>
+                                    </Grid.InputBindings>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Style="{StaticResource Tile.Accent}" Width="10" Height="10" CornerRadius="{StaticResource Radius.XS}"
+                                            Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" Style="{StaticResource Text.BodyStrong}" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding SizeText}" Style="{StaticResource Text.Body}" Margin="8,0,0,0"/>
+
+                                    <!-- Oran çubuğu: en büyük öğeye göre -->
+                                    <ProgressBar Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Height="4" Margin="0,6,0,0"
+                                                 Minimum="0" Maximum="100" Value="{Binding PercentOfLargest, Mode=OneWay}"
+                                                 IsHitTestVisible="False"/>
+
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}">
+                                        <Run Text="{Binding PercentText, Mode=OneWay}"/>
+                                        <Run Text=" · "/>
+                                        <Run Text="{Binding FileCountText, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- 4. Durum -->
+        <TextBlock Grid.Row="4" Margin="{StaticResource Gap.Top.SM}" TextTrimming="CharacterEllipsis"
+                   Style="{StaticResource Text.Caption}"
+                   AutomationProperties.LiveSetting="Polite"
+                   Text="{Binding DiskMapStatus}"/>
     </Grid>
 </UserControl>
