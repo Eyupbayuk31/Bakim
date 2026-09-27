@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.Win32;
 using Bakım.Core.Safety;
 using Bakım.Core.Text;
+using Bakım.Core.Uninstall;
 using Bakım.Models;
 using Bakım.Services.Safety;
+using Bakım.Services.Uninstall;
 
 namespace Bakım.Services
 {
@@ -84,6 +86,7 @@ namespace Bakım.Services
         private readonly ISafeDeleteService _safeDelete;
         private readonly ISafeRegistryService _safeRegistry;
         private readonly PathSafetyGuard _guard;
+        private readonly IMsiResidualScanner _msiScanner;
         private readonly ILogService _log;
 
         private const int Certain = (int)MatchConfidence.Certain;
@@ -94,7 +97,7 @@ namespace Bakım.Services
             ISafeDeleteService safeDelete,
             ISafeRegistryService safeRegistry,
             ILogService log)
-            : this(installedApps, safeDelete, safeRegistry, PathSafetyGuard.Default, log)
+            : this(installedApps, safeDelete, safeRegistry, PathSafetyGuard.Default, new MsiResidualScanner(), log)
         {
         }
 
@@ -104,11 +107,23 @@ namespace Bakım.Services
             ISafeRegistryService safeRegistry,
             PathSafetyGuard guard,
             ILogService log)
+            : this(installedApps, safeDelete, safeRegistry, guard, new MsiResidualScanner(), log)
+        {
+        }
+
+        public ResidualScannerEngine(
+            IUninstallerService installedApps,
+            ISafeDeleteService safeDelete,
+            ISafeRegistryService safeRegistry,
+            PathSafetyGuard guard,
+            IMsiResidualScanner msiScanner,
+            ILogService log)
         {
             _installedApps = installedApps;
             _safeDelete = safeDelete;
             _safeRegistry = safeRegistry;
             _guard = guard;
+            _msiScanner = msiScanner ?? new MsiResidualScanner();
             _log = log;
         }
 
@@ -143,8 +158,17 @@ namespace Bakım.Services
                     ScanRegistryRoot(RegistryHive.LocalMachine, RegistryView.Registry64, matcher, results);
                     ScanRegistryRoot(RegistryHive.LocalMachine, RegistryView.Registry32, matcher, results);
                     ScanFileAssociationValues(matcher, results);
+                    ScanShellExtensionResiduals(app, matcher, results);
                 }
                 AddUninstallKey(app, options, results);
+
+                // Aşama 3: MSI derin bileşen, paket ve yükseltme kayıtları
+                string? productCode = MsiGuidHelper.ExtractProductCode(app.UninstallString, app.RegistryKeyPath);
+                if (!string.IsNullOrEmpty(productCode))
+                {
+                    progress?.Report("Aşama 3: MSI bileşenleri ve paket kayıtları taranıyor...");
+                    _msiScanner.Scan(productCode, app, results);
+                }
                 if (options.UninstallConfirmed)
                 {
                     results.AddRange(options.FootprintLeftovers);
@@ -512,6 +536,178 @@ namespace Bakım.Services
             {
                 // İlişkilendirmeler okunamadıysa tarama eksik kalır; kritik değil.
             }
+        }
+
+        private static void ScanShellExtensionResiduals(InstalledAppItem app, NameMatcher matcher, List<LeftoverItem> results)
+        {
+            string? normInstall = !string.IsNullOrWhiteSpace(app.InstallLocation)
+                ? WindowsPath.Normalize(app.InstallLocation)
+                : null;
+
+            var targetHives = new[] { RegistryHive.LocalMachine, RegistryHive.CurrentUser };
+
+            foreach (var hive in targetHives)
+            {
+                // 1. Classes\*\shell ve Directory\shell
+                foreach (var shellRoot in new[] { @"Software\Classes\*\shell", @"Software\Classes\Directory\shell", @"Software\Classes\Folder\shell" })
+                {
+                    try
+                    {
+                        using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
+                        using var rootKey = baseKey.OpenSubKey(shellRoot);
+                        if (rootKey == null) continue;
+
+                        foreach (string subName in rootKey.GetSubKeyNames())
+                        {
+                            var match = matcher.Match(subName);
+                            bool pointsToInstall = false;
+
+                            using var subKey = rootKey.OpenSubKey(subName);
+                            if (subKey != null && normInstall != null)
+                            {
+                                using var cmdKey = subKey.OpenSubKey("command");
+                                string? cmd = cmdKey?.GetValue(null) as string;
+                                if (!string.IsNullOrWhiteSpace(cmd) && cmd.Contains(normInstall, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    pointsToInstall = true;
+                                }
+                            }
+
+                            if (match.IsCandidate || pointsToInstall)
+                            {
+                                var regPath = new RegistryPath(hive, RegistryView.Registry64, $@"{shellRoot}\{subName}");
+                                results.Add(new LeftoverItem
+                                {
+                                    Path = regPath.ToDisplay(),
+                                    ItemType = LeftoverType.RegistryKey,
+                                    FormattedSize = "Kayıt anahtarı",
+                                    Description = "Sağ tık menü komutu",
+                                    EvidenceText = pointsToInstall
+                                        ? "Kaldırılan programın dizinindeki dosyayı çalıştıran sağ tık menü komutu."
+                                        : match.Reason,
+                                    ConfidenceScore = pointsToInstall ? Certain : (int)match.Confidence,
+                                    IsSelected = true
+                                });
+                            }
+                        }
+                    }
+                    catch (Exception ex) { AppLog.Debug($"Sağ tık uzantısı kalıntısı okunamadı: {ex.Message}", nameof(ResidualScannerEngine)); }
+                }
+
+                // 2. ContextMenuHandlers (*\shellex ve Directory\shellex)
+                foreach (var shellexRoot in new[] { @"Software\Classes\*\shellex\ContextMenuHandlers", @"Software\Classes\Directory\shellex\ContextMenuHandlers" })
+                {
+                    try
+                    {
+                        using var baseKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
+                        using var rootKey = baseKey.OpenSubKey(shellexRoot);
+                        if (rootKey == null) continue;
+
+                        foreach (string handlerName in rootKey.GetSubKeyNames())
+                        {
+                            var match = matcher.Match(handlerName);
+                            string? clsid = null;
+                            using (var hKey = rootKey.OpenSubKey(handlerName))
+                            {
+                                clsid = hKey?.GetValue(null) as string;
+                            }
+
+                            bool clsidMatches = false;
+                            if (!string.IsNullOrWhiteSpace(clsid) && normInstall != null)
+                            {
+                                using var clsidKey = baseKey.OpenSubKey($@"Software\Classes\CLSID\{clsid}\InProcServer32");
+                                string? dllPath = clsidKey?.GetValue(null) as string;
+                                if (!string.IsNullOrWhiteSpace(dllPath) && dllPath.Contains(normInstall, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    clsidMatches = true;
+                                }
+                            }
+
+                            if (match.IsCandidate || clsidMatches)
+                            {
+                                var regPath = new RegistryPath(hive, RegistryView.Registry64, $@"{shellexRoot}\{handlerName}");
+                                results.Add(new LeftoverItem
+                                {
+                                    Path = regPath.ToDisplay(),
+                                    ItemType = LeftoverType.RegistryKey,
+                                    FormattedSize = "Kayıt anahtarı",
+                                    Description = "Sağ tık menü eklentisi (Shell Extension)",
+                                    EvidenceText = clsidMatches
+                                        ? "Kaldırılan uygulamanın DLL dosyasını kullanan sağ tık menü eklentisi."
+                                        : match.Reason,
+                                    ConfidenceScore = clsidMatches ? Certain : (int)match.Confidence,
+                                    IsSelected = true
+                                });
+
+                                if (!string.IsNullOrWhiteSpace(clsid))
+                                {
+                                    var clsidPath = new RegistryPath(hive, RegistryView.Registry64, $@"Software\Classes\CLSID\{clsid}");
+                                    results.Add(new LeftoverItem
+                                    {
+                                        Path = clsidPath.ToDisplay(),
+                                        ItemType = LeftoverType.RegistryKey,
+                                        FormattedSize = "Kayıt anahtarı",
+                                        Description = "Kabuk uzantısı COM sınıfı (CLSID)",
+                                        EvidenceText = $"Sağ tık menüsü COM nesnesi kaydı ({handlerName}).",
+                                        ConfidenceScore = clsidMatches ? Certain : (int)match.Confidence,
+                                        IsSelected = true
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex) { AppLog.Debug($"Sağ tık uzantısı kalıntısı okunamadı: {ex.Message}", nameof(ResidualScannerEngine)); }
+                }
+            }
+
+            // 3. Shell Extensions\Approved
+            try
+            {
+                using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                using var approvedKey = baseKey.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved");
+                if (approvedKey != null)
+                {
+                    foreach (string clsidValue in approvedKey.GetValueNames())
+                    {
+                        string? desc = approvedKey.GetValue(clsidValue) as string;
+                        if (string.IsNullOrWhiteSpace(desc)) continue;
+
+                        var match = matcher.Match(desc);
+                        if (match.IsCandidate)
+                        {
+                            var valPath = new RegistryPath(RegistryHive.LocalMachine, RegistryView.Registry64,
+                                @"Software\Microsoft\Windows\CurrentVersion\Shell Extensions\Approved", clsidValue);
+                            results.Add(new LeftoverItem
+                            {
+                                Path = valPath.ToString(),
+                                ItemType = LeftoverType.RegistryValue,
+                                FormattedSize = "Kayıt değeri",
+                                Description = "Onaylı kabuk uzantısı girdisi",
+                                EvidenceText = $"Kayıtlı kabuk uzantısı tanımı: {desc}",
+                                ConfidenceScore = (int)match.Confidence,
+                                IsSelected = true
+                            });
+
+                            using var clsidKey = baseKey.OpenSubKey($@"Software\Classes\CLSID\{clsidValue}");
+                            if (clsidKey != null)
+                            {
+                                var clsidPath = new RegistryPath(RegistryHive.LocalMachine, RegistryView.Registry64, $@"Software\Classes\CLSID\{clsidValue}");
+                                results.Add(new LeftoverItem
+                                {
+                                    Path = clsidPath.ToDisplay(),
+                                    ItemType = LeftoverType.RegistryKey,
+                                    FormattedSize = "Kayıt anahtarı",
+                                    Description = "Kabuk uzantısı COM sınıfı (CLSID)",
+                                    EvidenceText = $"Onaylı uzantının COM sınıf kaydı ({desc}).",
+                                    ConfidenceScore = (int)match.Confidence,
+                                    IsSelected = true
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { AppLog.Debug($"Sağ tık uzantısı kalıntısı okunamadı: {ex.Message}", nameof(ResidualScannerEngine)); }
         }
 
         #endregion

@@ -214,10 +214,19 @@ namespace Bakım.Core.Safety
             bool inException = _folders.TreeExceptions.Any(e => WindowsPath.IsStrictlyUnder(n, e));
             if (!inException)
             {
-                foreach (string tree in _folders.TreeProtected)
+                bool isMsiProductCache = allowOutsideKnownRoots && (
+                    (!isDirectory && (n.Contains(@"\Windows\Installer\SourceHash{", StringComparison.OrdinalIgnoreCase) ||
+                                     (n.EndsWith(".msi", StringComparison.OrdinalIgnoreCase) && n.Contains(@"\Windows\Installer\", StringComparison.OrdinalIgnoreCase)))) ||
+                    (isDirectory && n.Contains(@"\Windows\Installer\{", StringComparison.OrdinalIgnoreCase))
+                );
+
+                if (!isMsiProductCache)
                 {
-                    if (WindowsPath.IsUnderOrEqual(n, tree))
-                        return new PathCheck(PathVerdict.ProtectedTree, n, $"Korunan sistem alanı: {tree}");
+                    foreach (string tree in _folders.TreeProtected)
+                    {
+                        if (WindowsPath.IsUnderOrEqual(n, tree))
+                            return new PathCheck(PathVerdict.ProtectedTree, n, $"Korunan sistem alanı: {tree}");
+                    }
                 }
             }
 

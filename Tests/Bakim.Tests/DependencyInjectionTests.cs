@@ -125,6 +125,7 @@ public class DependencyInjectionTests
     [InlineData(typeof(Bakım.Services.Safety.ISafeRegistryService))]
     [InlineData(typeof(Bakım.Services.Safety.ISafeProcessService))]
     [InlineData(typeof(Bakım.Services.Safety.IRestorePointService))]
+    [InlineData(typeof(Bakım.Services.Uninstall.IMsiResidualScanner))]
     [InlineData(typeof(IResidualScannerEngine))]
     [InlineData(typeof(IDeepUninstallerService))]
     public void CoreService_ResolvesAsSingleton(Type serviceType)

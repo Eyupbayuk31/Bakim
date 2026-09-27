@@ -554,6 +554,7 @@ namespace Bakım
             services.AddSingleton<IPrivacyDebloatService, PrivacyDebloatService>();
             services.AddSingleton<ICrashAnalyzerService, CrashAnalyzerService>();
             services.AddSingleton<IUninstallerService, UninstallerService>();
+            services.AddSingleton<Services.Uninstall.IMsiResidualScanner, Services.Uninstall.MsiResidualScanner>();
             services.AddSingleton<IResidualScannerEngine, ResidualScannerEngine>();
             services.AddSingleton<Services.Uninstall.IFootprintCollector, Services.Uninstall.FootprintCollector>();
             services.AddSingleton<IInstallerMonitorService, InstallerMonitorService>();

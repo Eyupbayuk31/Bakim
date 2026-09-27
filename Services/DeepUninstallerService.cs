@@ -208,9 +208,9 @@ namespace Bakım.Services
         #region Otomatik temizlik ve zorla kaldırma
 
         /// <summary>
-        /// Onaysız otomatik temizlik YALNIZCA kesin kanıtlı öğelere uygulanır: kaldırma
-        /// doğrulandıktan sonra hâlâ duran kurulum klasörü ve yetim Uninstall kaydı.
-        /// İsim benzerliğinden gelen hiçbir öğe onaysız silinmez.
+        /// Onaysız otomatik temizlik: kaldırma doğrulandıktan sonra kesin kanıtlı öğeler
+        /// (kurulum klasörü, MSI bileşenleri, yetim Uninstall kaydı) ve yüksek güvenli güvenli
+        /// uygulama kalıntıları (AppData\Roaming\App, AppData\Local\App, kısayollar ve yazılım ayar anahtarları) temizlenir.
         /// </summary>
         public async Task<long> ExecuteAutoCleanResidualsAsync(InstalledAppItem app, IProgress<string>? progress = null)
         {
@@ -220,13 +220,63 @@ namespace Bakım.Services
                 return 0;
             }
 
-            progress?.Report($"{app.DisplayName} için kesin kalıntılar taranıyor...");
+            progress?.Report($"{app.DisplayName} için kalıntılar taranıyor...");
             var leftovers = await _residualScanner.ScanResidualsAsync(app, ResidualScanOptions.Confirmed);
-            var certain = leftovers.Where(l => l.ConfidenceScore >= (int)Core.Text.MatchConfidence.Certain).ToList();
-            if (certain.Count == 0) return 0;
 
-            var report = await _residualScanner.CleanResidualsDetailedAsync(certain, $"Otomatik temizlik: {app.DisplayName}", progress);
+            var cleanList = leftovers.Where(l =>
+                l.ConfidenceScore >= (int)Core.Text.MatchConfidence.Certain ||
+                (l.ConfidenceScore >= (int)Core.Text.MatchConfidence.High && IsSafeAutoCleanItem(l))
+            ).ToList();
+
+            if (cleanList.Count == 0) return 0;
+
+            var report = await _residualScanner.CleanResidualsDetailedAsync(cleanList, $"Otomatik temizlik: {app.DisplayName}", progress);
             return report.BytesFreed;
+        }
+
+        private static bool IsSafeAutoCleanItem(LeftoverItem item)
+        {
+            // Hizmet veya zamanlanmış görev gibi sistem bileşenleri otomatik temizlikte atlanır
+            if (item.ItemType is LeftoverType.Service or LeftoverType.ScheduledTask or LeftoverType.FirewallRule)
+                return false;
+
+            // Kısayollar (.lnk)
+            if (item.ItemType == LeftoverType.File && item.Path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            // Kayıt defteri yazılım anahtarları
+            if (item.ItemType == LeftoverType.RegistryKey)
+            {
+                string p = item.Path;
+                if (p.StartsWith(@"HKEY_CURRENT_USER\Software\", StringComparison.OrdinalIgnoreCase) ||
+                    p.StartsWith(@"HKEY_LOCAL_MACHINE\Software\", StringComparison.OrdinalIgnoreCase) ||
+                    p.StartsWith(@"HKEY_LOCAL_MACHINE\Software\Classes\", StringComparison.OrdinalIgnoreCase) ||
+                    p.StartsWith(@"HKEY_CURRENT_USER\Software\Classes\", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            // Kayıt defteri değerleri
+            if (item.ItemType == LeftoverType.RegistryValue)
+            {
+                return true;
+            }
+
+            // Klasörler: Yalnızca AppData ve ProgramData altındaki uygulama klasörleri (Belgeler ve Oyun Kayıtları korunur)
+            if (item.ItemType == LeftoverType.Folder)
+            {
+                string norm = item.Path.ToLowerInvariant();
+                if (norm.Contains(@"\appdata\roaming\") || norm.Contains(@"\appdata\local\") || norm.Contains(@"\programdata\"))
+                {
+                    if (!norm.Contains(@"\documents\") && !norm.Contains(@"\saved games\"))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
