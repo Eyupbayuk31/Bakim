@@ -349,9 +349,9 @@ namespace Bakım
             try
             {
                 TryGetService<ITrayIconService>()?.RestoreWindow();
-                var main = TryGetService<ViewModels.MainViewModel>();
+                var main = ActiveMainViewModel;
                 if (main == null) return;
-                main.Navigate("Uninstaller");
+                GetService<INavigationService>().Navigate("Uninstaller");
                 var uninstaller = main.Uninstaller;
                 // Liste henüz yenilenmediyse aynı kaydı kullan: kalıntı akışı onu listeden de çıkarır.
                 var listed = uninstaller.Apps.FirstOrDefault(a => string.Equals(a.RegistryKeyPath, app.RegistryKeyPath, StringComparison.OrdinalIgnoreCase));
@@ -363,6 +363,14 @@ namespace Bakım
             }
         }
 
+        /// <summary>
+        /// Ekrandaki pencerenin ViewModel'i. MainViewModel DI'da geçici (transient) kayıtlı: TryGetService her çağrıda
+        /// yeni ve görünmez bir kopya üretiyordu. Sağ tık "analiz et" bu kopyada gezindiği için Analizör sayfası hiç
+        /// açılmıyordu; kopya ayrıca gezinme servisine abone olup güncelleme denetimi başlatıyordu.
+        /// Sayfa geçişi için INavigationService, modüle erişim için bu özellik kullanılır.
+        /// </summary>
+        private static ViewModels.MainViewModel? ActiveMainViewModel => Current?.MainWindow?.DataContext as ViewModels.MainViewModel;
+
         /// <summary>Gezgin sağ tık → "Bakım ile analiz et": Analizör'e geçer ve dosyayı analiz eder.</summary>
         private async Task AnalyzeFromShellAsync(string path)
         {
@@ -370,7 +378,7 @@ namespace Bakım
             {
                 AppLog.Info($"Sağ tık analiz isteği: {path}", "SingleInstance");
                 if (!System.IO.File.Exists(path)) return;
-                TryGetService<ViewModels.MainViewModel>()?.Navigate("Analyzer");
+                GetService<INavigationService>().Navigate("Analyzer");
                 var analyzer = GetService<ViewModels.AnalyzerViewModel>();
                 using (Core.History.AnalysisContext.Begin(Core.History.AnalysisSource.Analyzer, "Gezgin sağ tık"))
                 {
