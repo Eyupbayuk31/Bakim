@@ -294,7 +294,7 @@ namespace Bakım.Services
         /// benzeyen; eşitlikte en büyük dosya. (Eskiden ilk bulunan exe seçiliyordu — bu
         /// unins000.exe bile olabiliyordu.)
         /// </summary>
-        private static string? PickMainExecutable(string dir)
+        internal static string? PickMainExecutable(string dir)
         {
             try
             {

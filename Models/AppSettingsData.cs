@@ -101,6 +101,9 @@ namespace Bakım.Models
         /// <summary>Analizör canlı kalıcılık izleme: yeni başlangıç girdisi, hizmet, görev ve WMI aboneliğini yakalar (ANL Faz 4).</summary>
         public bool AnalyzerLiveWatch { get; set; } = true;
 
+        /// <summary>Bakım dışından kaldırılan programı (Ayarlar, kendi kaldırıcısı, winget) fark edip kalıntı taraması önerir.</summary>
+        public bool UninstallWatchEnabled { get; set; } = true;
+
         // --- Gezinme (Faz 4, §2.3) ---
         /// <summary>Açılışta son açık sayfayı yükle (kapalıysa her zaman Kontrol Paneli).</summary>
         public bool OpenLastModuleOnStartup { get; set; } = true;

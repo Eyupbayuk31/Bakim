@@ -110,6 +110,7 @@ namespace Bakım.Services.Uninstall
         public async Task<UninstallRunResult> RunAsync(InstalledAppItem app, bool silent, IProgress<string>? progress, CancellationToken ct)
         {
             var sw = Stopwatch.StartNew();
+            UninstallWatchService.MarkInitiatedByBakim(app.RegistryKeyPath);
 
             var parsed = ParseCommand(app, silent);
             if (parsed == null)

@@ -277,6 +277,11 @@ her fark açıklanabilir.
 > 44 MessageBox), sürükle-bırak, Gezgin "Bakım ile analiz et" (BakimShell + IPC `AnalyzeTarget`), satır risk
 > rozeti ve gerekçe ipucu (Faz 2), kaynak satırı (Faz 4). Kalan: ana-ayrıntı düzeni ve kanıt paneli, sayfa içi
 > analiz görünümü, toplu eylemler, uygulamanın geri kalanındaki ~145 MessageBox.
+>
+> **v4.16.0:** Uygulama genelindeki 148 `MessageBox` Fluent'e taşındı (`FluentDialog.Show`: aynı imza ve modal
+> davranış, durum simgesi, yıkıcı onaylarda kırmızı birincil düğme — `Core/Ui/DialogPolicy`). Çökme yakalayıcısı ve
+> UAC yeniden başlatması bilinçli olarak sistem penceresinde. UI duman testi Fluent pencereleri ayrı süreçte,
+> ekran dışında ve otomasyonla doğruluyor. Kalan: ana-ayrıntı + kanıt paneli, sayfa içi analiz, toplu eylemler.
 
 - **Ana-ayrıntı düzeni:** Solda gruplanmış liste (kategori/yayıncı/karar), sağda kanıt paneli (kanıtlar,
   ham komut ↔ çözümlenmiş hedef, imza zinciri, VT, geçmiş, izinli eylemler).

@@ -57,6 +57,20 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private bool _isContextMenuEnabled;
 
+        /// <summary>Bakım dışından kaldırılan programları izle ve kalıntı taraması öner.</summary>
+        public bool WatchExternalUninstalls
+        {
+            get => _settingsService.Current.UninstallWatchEnabled;
+            set
+            {
+                if (_settingsService.Current.UninstallWatchEnabled == value) return;
+                _settingsService.Update(d => d.UninstallWatchEnabled = value);
+                var watch = App.TryGetService<Services.Uninstall.IUninstallWatchService>();
+                if (value) watch?.Start(); else watch?.Stop();
+                OnPropertyChanged();
+            }
+        }
+
         [RelayCommand]
         public void ToggleContextMenu()
         {
@@ -243,6 +257,7 @@ namespace Bakım.ViewModels
                 StatusMessage = $"{Stats.TotalAppsCount} program bulundu. Toplam disk boyutu: {Stats.FormattedTotalFootprint}";
                 _ = MeasurePendingSizesAsync(list);
                 _ = ApplySetupTracesAsync(list);
+                _ = LoadIconsAsync(list);
             }
             catch (Exception ex)
             {
@@ -286,6 +301,62 @@ namespace Bakım.ViewModels
             {
                 AppLog.Warning("Kurulum izleri Kaldırıcı listesine eşlenemedi.", ex, nameof(UninstallerViewModel));
             }
+        }
+
+        private CancellationTokenSource? _iconCts;
+
+        /// <summary>
+        /// Program ikonlarını arka planda yükler: DisplayIcon → kurulum klasörünün ana exe'si → kaldırıcı exe'si.
+        /// Eskiden DisplayIcon okunup hiç kullanılmıyordu; her satırda varsayılan simge görünüyordu.
+        /// </summary>
+        private async Task LoadIconsAsync(IReadOnlyList<InstalledAppItem> apps)
+        {
+            _iconCts?.Cancel();
+            var cts = _iconCts = new CancellationTokenSource();
+            var pending = apps.Where(a => a.IconSource == null).ToList();
+            try
+            {
+                // Küçük gruplar hâlinde: ilk ikonlar hemen görünür, arayüz tek seferde yüzlerce bildirimle boğulmaz.
+                foreach (var chunk in pending.Chunk(16))
+                {
+                    var loaded = await Task.Run(() => chunk.Select(app => (app, icon: ResolveIcon(app))).ToList(), cts.Token);
+                    foreach (var (app, icon) in loaded)
+                        if (icon != null) app.IconSource = icon;
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Liste yenilendi; yeni yükleme başladı.
+            }
+        }
+
+        public static System.Windows.Media.ImageSource? ResolveIcon(InstalledAppItem app)
+        {
+            string? mainExe = null;
+            if (!string.IsNullOrWhiteSpace(app.InstallLocation) && Directory.Exists(app.InstallLocation))
+                mainExe = ShellUninstallResolverService.PickMainExecutable(app.InstallLocation);
+            var parsed = Bakım.Core.Uninstall.UninstallCommandParser.Parse(app.UninstallString, File.Exists, Environment.ExpandEnvironmentVariables);
+            string? uninstallExe = parsed?.FileName;
+
+            // MSI kurulumları çoğu zaman DisplayIcon yazmaz; Windows Installer ikonu kendi deposunda tutar
+            // (%windir%\Installer\{ürün}\*.ico|exe). Notepad++ ve Everything (winget/MSI) böyleydi.
+            string? displayIcon = app.DisplayIconPath;
+            if (string.IsNullOrWhiteSpace(displayIcon) && parsed?.MsiProductCode is { } productCode)
+                displayIcon = MsiProductIcon(productCode);
+
+            var candidates = Bakım.Core.Uninstall.AppIconSource.Candidates(
+                displayIcon, mainExe, uninstallExe, File.Exists, Environment.ExpandEnvironmentVariables);
+            return Bakım.Helpers.AppIconLoader.LoadFirst(candidates);
+        }
+
+        [System.Runtime.InteropServices.DllImport("msi.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern uint MsiGetProductInfo(string product, string property, System.Text.StringBuilder? value, ref uint length);
+
+        private static string? MsiProductIcon(string productCode)
+        {
+            uint length = 520;
+            var sb = new System.Text.StringBuilder((int)length);
+            return MsiGetProductInfo(productCode, "ProductIcon", sb, ref length) == 0 && sb.Length > 0 ? sb.ToString() : null;
         }
 
         private CancellationTokenSource? _sizeCts;

@@ -175,6 +175,14 @@
                                      Content="Kalıntıları otomatik temizle"
                                      VerticalAlignment="Center"
                                      Margin="0,0,14,4"/>
+
+                    <!-- Dışarıdan kaldırmalar: Ayarlar'dan ya da programın kendi kaldırıcısıyla kaldırılınca da kalıntı önerilir -->
+                    <ui:ToggleSwitch IsChecked="{Binding WatchExternalUninstalls}"
+                                     AutomationProperties.Name="Bakım dışından kaldırılan programlar için kalıntı taraması öner"
+                                     ToolTip="Program Windows Ayarlar'dan, kendi kaldırıcısıyla ya da winget ile kaldırıldığında köşede 'Kalıntıları tara' önerisi gösterilir."
+                                     Content="Dışarıdan kaldırmaları izle"
+                                     VerticalAlignment="Center"
+                                     Margin="0,0,14,4"/>
                 </WrapPanel>
 
                 <!-- Sağ Taraf: Toplu Seçim & Kaldırma Butonları -->

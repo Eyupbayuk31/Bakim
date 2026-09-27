@@ -86,7 +86,9 @@ namespace Bakım.Models
         public string UninstallHint => NoRemove
             ? "Yayıncı bu girdinin tek başına kaldırılmasını kapatmış (NoRemove); yine de denenebilir"
             : "Resmi kaldırıcıyla kaldır, ardından kalıntıları göster";
-        public ImageSource? IconSource { get; set; }
+        /// <summary>Program ikonu; liste görüntülendikten sonra arka planda yüklenir (<see cref="Helpers.AppIconLoader"/>).</summary>
+        [ObservableProperty]
+        private ImageSource? _iconSource;
 
         public InstallerType InstallerKind { get; set; } = InstallerType.GenericExe;
         /// <summary>

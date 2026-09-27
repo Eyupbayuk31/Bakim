@@ -236,6 +236,7 @@ namespace Bakım.Services
         /// </summary>
         public async Task<int> ExecuteForceUninstallAsync(InstalledAppItem app, IProgress<string>? progress = null)
         {
+            Uninstall.UninstallWatchService.MarkInitiatedByBakim(app.RegistryKeyPath);
             progress?.Report($"{app.DisplayName} ile ilişkili süreçler kontrol ediliyor...");
             string? folder = !string.IsNullOrWhiteSpace(app.InstallLocation) ? app.InstallLocation : null;
             if (folder != null)

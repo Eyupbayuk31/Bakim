@@ -221,6 +221,11 @@ namespace Bakım
             if (settingsService.Current.AnalyzerLiveWatch)
                 GetService<Bakım.Services.Analyzer.IPersistenceWatchService>().Start();
 
+            // Bakım dışından yapılan kaldırmalar: kalıntı taraması önerilir.
+            var uninstallWatch = GetService<Bakım.Services.Uninstall.IUninstallWatchService>();
+            uninstallWatch.AppUninstalledExternally += OnAppUninstalledExternally;
+            if (settingsService.Current.UninstallWatchEnabled) uninstallWatch.Start();
+
             // Windows Gezgini Sağ Tık Menüsü ("Bakım ile Kaldır") Varsayılan Entegrasyonu
             if (settingsService.Current.EnableShellContextMenu)
             {
@@ -298,6 +303,55 @@ namespace Bakım
             catch (Exception ex)
             {
                 AppLog.Error("Tek örnek isteği işlenemedi.", ex, "SingleInstance");
+            }
+        }
+
+        /// <summary>
+        /// Program Bakım dışından kaldırıldı: köşede "Kalıntıları tara" önerisi. Oyun Modu'nda gösterilmez (günlüğe yazılır;
+        /// kalıntılar Kaldırıcı'dan sonra da taranabilir).
+        /// </summary>
+        private void OnAppUninstalledExternally(Models.InstalledAppItem app)
+        {
+            if (TryGetService<IGameModeService>()?.IsGameModeActive == true)
+            {
+                AppLog.Info($"Oyun Modu açık; {app.DisplayName} kaldırma bildirimi gösterilmedi.", "UninstallWatch");
+                return;
+            }
+
+            // Program dosyaları silinmiş olabilir; ikon yine de denenir (DisplayIcon başka yerde kalmış olabilir).
+            app.IconSource ??= ViewModels.UninstallerViewModel.ResolveIcon(app);
+
+            Dispatcher.BeginInvoke(() =>
+            {
+                try
+                {
+                    var flyout = new Views.Dialogs.UninstallDetectedFlyoutWindow(app);
+                    flyout.ScanRequested += removed => _ = ScanExternalUninstallAsync(removed);
+                    flyout.Show();
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Error("Kaldırma bildirimi açılamadı.", ex, "UninstallWatch");
+                }
+            });
+        }
+
+        private async Task ScanExternalUninstallAsync(Models.InstalledAppItem app)
+        {
+            try
+            {
+                TryGetService<ITrayIconService>()?.RestoreWindow();
+                var main = TryGetService<ViewModels.MainViewModel>();
+                if (main == null) return;
+                main.Navigate("Uninstaller");
+                var uninstaller = main.Uninstaller;
+                // Liste henüz yenilenmediyse aynı kaydı kullan: kalıntı akışı onu listeden de çıkarır.
+                var listed = uninstaller.Apps.FirstOrDefault(a => string.Equals(a.RegistryKeyPath, app.RegistryKeyPath, StringComparison.OrdinalIgnoreCase));
+                await uninstaller.ShowResidualCleanupDialogAsync(listed ?? app);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error($"Kalıntı taraması başlatılamadı: {app.DisplayName}", ex, "UninstallWatch");
             }
         }
 
@@ -380,6 +434,7 @@ namespace Bakım
                 TryGetService<IBackgroundMaintenanceService>()?.Stop();
                 TryGetService<ISetupSentinelService>()?.Stop();
                 TryGetService<Bakım.Services.Analyzer.IPersistenceWatchService>()?.Stop();
+                TryGetService<Bakım.Services.Uninstall.IUninstallWatchService>()?.Stop();
 
                 // Askıya alınmış süreç bırakılmaz (§5.4).
                 SystemCleanService.ResumeAllSuspended();
@@ -541,6 +596,7 @@ namespace Bakım
             services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Analyzer.QuarantineRestoreUndoHandler>();
             services.AddSingleton<Bakım.Services.Analyzer.ISecondOpinionService, Bakım.Services.Analyzer.SecondOpinionService>();
             services.AddSingleton<Bakım.Services.Analyzer.IPersistenceWatchService, Bakım.Services.Analyzer.PersistenceWatchService>();
+            services.AddSingleton<Bakım.Services.Uninstall.IUninstallWatchService, Bakım.Services.Uninstall.UninstallWatchService>();
             services.AddSingleton<Bakım.Services.Analyzer.IQuarantineService>(sp => new Bakım.Services.Analyzer.QuarantineService(sp.GetService<Bakım.Services.Activity.IActivityService>()));
             services.AddSingleton<Bakım.Services.Activity.IActivityService>(sp =>
                 new Bakım.Services.Activity.ActivityService(sp.GetServices<Bakım.Services.Activity.IUndoHandler>()));
