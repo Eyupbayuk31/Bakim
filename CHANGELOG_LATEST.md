@@ -1,15 +1,26 @@
-# Bakım v4.14.0 - Sürüm Notları
+# Bakım v4.15.0 - Sürüm Notları
 
-## Analizör v3 · Faz 6 + Faz 8: Kalıcı Tarama Önbelleği ve Komut Satırı Derlemi
+## Analizör v3 · Faz 7: Girdi Başına Zaman Çizelgesi ve Kararlı Kimlik
 
-### Daha hızlı ilk tarama (Faz 6)
-- **Kalıcı önbellek:** İmza doğrulaması ve SHA-256 sonuçları artık diske yazılıyor (`%LocalAppData%\Bakim\History\Analyzer\enrich-cache.json`). Bakım yeniden açıldığında Analizör'ün ilk taraması bu sonuçları yeniden hesaplamıyor.
-- **Ölçüm (geliştirme makinesi):** Uygulama açılışından sonraki ilk tarama 4,5 sn'den 1,5 sn'ye indi. Aynı oturumdaki tekrar taramalar 0,8 sn.
-- **Güvenli geçersizleşme:** Kayıt yol + boyut + değişim zamanıyla eşleşiyor; dosya güncellenirse ya da değiştirilirse imza yeniden doğrulanıyor.
-- **Sınırlı boyut:** En çok 6000 dosya tutuluyor, en uzun süre kullanılmayanlar atılıyor. Dosya bozulursa sessizce yeniden oluşturuluyor.
+### Zaman çizelgesi
+- **Nereden açılır:** Analizör'de bir satırın "Diğer eylemler" menüsünde yeni **Zaman çizelgesi** seçeneği var.
+- **Neler gösteriliyor:** Girdinin kayıtlı taramalardaki geçmişi:
+  - İlk görüldüğü ya da eklendiği tarama.
+  - Değişen alanlar. Yol değiştiyse eski → yeni yol da yazıyor.
+  - Devre dışı bırakılma ve yeniden etkinleştirilme.
+  - Kaldırılma ve geri dönüş.
+- **Ek bilgiler:** Girdiyi hangi kurulumun eklediği (Kurulum Nöbetçisi raporlarından) ve bu dosya için verdiğiniz kararlar (Güvenilir, Karantina…) da listeleniyor.
 
-### Komut satırı çözümleyici derlemi (Faz 8)
-- **29 yeni durum:** Run girdileri, zamanlanmış görevler, hizmet yolları (`svchost -k`, tırnaklı argümanlar), sürücüler (`System32\drivers`, `\SystemRoot`, `\??\`, DriverStore), Winlogon değerleri, 8.3 kısa adlar, sarmalayıcılar (rundll32, cmd, powershell, wscript) ve yetim girdiler için.
-- **Kişisel veri yok:** Tüm yollar sentetik; Linux CI'da da çalışıyor.
+### Değişiklikler sekmesi düzeltmesi
+- **Sorun:** Bir hizmeti devre dışı bırakınca Değişiklikler sekmesi bunu "kaldırıldı" ve "yeni eklendi" diye iki ayrı girdi olarak gösteriyordu. Sebebi, hizmetin kimliğinde başlangıç türünün ("Otomatik") de yer almasıydı.
+- **Çözüm:** Girdiler artık değişmeyen bir kimlikle eşleşiyor:
+  - Hizmetlerde hizmet adı.
+  - Görevlerde görev yolu.
+  - Run girdilerinde kayıt anahtarı + değer adı.
+- **Sonuç:** Kapatılan hizmet tek bir "Değişen" girdi olarak görünüyor. Görünen adı değişen hizmet ya da görev de artık yeni girdi sayılmıyor.
+- **Geçiş:** Kimlik biçimi değiştiği için güncellemeden sonraki ilk tarama eskilerle karşılaştırılmıyor; karşılaştırma ikinci taramadan itibaren başlıyor.
 
-**Testler:** Tüm birim testleri yeşil; 4 denetim betiği tam geçti.
+### Diğer
+- **Uzun mesajlar:** Fluent bilgi pencereleri artık uzun metinde kaydırılabiliyor, pencere ekrandan taşmıyor.
+
+**Testler:** Tüm birim testleri yeşil (zaman çizelgesi hem saf mantıkta hem gerçek geçmiş deposuyla doğrulanıyor); 4 denetim betiği tam geçti; XAML duman testinde kaynak hatası yok.

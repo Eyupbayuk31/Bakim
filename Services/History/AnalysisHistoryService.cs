@@ -32,6 +32,8 @@ namespace Bakım.Services.History
         IReadOnlyList<SnapshotDiffItem> Diff(string olderSnapshotId, string newerSnapshotId);
         /// <summary>Son iki taramanın farkı; iki tarama yoksa boş.</summary>
         IReadOnlyList<SnapshotDiffItem> DiffLatest();
+        /// <summary>Girdi başına zaman çizelgesi (ANL Faz 7): güncel ayrıştırıcı sürümüyle alınmış taramalardan.</summary>
+        IReadOnlyList<TimelineEvent> Timeline(string entryKey);
 
         Task<int> RemoveAsync(IEnumerable<string> recordIds);
         Task<int> PurgeAsync(HistoryRetention retention);
@@ -225,6 +227,29 @@ namespace Bakım.Services.History
             return list.Count < 2 ? Array.Empty<SnapshotDiffItem>() : Diff(list[1].Id, list[0].Id);
         }
 
+        // Anlık görüntüler değişmez; açılmış olanlar kimlikle önbellekte tutulur (50 görüntü × gzip açma her seferinde pahalı).
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, TimelineSnapshot> _timelineCache = new(StringComparer.Ordinal);
+
+        public IReadOnlyList<TimelineEvent> Timeline(string entryKey)
+        {
+            var headers = _store.ListSnapshots().Where(h => h.ParserVersion == PersistenceSnapshot.CurrentParserVersion).ToList();
+            foreach (var stale in _timelineCache.Keys.Except(headers.Select(h => h.Id)).ToList()) _timelineCache.TryRemove(stale, out _);
+
+            var snapshots = new List<TimelineSnapshot>();
+            foreach (var header in headers)
+            {
+                if (!_timelineCache.TryGetValue(header.Id, out var snap))
+                {
+                    var loaded = _store.LoadSnapshot(header.Id);
+                    if (loaded == null) continue;
+                    snap = new TimelineSnapshot(loaded.TakenAtUtc, loaded.Trigger, loaded.Entries);
+                    _timelineCache[header.Id] = snap;
+                }
+                snapshots.Add(snap);
+            }
+            return EntryTimeline.Build(entryKey, snapshots);
+        }
+
         public Task<int> RemoveAsync(IEnumerable<string> recordIds)
         {
             var ids = recordIds.ToList();
@@ -266,6 +291,7 @@ namespace Bakım.Services.History
                 EnsureLoaded();
                 _store.ClearAll();
                 _index.Clear();
+                _timelineCache.Clear();
                 HistoryChanged?.Invoke();
             });
 
@@ -350,7 +376,7 @@ namespace Bakım.Services.History
         {
             string category = item.Category.ToString();
             return new PersistenceEntry(
-                SnapshotDiff.KeyOf(category, item.LocationSource, item.Name),
+                SnapshotDiff.StableKey(category, item.LocationSource, item.Name, item.TaskPath, item.ServiceName, item.RegistryKeyPath),
                 category,
                 item.Name,
                 item.LocationSource,

@@ -307,6 +307,12 @@ her fark açıklanabilir.
 - **Kararlı kimlik:** Anahtar = kategori + konum + değer adı/görev yolu/hizmet adı (şu an ad da anahtarda).
 - **Zaman çizelgesi:** Girdi başına ilk görülüş, değişiklikler, kullanıcı kararları.
 
+> **Durum (v4.15.0): uygulandı.** Kararlı kimlik `SnapshotDiff.StableKey`: hizmette hizmet adı, görevde görev yolu,
+> kayıt defterinde anahtar yolu + değer adı (`ParserVersion` 3). Eskiden hizmet konum metni başlangıç türünü
+> içerdiği için kapatılan hizmet "kaldırıldı + eklendi" görünüyordu; artık tek "Değişen" girdi. Zaman çizelgesi
+> `Core/History/EntryTimeline` (ilk görülüş/eklendi, değişen alanlar ve eski → yeni yol, kapatma/açma, kaldırılma,
+> geri dönüş) + kurulum kaynağı + kullanıcı kararları; Analizör satırı "Diğer eylemler → Zaman çizelgesi".
+
 ### Faz 8 — Test ve kalite (her fazla birlikte)
 
 - `CommandLineResolver` için ≥ 150 gerçek komut satırı (bu makineden ve Autoruns örneklerinden, kişisel yollar maskelenmiş).

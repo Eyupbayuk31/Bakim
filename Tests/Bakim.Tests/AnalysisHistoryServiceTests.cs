@@ -124,4 +124,25 @@ public sealed class AnalysisHistoryServiceTests : System.IDisposable
         Assert.Equal(DiffKind.Added, added.Kind);
         Assert.Equal("Updater", added.After!.Name);
     }
+
+    [Fact]
+    public async Task Timeline_ServiceDisabledBetweenScans_IsOneEntryWithDisableEvent()
+    {
+        var history = CreateService();
+        PersistenceItem Svc(bool enabled) => new()
+        {
+            Name = "Foo Service", Category = PersistenceCategory.WindowsService, ServiceName = "Foo", IsEnabled = enabled,
+            LocationSource = enabled ? "Hizmet: Foo (Otomatik)" : "Hizmet: Foo (Devre dışı)", FilePath = @"C:\foo.exe"
+        };
+
+        await history.SaveSnapshotAsync(new[] { Svc(true) }, "Manual");
+        await Task.Delay(1100);
+        await history.SaveSnapshotAsync(new[] { Svc(false) }, "Manual");
+
+        var change = Assert.Single(history.DiffLatest());
+        Assert.Equal(DiffKind.Changed, change.Kind);
+
+        var events = history.Timeline(AnalysisHistoryService.ToEntry(Svc(false)).Key);
+        Assert.Equal(new[] { TimelineEventKind.FirstSeen, TimelineEventKind.Disabled }, events.Select(e => e.Kind));
+    }
 }

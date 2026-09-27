@@ -100,6 +100,19 @@ namespace Bakım.Core.History
         public static string KeyOf(string category, string location, string name) =>
             string.Join('|', Norm(category), Norm(location), Norm(name));
 
+        /// <summary>
+        /// Kararlı kimlik (ANL Faz 7). Konum metni durum içerebiliyor (hizmette "(Otomatik)"), görünen ad dile ve
+        /// güncellemeye göre değişiyor; bu yüzden hizmette hizmet adı, görevde görev yolu, kayıt defteri
+        /// girdisinde anahtar yolu + değer adı kullanılır. Eskiden bir hizmeti kapatmak "kaldırıldı + eklendi" görünüyordu.
+        /// </summary>
+        public static string StableKey(string category, string location, string name, string? taskPath, string? serviceName, string? registryKeyPath)
+        {
+            if (!string.IsNullOrWhiteSpace(serviceName)) return string.Join('|', Norm(category), "service", Norm(serviceName));
+            if (!string.IsNullOrWhiteSpace(taskPath)) return string.Join('|', Norm(category), "task", Norm(taskPath));
+            if (!string.IsNullOrWhiteSpace(registryKeyPath)) return string.Join('|', Norm(category), Norm(registryKeyPath), Norm(name));
+            return KeyOf(category, location, name);
+        }
+
         private static string Norm(string? s) => (s ?? string.Empty).Trim().ToLowerInvariant();
 
         public static IReadOnlyList<SnapshotDiffItem> Compute(IEnumerable<PersistenceEntry> before, IEnumerable<PersistenceEntry> after)

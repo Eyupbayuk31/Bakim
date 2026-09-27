@@ -108,8 +108,9 @@ namespace Bakım.Core.History
         /// Kalıcılık ayrıştırıcısının sürümü. 2: Analizör v3 (komut satırı çözümleyici, görevler COM,
         /// sürücüler ayrı). Farklı sürümlerle alınmış iki görüntü karşılaştırılmaz: yol ve anahtar
         /// biçimi değiştiği için yüzlerce sahte "değişen" girdi çıkardı.
+        /// 3: kararlı anahtar (<see cref="SnapshotDiff.StableKey"/>; hizmet adı, görev yolu, kayıt anahtarı).
         /// </summary>
-        public const int CurrentParserVersion = 2;
+        public const int CurrentParserVersion = 3;
 
         public int SchemaVersion { get; init; } = 1;
         public int ParserVersion { get; init; } = 1;

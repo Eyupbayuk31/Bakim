@@ -564,6 +564,11 @@
                                                           Command="{Binding DataContext.CopySha256Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                           CommandParameter="{Binding}"
                                                           Icon="{ui:SymbolIcon Copy20}"/>
+                                                <Separator/>
+                                                <MenuItem Header="Zaman çizelgesi"
+                                                          Command="{Binding DataContext.ShowTimelineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding}"
+                                                          Icon="{ui:SymbolIcon History20}"/>
                                             </ContextMenu>
                                         </ui:DropDownButton.Flyout>
                                     </ui:DropDownButton>

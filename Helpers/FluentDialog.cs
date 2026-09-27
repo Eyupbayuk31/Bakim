@@ -25,11 +25,17 @@ namespace Bakım.Helpers
             var box = new Wpf.Ui.Controls.MessageBox
             {
                 Title = title,
-                Content = new System.Windows.Controls.TextBlock
+                // Uzun metin (ör. zaman çizelgesi) pencereyi ekrandan taşırmasın.
+                Content = new ScrollViewer
                 {
-                    Text = message,
-                    TextWrapping = TextWrapping.Wrap,
-                    MaxWidth = 480
+                    MaxHeight = 420,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    Content = new System.Windows.Controls.TextBlock
+                    {
+                        Text = message,
+                        TextWrapping = TextWrapping.Wrap,
+                        MaxWidth = 480
+                    }
                 },
                 MinWidth = 380
             };

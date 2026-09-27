@@ -733,6 +733,32 @@ namespace Bakım.ViewModels
             }
         }
 
+        /// <summary>
+        /// Girdinin zaman çizelgesi (ANL Faz 7): ilk görülüş, değişiklikler, kapatma/açma ve kaldırılma
+        /// kayıtlı taramalardan; kaynağı hangi kurulum olduğu ve kullanıcı kararları da eklenir.
+        /// </summary>
+        [RelayCommand]
+        private async Task ShowTimelineAsync(PersistenceItem? item)
+        {
+            if (item == null) return;
+            string key = Bakım.Services.History.AnalysisHistoryService.ToEntry(item).Key;
+            var events = (await Task.Run(() => _history.Timeline(key))).ToList();
+            if (!string.IsNullOrWhiteSpace(item.Sha256Hash))
+            {
+                events.AddRange(_history.GetByHash(item.Sha256Hash)
+                    .Where(r => r.Decision != Core.History.UserDecision.None && r.DecisionAtUtc != null)
+                    .Select(r => new Core.History.TimelineEvent(r.DecisionAtUtc!.Value, Core.History.TimelineEventKind.Decision,
+                        $"Karar: {Core.History.AnalysisVerdicts.Display(r.Decision)}"))
+                    .DistinctBy(e => (e.AtUtc, e.Text)));
+            }
+
+            string text = events.Count == 0
+                ? "Bu girdi için kayıtlı tarama yok. Zaman çizelgesi, Analizör taramalarının geçmişe yazılan anlık görüntülerinden oluşur; bir sonraki taramadan itibaren dolmaya başlar."
+                : Core.History.EntryTimeline.Format(events);
+            if (item.HasProvenance) text = $"Kaynak: {item.Provenance}{Environment.NewLine}{Environment.NewLine}{text}";
+            await Bakım.Helpers.FluentDialog.InfoAsync($"Zaman çizelgesi · {item.Name}", text);
+        }
+
         [RelayCommand]
         public void CopySha256(PersistenceItem? item)
         {
