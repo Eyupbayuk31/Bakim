@@ -242,6 +242,12 @@ her fark açıklanabilir.
 
 ### Faz 3 — Derinlik ve ikinci görüş (v5.0.0, ~3 hafta)
 
+> **Durum (v4.11.0): uygulandı (YARA hariç).** `Core/Analyzer/SecondOpinion` (MpCmdRun çıktısı; Defender
+> kapalıyken "temiz" sayılmaz), `ScriptRules` (birleşim kuralları + karartma temizliği), AMSI,
+> `Services/Analyzer/QuarantineService` (çalıştırma yasağı + Etkinlik Merkezi geri alma). Bu makinede Defender
+> kapalı olduğu için gerçek MpCmdRun tespiti elle doğrulanmadı; ayrıştırıcı örnek çıktılarla test edildi.
+> YARA yerel kütüphane gerektirdiği için ertelendi; süreç bağlamı (bellek/ağ) Faz 4 ile birlikte ele alınacak.
+
 - **Defender ikinci görüşü:** `MpCmdRun.exe -Scan -ScanType 3 -File <yol> -DisableRemediation`
   (Nöbetçi NÖB 4.6 ile ortak). Sonuç kanıt olarak girer; Defender kapalıysa bunu açıkça söyler.
 - **Kural motoru:** İsteğe bağlı YARA (yerleşik küçük kural seti + kullanıcı kuralları klasörü). Kural

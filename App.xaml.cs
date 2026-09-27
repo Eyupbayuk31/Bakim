@@ -501,6 +501,9 @@ namespace Bakım
             services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Activity.FirewallRuleUndoHandler>();
             services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Activity.RecycleBinUndoHandler>();
             services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Sentinel.Actions.RootCertificateUndoHandler>();
+            services.AddSingleton<Bakım.Services.Activity.IUndoHandler, Bakım.Services.Analyzer.QuarantineRestoreUndoHandler>();
+            services.AddSingleton<Bakım.Services.Analyzer.ISecondOpinionService, Bakım.Services.Analyzer.SecondOpinionService>();
+            services.AddSingleton<Bakım.Services.Analyzer.IQuarantineService>(sp => new Bakım.Services.Analyzer.QuarantineService(sp.GetService<Bakım.Services.Activity.IActivityService>()));
             services.AddSingleton<Bakım.Services.Activity.IActivityService>(sp =>
                 new Bakım.Services.Activity.ActivityService(sp.GetServices<Bakım.Services.Activity.IUndoHandler>()));
             services.AddSingleton<IHealthSignalsService, HealthSignalsService>();

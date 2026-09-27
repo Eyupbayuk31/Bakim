@@ -42,6 +42,9 @@ public sealed class AnalysisHistoryServiceTests : System.IDisposable
             Task.FromResult(new OperationResult("", DeleteOutcome.Deleted, "", 0));
         public Task<OperationResult> RemoveFileAsync(string filePath) =>
             Task.FromResult(new OperationResult(filePath, DeleteOutcome.Recycled, "", 0));
+        public Task ApplyDefenderOpinionAsync(ThreatAnalysisResult result, System.Threading.CancellationToken ct = default) => Task.CompletedTask;
+        public Task<Bakım.Services.Analyzer.QuarantineOutcome> QuarantineFileAsync(string filePath, string reason) =>
+            Task.FromResult(new Bakım.Services.Analyzer.QuarantineOutcome(true, "ok"));
     }
 
     [Fact]

@@ -762,6 +762,9 @@ namespace Bakım.ViewModels
                 {
                     analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(item.FilePath, item.Arguments, item);
                 }
+                ScanStatusText = "Windows Defender ile ikinci görüş alınıyor…";
+                await _threatAnalyzerService.ApplyDefenderOpinionAsync(analysisResult);
+                ApplyDeepResult(item, analysisResult);
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -892,6 +895,8 @@ namespace Bakım.ViewModels
                 {
                     analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(selectedFile);
                 }
+                ScanStatusText = "Windows Defender ile ikinci görüş alınıyor…";
+                await _threatAnalyzerService.ApplyDefenderOpinionAsync(analysisResult);
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -935,6 +940,7 @@ namespace Bakım.ViewModels
                 try
                 {
                     var analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(singleFile);
+                    await _threatAnalyzerService.ApplyDefenderOpinionAsync(analysisResult);
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, _threatAnalyzerService, _scannerEngine, _virusTotalService);

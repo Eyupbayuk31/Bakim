@@ -217,6 +217,11 @@ namespace Bakım.Models
 
         public int RiskScore { get; set; } // 0 - 100
 
+        /// <summary>Windows Defender ikinci görüşü (ANL Faz 3); null: istenmedi.</summary>
+        public Bakım.Core.Analyzer.DefenderScanState? DefenderState { get; set; }
+        public string DefenderSummary { get; set; } = string.Empty;
+        public bool HasDefenderOpinion => DefenderState != null;
+
         /// <summary>Tek risk dili (Core.Risk.RiskScale): Temiz · Bilgi · Dikkat · Şüpheli · Tehlikeli.</summary>
         public Bakım.Core.Sentinel.RiskVerdict Verdict => Bakım.Core.Risk.RiskScale.Verdict(RiskScore, Factors.Any(f => f.ScoreImpact > 0));
 

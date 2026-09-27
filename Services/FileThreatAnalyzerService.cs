@@ -23,6 +23,15 @@ namespace Bakım.Services
         /// işaretler. Windows ve korumalı klasörlerdeki dosyalar reddedilir.
         /// </summary>
         Task<OperationResult> RemoveFileAsync(string filePath);
+
+        /// <summary>
+        /// Windows Defender ile ikinci görüş (ANL Faz 3): tehdit bulunursa puan en az 90 olur ve karar
+        /// yeniden yazılır; Defender kapalıysa sonuç "alınamadı" olarak işaretlenir, puan değişmez.
+        /// </summary>
+        Task ApplyDefenderOpinionAsync(ThreatAnalysisResult result, System.Threading.CancellationToken ct = default);
+
+        /// <summary>Dosyayı karantinaya alır (Etkinlik Merkezi'nden geri alınabilir).</summary>
+        Task<Analyzer.QuarantineOutcome> QuarantineFileAsync(string filePath, string reason);
     }
 
     public class FileThreatAnalyzerService : IFileThreatAnalyzerService
@@ -31,6 +40,19 @@ namespace Bakım.Services
 
 
 
+
+        private readonly Analyzer.ISecondOpinionService? _secondOpinion;
+        private readonly Analyzer.IQuarantineService? _quarantine;
+
+        private Analyzer.ISecondOpinionService SecondOpinion => _secondOpinion ?? App.TryGetService<Analyzer.ISecondOpinionService>() ?? new Analyzer.SecondOpinionService();
+        private Analyzer.IQuarantineService Quarantine => _quarantine ?? App.TryGetService<Analyzer.IQuarantineService>() ?? new Analyzer.QuarantineService();
+
+        public FileThreatAnalyzerService(IVirusTotalCheckService virusTotalService, Analyzer.ISecondOpinionService? secondOpinion = null, Analyzer.IQuarantineService? quarantine = null)
+            : this(virusTotalService)
+        {
+            _secondOpinion = secondOpinion;
+            _quarantine = quarantine;
+        }
 
         public FileThreatAnalyzerService(IVirusTotalCheckService virusTotalService)
         {
@@ -64,6 +86,7 @@ namespace Bakım.Services
 
                 int score = 0;
                 int vtFloor = 0;
+                int secondOpinionFloor = 0;
                 var fileInfo = new FileInfo(filePath);
                 result.FileSizeBytes = fileInfo.Length;
                 result.FileSizeFormatted = FormatBytes(fileInfo.Length);
@@ -275,6 +298,49 @@ namespace Bakım.Services
                 }
 
                 // =========================================================================
+                // VEKTÖR 3b: BETİK İÇERİĞİ (ANL Faz 3) — birleşim kuralları + AMSI
+                // =========================================================================
+                if (Bakım.Core.Analyzer.ScriptRules.ScriptExtensions.Contains(Path.GetExtension(filePath)) && fileInfo.Length <= 2L * 1024 * 1024)
+                {
+                    string? scriptText = null;
+                    try
+                    {
+                        scriptText = File.ReadAllText(filePath);
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    {
+                        AppLog.Debug($"Betik okunamadı: {filePath} — {ex.Message}", nameof(FileThreatAnalyzerService));
+                    }
+                    if (scriptText != null)
+                    {
+                        var scriptFindings = Bakım.Core.Analyzer.ScriptRules.Analyze(scriptText);
+                        score += Bakım.Core.Analyzer.ScriptRules.TotalImpact(scriptFindings);
+                        foreach (var f in scriptFindings)
+                        {
+                            result.Factors.Add(new ThreatFactor
+                            {
+                                Title = f.Title,
+                                Description = f.Detail,
+                                Severity = f.Critical ? ThreatSeverity.Critical : f.Impact > 5 ? ThreatSeverity.Warning : ThreatSeverity.Info,
+                                ScoreImpact = f.Impact
+                            });
+                        }
+
+                        if (SecondOpinion.ScanContentWithAmsi(scriptText, result.FileName) == true)
+                        {
+                            secondOpinionFloor = 90;
+                            result.Factors.Add(new ThreatFactor
+                            {
+                                Title = "Antivirüs (AMSI) bu betiği zararlı buldu",
+                                Description = "Betik içeriği sistemdeki antivirüsün AMSI arayüzüyle tarandı ve zararlı olarak işaretlendi.",
+                                Severity = ThreatSeverity.Critical,
+                                ScoreImpact = 50
+                            });
+                        }
+                    }
+                }
+
+                // =========================================================================
                 // VEKTÖR 4: METADATA, ÇİFT UZANTI & RLO (%15)
                 // =========================================================================
                 // Double extension check
@@ -440,14 +506,23 @@ namespace Bakım.Services
                     catch { }
                 }
 
-                // Son puan: VT tabanı toplamın altına düşemez.
-                result.RiskScore = Math.Clamp(Math.Max(score, vtFloor), 0, 100);
+                // Son puan: VT ve antivirüs (AMSI) tabanı toplamın altına düşemez.
+                result.RiskScore = Math.Clamp(Math.Max(score, Math.Max(vtFloor, secondOpinionFloor)), 0, 100);
+                ApplyRecommendation(result);
+                return result;
+            });
+        }
 
-                // Öneri metni kanıtla orantılı (ANL Z3/Z10): "derhal kalıcı olarak silin" gibi geri
-                // alınamaz öneriler verilmez; önce kaynağın doğrulanması ve geri alınabilir adımlar.
+        /// <summary>
+        /// Öneri metni kanıtla orantılı (ANL Z3/Z10): "derhal kalıcı olarak silin" gibi geri alınamaz
+        /// öneriler verilmez; önce kaynağın doğrulanması ve geri alınabilir adımlar (karantina).
+        /// </summary>
+        private static void ApplyRecommendation(ThreatAnalysisResult result)
+        {
+
                 if (result.RiskScore >= Bakım.Core.Risk.RiskScale.Suspicious)
                 {
-                    result.Recommendation = "YÜKSEK RİSK: Dosyada zararlı yazılımlarda sık görülen birden çok güçlü işaret var. Kaynağını tanımıyorsanız süreci durdurun, başlangıç girdisini kapatın ve dosyayı Geri Dönüşüm Kutusu'na taşıyın; emin değilseniz önce VirusTotal ve Windows Defender ile ikinci görüş alın.";
+                    result.Recommendation = "YÜKSEK RİSK: Dosyada zararlı yazılımlarda sık görülen birden çok güçlü işaret var. Kaynağını tanımıyorsanız süreci durdurun, başlangıç girdisini kapatın ve dosyayı karantinaya alın (geri alınabilir); emin değilseniz önce VirusTotal ve Windows Defender ile ikinci görüş alın.";
                 }
                 else if (result.RiskScore >= Bakım.Core.Risk.RiskScale.Caution)
                 {
@@ -457,10 +532,42 @@ namespace Bakım.Services
                 {
                     result.Recommendation = "TEMİZ GÖRÜNÜYOR: Belirgin bir tehdit işareti bulunmadı. Bu sezgisel bir değerlendirmedir; dosya içeriği bir antivirüs gibi taranmadı.";
                 }
-
-                return result;
-            });
         }
+
+        public async Task ApplyDefenderOpinionAsync(ThreatAnalysisResult result, System.Threading.CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(result.FilePath) || !File.Exists(result.FilePath)) return;
+            var scan = await SecondOpinion.ScanFileWithDefenderAsync(result.FilePath, ct);
+            result.DefenderState = scan.State;
+            result.DefenderSummary = scan.State == Bakım.Core.Analyzer.DefenderScanState.ThreatFound
+                ? $"Tehdit: {string.Join(", ", scan.Threats)}"
+                : scan.Message;
+
+            if (scan.State == Bakım.Core.Analyzer.DefenderScanState.ThreatFound)
+            {
+                result.Factors.Insert(0, new ThreatFactor
+                {
+                    Title = "Windows Defender tehdit buldu",
+                    Description = $"Windows Defender bu dosyayı zararlı olarak tanımladı: {string.Join(", ", scan.Threats)}.",
+                    Severity = ThreatSeverity.Critical,
+                    ScoreImpact = 60
+                });
+                result.RiskScore = Math.Max(result.RiskScore, 90);
+            }
+            else if (scan.State == Bakım.Core.Analyzer.DefenderScanState.Clean)
+            {
+                result.Factors.Add(new ThreatFactor
+                {
+                    Title = "Windows Defender tehdit bulmadı",
+                    Description = "Dosya Windows Defender ile tarandı; bilinen bir tehdit imzası yok. Yeni ya da hedefli zararlılar imza tabanlı taramadan kaçabilir.",
+                    Severity = ThreatSeverity.Clean,
+                    ScoreImpact = 0
+                });
+            }
+            ApplyRecommendation(result);
+        }
+
+        public Task<Analyzer.QuarantineOutcome> QuarantineFileAsync(string filePath, string reason) => Quarantine.QuarantineAsync(filePath, reason);
 
         /// <summary>
         /// İçe aktarım bulguları: tek tek API değil, birleşimler (ANL Z5). Eskiden GetKeyState ve

@@ -53,6 +53,10 @@ public class AnalyzerFaz2Tests
         var wmi = PersistenceRisk.Evaluate(Input(SignatureState.Invalid, category: AutorunCategory.WmiEventConsumer));
         Assert.Equal(80, wmi.Score);
         Assert.Equal(2, wmi.Reasons.Count);
+
+        // Doğrulanmış Microsoft imzalı Active Setup/Winlogon girdisi konum riski almaz; başka imzalı yarım alır.
+        Assert.Equal(0, PersistenceRisk.Evaluate(Input(SignatureState.Verified, microsoft: true, category: AutorunCategory.WinlogonIfeo)).Score);
+        Assert.Equal(10, PersistenceRisk.Evaluate(Input(SignatureState.Verified, category: AutorunCategory.WinlogonIfeo)).Score);
     }
 
     [Fact]

@@ -46,6 +46,26 @@ namespace Bakım.Services.History
 
         public Task<OperationResult> KillProcessAsync(int processId) => _inner.KillProcessAsync(processId);
 
+        public Task ApplyDefenderOpinionAsync(ThreatAnalysisResult result, System.Threading.CancellationToken ct = default) => _inner.ApplyDefenderOpinionAsync(result, ct);
+
+        public async Task<Analyzer.QuarantineOutcome> QuarantineFileAsync(string filePath, string reason)
+        {
+            var result = await _inner.QuarantineFileAsync(filePath, reason);
+            if (result.Success)
+            {
+                try
+                {
+                    var latest = _history.GetByPath(filePath).FirstOrDefault();
+                    if (latest != null) await _history.SetDecisionAsync(latest.Id, UserDecision.Quarantined);
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning("Karantina kararı geçmişe yazılamadı.", ex, nameof(RecordingFileThreatAnalyzer));
+                }
+            }
+            return result;
+        }
+
         public async Task<OperationResult> RemoveFileAsync(string filePath)
         {
             var result = await _inner.RemoveFileAsync(filePath);

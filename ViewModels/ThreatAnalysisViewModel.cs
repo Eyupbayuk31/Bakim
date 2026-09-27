@@ -271,6 +271,72 @@ namespace Bakım.ViewModels
             }
         }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanQuarantine))]
+        private bool _isQuarantined;
+
+        [ObservableProperty]
+        private bool _isDefenderScanning;
+
+        public bool CanQuarantine => !IsQuarantined && !IsFileDeleted && File.Exists(FilePath);
+
+        /// <summary>Windows Defender ikinci görüşünün özeti (alındıysa).</summary>
+        public string DefenderSummary => Result.HasDefenderOpinion ? $"Windows Defender: {Result.DefenderSummary}" : string.Empty;
+        public bool HasDefenderOpinion => Result.HasDefenderOpinion;
+
+        /// <summary>
+        /// Karantina (ANL Faz 3): dosya çalıştırılamaz bir klasöre taşınır, bağlı başlangıç girdisi
+        /// kapatılır; Etkinlik Merkezi'nden tek tıkla geri alınır. Silmeye göre güvenli varsayılan.
+        /// </summary>
+        [RelayCommand]
+        public async Task QuarantineAsync()
+        {
+            if (!CanQuarantine) return;
+            var confirm = MessageBox.Show(
+                $"'{FilePath}' karantinaya alınacak: çalıştırılamayan bir klasöre taşınır" +
+                (Result.OriginAutorunItem is { CanToggle: true } ? " ve başlangıç girdisi kapatılır" : string.Empty) +
+                ".\n\nYanlış alarmsa Etkinlik Merkezi'nden tek tıkla eski yerine döner. Devam edilsin mi?",
+                "Karantinaya al", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            StatusText = "Dosya karantinaya alınıyor…";
+            var outcome = await _analyzerService.QuarantineFileAsync(FilePath, $"Risk {Result.RiskScore}/100 · {Result.RiskLevelText}");
+            if (!outcome.Success)
+            {
+                StatusText = outcome.Message;
+                return;
+            }
+
+            IsQuarantined = true;
+            if (Result.OriginAutorunItem is { CanToggle: true, IsEnabled: true } item && _autorunsEngine != null)
+            {
+                bool disabled = await _autorunsEngine.ToggleItemAsync(item, false);
+                if (disabled) item.IsEnabled = false;
+            }
+            StatusText = outcome.Message;
+        }
+
+        /// <summary>Pencere içinden Windows Defender ikinci görüşü (Analizör dışı girişler için).</summary>
+        [RelayCommand]
+        public async Task ScanWithDefenderAsync()
+        {
+            if (IsDefenderScanning || !File.Exists(FilePath)) return;
+            IsDefenderScanning = true;
+            StatusText = "Windows Defender ile taranıyor…";
+            try
+            {
+                await _analyzerService.ApplyDefenderOpinionAsync(Result);
+                StatusText = Result.DefenderSummary;
+                foreach (string name in new[] { nameof(RiskScore), nameof(RiskLevelText), nameof(RiskIntent), nameof(RiskIconSymbol),
+                                                nameof(Recommendation), nameof(DefenderSummary), nameof(HasDefenderOpinion) })
+                    OnPropertyChanged(name);
+            }
+            finally
+            {
+                IsDefenderScanning = false;
+            }
+        }
+
         [RelayCommand]
         public void OpenLocation()
         {

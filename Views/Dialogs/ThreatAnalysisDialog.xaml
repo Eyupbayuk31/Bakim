@@ -1215,6 +1215,9 @@
                             <MenuItem Header="Güvenli olarak işaretle"
                                       Command="{Binding WhitelistCommand}"
                                       Icon="{ui:SymbolIcon ShieldCheckmark20}"/>
+                            <MenuItem Header="Windows Defender ile tara"
+                                      Command="{Binding ScanWithDefenderCommand}"
+                                      Icon="{ui:SymbolIcon ShieldTask20}"/>
                             <Separator Visibility="{Binding CanLaunchInSandbox, Converter={StaticResource BoolToVis}}"/>
                             <MenuItem Header="Windows Sandbox'ta önizle"
                                       Command="{Binding LaunchInSandboxCommand}"
@@ -1244,6 +1247,16 @@
                                Icon="{Binding VtButtonIcon, Converter={StaticResource SafeSymbol}}"
                                Content="{Binding VtButtonText}"
                                AutomationProperties.Name="VirusTotal taraması"/>
+
+                    <ui:Button Appearance="Secondary"
+                               Command="{Binding QuarantineCommand}"
+                               IsEnabled="{Binding CanQuarantine}"
+                               Padding="{StaticResource Pad.Control}"
+                               Margin="{StaticResource Gap.Right.SM}"
+                               Icon="{ui:SymbolIcon ShieldLock20}"
+                               Content="Karantinaya al"
+                               ToolTip="Dosyayı çalıştırılamayan bir klasöre taşır ve başlangıç girdisini kapatır. Etkinlik Merkezi'nden tek tıkla geri alınır."
+                               AutomationProperties.Name="Dosyayı karantinaya al"/>
 
                     <ui:Button Appearance="Danger"
                                Command="{Binding DeleteFileCommand}"

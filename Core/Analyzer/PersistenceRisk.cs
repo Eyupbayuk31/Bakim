@@ -76,6 +76,9 @@ namespace Bakım.Core.Analyzer
                     AutorunCategory.ShellExtension => 10,
                     _ => 0
                 };
+                // Konum riski imzanın güvenine göre: doğrulanmış Microsoft imzasında yok, doğrulanmış
+                // başka bir imzada yarım (Edge'in Active Setup girdisi "Dikkat" almamalı).
+                if (i.Signature == SignatureState.Verified) location = i.IsMicrosoft ? 0 : location / 2;
                 if (location > 0)
                 {
                     score += location;

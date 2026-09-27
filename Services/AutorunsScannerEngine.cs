@@ -81,7 +81,11 @@ namespace Bakım.Services
                         AppLog.Warning($"Kalıcılık toplayıcısı başarısız: {status}", ex, nameof(AutorunsScannerEngine));
                         return new List<PersistenceItem>();
                     }
-                    Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 4 }, Enrich);
+                    Parallel.ForEach(list, new ParallelOptions { MaxDegreeOfParallelism = 4 }, item =>
+                    {
+                        Enrich(item);
+                        ApplyScriptRules(item);
+                    });
                     return list;
                 });
 
@@ -467,6 +471,38 @@ namespace Bakım.Services
                 }
             }
             return null;
+        }
+
+        #endregion
+
+        #region Betik kuralları (ANL Faz 3)
+
+        /// <summary>
+        /// Gömülü komut (cmd /c, powershell -enc çözülmüş, WMI ActiveScript) ya da hedefi betik olan
+        /// girdiler betik kurallarından geçer; bulgular toplayıcı riskine ve açıklamasına eklenir.
+        /// </summary>
+        private static void ApplyScriptRules(PersistenceItem item)
+        {
+            string? text = item.InlineScript;
+            if (text == null && item.HasValidFile && Bakım.Core.Analyzer.ScriptRules.ScriptExtensions.Contains(Path.GetExtension(item.FilePath)))
+            {
+                try
+                {
+                    var info = new FileInfo(item.FilePath);
+                    if (info.Length <= 512 * 1024) text = File.ReadAllText(item.FilePath);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    AppLog.Debug($"Betik okunamadı: {item.FilePath} — {ex.Message}", nameof(AutorunsScannerEngine));
+                }
+            }
+            if (string.IsNullOrWhiteSpace(text)) return;
+
+            var findings = Bakım.Core.Analyzer.ScriptRules.Analyze(text);
+            if (findings.Count == 0) return;
+            item.CollectorRisk += Bakım.Core.Analyzer.ScriptRules.TotalImpact(findings);
+            string notes = string.Join(" ", findings.Where(f => f.Impact > 0).Select(f => f.Title + "."));
+            if (notes.Length > 0) item.CollectorNotes = string.IsNullOrEmpty(item.CollectorNotes) ? $"Betik: {notes}" : $"{item.CollectorNotes} Betik: {notes}";
         }
 
         #endregion
