@@ -30,6 +30,7 @@ namespace Bakım.Services.Uninstall
         private readonly TimeSpan PollInterval;
         /// <summary>Kaldırıcılar kaydı silip dosyaları sonra temizleyebilir; kalıntı taraması erken yapılmasın.</summary>
         private readonly TimeSpan SettleDelay;
+        private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(30);
 
         private static readonly ConcurrentDictionary<string, DateTime> BakimInitiated = new(StringComparer.OrdinalIgnoreCase);
 
@@ -63,6 +64,7 @@ namespace Bakım.Services.Uninstall
         {
             if (_cts != null) return;
             var cts = _cts = new CancellationTokenSource();
+            IsBaselineReady = false;
             _ = Task.Run(() => LoopAsync(cts.Token));
         }
 
@@ -74,37 +76,68 @@ namespace Bakım.Services.Uninstall
 
         public void Dispose() => Stop();
 
+        /// <summary>
+        /// İzleme döngüsü. Başlangıç, taban ve her kayıt değişikliği Bilgi düzeyinde günlüğe yazılır: eskiden yalnızca
+        /// ayrıntılı günlükte görünüyordu ve izlemenin çalışıp çalışmadığı sahada anlaşılamıyordu. Tek bir turdaki hata
+        /// döngüyü bitirmez; taban alınamazsa bir süre sonra yeniden denenir.
+        /// </summary>
         private async Task LoopAsync(CancellationToken ct)
         {
             try
             {
-                _fingerprint = ReadFingerprint();
-                _snapshot = await ReadSnapshotAsync();
-                IsBaselineReady = true;
-                _log.Debug($"Kaldırma izleme başladı ({_snapshot.Count} kayıt).", nameof(UninstallWatchService));
+                while (!IsBaselineReady)
+                {
+                    try
+                    {
+                        _fingerprint = ReadFingerprint();
+                        _snapshot = await ReadSnapshotAsync();
+                        IsBaselineReady = true;
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _log.Warning("Kaldırma izleme tabanı alınamadı; yeniden denenecek.", ex, nameof(UninstallWatchService));
+                        await Task.Delay(RetryDelay, ct);
+                    }
+                }
+                _log.Info($"Kaldırma izleme başladı: {_snapshot.Count} program kaydı izleniyor.", nameof(UninstallWatchService));
 
                 using var timer = new PeriodicTimer(PollInterval);
                 while (await timer.WaitForNextTickAsync(ct))
                 {
-                    string fingerprint = ReadFingerprint();
-                    if (fingerprint == _fingerprint) continue;
-
-                    // Birden çok anahtarı sırayla silen kaldırıcılar ve MSI işlemleri için kısa bekleme.
-                    await Task.Delay(SettleDelay, ct);
-                    _fingerprint = ReadFingerprint();
-                    var current = await ReadSnapshotAsync();
-                    Compare(_snapshot, current);
-                    _snapshot = current;
+                    try
+                    {
+                        await PollOnceAsync(ct);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _log.Warning("Kaldırma izleme turu başarısız; izleme sürüyor.", ex, nameof(UninstallWatchService));
+                    }
                 }
             }
             catch (OperationCanceledException)
             {
-                // Durduruldu.
+                _log.Info("Kaldırma izleme durduruldu.", nameof(UninstallWatchService));
             }
             catch (Exception ex)
             {
-                _log.Warning("Kaldırma izleme durdu.", ex, nameof(UninstallWatchService));
+                _log.Warning("Kaldırma izleme beklenmedik şekilde durdu.", ex, nameof(UninstallWatchService));
             }
+        }
+
+        private async Task PollOnceAsync(CancellationToken ct)
+        {
+            string fingerprint = ReadFingerprint();
+            if (fingerprint == _fingerprint) return;
+
+            // Birden çok anahtarı sırayla silen kaldırıcılar ve MSI işlemleri için kısa bekleme.
+            await Task.Delay(SettleDelay, ct);
+            _fingerprint = ReadFingerprint();
+            var current = await ReadSnapshotAsync();
+            int added = current.Keys.Count(k => !_snapshot.ContainsKey(k));
+            int gone = _snapshot.Keys.Count(k => !current.ContainsKey(k));
+            _log.Info($"Program kayıtları değişti: +{added} / -{gone}.", nameof(UninstallWatchService));
+            Compare(_snapshot, current);
+            _snapshot = current;
         }
 
         private void Compare(Dictionary<string, InstalledAppItem> before, Dictionary<string, InstalledAppItem> after)

@@ -63,6 +63,36 @@ public class UninstallWatchServiceTests
         }
     }
 
+    /// <summary>
+    /// Bakım açıkken kurulup sonra dışarıdan kaldırılan program: önce kayıt eklenir (taban güncellenir), sonra silinir.
+    /// Önceki test yalnızca izleme başlamadan önce kurulu programı kapsıyordu.
+    /// </summary>
+    [Fact]
+    public async Task InstalledWhileWatching_ThenRemovedExternally_RaisesEvent()
+    {
+        var watch = await StartAsync();
+        string name = "Bakım Sonradan Kurulan Test " + Guid.NewGuid().ToString("N")[..6];
+        string? keyName = null;
+        try
+        {
+            var seen = new TaskCompletionSource<InstalledAppItem>(TaskCreationOptions.RunContinuationsAsynchronously);
+            watch.AppUninstalledExternally += app => { if (app.DisplayName == name) seen.TrySetResult(app); };
+
+            keyName = CreateFakeApp(name);
+            await Task.Delay(TimeSpan.FromSeconds(2));   // yoklama + yerleşme: kayıt tabana girer
+            Assert.False(seen.Task.IsCompleted);
+
+            Delete(keyName);
+            var winner = await Task.WhenAny(seen.Task, Task.Delay(TimeSpan.FromSeconds(15)));
+            Assert.Same(seen.Task, winner);
+        }
+        finally
+        {
+            watch.Stop();
+            if (keyName != null) Delete(keyName);
+        }
+    }
+
     [Fact]
     public async Task BakimInitiatedUninstall_IsNotReported()
     {

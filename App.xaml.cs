@@ -232,6 +232,7 @@ namespace Bakım
             // Bakım dışından yapılan kaldırmalar: kalıntı taraması önerilir.
             var uninstallWatch = GetService<Bakım.Services.Uninstall.IUninstallWatchService>();
             uninstallWatch.AppUninstalledExternally += OnAppUninstalledExternally;
+            GetService<IGameModeService>().GameModeChanged += OnGameModeChangedForUninstallNotices;
             if (settingsService.Current.UninstallWatchEnabled) uninstallWatch.Start();
 
             // Windows Gezgini Sağ Tık Menüsü ("Bakım ile Kaldır") Varsayılan Entegrasyonu
@@ -314,18 +315,38 @@ namespace Bakım
             }
         }
 
+        /// <summary>Oyun Modu sırasında yakalanan kaldırmalar: oyun bitince bildirilir (eskiden bildirim kayboluyordu).</summary>
+        private readonly List<Models.InstalledAppItem> _pendingUninstallNotices = new();
+
         /// <summary>
-        /// Program Bakım dışından kaldırıldı: köşede "Kalıntıları tara" önerisi. Oyun Modu'nda gösterilmez (günlüğe yazılır;
-        /// kalıntılar Kaldırıcı'dan sonra da taranabilir).
+        /// Program Bakım dışından kaldırıldı: köşede "Kalıntıları tara" önerisi. Oyun Modu'nda bekletilir, oturum bitince gösterilir.
         /// </summary>
         private void OnAppUninstalledExternally(Models.InstalledAppItem app)
         {
             if (TryGetService<IGameModeService>()?.IsGameModeActive == true)
             {
-                AppLog.Info($"Oyun Modu açık; {app.DisplayName} kaldırma bildirimi gösterilmedi.", "UninstallWatch");
+                lock (_pendingUninstallNotices) _pendingUninstallNotices.Add(app);
+                AppLog.Info($"Oyun Modu açık; {app.DisplayName} kaldırma bildirimi oyun bitince gösterilecek.", "UninstallWatch");
                 return;
             }
 
+            ShowUninstallNotice(app);
+        }
+
+        private void OnGameModeChangedForUninstallNotices(bool active)
+        {
+            if (active) return;
+            List<Models.InstalledAppItem> pending;
+            lock (_pendingUninstallNotices)
+            {
+                pending = new List<Models.InstalledAppItem>(_pendingUninstallNotices);
+                _pendingUninstallNotices.Clear();
+            }
+            foreach (var app in pending) ShowUninstallNotice(app);
+        }
+
+        private void ShowUninstallNotice(Models.InstalledAppItem app)
+        {
             // Program dosyaları silinmiş olabilir; ikon yine de denenir (DisplayIcon başka yerde kalmış olabilir).
             app.IconSource ??= ViewModels.UninstallerViewModel.ResolveIcon(app);
 
