@@ -166,4 +166,42 @@ public sealed class AnalyzerFaz0WindowsTests
         var deep = new PersistenceItem { Signature = SignatureStatus.Unsigned, FilePath = Win("explorer.exe"), DeepRiskScore = 5 };
         Assert.Equal(5, deep.RiskScore);
     }
+
+    /// <summary>
+    /// Sağ tıkla analiz edilen düz metin dosyası eskiden "imzasız + Temp'te + VT'de yok" kurallarından 60 (Şüpheli) alıyordu.
+    /// </summary>
+    [Fact]
+    public async Task PlainTextInTemp_IsNotFlagged()
+    {
+        string file = Path.Combine(Path.GetTempPath(), "bakim_" + Guid.NewGuid().ToString("N") + ".txt");
+        File.WriteAllText(file, "Bakım sağ tık testi");
+        try
+        {
+            var result = await new FileThreatAnalyzerService(new FakeVirusTotal { Verdict = (0, 0, 0) }).AnalyzeFileAsync(file);
+            Assert.Equal(0, result.RiskScore);
+            Assert.Contains(result.Factors, f => f.Title == "Çalıştırılabilir Dosya Değil");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
+
+    /// <summary>Uzantı gizleme: .txt adlı imzasız PE yine kod sayılır ve kuralları alır.</summary>
+    [Fact]
+    public async Task UnsignedPeRenamedToTxt_StillGetsExecutableRules()
+    {
+        string file = Path.Combine(Path.GetTempPath(), "bakim_" + Guid.NewGuid().ToString("N") + ".txt");
+        File.Copy(typeof(AnalyzerFaz0WindowsTests).Assembly.Location, file);
+        try
+        {
+            var result = await new FileThreatAnalyzerService(new FakeVirusTotal()).AnalyzeFileAsync(file);
+            Assert.Contains(result.Factors, f => f.Title == "İmzasız Yazılım");
+            Assert.Contains(result.Factors, f => f.Title == "Şüpheli Çalışma Dizininde (Temp)");
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+    }
 }

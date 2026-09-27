@@ -108,6 +108,7 @@ namespace Bakım.Services
                 // meşru sistem dosyalarına haksız risk puanı yazıyordu.
                 var signature = Helpers.SignatureInspector.Inspect(filePath);
                 var sigStatus = signature.Status;
+                bool codeLike = IsCodeLike(filePath);
                 string signerName = signature.Signer;
 
                 result.SignerName = signerName;
@@ -174,6 +175,19 @@ namespace Bakım.Services
                         ScoreImpact = 35
                     });
                 }
+                else if (!codeLike)
+                {
+                    // Belge, görsel, metin: imzalanmaz ve kendi başına çalışmaz; imzasızlık risk değildir.
+                    result.IsSigned = false;
+                    result.DigitalSignatureText = "Uygulanmaz";
+                    result.Factors.Add(new ThreatFactor
+                    {
+                        Title = "Çalıştırılabilir Dosya Değil",
+                        Description = "Dosya bir program, betik ya da kurulum paketi değil; dijital imza, konum ve VirusTotal kaydı kuralları uygulanmadı.",
+                        Severity = ThreatSeverity.Info,
+                        ScoreImpact = 0
+                    });
+                }
                 else
                 {
                     score += 25;
@@ -218,8 +232,8 @@ namespace Bakım.Services
                     }
                 }
 
-                // Temp Dirs
-                if (lowerPath.Contains(@"\appdata\local\temp") || lowerPath.Contains(@"\windows\temp") || lowerPath.Contains(@"\temporary internet files\"))
+                // Temp Dirs (yalnızca kod: çalışmayacak bir dosyanın bulunduğu klasör risk değildir)
+                if (codeLike && (lowerPath.Contains(@"\appdata\local\temp") || lowerPath.Contains(@"\windows\temp") || lowerPath.Contains(@"\temporary internet files\")))
                 {
                     score += 25;
                     result.Factors.Add(new ThreatFactor
@@ -231,7 +245,7 @@ namespace Bakım.Services
                     });
                 }
                 // Public or Roaming Root
-                else if (lowerPath.Contains(@"\users\public"))
+                else if (codeLike && lowerPath.Contains(@"\users\public"))
                 {
                     score += 20;
                     result.Factors.Add(new ThreatFactor
@@ -242,7 +256,7 @@ namespace Bakım.Services
                         ScoreImpact = 20
                     });
                 }
-                else if (lowerPath.Contains(@"\appdata\roaming\") && !lowerPath.Replace(@"\appdata\roaming\", "").Contains(@"\"))
+                else if (codeLike && lowerPath.Contains(@"\appdata\roaming\") && !lowerPath.Replace(@"\appdata\roaming\", "").Contains(@"\"))
                 {
                     score += 15;
                     result.Factors.Add(new ThreatFactor
@@ -491,7 +505,7 @@ namespace Bakım.Services
                                 ScoreImpact = 0
                             });
                         }
-                        else if (total == 0 && (msg.Contains("VT Kaydı Yok") || msg.Contains("Bulunamadı")))
+                        else if (codeLike && total == 0 && (msg.Contains("VT Kaydı Yok") || msg.Contains("Bulunamadı")))
                         {
                             score += 10;
                             result.Factors.Add(new ThreatFactor
@@ -680,6 +694,23 @@ namespace Bakım.Services
                 if (scheduled.Succeeded) return scheduled;
             }
             return result;
+        }
+
+        /// <summary>Kod benzeri mi (PE başlığı, betik, kurulum paketi…)? Okunamazsa güvenli taraf: kod say.</summary>
+        private static bool IsCodeLike(string filePath)
+        {
+            Span<byte> header = stackalloc byte[2];
+            try
+            {
+                using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                int read = stream.Read(header);
+                return Bakım.Core.Analyzer.ExecutableContent.IsCodeLike(Path.GetFileName(filePath), header[..read]);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                AppLog.Debug($"Dosya başlığı okunamadı, kod varsayıldı: {ex.Message}", nameof(FileThreatAnalyzerService));
+                return true;
+            }
         }
 
         private static string ComputeFileMd5(string filePath)

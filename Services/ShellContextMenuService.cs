@@ -45,6 +45,20 @@ namespace Bakım.Services
 
         private static string CommandFor(string exePath) => $"\"{exePath}\" --uninstall-target \"%1\"";
 
+        /// <summary>
+        /// Menü ikonu Bakim.exe'den okunur. Eskiden komutla aynı dosya (BakimShell.exe,0) yazılıyordu; BakimShell'de
+        /// ikon kaynağı olmadığı için Gezgin'de iki menü öğesi de ikonsuz görünüyordu.
+        /// </summary>
+        private static string IconFor(string exePath)
+        {
+            string? dir = Path.GetDirectoryName(exePath);
+            string main = dir == null ? exePath : Path.Combine(dir, "Bakim.exe");
+            return $"\"{(File.Exists(main) ? main : exePath)}\",0";
+        }
+
+        private static bool HasIcon(RegistryKey? key, string exePath) =>
+            string.Equals(key?.GetValue("Icon") as string, IconFor(exePath), StringComparison.OrdinalIgnoreCase);
+
         /// <summary>"Bakım ile analiz et" (ANL Faz 5): tüm dosya türlerinde, Analizör'de dosya analizi açar.</summary>
         private const string AnalyzeKeyName = "BakimAnalyze";
         private const string AnalyzeMenuText = "Bakım ile analiz et";
@@ -56,8 +70,10 @@ namespace Bakım.Services
         {
             try
             {
-                using var cmd = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{AnalyzeTarget}\{AnalyzeKeyName}\command");
-                return string.Equals(cmd?.GetValue("") as string, AnalyzeCommandFor(exePath), StringComparison.OrdinalIgnoreCase);
+                using var key = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{AnalyzeTarget}\{AnalyzeKeyName}");
+                using var cmd = key?.OpenSubKey("command");
+                return HasIcon(key, exePath) &&
+                       string.Equals(cmd?.GetValue("") as string, AnalyzeCommandFor(exePath), StringComparison.OrdinalIgnoreCase);
             }
             catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
             {
@@ -72,7 +88,7 @@ namespace Bakım.Services
             {
                 using var baseKey = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{AnalyzeTarget}\{AnalyzeKeyName}");
                 baseKey.SetValue("", AnalyzeMenuText);
-                baseKey.SetValue("Icon", $"\"{exePath}\",0");
+                baseKey.SetValue("Icon", IconFor(exePath));
                 using var cmdKey = baseKey.CreateSubKey("command");
                 cmdKey.SetValue("", AnalyzeCommandFor(exePath));
                 return true;
@@ -110,8 +126,11 @@ namespace Bakım.Services
                 string expected = CommandFor(exe);
                 foreach (var (key, _) in Targets)
                 {
-                    using var cmd = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{key}\{KeyName}\command");
-                    if (!string.Equals(cmd?.GetValue("") as string, expected, StringComparison.OrdinalIgnoreCase))
+                    // İkon da doğrulanır: eski ikonsuz kayıtlar açılışta kendiliğinden onarılır.
+                    using var menu = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{key}\{KeyName}");
+                    using var cmd = menu?.OpenSubKey("command");
+                    if (!HasIcon(menu, exe) ||
+                        !string.Equals(cmd?.GetValue("") as string, expected, StringComparison.OrdinalIgnoreCase))
                         return false;
                 }
                 return true;
@@ -130,7 +149,7 @@ namespace Bakım.Services
         {
             string exePath = GetExePath();
             string commandStr = CommandFor(exePath);
-            string iconStr = $"\"{exePath}\",0";
+            string iconStr = IconFor(exePath);
             bool allSuccess = RegisterAnalyze(exePath);
 
             foreach (var (key, extendedOnly) in Targets)

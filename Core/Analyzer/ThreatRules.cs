@@ -4,6 +4,30 @@ using System.Linq;
 
 namespace Bakım.Core.Analyzer
 {
+    /// <summary>
+    /// Dosya kod mu (çalıştırılabilir, betik, kurulum paketi, kısayol)? "İmzasız", "Temp'ten çalışıyor" ve "VirusTotal'de
+    /// kaydı yok" puanları yalnızca kod benzeri dosyalara anlamlıdır. Eskiden sağ tıkla analiz edilen düz bir .txt
+    /// dosyası bu üç kuraldan 60 (Şüpheli) alıyordu. İçerik uzantıdan önce gelir: uzantısı .txt olan bir PE (MZ) kod sayılır.
+    /// </summary>
+    public static class ExecutableContent
+    {
+        public static readonly IReadOnlySet<string> Extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ".exe", ".dll", ".sys", ".scr", ".com", ".cpl", ".ocx", ".drv", ".efi", ".mui",
+            ".msi", ".msp", ".msix", ".msixbundle", ".appx", ".appxbundle",
+            ".lnk", ".url", ".jar", ".reg", ".inf", ".psd1", ".wsh", ".vb", ".py", ".pyw"
+        };
+
+        public static bool IsCodeLike(string fileName, ReadOnlySpan<byte> header)
+        {
+            if (header.Length >= 2 && header[0] == (byte)'M' && header[1] == (byte)'Z') return true;
+            int dot = fileName.LastIndexOf('.');
+            if (dot < 0) return false;
+            string ext = fileName[dot..];
+            return Extensions.Contains(ext) || ScriptRules.ScriptExtensions.Contains(ext);
+        }
+    }
+
     /// <summary>Kritik Windows ikilileri ve yasal konumları (ANL Z3).</summary>
     public static class SystemBinaryLocations
     {

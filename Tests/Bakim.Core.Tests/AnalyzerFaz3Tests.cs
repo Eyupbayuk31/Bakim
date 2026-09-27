@@ -107,3 +107,22 @@ Resources               : 1 total
         Assert.Equal(70, ScriptRules.TotalImpact(many));
     }
 }
+
+public class ExecutableContentTests
+{
+    [Theory]
+    [InlineData("notlar.txt", false)]
+    [InlineData("foto.jpg", false)]
+    [InlineData("rapor.pdf", false)]
+    [InlineData("kurulum.exe", true)]
+    [InlineData("paket.MSI", true)]
+    [InlineData("betik.ps1", true)]
+    [InlineData("kisayol.lnk", true)]
+    [InlineData("uzantisiz", false)]
+    public void ByExtension(string name, bool expected) =>
+        Assert.Equal(expected, Bakım.Core.Analyzer.ExecutableContent.IsCodeLike(name, ReadOnlySpan<byte>.Empty));
+
+    [Fact]
+    public void MzHeader_WinsOverExtension() =>
+        Assert.True(Bakım.Core.Analyzer.ExecutableContent.IsCodeLike("masum.txt", new byte[] { (byte)'M', (byte)'Z' }));
+}

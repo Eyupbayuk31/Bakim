@@ -10,6 +10,8 @@
     <AssemblyVersion>$(BakimVersion).0</AssemblyVersion>
     <FileVersion>$(BakimVersion).0</FileVersion>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Eskiden ikonsuzdu: sağ tık menüsü ikonu BakimShell.exe,0'ı gösterdiği için boş görünüyordu. -->
+    <ApplicationIcon>..\..\Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
