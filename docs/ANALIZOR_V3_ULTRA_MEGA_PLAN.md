@@ -282,6 +282,14 @@ her fark açıklanabilir.
 > davranış, durum simgesi, yıkıcı onaylarda kırmızı birincil düğme — `Core/Ui/DialogPolicy`). Çökme yakalayıcısı ve
 > UAC yeniden başlatması bilinçli olarak sistem penceresinde. UI duman testi Fluent pencereleri ayrı süreçte,
 > ekran dışında ve otomasyonla doğruluyor. Kalan: ana-ayrıntı + kanıt paneli, sayfa içi analiz, toplu eylemler.
+>
+> **v4.18.0: Faz 5 tamamlandı.** Ana-ayrıntı: Analizör satırı seçilince sağda kanıt paneli (neden bu puan, ham komut ↔
+> çözümlenen hedef, konum ve kaynak kurulum, yayıncı/imza/VT/SHA-256, izin verilen eylemler ve kilit gerekçeleri).
+> Toplu eylemler: satır onay kutuları, "Görünenlerin tümünü seç", "Seçilenleri kapat" (Run + Başlangıç klasörü tek
+> kayıt defteri yakalamasıyla TEK geri alma kaydı; hizmet/görevler kendi kayıtlarıyla), "Karantinaya al" (Microsoft
+> doğrulanmışlar hariç, aynı dosya bir kez), önizlemeli onay. Sayfa içi analiz: `ThreatAnalysisView` (pencere içeriği
+> ortak görünüme taşındı); Analizör'den açılan analizler sayfada, diğer modüller pencerede. Liste kartı, filtre çipi
+> ve odak halkası (v4.17.0) ile klavye/erişilebilirlik maddesi de karşılandı.
 
 - **Ana-ayrıntı düzeni:** Solda gruplanmış liste (kategori/yayıncı/karar), sağda kanıt paneli (kanıtlar,
   ham komut ↔ çözümlenmiş hedef, imza zinciri, VT, geçmiş, izinli eylemler).

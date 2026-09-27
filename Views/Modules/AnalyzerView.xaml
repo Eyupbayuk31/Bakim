@@ -8,6 +8,7 @@
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
              xmlns:c="clr-namespace:Bakım.Controls"
+             xmlns:dialogs="clr-namespace:Bakım.Views.Dialogs"
              xmlns:local="clr-namespace:Bakım.Views.Modules"
              mc:Ignorable="d" 
              d:DesignHeight="850" d:DesignWidth="1100"
@@ -120,7 +121,7 @@
                                     Visibility="{Binding DataContext.IsChangesTab, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}"/>
 
         <!-- 1. KPI kartları — tasarım sistemi bileşeni (önceki 76 satırlık elle yazım yerine) -->
-        <c:SummaryStrip Grid.Row="2" Margin="{StaticResource Gap.Bottom.LG}" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
+        <c:SummaryStrip Grid.Row="2" Margin="{StaticResource Gap.Bottom.LG}" Visibility="{Binding ShowScanContent, Converter={StaticResource BoolToVis}}">
             <c:StatCard Icon="Apps24"
                         Intent="Accent"
                         Label="Aktif kalıcılık"
@@ -153,7 +154,7 @@
         </c:SummaryStrip>
 
         <!-- 2. Category Toolbar & Options -->
-        <Border Grid.Row="3" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}" 
+        <Border Grid.Row="3" Visibility="{Binding ShowScanContent, Converter={StaticResource BoolToVis}}" 
                 Background="{DynamicResource Card.Fill}"
                 BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
@@ -251,7 +252,25 @@
         </Border>
 
         <!-- 3. Virtualized Persistence Items List -->
-        <Grid Grid.Row="4" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
+        <!-- Sayfa içi dosya analizi (ANL Faz 5): özet, filtre ve listenin yerini alır; "Listeye dön" ile kapanır -->
+        <Border Grid.Row="2" Grid.RowSpan="3"
+                Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.None}"
+                Visibility="{Binding ShowInPageAnalysis, Converter={StaticResource BoolToVis}}">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Padding="12,10" BorderBrush="{DynamicResource Divider.Stroke}" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.MD}"
+                                   Icon="{ui:SymbolIcon ArrowLeft20}" Content="Listeye dön"
+                                   Command="{Binding CloseInPageAnalysisCommand}"
+                                   AutomationProperties.Name="Dosya analizinden kalıcılık listesine dön"/>
+                        <TextBlock Text="Dosya analizi" Style="{StaticResource Text.CardTitle}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <dialogs:ThreatAnalysisView DataContext="{Binding InPageAnalysis}"/>
+            </DockPanel>
+        </Border>
+
+        <Grid Grid.Row="4" Visibility="{Binding ShowScanContent, Converter={StaticResource BoolToVis}}">
 
             <!-- Boş durum: filtre hiçbir şey döndürmediğinde kullanıcıyı yalnız bırakma -->
             <c:EmptyState Icon="Search24"
@@ -259,13 +278,50 @@
                           Description="Arama metnini temizlemeyi, kategori filtresini &quot;Tümü&quot; yapmayı veya &quot;Doğrulanmış Microsoft girdilerini gizle&quot; anahtarını kapatmayı deneyin."
                           Visibility="{Binding HasNoResults, Converter={StaticResource BoolToVis}}"/>
 
-        <Border Visibility="{Binding HasNoResults, Converter={StaticResource InverseBoolToVis}}"
-                Background="{DynamicResource Card.Fill}"
+        <DockPanel Visibility="{Binding HasNoResults, Converter={StaticResource InverseBoolToVis}}">
+
+            <!-- Toplu eylem çubuğu (ANL Faz 5): seçim sayısı ve seçilenlere uygulanacak eylemler -->
+            <Grid DockPanel.Dock="Top" Margin="{StaticResource Gap.Bottom.SM}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ui:Button Appearance="Transparent" Padding="{StaticResource Pad.Control}"
+                           Icon="{ui:SymbolIcon CheckboxChecked20}" Content="Görünenlerin tümünü seç"
+                           Command="{Binding CheckAllVisibleCommand}"
+                           AutomationProperties.Name="Filtreyle görünen tüm girdileri toplu işlem için seç"/>
+                <TextBlock Grid.Column="1" Text="{Binding CheckedText}" Style="{StaticResource Text.Caption}"
+                           VerticalAlignment="Center" Margin="{StaticResource Gap.Right.MD}" TextAlignment="Right"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" IsEnabled="{Binding HasChecked}">
+                    <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
+                               Icon="{ui:SymbolIcon ToggleLeft20}" Content="Seçilenleri kapat"
+                               Command="{Binding DisableCheckedCommand}"
+                               ToolTip="Seçilen girdiler Windows açılışında çalışmaz; Etkinlik Merkezi'nden geri alınabilir. Kilitli girdiler atlanır."/>
+                    <ui:Button Appearance="Secondary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
+                               Icon="{ui:SymbolIcon ShieldProhibited20}" Content="Karantinaya al"
+                               Command="{Binding QuarantineCheckedCommand}"
+                               ToolTip="Seçilen girdilerin dosyaları karantinaya alınır (doğrulanmış Microsoft dosyaları hariç); geri alınabilir."/>
+                    <ui:Button Appearance="Transparent" Padding="{StaticResource Pad.Control}"
+                               Icon="{ui:SymbolIcon Dismiss20}" Content="Seçimi temizle"
+                               Command="{Binding ClearCheckedCommand}"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+        <Border Background="{DynamicResource Card.Fill}"
                 BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.LG}"
                 Padding="8">
             <ListBox ItemsSource="{Binding FilteredItems}"
+                     SelectedItem="{Binding SelectedItem}"
+                     AutomationProperties.Name="Kalıcılık girdileri"
                      Background="Transparent"
                      BorderThickness="0"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -281,9 +337,23 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="{StaticResource Radius.MD}">
-                                        <ContentPresenter/>
-                                    </Border>
+                                    <Grid>
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="{StaticResource Radius.MD}">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <!-- Seçili (kanıt panelinde açık) satır: vurgu kenarı + sol gösterge -->
+                                        <Border x:Name="SelectionRing" CornerRadius="{StaticResource Radius.MD}" BorderThickness="{StaticResource Stroke.Medium}"
+                                                BorderBrush="{DynamicResource AccentFillColorDefaultBrush}" Visibility="Collapsed" IsHitTestVisible="False"/>
+                                        <Border x:Name="Indicator" Width="3" Height="18" Margin="1,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                CornerRadius="{StaticResource Radius.Indicator}" Background="{DynamicResource AccentFillColorDefaultBrush}"
+                                                Visibility="Collapsed" IsHitTestVisible="False"/>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="SelectionRing" Property="Visibility" Value="Visible"/>
+                                            <Setter TargetName="Indicator" Property="Visibility" Value="Visible"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -324,6 +394,7 @@
                             </Border.ContextMenu>
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="CheckCol"/>
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="StatusCol"/>
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="IconCol"/>
                                     <ColumnDefinition Width="*"/>
@@ -335,7 +406,12 @@
 
                                 <!-- Column 0: açma/kapama yalnızca eylem politikası izin veriyorsa (ANL Z1);
                                      sürücü, kritik hizmet, Windows görevi, WMI ve Winlogon satırlarında kilit ve gerekçe -->
-                                <Grid Grid.Column="0" Margin="0,0,14,0" VerticalAlignment="Center">
+                                <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked, Mode=TwoWay}" VerticalAlignment="Center"
+                                          Margin="{StaticResource Gap.Right.SM}" MinWidth="0"
+                                          Command="{Binding DataContext.UpdateCheckedCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          AutomationProperties.Name="{Binding Name, StringFormat='{}{0} toplu işlem için seç'}"/>
+
+                                <Grid Grid.Column="1" Margin="0,0,14,0" VerticalAlignment="Center">
                                     <ui:ToggleSwitch IsChecked="{Binding IsEnabled, Mode=TwoWay}"
                                                      Command="{Binding DataContext.ToggleItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                      CommandParameter="{Binding}"
@@ -351,7 +427,7 @@
                                 </Grid>
 
                                 <!-- Column 1: Application Icon -->
-                                <Border Grid.Column="1" 
+                                <Border Grid.Column="2" 
                                         Width="36" Height="36" 
                                         CornerRadius="{StaticResource Radius.SM}"
                                         Background="{DynamicResource ControlFillColorTertiaryBrush}"
@@ -373,7 +449,7 @@
                                 </Border>
 
                                 <!-- Column 2: Name, Path & Location Source -->
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0">
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center" Margin="0,0,14,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding Name}" FontSize="{StaticResource Font.Body}" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                                         <TextBlock Text="{Binding LocationSource, StringFormat=' ({0})'}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="6,2,0,0"/>
@@ -415,7 +491,7 @@
                                 </StackPanel>
 
                                 <!-- Column 3: tek ölçekli risk rozeti (ANL Faz 2) ve kategori; ipucunda "neden bu puan?" -->
-                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
                                 <c:StatusBadge
                                                Text="{Binding RiskLabel}"
                                                Intent="{Binding RiskIntent}"
@@ -424,8 +500,9 @@
                                                HorizontalAlignment="Right"
                                                ToolTip="{Binding RiskReasonsText}"
                                                AutomationProperties.Name="{Binding RiskLabel, StringFormat='Risk: {0}'}"/>
-                                <!-- Column 3b: Category Badge -->
-                                <Border 
+                                <!-- Column 3b: Category Badge (kanıt paneli açıkken panelde) -->
+                                <Border Visibility="{Binding DataContext.HasSelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBoolToVis}}"
+                                        
                                         Background="{DynamicResource Card.Fill.Secondary}"
                                         BorderBrush="{DynamicResource Divider.Stroke}"
                                         BorderThickness="1"
@@ -437,8 +514,9 @@
                                 </Border>
                                 </StackPanel>
 
-                                <!-- Column 4: Digital Signature Badge -->
-                                <Border Grid.Column="4" 
+                                <!-- Column 4: Digital Signature Badge (kanıt paneli açıkken panelde) -->
+                                <Border Grid.Column="5" Visibility="{Binding DataContext.HasSelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBoolToVis}}"
+                                        
                                         CornerRadius="{StaticResource Radius.SM}"
                                         Padding="8,4"
                                         Margin="0,0,10,0"
@@ -500,8 +578,9 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- Column 5: VirusTotal Score Badge -->
-                                <Border Grid.Column="5" 
+                                <!-- Column 5: VirusTotal Score Badge (kanıt paneli açıkken panelde) -->
+                                <Border Grid.Column="6" Visibility="{Binding DataContext.HasSelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBoolToVis}}"
+                                        
                                         Background="{DynamicResource Brush.Muted.Subtle}"
                                         BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
@@ -525,7 +604,8 @@
 
                                     Artık: etiketli birincil eylem + taşma menüsü + yıkıcı eylem.
                                 -->
-                                <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Grid.Column="7" Orientation="Horizontal" VerticalAlignment="Center"
+                                            Visibility="{Binding DataContext.HasSelectedItem, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource InverseBoolToVis}}">
 
                                     <!-- Birincil eylem: metinli, tereddütsüz -->
                                     <ui:Button Appearance="Secondary"
@@ -589,6 +669,162 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Border>
+
+                <!-- Kanıt paneli (ANL Faz 5): seçili girdinin tüm kanıtı ve izinli eylemleri -->
+                <Border Grid.Column="1" Width="340" Margin="16,0,0,0"
+                        Style="{StaticResource Card.Surface}" Padding="{StaticResource Pad.CardCompact}"
+                        Visibility="{Binding HasSelectedItem, Converter={StaticResource BoolToVis}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Başlık -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource Card.IconTile}" Width="40" Height="40" Margin="{StaticResource Gap.Right.MD}" VerticalAlignment="Top">
+                                <Grid>
+                                    <Image Source="{Binding SelectedItem.IconSource}" Width="24" Height="24" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                    <ui:SymbolIcon Symbol="Document24" FontSize="20"
+                                                   Visibility="{Binding SelectedItem.IconSource, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
+                                </Grid>
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding SelectedItem.Name}" Style="{StaticResource Text.CardTitle}" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding SelectedItem.CategoryDisplayName}" Style="{StaticResource Text.Caption}"/>
+                            </StackPanel>
+                            <ui:Button Grid.Column="2" Appearance="Transparent" Padding="6" VerticalAlignment="Top"
+                                       Icon="{ui:SymbolIcon Dismiss20}" ToolTip="Paneli kapat"
+                                       Command="{Binding CloseDetailsCommand}" AutomationProperties.Name="Kanıt panelini kapat"/>
+                        </Grid>
+
+                        <ScrollViewer Grid.Row="1" Margin="{StaticResource Gap.Top.MD}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <WrapPanel>
+                                    <c:StatusBadge Text="{Binding SelectedItem.RiskLabel}" Intent="{Binding SelectedItem.RiskIntent}" Margin="{StaticResource Gap.Right.XS}"/>
+                                    <c:StatusBadge Text="Microsoft" Intent="Neutral" Margin="{StaticResource Gap.Right.XS}"
+                                                   Visibility="{Binding SelectedItem.IsMicrosoft, Converter={StaticResource BoolToVis}}"/>
+                                    <c:StatusBadge Text="Güvenilen" Intent="Success"
+                                                   Visibility="{Binding SelectedItem.IsUserTrusted, Converter={StaticResource BoolToVis}}"/>
+                                </WrapPanel>
+
+                                <TextBlock Text="Neden bu puan?" Style="{StaticResource Text.SectionLabel}" Margin="{StaticResource Gap.Top.MD}"/>
+                                <Border Style="{StaticResource Card.Inset}" Margin="{StaticResource Gap.Top.XS}">
+                                    <TextBlock Text="{Binding SelectedItem.RiskReasonsText}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"/>
+                                </Border>
+
+                                <TextBlock Text="Komut ve hedef" Style="{StaticResource Text.SectionLabel}" Margin="{StaticResource Gap.Top.MD}"/>
+                                <Border Style="{StaticResource Card.Inset}" Margin="{StaticResource Gap.Top.XS}">
+                                    <StackPanel>
+                                        <TextBlock Text="Ham komut" Style="{StaticResource Text.Caption}"/>
+                                        <TextBlock Text="{Binding SelectedItem.RawCommand}" Style="{StaticResource Text.Mono}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="Çözümlenen hedef" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.SM}"/>
+                                        <TextBlock Text="{Binding SelectedItem.FilePath}" Style="{StaticResource Text.Mono}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding SelectedItem.ResolutionText}" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Top.XS}"/>
+                                        <TextBlock Text="{Binding SelectedItem.HostDisplay}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap"
+                                                   Visibility="{Binding SelectedItem.HasHost, Converter={StaticResource BoolToVis}}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="Konum" Style="{StaticResource Text.SectionLabel}" Margin="{StaticResource Gap.Top.MD}"/>
+                                <Border Style="{StaticResource Card.Inset}" Margin="{StaticResource Gap.Top.XS}">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding SelectedItem.LocationSource}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding SelectedItem.Provenance}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="{StaticResource Gap.Top.XS}"
+                                                   Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
+                                                   Visibility="{Binding SelectedItem.HasProvenance, Converter={StaticResource BoolToVis}}"/>
+                                        <TextBlock Text="{Binding SelectedItem.CollectorNotes}" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="{StaticResource Gap.Top.XS}"
+                                                   Visibility="{Binding SelectedItem.HasCollectorNotes, Converter={StaticResource BoolToVis}}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <TextBlock Text="Dosya" Style="{StaticResource Text.SectionLabel}" Margin="{StaticResource Gap.Top.MD}"/>
+                                <Border Style="{StaticResource Card.Inset}" Margin="{StaticResource Gap.Top.XS}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Text="Yayıncı" Style="{StaticResource Text.Caption}" Margin="{StaticResource Gap.Right.MD}"/>
+                                        <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedItem.Publisher}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Row="1" Text="İmza" Style="{StaticResource Text.Caption}" Margin="0,8,12,0"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedItem.SignatureText}" Style="{StaticResource Text.Body}" TextWrapping="Wrap" Margin="{StaticResource Gap.Top.SM}"/>
+                                        <TextBlock Grid.Row="2" Text="VirusTotal" Style="{StaticResource Text.Caption}" Margin="0,8,12,0"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding SelectedItem.VirusTotalScore}" Style="{StaticResource Text.Body}" Margin="{StaticResource Gap.Top.SM}"/>
+                                        <TextBlock Grid.Row="3" Text="SHA-256" Style="{StaticResource Text.Caption}" Margin="0,8,12,0" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedItem.Sha256Hash}" Style="{StaticResource Text.Mono}" TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding SelectedItem.Sha256Hash}" VerticalAlignment="Center" Margin="{StaticResource Gap.Top.SM}"/>
+                                        <ui:Button Grid.Row="3" Grid.Column="2" Appearance="Transparent" Padding="6,4" Margin="{StaticResource Gap.Top.XS}"
+                                                   Icon="{ui:SymbolIcon Copy20}" ToolTip="Kopyala"
+                                                   Command="{Binding CopySha256Command}" CommandParameter="{Binding SelectedItem}"
+                                                   AutomationProperties.Name="SHA-256 değerini kopyala"/>
+                                    </Grid>
+                                </Border>
+
+                                <TextBlock Text="İzin verilen eylemler" Style="{StaticResource Text.SectionLabel}" Margin="{StaticResource Gap.Top.MD}"/>
+                                <Border Style="{StaticResource Card.Inset}" Margin="{StaticResource Gap.Top.XS}">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <ui:SymbolIcon DockPanel.Dock="Left" Symbol="ToggleLeft20" FontSize="16" Margin="{StaticResource Gap.IconText}" VerticalAlignment="Top"/>
+                                            <TextBlock Text="{Binding SelectedItem.ToggleAvailabilityText}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"/>
+                                        </DockPanel>
+                                        <DockPanel Margin="{StaticResource Gap.Top.SM}">
+                                            <ui:SymbolIcon DockPanel.Dock="Left" Symbol="Delete20" FontSize="16" Margin="{StaticResource Gap.IconText}" VerticalAlignment="Top"/>
+                                            <TextBlock Text="{Binding SelectedItem.DeleteAvailabilityText}" Style="{StaticResource Text.Body}" TextWrapping="Wrap"/>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Eylemler -->
+                        <Border Grid.Row="2" BorderBrush="{DynamicResource Divider.Stroke}" BorderThickness="0,1,0,0"
+                                Margin="{StaticResource Gap.Top.MD}" Padding="{StaticResource Gap.Top.MD}">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:Button Appearance="Primary" Padding="{StaticResource Pad.Control}" Margin="{StaticResource Gap.Right.SM}"
+                                           Icon="{ui:SymbolIcon ShieldTask20}" Content="Analiz et"
+                                           Command="{Binding AnalyzeThreatCommand}" CommandParameter="{Binding SelectedItem}"/>
+                                <ui:Button Appearance="Secondary" Padding="8,6" Margin="{StaticResource Gap.Right.SM}"
+                                           Icon="{ui:SymbolIcon History20}" ToolTip="Zaman çizelgesi"
+                                           AutomationProperties.Name="Zaman çizelgesi"
+                                           Command="{Binding ShowTimelineCommand}" CommandParameter="{Binding SelectedItem}"/>
+                                <ui:DropDownButton Appearance="Secondary" Padding="{StaticResource Pad.Control}"
+                                                   Icon="{ui:SymbolIcon MoreHorizontal20}" ToolTip="Diğer eylemler" AutomationProperties.Name="Diğer eylemler">
+                                    <ui:DropDownButton.Flyout>
+                                        <ContextMenu>
+                                            <MenuItem Header="VirusTotal ile sorgula" Icon="{ui:SymbolIcon Shield20}"
+                                                      Command="{Binding ScanItemWithVirusTotalCommand}" CommandParameter="{Binding SelectedItem}"/>
+                                            <MenuItem Header="VirusTotal raporunu tarayıcıda aç" Icon="{ui:SymbolIcon Globe20}"
+                                                      Command="{Binding OpenVirusTotalWebCommand}" CommandParameter="{Binding SelectedItem}"/>
+                                            <MenuItem Header="Dosya konumunu aç" Icon="{ui:SymbolIcon FolderOpen20}"
+                                                      Command="{Binding OpenFileLocationCommand}" CommandParameter="{Binding SelectedItem}"/>
+                                            <Separator/>
+                                            <MenuItem Header="Başlangıç kaydını sil…" Icon="{ui:SymbolIcon Delete20}"
+                                                      IsEnabled="{Binding SelectedItem.CanDelete}"
+                                                      ToolTip="{Binding SelectedItem.DeleteAvailabilityText}"
+                                                      Command="{Binding DeleteItemCommand}" CommandParameter="{Binding SelectedItem}"/>
+                                        </ContextMenu>
+                                    </ui:DropDownButton.Flyout>
+                                </ui:DropDownButton>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </DockPanel>
         </Grid>
 
         <!-- 4. Status Footer -->

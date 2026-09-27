@@ -1,44 +1,36 @@
-# Bakım v4.17.0 - Sürüm Notları
+# Bakım v4.18.0 - Sürüm Notları
 
-## Tasarım: Disk Haritası, Etkinlik Merkezi, Analizör Geçmişi ve Kurulum Nöbetçisi
+## Analizör v3 · Faz 5 tamamlandı: Kanıt Paneli, Toplu Eylemler, Sayfa İçi Analiz · MSI Derin Kalıntı Taraması
 
-### Disk haritası
-- **İç içe harita:** Büyük kutuların içinde kendi alt klasörleri de çiziliyor. Hangi klasörün neden şiştiği, içine girmeden görülüyor (örneğin Android → Sdk, Programs → VS Code).
-- **Kutular:**
-  - Her kutunun üstünde renkli bir şerit var; ad, boyut ve yüzde yazıyor.
-  - Birleştirilmiş öğeler ("Bu klasördeki dosyalar") nötr renkte, klasörlerle karışmıyor.
-  - Üzerine gelince ve klavyeyle odaklanınca kutu vurgulanıyor.
-- **Özet şeridi:** Geçerli klasörün boyutu, dosya sayısı, alt klasör sayısı ve en büyük öğesi.
-- **"En büyükler" paneli:** Sağda oran çubuklu sıralı liste. Tıklayınca o klasörün içine giriliyor.
-- **Yol çubuğu:** Klasör simgeleri ve oklarla daha okunaklı.
+### Kanıt paneli (ana-ayrıntı)
+- **Nasıl açılır:** Analizör'de bir satıra tıklayınca sağda kanıt paneli açılıyor.
+- **İçeriği:**
+  - Neden bu puan.
+  - Ham komut ve çözümlenen hedef (yetim girdiler açıkça belirtiliyor).
+  - Konum ve girdiyi ekleyen kurulum.
+  - Yayıncı, imza, VirusTotal ve SHA-256.
+  - İzin verilen eylemler; kilitliyse nedeni.
+- **Eylemler:** Analiz et, zaman çizelgesi, VirusTotal, dosya konumu ve başlangıç kaydını silme.
+- **Satır görünümü:** Panel açıkken satırlar sadeleşiyor; ad ve yol tam görünüyor.
 
-### Etkinlik Merkezi
-- **Özet şeridi hızlı filtre:** Toplam işlem, bugün, geri alınabilir ve başarısız sayıları gösteriliyor. Karta tıklayınca o filtre uygulanıyor.
-- **Kart liste:** Her etkinlik ayrı bir kart. Solda türüne göre simge kutusu; başlık, saat ve modül, özet; sağda durum rozetleri ve "Geri al".
-- **Ayrıntı paneli:**
-  - Simgeli başlık ve bilgi tablosu (tarih, modül, tür).
-  - Etkilenen her öğe ayrı iç kartta; yollar eş aralıklı yazı tipinde.
-  - Boş durumdaki kart içinde kart görünümü düzeltildi.
+### Toplu eylemler
+- **Seçim:** Her satırda onay kutusu var; "Görünenlerin tümünü seç" filtredeki tüm girdileri seçiyor.
+- **Seçilenleri kapat:**
+  - Önce etkilenecek girdilerin önizlemesiyle onay isteniyor.
+  - Run ve Başlangıç klasörü girdileri Etkinlik Merkezi'ne **tek bir geri alma kaydı** olarak yazılıyor.
+  - Hizmet ve görevler her biri kendi kaydıyla geri alınabiliyor.
+  - Kilitli (sürücü, kritik hizmet, Windows görevi) ve zaten kapalı girdiler atlanıyor; sayıları söyleniyor.
+- **Karantinaya al:**
+  - Seçilen girdilerin dosyaları karantinaya alınıyor. Doğrulanmış Microsoft dosyaları hariç; aynı dosyaya bağlı girdiler bir kez işleniyor.
+  - Her dosya Etkinlik Merkezi'nden geri alınabiliyor.
 
-### Analizör Geçmişi
-- **Filtre çipleri:** Dağınık radyo düğmeleri ve onay kutularının yerine Fluent 2 filtre çipleri geldi: Tarih (tek seçim), Risk (çoklu), VirusTotal tespiti, Karar verilmemiş.
-- **Kart liste:** Seçili öğe artık baştan sona mora boyanmıyor. Vurgu kenarı ve soldaki gösterge çizgisiyle belirtiliyor.
-- **Ayrıntı paneli:**
-  - Nedenler iç kartta. Puana etkisi olmayan nedenlerde "+0" yazmıyor.
-  - İmza, VirusTotal ve SHA-256 tek bir kanıt tablosunda.
-  - İşlem düğmeleri panelin altında sabit ve artık alt satıra taşmıyor. "Konumu aç", "Yok say", "Kararı kaldır" ve "Geçmişten kaldır" "…" menüsünde.
-- **Düzeltme:** Geçmiş listesi bazı durumlarda satırları iki kez gösterebiliyordu ("34 / 17 analiz"). Liste yenileme artık iç içe çalışamıyor.
+### Sayfa içi analiz
+- **Analizör içinde:** "Analiz et", "Dosya incele", sürükle-bırak ve Gezgin sağ tık analizleri artık ayrı pencere açmıyor. Tam dosya analizi Analizör sayfasının içinde açılıyor; "Listeye dön" ile listeye dönülüyor.
+- **Diğer modüller:** Ağ İzleyicisi, Kaldırıcı ve Kurulum Nöbetçisi'nden gelen analizler pencerede açılmaya devam ediyor. İki yer aynı görünümü kullanıyor.
 
-### Kurulum Nöbetçisi
-- **Kart liste:** Kurulum geçmişindeki her kayıt kenarlı ayrı bir kart; grup başlıkları kartlarla hizalı.
-
-### Ortak tasarım dili
-- **Yeni ortak stiller:** `ListItem.Card` (liste kartı) ve `Chip.Filter` (filtre çipi) üç sayfada aynı görünümü sağlıyor.
-- **Klavye erişimi:** Liste kartları ve filtre çipleri klavyeyle odaklanınca görünür bir odak halkası gösteriyor.
-
-### Test altyapısı
-- **Tema testleri artık yeşil:** Aylardır başarısız görünen 5 tema testinin sebebi bulundu. Mica için pencere zemini bilerek yarı saydam, ama test alfayı da karşılaştırıyordu. Artık yalnız RGB karşılaştırılıyor; XAML duman testi ilk kez tamamen yeşil.
-- **Ekran görüntüleri:** Test düzeneği artık Bakım'ın gerçek açılışını tetiklemiyor; açık Bakım'a mesaj gitmiyor ve istenen sayfa ezilmiyor. Zemin opak çiziliyor. Disk haritası ve Analizör Geçmişi örnek verilerle çekilebiliyor.
-- **Kapsam:** Etkinlik Merkezi, Depolama panelleri, Analizör Geçmişi/Değişiklikler, Oyun Modu ve Windows Araçları sayfaları da duman testinde yükleniyor.
+### Kaldırıcı: MSI derin kalıntı taraması
+- **MSI kurulumlarında:** Windows Installer'ın bıraktığı bileşen, ürün, yükseltme kodu ve klasör kayıtları ile önbellekteki kurulum paketleri taranıyor.
+- **Sağ tık menüsü kalıntıları:** Kaldırılan programın sağ tık menüsüne eklediği uzantılar da bulunuyor.
+- **Otomatik temizlik:** Kesin kanıtlı öğelere ek olarak yüksek güvenli uygulama kalıntılarını da kapsıyor: AppData ve ProgramData altındaki uygulama klasörleri, kısayollar ve yazılım ayar anahtarları. Belgeler ve oyun kayıtları korunuyor.
 
 **Testler:** Tüm birim testleri yeşil, 4 denetim betiği tam geçti, XAML duman testi tamamen yeşil.

@@ -42,6 +42,30 @@ internal static class Screenshots
             storage.ScanDiskMapCommand.Execute(null);
             for (int i = 0; i < 120 && (storage.IsDiskMapScanning || !storage.HasDiskMap); i++) Pump(500);
         }
+        else if (key.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) && PrepareFolder == "scan")
+        {
+            var analyzer = vm.Analyzer;
+            for (int i = 0; i < 60 && (analyzer.IsScanning || analyzer.Items.Count == 0); i++) Pump(500);
+            var visible = analyzer.FilteredItems.Cast<Bakım.Models.PersistenceItem>().ToList();
+            foreach (var item in visible.Skip(1).Take(2)) item.IsChecked = true;
+            analyzer.UpdateCheckedCommand.Execute(null);
+            analyzer.SelectedItem = visible.FirstOrDefault();
+            Pump(1000);
+        }
+        else if (key.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) && PrepareFolder == "inpage")
+        {
+            var analyzer = vm.Analyzer;
+            for (int i = 0; i < 60 && (analyzer.IsScanning || analyzer.Items.Count == 0); i++) Pump(500);
+            // Düzenek gerçek geçmiş deposunu kullanır: çekim için yapılan analiz kullanıcının geçmişinde kalmasın.
+            var history = Bakım.App.GetService<Bakım.Services.History.IAnalysisHistoryService>();
+            var before = history.Query(Bakım.Core.History.AnalysisHistoryFilter.All).Select(r => r.Id).ToHashSet();
+            var target = analyzer.FilteredItems.Cast<Bakım.Models.PersistenceItem>().FirstOrDefault(i => i.HasValidFile);
+            if (target != null) analyzer.AnalyzeThreatCommand.Execute(target);
+            for (int i = 0; i < 80 && !analyzer.HasInPageAnalysis; i++) Pump(500);
+            var created = history.Query(Bakım.Core.History.AnalysisHistoryFilter.All).Select(r => r.Id).Where(id => !before.Contains(id)).ToList();
+            if (created.Count > 0) history.RemoveAsync(created).GetAwaiter().GetResult();
+            Pump(1500);
+        }
         else if (key.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) && PrepareFolder == "history")
         {
             vm.Analyzer.SwitchTabCommand.Execute("History");

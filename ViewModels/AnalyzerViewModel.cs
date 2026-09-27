@@ -30,8 +30,41 @@ namespace Bakım.ViewModels
 
         /// <summary>Etkin sekme: Scan, History, Changes.</summary>
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(IsScanTab), nameof(IsHistoryTab), nameof(IsChangesTab))]
+        [NotifyPropertyChangedFor(nameof(IsScanTab), nameof(IsHistoryTab), nameof(IsChangesTab), nameof(ShowScanContent), nameof(ShowInPageAnalysis))]
         private string _activeTab = "Scan";
+
+        /// <summary>
+        /// Sayfa içi dosya analizi (ANL Faz 5): Analizör'den başlatılan analizler pencere yerine burada açılır.
+        /// Diğer modüllerden gelen çağrılar ThreatAnalysisDialog penceresini kullanmaya devam eder.
+        /// </summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasInPageAnalysis), nameof(ShowScanContent), nameof(ShowInPageAnalysis))]
+        private ThreatAnalysisViewModel? _inPageAnalysis;
+
+        public bool HasInPageAnalysis => InPageAnalysis != null;
+        /// <summary>Tarama sekmesinin kendi içeriği (özet, filtreler, liste): sayfa içi analiz açıkken gizlenir.</summary>
+        public bool ShowScanContent => IsScanTab && !HasInPageAnalysis;
+        public bool ShowInPageAnalysis => IsScanTab && HasInPageAnalysis;
+
+        private void ShowAnalysisInPage(ThreatAnalysisResult result, bool withVirusTotal = false)
+        {
+            if (InPageAnalysis != null) InPageAnalysis.RequestClose -= OnInPageAnalysisClosed;
+            var vm = new ThreatAnalysisViewModel(result, _threatAnalyzerService, _scannerEngine, withVirusTotal ? _virusTotalService : null);
+            vm.RequestClose += OnInPageAnalysisClosed;
+            ActiveTab = "Scan";
+            InPageAnalysis = vm;
+        }
+
+        private void OnInPageAnalysisClosed() => CloseInPageAnalysis();
+
+        /// <summary>"Listeye dön": analizden çıkar; güven/karantina kararları listeye yansıtılır.</summary>
+        [RelayCommand]
+        private void CloseInPageAnalysis()
+        {
+            if (InPageAnalysis != null) InPageAnalysis.RequestClose -= OnInPageAnalysisClosed;
+            InPageAnalysis = null;
+            ApplyTrustDecisions();
+        }
 
         public bool IsScanTab => ActiveTab == "Scan";
         public bool IsHistoryTab => ActiveTab == "History";
@@ -443,6 +476,176 @@ namespace Bakım.ViewModels
 
         #endregion
 
+        #region Ana-ayrıntı ve toplu eylemler (ANL Faz 5)
+
+        /// <summary>Kanıt panelinde gösterilen girdi (liste seçimi).</summary>
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasSelectedItem))]
+        private PersistenceItem? _selectedItem;
+
+        public bool HasSelectedItem => SelectedItem != null;
+
+        [RelayCommand]
+        private void CloseDetails() => SelectedItem = null;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasChecked), nameof(CheckedText))]
+        private int _checkedCount;
+
+        public bool HasChecked => CheckedCount > 0;
+        public string CheckedText => CheckedCount == 0 ? "Toplu işlem için girdi seçin" : $"{CheckedCount} girdi seçili";
+
+        /// <summary>Satırdaki onay kutusu değişince çağrılır.</summary>
+        [RelayCommand]
+        private void UpdateChecked() => CheckedCount = Items.Count(i => i.IsChecked);
+
+        [RelayCommand]
+        private void CheckAllVisible()
+        {
+            foreach (var item in _filteredView.Cast<PersistenceItem>()) item.IsChecked = true;
+            UpdateChecked();
+        }
+
+        [RelayCommand]
+        private void ClearChecked()
+        {
+            foreach (var item in Items.Where(i => i.IsChecked)) item.IsChecked = false;
+            CheckedCount = 0;
+        }
+
+        private static string Preview(IReadOnlyList<PersistenceItem> items) =>
+            string.Join(Environment.NewLine, items.Take(12).Select(i => "• " + i.Name)) +
+            (items.Count > 12 ? $"{Environment.NewLine}… ve {items.Count - 12} girdi daha" : string.Empty);
+
+        /// <summary>
+        /// Seçilenleri başlangıçta devre dışı bırakır. Run ve Başlangıç klasörü girdileri tek kayıt defteri yakalamasıyla
+        /// kapatılır ve Etkinlik Merkezi'ne TEK geri alma kaydı yazılır; hizmet ve görevler yükseltilmiş süreçte
+        /// değiştiği için yakalamaya girmez, her biri kendi kaydıyla kapatılır (geri alma eksik kalmasın).
+        /// Kilitli (sürücü, kritik hizmet, Windows görevi…) ve zaten kapalı girdiler atlanır.
+        /// </summary>
+        [RelayCommand]
+        private async Task DisableCheckedAsync()
+        {
+            var targets = Items.Where(i => i.IsChecked && i.CanToggle && i.IsEnabled).ToList();
+            int skipped = Items.Count(i => i.IsChecked) - targets.Count;
+            if (targets.Count == 0)
+            {
+                ScanStatusText = "Seçilenler arasında kapatılabilecek etkin girdi yok (kilitli ya da zaten kapalı).";
+                return;
+            }
+            string note = skipped > 0 ? $"{Environment.NewLine}{Environment.NewLine}{skipped} seçili girdi kilitli ya da zaten kapalı olduğu için atlanacak." : string.Empty;
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Seçilenleri kapat",
+                    $"{targets.Count} girdi Windows açılışında çalışmayacak:{Environment.NewLine}{Environment.NewLine}{Preview(targets)}{note}{Environment.NewLine}{Environment.NewLine}" +
+                    "Etkinlik Merkezi'nden geri alınabilir. Programların kendisine dokunulmaz.",
+                    primaryText: "Kapat")) return;
+
+            int ok = 0, failed = 0;
+            var registryKinds = targets.Where(t => t.Category is PersistenceCategory.RegistryRun or PersistenceCategory.StartupFolder).ToList();
+            if (registryKinds.Count > 0)
+            {
+                int batchOk = 0;
+                using (var capture = Bakım.Helpers.RegistryCapture.Begin())
+                {
+                    foreach (var item in registryKinds)
+                    {
+                        item.IsBusy = true;
+                        try
+                        {
+                            if (await _scannerEngine.ToggleItemAsync(item, false)) { item.IsEnabled = false; batchOk++; }
+                            else failed++;
+                        }
+                        finally
+                        {
+                            item.IsBusy = false;
+                        }
+                    }
+                    var outcome = batchOk == registryKinds.Count ? Bakım.Core.Activity.ActivityOutcome.Succeeded
+                        : batchOk > 0 ? Bakım.Core.Activity.ActivityOutcome.PartiallySucceeded
+                        : Bakım.Core.Activity.ActivityOutcome.Failed;
+                    Bakım.Services.Activity.ActivityRecording.RecordRegistryChange(_activity,
+                        Bakım.Core.Activity.ActivityKind.StartupChange, "Analizör",
+                        $"{batchOk} başlangıç girdisi devre dışı bırakıldı (toplu)",
+                        string.Join(", ", registryKinds.Take(6).Select(i => i.Name)) + (registryKinds.Count > 6 ? " …" : string.Empty),
+                        outcome, capture.Items, deepLink: "Analyzer", handler: Bakım.Core.Activity.UndoHandlers.StartupApproved);
+                }
+                ok += batchOk;
+            }
+
+            foreach (var item in targets.Except(registryKinds))
+            {
+                item.IsBusy = true;
+                try
+                {
+                    bool success;
+                    using (var capture = Bakım.Helpers.RegistryCapture.Begin())
+                    {
+                        success = await _scannerEngine.ToggleItemAsync(item, false);
+                        Bakım.Services.Activity.ActivityRecording.RecordRegistryChange(_activity,
+                            Bakım.Core.Activity.ActivityKind.StartupChange, "Analizör",
+                            $"'{item.Name}' devre dışı bırakıldı (toplu)", item.LocationSource,
+                            success ? Bakım.Core.Activity.ActivityOutcome.Succeeded : Bakım.Core.Activity.ActivityOutcome.Failed,
+                            capture.Items, deepLink: "Analyzer", handler: Bakım.Core.Activity.UndoHandlers.StartupApproved);
+                    }
+                    if (success) { item.IsEnabled = false; ok++; } else failed++;
+                }
+                finally
+                {
+                    item.IsBusy = false;
+                }
+            }
+
+            ClearChecked();
+            UpdateStats();
+            ScanStatusText = failed == 0
+                ? $"{ok} girdi devre dışı bırakıldı. Etkinlik Merkezi'nden geri alabilirsiniz."
+                : $"{ok} girdi devre dışı bırakıldı, {failed} girdi değiştirilemedi (yönetici izni gerekebilir).";
+        }
+
+        /// <summary>
+        /// Seçilen girdilerin dosyalarını karantinaya alır (çalıştırma izni kaldırılır, Etkinlik Merkezi'nden geri alınır).
+        /// Doğrulanmış Microsoft dosyaları ve diskte olmayanlar atlanır; aynı dosyaya işaret eden girdiler bir kez işlenir.
+        /// </summary>
+        [RelayCommand]
+        private async Task QuarantineCheckedAsync()
+        {
+            var targets = Items.Where(i => i.IsChecked && i.HasValidFile && !(i.IsMicrosoft && i.Signature == SignatureStatus.Verified))
+                .GroupBy(i => i.FilePath, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
+            if (targets.Count == 0)
+            {
+                ScanStatusText = "Seçilenler arasında karantinaya alınabilecek dosya yok (dosya yok ya da doğrulanmış Microsoft dosyası).";
+                return;
+            }
+            if (!await Bakım.Helpers.FluentDialog.ConfirmAsync("Seçilenleri karantinaya al",
+                    $"{targets.Count} dosya karantinaya alınacak; ilgili programlar çalışmayabilir:{Environment.NewLine}{Environment.NewLine}{Preview(targets)}{Environment.NewLine}{Environment.NewLine}" +
+                    "Her dosya Etkinlik Merkezi'nden geri alınabilir.",
+                    primaryText: "Karantinaya al", destructive: true)) return;
+
+            int ok = 0;
+            var errors = new List<string>();
+            foreach (var item in targets)
+            {
+                item.IsBusy = true;
+                try
+                {
+                    var outcome = await _threatAnalyzerService.QuarantineFileAsync(item.FilePath, "Analizör toplu karantina");
+                    if (outcome.Success) { ok++; item.HasValidFile = false; }
+                    else errors.Add($"{item.Name}: {outcome.Message}");
+                }
+                finally
+                {
+                    item.IsBusy = false;
+                }
+            }
+
+            ClearChecked();
+            UpdateStats();
+            ScanStatusText = errors.Count == 0
+                ? $"{ok} dosya karantinaya alındı. Etkinlik Merkezi'nden geri alabilirsiniz."
+                : $"{ok} dosya karantinaya alındı; {errors.Count} dosya alınamadı ({errors[0]}).";
+        }
+
+        #endregion
+
         #region Item Actions & Safe Toggle
 
         [RelayCommand]
@@ -839,16 +1042,7 @@ namespace Bakım.ViewModels
                 await _threatAnalyzerService.ApplyDefenderOpinionAsync(analysisResult);
                 ApplyDeepResult(item, analysisResult);
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, _threatAnalyzerService, _scannerEngine);
-                    if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
-                    {
-                        dialog.Owner = Application.Current.MainWindow;
-                    }
-                    dialog.ShowDialog();
-                    ApplyTrustDecisions();
-                });
+                Application.Current.Dispatcher.Invoke(() => ShowAnalysisInPage(analysisResult));
             }
             catch (Exception ex)
             {
@@ -971,16 +1165,7 @@ namespace Bakım.ViewModels
                 ScanStatusText = "Windows Defender ile ikinci görüş alınıyor…";
                 await _threatAnalyzerService.ApplyDefenderOpinionAsync(analysisResult);
 
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, _threatAnalyzerService, _scannerEngine);
-                    if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
-                    {
-                        dialog.Owner = Application.Current.MainWindow;
-                    }
-                    dialog.ShowDialog();
-                    ApplyTrustDecisions();
-                });
+                Application.Current.Dispatcher.Invoke(() => ShowAnalysisInPage(analysisResult));
             }
             catch (Exception ex)
             {
@@ -1014,15 +1199,7 @@ namespace Bakım.ViewModels
                 {
                     var analysisResult = await _threatAnalyzerService.AnalyzeFileAsync(singleFile);
                     await _threatAnalyzerService.ApplyDefenderOpinionAsync(analysisResult);
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        var dialog = new Bakım.Views.Dialogs.ThreatAnalysisDialog(analysisResult, _threatAnalyzerService, _scannerEngine, _virusTotalService);
-                        if (Application.Current.MainWindow != null && Application.Current.MainWindow.IsVisible)
-                        {
-                            dialog.Owner = Application.Current.MainWindow;
-                        }
-                        dialog.ShowDialog();
-                    });
+                    Application.Current.Dispatcher.Invoke(() => ShowAnalysisInPage(analysisResult, withVirusTotal: true));
                 }
                 catch (Exception ex)
                 {

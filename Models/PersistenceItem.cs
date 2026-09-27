@@ -120,6 +120,29 @@ namespace Bakım.Models
         [ObservableProperty]
         private bool _isBusy;
 
+        /// <summary>Toplu eylem için işaretlendi (ANL Faz 5). Seçimden (ayrıntı paneli) bağımsızdır.</summary>
+        [ObservableProperty]
+        private bool _isChecked;
+
+        /// <summary>Kanıt panelinde "çözümlenen hedef" satırı: çözümlenemediyse bunu açıkça söyler.</summary>
+        public string ResolutionText => Resolution switch
+        {
+            Bakım.Core.Analyzer.TargetResolution.Resolved => HasValidFile ? "Dosya mevcut" : "Çözümlendi, dosya bulunamadı",
+            Bakım.Core.Analyzer.TargetResolution.NotFound => "Hedef dosya yok (yetim girdi)",
+            _ => Resolution.ToString()
+        };
+
+        public string SignatureText => !SignatureApplicable ? "İmza uygulanmaz (PE dosyası değil)"
+            : Signature switch
+            {
+                SignatureStatus.Verified => string.IsNullOrWhiteSpace(SignatureSignerName) ? "Doğrulandı" : $"Doğrulandı — {SignatureSignerName}",
+                SignatureStatus.InvalidOrTampered => "Geçersiz ya da değiştirilmiş imza",
+                _ => "İmzasız"
+            };
+
+        public string ToggleAvailabilityText => CanToggle ? "Açılıp kapatılabilir (geri alınabilir)" : ToggleLockReason;
+        public string DeleteAvailabilityText => CanDelete ? "Kaydı silinebilir (yedeklenir)" : DeleteLockReason;
+
         /// <summary>
         /// Dosya diskte var mı? Tarama sırasında bir kez belirlenir; eskiden her okumada File.Exists
         /// çağrılıyor, sıralama ve istatistik yüzlerce kez diske gidiyordu (AN-19).
