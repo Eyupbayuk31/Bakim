@@ -366,7 +366,7 @@ namespace Bakım.ViewModels
 
             if (app.IsSystemComponent)
             {
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"{app.DisplayName} bir sistem bileşeni veya kritik çalışma zamanı (runtime) kütüphanesidir. Windows kararlılığı için kaldırılamaz.",
                     "Sistem Koruması",
                     MessageBoxButton.OK,
@@ -376,7 +376,7 @@ namespace Bakım.ViewModels
 
             if (app.NoRemove)
             {
-                var answer = MessageBox.Show(
+                var answer = Bakım.Helpers.FluentDialog.Show(
                     $"{app.DisplayName} için yayıncı kaldırmayı kapatmış (NoRemove). Bu girdi genellikle başka bir ürünün parçasıdır ve o ürünle birlikte kaldırılır; Windows da bu program için \"Kaldır\" düğmesi göstermez.\n\nYine de kayıtlı kaldırıcıyı çalıştırmak istiyor musunuz?",
                     "Kaldırma Kapatılmış",
                     MessageBoxButton.YesNo,
@@ -415,7 +415,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Kaldırma sihirbazı sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Kaldırma sihirbazı sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             await Task.CompletedTask;
@@ -432,7 +432,7 @@ namespace Bakım.ViewModels
 
             if (app.IsSystemComponent)
             {
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"{app.DisplayName} kritik bir sistem bileşenidir ve silinemez.",
                     "Korumalı Sistem",
                     MessageBoxButton.OK,
@@ -440,7 +440,7 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"Zorla Kaldır Modu:\n{app.DisplayName} için uninstaller komutu atlanacak; ilişkili süreçler sonlandırılacak ve tüm dosya/kayıt defteri bağımlılık zinciri zorla sökülecektir.\n\nDevam edilsin mi?",
                 "Zorla Kaldır (Force Uninstall)",
                 MessageBoxButton.YesNo,
@@ -454,7 +454,7 @@ namespace Bakım.ViewModels
 
             if (settings.PromptRestorePointBeforeUninstall)
             {
-                var restoreChoice = MessageBox.Show(
+                var restoreChoice = Bakım.Helpers.FluentDialog.Show(
                     $"Zorla Kaldır Güvenliği:\n{app.DisplayName} için tüm bileşenler zorla silinecektir.\n\n" +
                     "İşlem öncesinde sisteminizi güvenceye almak için bir Windows Geri Yükleme Noktası oluşturulsun mu?\n\n" +
                     "• [Evet] -> Geri Yükleme Noktası Oluştur ve Zorla Kaldır (~15 sn)\n" +
@@ -497,7 +497,7 @@ namespace Bakım.ViewModels
                 UpdateStats();
                 UpdateSelectedAppsCount();
 
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     (gone
                         ? $"{app.DisplayName} zorla kaldırıldı: {cleanedCount} öğe temizlendi."
                         : $"{app.DisplayName} için {cleanedCount} öğe temizlendi, ancak program kaydı hâlâ duruyor.") +
@@ -509,7 +509,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Zorla kaldırma sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Zorla kaldırma sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -528,11 +528,11 @@ namespace Bakım.ViewModels
             var selectedApps = Apps.Where(a => a.IsSelected && !a.IsSystemComponent && !a.NoRemove).ToList();
             if (selectedApps.Count == 0)
             {
-                MessageBox.Show("Lütfen toplu kaldırmak için en az bir program seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Lütfen toplu kaldırmak için en az bir program seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"Seçilen {selectedApps.Count} adet program sırayla ve SESSİZCE (arka planda) kaldırılacak.\n\n" +
                 (IsAutoCleanEnabled ? "Her programdan sonra kalıntılar otomatik temizlenecektir.\n\n" : "") +
                 "Toplu kaldırma işlemini başlatmak istiyor musunuz?",
@@ -579,7 +579,7 @@ namespace Bakım.ViewModels
                 foreach (var (app, reason) in result.Failed.Take(8)) report.AppendLine($"\n• {app.DisplayName}: {reason}");
                 foreach (var (app, reason) in result.Skipped.Take(8)) report.AppendLine($"\n• {app.DisplayName}: {reason}");
 
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     report.ToString(),
                     "Toplu Kaldırma Raporu",
                     MessageBoxButton.OK,
@@ -587,7 +587,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Toplu kaldırma sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Toplu kaldırma sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -624,7 +624,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Pencereden seçim başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Pencereden seçim başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -672,7 +672,7 @@ namespace Bakım.ViewModels
             string installerPath = ofd.FileName;
             string appName = Path.GetFileNameWithoutExtension(installerPath);
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"Kurulum İzleyici (Snapshot Engine):\n\n" +
                 $"Hedef Paket: {Path.GetFileName(installerPath)}\n\n" +
                 $"1. Kurulum öncesi Kayıt Defteri ve Disk Snapshot'ı alınacak.\n" +
@@ -711,7 +711,7 @@ namespace Bakım.ViewModels
                 StatusMessage = $"{appName} için kurulum sonrası delta hesaplanıyor ve kaydediliyor...";
                 var delta = await _monitorService.TakePostInstallSnapshotAndSaveDeltaAsync(appName, preSnapshot);
 
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"Kurulum başarıyla izlendi ve kaydedildi!\n\n" +
                     $"Eklenen Dosya: {delta.AddedFiles.Count}\n" +
                     $"Eklenen Klasör: {delta.AddedFolders.Count}\n" +
@@ -726,7 +726,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Kurulum izleme sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Kurulum izleme sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -748,7 +748,7 @@ namespace Bakım.ViewModels
             // seçili sunuyor ve programı kaldırmadan listeden "kaldırıldı" diye çıkarıyordu.
             if (_deepUninstaller.IsStillInstalled(app))
             {
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"{app.DisplayName} hâlâ kurulu.\n\nKalıntılar program kaldırıldıktan sonra taranır. Programı kaldırmak için satırdaki 'Kaldır' düğmesini kullanın; sihirbaz kaldırmayı doğruladıktan sonra kalıntıları otomatik gösterir.",
                     "Program Hâlâ Kurulu",
                     MessageBoxButton.OK,
@@ -806,7 +806,7 @@ namespace Bakım.ViewModels
                     UpdateStats();
                     UpdateSelectedAppsCount();
 
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         $"{app.DisplayName} için geride kalan öğe bulunamadı.",
                         "Kalıntı Bulunamadı",
                         MessageBoxButton.OK,
@@ -853,7 +853,7 @@ namespace Bakım.ViewModels
 
             if (string.IsNullOrWhiteSpace(targetFile) || !File.Exists(targetFile))
             {
-                MessageBox.Show($"{app.DisplayName} için incelenecek bir çalıştırılabilir (.exe) dosyası bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show($"{app.DisplayName} için incelenecek bir çalıştırılabilir (.exe) dosyası bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -881,7 +881,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Tehdit analizi sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Tehdit analizi sırasında hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -911,11 +911,11 @@ namespace Bakım.ViewModels
             var selected = Leftovers.Where(l => l.IsSelected && !l.IsDeleted).ToList();
             if (selected.Count == 0)
             {
-                MessageBox.Show("Temizlemek için en az bir kalıntı seçmelisiniz.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Temizlemek için en az bir kalıntı seçmelisiniz.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"Seçilen {selected.Count} adet dosya, klasör ve kayıt defteri kalıntısını kalıcı olarak temizlemek istediğinize emin misiniz?",
                 "Kalıntıları Temizle",
                 MessageBoxButton.YesNo,
@@ -937,7 +937,7 @@ namespace Bakım.ViewModels
                 });
 
                 UpdateStats();
-                MessageBox.Show($"{cleaned} adet kalıntı başarıyla temizlendi!", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show($"{cleaned} adet kalıntı başarıyla temizlendi!", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 if (Leftovers.Count == 0 && SelectedApp != null)
                 {

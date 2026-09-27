@@ -279,7 +279,7 @@ namespace Bakım.ViewModels
         private async Task RemoveArtifactAsync(BakimArtifact? artifact)
         {
             if (artifact == null) return;
-            if (MessageBox.Show($"{artifact.KindText}: {artifact.Name}\n\nKaldırılsın mı?", "Bakım'ın bıraktıkları",
+            if (Bakım.Helpers.FluentDialog.Show($"{artifact.KindText}: {artifact.Name}\n\nKaldırılsın mı?", "Bakım'ın bıraktıkları",
                     MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
 
             // Ayara bağlı öğeler ayar üzerinden kapatılır: aksi halde bir sonraki açılışta yeniden oluşur.
@@ -776,7 +776,7 @@ namespace Bakım.ViewModels
 
                 if (string.IsNullOrWhiteSpace(path))
                 {
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         "Günlük dosyası konumu belirlenemedi.",
                         "Günlükler",
                         MessageBoxButton.OK,
@@ -796,7 +796,7 @@ namespace Bakım.ViewModels
             catch (Exception ex)
             {
                 _log.Error("Günlük klasörü açılamadı.", ex, nameof(SettingsViewModel));
-                MessageBox.Show($"Günlük klasörü açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Günlük klasörü açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -859,7 +859,7 @@ namespace Bakım.ViewModels
             catch (Exception ex)
             {
                 _log.Error("Tanılama paketi oluşturulamadı.", ex, nameof(SettingsViewModel));
-                MessageBox.Show($"Tanılama paketi oluşturulamadı: {ex.Message}", "Tanılama", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Tanılama paketi oluşturulamadı: {ex.Message}", "Tanılama", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -899,7 +899,7 @@ namespace Bakım.ViewModels
                     File.WriteAllText(sfd.FileName, json);
 
                     _log.Info($"Ayarlar dışa aktarıldı: {sfd.FileName}", nameof(SettingsViewModel));
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         "Ayarlar başarıyla dışa aktarıldı!\n\nGüvenlik gereği VirusTotal API anahtarı yedeğe dahil edilmedi.",
                         "Yedekleme Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -907,7 +907,7 @@ namespace Bakım.ViewModels
             catch (Exception ex)
             {
                 _log.Error("Ayar dışa aktarımı başarısız.", ex, nameof(SettingsViewModel));
-                MessageBox.Show($"Yedekleme sırasında hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Yedekleme sırasında hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -929,7 +929,7 @@ namespace Bakım.ViewModels
 
                     if (data == null)
                     {
-                        MessageBox.Show("Dosya okunabildi fakat geçerli ayar içermiyor.",
+                        Bakım.Helpers.FluentDialog.Show("Dosya okunabildi fakat geçerli ayar içermiyor.",
                             "İçe Aktarma", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
@@ -949,13 +949,13 @@ namespace Bakım.ViewModels
                     AutoSaveSettings();
 
                     _log.Info($"Ayarlar içe aktarıldı: {ofd.FileName}", nameof(SettingsViewModel));
-                    MessageBox.Show("Ayarlar başarıyla içe aktarıldı ve uygulandı!", "İçe Aktarma Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show("Ayarlar başarıyla içe aktarıldı ve uygulandı!", "İçe Aktarma Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
                 _log.Error("Ayar içe aktarımı başarısız.", ex, nameof(SettingsViewModel));
-                MessageBox.Show($"İçe aktarma sırasında hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"İçe aktarma sırasında hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -972,7 +972,7 @@ namespace Bakım.ViewModels
                 if (!string.IsNullOrEmpty(result.ErrorMessage) && !result.IsUpdateAvailable)
                 {
                     UpdateStatus = $"Kontrol: {result.ErrorMessage}";
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         $"Güncelleme sunucusundan bilgi alındı:\n{result.ErrorMessage}",
                         "Güncelleme Kontrolü",
                         MessageBoxButton.OK,
@@ -998,7 +998,7 @@ namespace Bakım.ViewModels
                 {
                     UpdateStatus = $"Yazılım güncel (v{result.CurrentVersion} - Son kontrol: {DateTime.Now:HH:mm})";
 
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         $"Tebrikler! En güncel Bakım sürümünü (v{result.CurrentVersion}) kullanıyorsunuz.\nSisteminiz en son performans ve güvenlik modülleriyle korunmaktadır.",
                         "Yazılım Güncel",
                         MessageBoxButton.OK,
@@ -1008,7 +1008,7 @@ namespace Bakım.ViewModels
             catch (Exception ex)
             {
                 UpdateStatus = "Güncelleme kontrolünde hata oluştu.";
-                MessageBox.Show($"Beklenmeyen hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Beklenmeyen hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -1019,7 +1019,7 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public void ResetPreferences()
         {
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 "Tüm uygulama ayarlarını fabrika varsayılanlarına sıfırlamak istediğinize emin misiniz?",
                 "Ayarları Sıfırla",
                 MessageBoxButton.YesNo,
@@ -1047,7 +1047,7 @@ namespace Bakım.ViewModels
             ApplyToProperties(_settingsService.Current);
 
             _log.Info("Ayarlar fabrika varsayılanlarına sıfırlandı.", nameof(SettingsViewModel));
-            MessageBox.Show("Tüm ayarlar başarıyla varsayılan değerlerine döndürüldü.", "Sıfırlama Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+            Bakım.Helpers.FluentDialog.Show("Tüm ayarlar başarıyla varsayılan değerlerine döndürüldü.", "Sıfırlama Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         #endregion

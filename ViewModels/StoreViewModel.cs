@@ -95,7 +95,7 @@ namespace Bakım.ViewModels
         {
             var pending = Updates.Where(u => !u.IsDone && !u.IsBusy).ToList();
             if (pending.Count == 0) return;
-            if (System.Windows.MessageBox.Show($"{pending.Count} program sırayla ve sessizce güncellenecek. Açık olanları önce kapatmanız önerilir.\n\nDevam edilsin mi?",
+            if (Bakım.Helpers.FluentDialog.Show($"{pending.Count} program sırayla ve sessizce güncellenecek. Açık olanları önce kapatmanız önerilir.\n\nDevam edilsin mi?",
                     "Tümünü güncelle", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Question) != System.Windows.MessageBoxResult.Yes) return;
             int ok = 0;
             foreach (var row in pending)
@@ -484,7 +484,7 @@ namespace Bakım.ViewModels
             var selected = _masterCatalog.Where(a => a.IsSelected).ToList();
             if (selected.Count == 0)
             {
-                System.Windows.MessageBox.Show("Lütfen kurulmasını istediğiniz en az bir uygulama seçin.", "Seçim Yapılmadı", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Lütfen kurulmasını istediğiniz en az bir uygulama seçin.", "Seçim Yapılmadı", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
                 return;
             }
 

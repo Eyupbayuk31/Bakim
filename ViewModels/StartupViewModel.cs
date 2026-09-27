@@ -230,7 +230,7 @@ namespace Bakım.ViewModels
         {
             if (item == null) return;
 
-            var result = MessageBox.Show(
+            var result = Bakım.Helpers.FluentDialog.Show(
                 $"'{item.Name}' uygulamasını başlangıçtan silmek istediğinize emin misiniz?\n\nKonum: {item.RegistryPath}\nDosya: {item.FilePath}\n\n" +
                 (IsFolderItem(item)
                     ? "Kısayol Geri Dönüşüm Kutusu'na taşınır."
@@ -271,7 +271,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         "Uygulama başlangıçtan silinemedi. Yetkinizin yeterli olduğundan emin olun (Yönetici olarak çalıştırın).",
                         "Silme Başarısız",
                         MessageBoxButton.OK,
@@ -320,7 +320,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("Yeni uygulama başlangıca eklenirken bir hata oluştu.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Bakım.Helpers.FluentDialog.Show("Yeni uygulama başlangıca eklenirken bir hata oluştu.", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -339,7 +339,7 @@ namespace Bakım.ViewModels
             var highImpacts = _allPrograms.Where(p => p.IsEnabled && p.ImpactLevel == 3).ToList();
             if (highImpacts.Count == 0)
             {
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     _bootData.Available
                         ? "Windows'un açılış ölçümlerinde açılışı 1 saniyeden fazla yavaşlatan etkin bir uygulama yok."
                         : $"Açılışı yavaşlatan uygulamalar Windows'un ölçümlerinden belirlenir. {_bootData.Reason}",
@@ -350,7 +350,7 @@ namespace Bakım.ViewModels
             }
 
             string appList = string.Join("\n• ", highImpacts.Select(p => p.Name));
-            var result = MessageBox.Show(
+            var result = Bakım.Helpers.FluentDialog.Show(
                 $"Windows'un ölçümüne göre şu {highImpacts.Count} uygulama açılışı 1 saniyeden fazla yavaşlattı:\n\n• {appList}\n\nBunlar açılışta devre dışı bırakılsın mı?\n(Programlar silinmez, yalnızca açılışta otomatik çalışmaz; Etkinlik Merkezi'nden geri alınabilir.)",
                 "Akıllı Açılış Hızlandırma",
                 MessageBoxButton.YesNo,
@@ -381,7 +381,7 @@ namespace Bakım.ViewModels
                 CalculateStats();
                 ApplyFilter();
                 StatusText = $"{disabledCount} uygulama açılışta devre dışı bırakıldı.";
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"{disabledCount} uygulama açılışta devre dışı bırakıldı.\nEtkisini bir sonraki açılıştan sonra bu sayfadaki açılış geçmişinde görebilirsiniz.",
                     "Hızlandırma Tamamlandı",
                     MessageBoxButton.OK,

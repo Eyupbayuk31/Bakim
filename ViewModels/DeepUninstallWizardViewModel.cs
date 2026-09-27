@@ -515,7 +515,7 @@ namespace Bakım.ViewModels
             var selected = Residuals.Where(r => r.IsSelected && !r.IsDeleted).ToList();
             if (selected.Count == 0)
             {
-                MessageBox.Show("Lütfen temizlenecek en az bir öğe seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Lütfen temizlenecek en az bir öğe seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -554,7 +554,7 @@ namespace Bakım.ViewModels
             catch (Exception ex)
             {
                 AppLog.Error("Kalıntı temizliği başarısız.", ex, nameof(DeepUninstallWizardViewModel));
-                MessageBox.Show($"Kalıntılar temizlenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Kalıntılar temizlenirken hata oluştu: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -568,7 +568,7 @@ namespace Bakım.ViewModels
         {
             if (string.IsNullOrEmpty(_journalId)) return;
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 "Bu kaldırma oturumunda silinen kayıt defteri öğeleri yedekten geri yüklensin mi?",
                 "Kayıt Defterini Geri Yükle", MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (confirm != MessageBoxResult.Yes) return;
@@ -672,7 +672,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Konum açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Konum açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

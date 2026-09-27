@@ -222,7 +222,7 @@ namespace Bakım.ViewModels
                 {
                     tweak.NotifyStateChanged();
                     StatusMessage = $"'{tweak.Title}' uygulanamadı.";
-                    MessageBox.Show($"'{tweak.Title}' uygulanamadı.\n\n{tweak.LastError ?? "Yönetici izni gerekebilir."}",
+                    Bakım.Helpers.FluentDialog.Show($"'{tweak.Title}' uygulanamadı.\n\n{tweak.LastError ?? "Yönetici izni gerekebilir."}",
                         "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
@@ -251,7 +251,7 @@ namespace Bakım.ViewModels
                 UpdateStats();
                 if (ok)
                 {
-                    MessageBox.Show("Önerilen tüm gizlilik kuralları uygulandı ve doğrulandı.", "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show("Önerilen tüm gizlilik kuralları uygulandı ve doğrulandı.", "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
@@ -259,7 +259,7 @@ namespace Bakım.ViewModels
                                        .Select(t => $"• {t.Title}: {t.LastError}")
                                        .ToList();
                     string detail = failed.Count > 0 ? string.Join("\n", failed) : "Bazı kurallar uygulanamadı.";
-                    MessageBox.Show($"Önerilen kuralların bir kısmı uygulanamadı:\n\n{detail}", "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Bakım.Helpers.FluentDialog.Show($"Önerilen kuralların bir kısmı uygulanamadı:\n\n{detail}", "Gizlilik Koruyucu", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -272,7 +272,7 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public async Task RestoreDefaultsAsync()
         {
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 "Tüm telemetri ve gizlilik ayarlarını orijinal Windows fabrika varsayılanlarına döndürmek istiyor musunuz?",
                 "Varsayılanlara Sıfırla",
                 MessageBoxButton.YesNo,
@@ -296,7 +296,7 @@ namespace Bakım.ViewModels
                 UpdateStats();
                 if (ok)
                 {
-                    MessageBox.Show("Tüm gizlilik ayarları Windows varsayılanlarına döndürüldü.", "Varsayılan Ayarlar", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show("Tüm gizlilik ayarları Windows varsayılanlarına döndürüldü.", "Varsayılan Ayarlar", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
@@ -304,7 +304,7 @@ namespace Bakım.ViewModels
                                        .Select(t => $"• {t.Title}: {t.LastError}")
                                        .ToList();
                     string detail = failed.Count > 0 ? string.Join("\n", failed) : "Bazı ayarlar geri alınamadı.";
-                    MessageBox.Show($"Bazı ayarlar varsayılana döndürülemedi:\n\n{detail}", "Varsayılan Ayarlar", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Bakım.Helpers.FluentDialog.Show($"Bazı ayarlar varsayılana döndürülemedi:\n\n{detail}", "Varsayılan Ayarlar", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -326,7 +326,7 @@ namespace Bakım.ViewModels
             {
                 bool ok = await _privacyService.CreateRestorePointAsync("Gizlilik ayarlari oncesi");
                 LastRestorePointResult = _privacyService.LastRestorePointMessage;
-                MessageBox.Show(_privacyService.LastRestorePointMessage, "Geri Yükleme Noktası",
+                Bakım.Helpers.FluentDialog.Show(_privacyService.LastRestorePointMessage, "Geri Yükleme Noktası",
                     MessageBoxButton.OK, ok ? MessageBoxImage.Information : MessageBoxImage.Warning);
             }
             finally
@@ -343,11 +343,11 @@ namespace Bakım.ViewModels
 
             if (app.IsEssential)
             {
-                MessageBox.Show($"{app.DisplayName} temel bir Windows sistem bileşenidir ve sistem kararlılığı için kaldırılamaz!", "Hayati Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Stop);
+                Bakım.Helpers.FluentDialog.Show($"{app.DisplayName} temel bir Windows sistem bileşenidir ve sistem kararlılığı için kaldırılamaz!", "Hayati Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Stop);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{app.DisplayName} ({app.PackageName}) uygulamasını sistemden tamamen kaldırmak istediğinize emin misiniz?",
                 "Bloatware Kaldır",
                 MessageBoxButton.YesNo,
@@ -367,11 +367,11 @@ namespace Bakım.ViewModels
                 {
                     app.IsInstalled = false;
                     UpdateStats();
-                    MessageBox.Show($"{app.DisplayName} başarıyla kaldırıldı.", "Uygulama Kaldırıldı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show($"{app.DisplayName} başarıyla kaldırıldı.", "Uygulama Kaldırıldı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show($"{app.DisplayName} kaldırılamadı.\n\n{app.LastError ?? "Neden bilinmiyor."}", "Kaldırma Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Bakım.Helpers.FluentDialog.Show($"{app.DisplayName} kaldırılamadı.\n\n{app.LastError ?? "Neden bilinmiyor."}", "Kaldırma Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             finally
@@ -386,11 +386,11 @@ namespace Bakım.ViewModels
             var safeApps = BloatwareApps.Where(a => !a.IsEssential && a.IsInstalled).ToList();
             if (safeApps.Count == 0)
             {
-                MessageBox.Show("Sisteminizde kaldırılacak temel olmayan yüklü bloatware bulunamadı.", "Temiz Sistem", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Sisteminizde kaldırılacak temel olmayan yüklü bloatware bulunamadı.", "Temiz Sistem", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{safeApps.Count} adet temel olmayan bloatware uygulamasını sistemden kaldırmak istiyor musunuz?\n\n(Hesap Makinesi, Windows Mağazası gibi temel sistem bileşenleri güvenle korunacaktır.)",
                 "Toplu Bloatware Temizliği",
                 MessageBoxButton.YesNo,
@@ -427,11 +427,11 @@ namespace Bakım.ViewModels
                     deepLink: "PrivacyDebloat");
                 if (failed.Count == 0)
                 {
-                    MessageBox.Show($"{removed} uygulama kaldırıldı ve doğrulandı.", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show($"{removed} uygulama kaldırıldı ve doğrulandı.", "Temizlik Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show($"{removed} uygulama kaldırıldı, {failed.Count} uygulama kaldırılamadı:\n\n{string.Join("\n", failed)}",
+                    Bakım.Helpers.FluentDialog.Show($"{removed} uygulama kaldırıldı, {failed.Count} uygulama kaldırılamadı:\n\n{string.Join("\n", failed)}",
                         "Temizlik Kısmen Tamamlandı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }

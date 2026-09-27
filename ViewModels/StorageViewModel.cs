@@ -329,7 +329,7 @@ namespace Bakım.ViewModels
         {
             if (file == null || file.IsDeleting) return;
 
-            var confirm = System.Windows.MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"'{file.FilePath}' kalıcı olarak silinecek (Geri Dönüşüm Kutusu atlanır). Bu işlem geri alınamaz.\n\nDevam edilsin mi?",
                 "Kalıcı Sil", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
             if (confirm != System.Windows.MessageBoxResult.Yes) return;
@@ -467,7 +467,7 @@ namespace Bakım.ViewModels
             var selected = FilteredLargeFiles.Where(f => f.IsSelected).ToList();
             if (selected.Count == 0) return;
 
-            var confirm = System.Windows.MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{selected.Count} dosya kalıcı olarak silinecek (Geri Dönüşüm Kutusu atlanır). Bu işlem geri alınamaz.\n\nDevam edilsin mi?",
                 "Seçilenleri Kalıcı Sil", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
             if (confirm != System.Windows.MessageBoxResult.Yes) return;
@@ -1148,7 +1148,7 @@ namespace Bakım.ViewModels
 
             if (DeletePermanently)
             {
-                var confirm = System.Windows.MessageBox.Show(
+                var confirm = Bakım.Helpers.FluentDialog.Show(
                     $"{selectedFiles.Count} kopya kalıcı olarak silinecek (Geri Dönüşüm Kutusu atlanır). Her gruptan en az bir dosya korunur.\n\nDevam edilsin mi?",
                     "Kopyaları Kalıcı Sil", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
                 if (confirm != System.Windows.MessageBoxResult.Yes) return;
@@ -1527,7 +1527,7 @@ namespace Bakım.ViewModels
         private async Task RecycleTileAsync(TreemapTile? tile)
         {
             if (tile == null || tile.Node.IsAggregate || tile.Node.Parent == null) return;
-            var confirm = System.Windows.MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"Bu klasör Geri Dönüşüm Kutusu'na taşınsın mı?\n\n{tile.Node.FullPath}\n{tile.SizeText} · {tile.Node.FileCount:N0} dosya\n\n" +
                 "Windows ve program klasörleri gibi korunan konumlar taşınmaz.",
                 "Geri Dönüşüm Kutusu'na taşı", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning,

@@ -116,7 +116,7 @@ namespace Bakım.Views.Dialogs
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Değişiklik penceresi açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Değişiklik penceresi açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -162,7 +162,7 @@ namespace Bakım.Views.Dialogs
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Analizör başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Analizör başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
                 Close();
             }
         }
@@ -183,7 +183,7 @@ namespace Bakım.Views.Dialogs
                 }
                 else
                 {
-                    MessageBox.Show($"Kurulum raporu kaydedildi:\n{storageDir}", "Rapor Kaydedildi", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show($"Kurulum raporu kaydedildi:\n{storageDir}", "Rapor Kaydedildi", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch { }

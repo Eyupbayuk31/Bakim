@@ -296,7 +296,7 @@ namespace Bakım.ViewModels
 
             if (string.IsNullOrWhiteSpace(item.ProcessPath))
             {
-                MessageBox.Show("Bu sürecin dosya yolu tespit edilemediği için güvenlik duvarı kuralı oluşturulamadı.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Bu sürecin dosya yolu tespit edilemediği için güvenlik duvarı kuralı oluşturulamadı.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -309,16 +309,16 @@ namespace Bakım.ViewModels
                     new FirewallUndoPayload(NetworkMonitorService.FirewallRuleName(item.ProcessPath), item.ProcessPath, Added: false));
                 if (ok)
                 {
-                    MessageBox.Show($"{item.ProcessName} güvenlik duvarı engeli kaldırıldı.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show($"{item.ProcessName} güvenlik duvarı engeli kaldırıldı.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show($"{item.ProcessName} engeli kaldırılamadı: {_networkService.LastFirewallError}", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Bakım.Helpers.FluentDialog.Show($"{item.ProcessName} engeli kaldırılamadı: {_networkService.LastFirewallError}", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             else
             {
-                var confirm = MessageBox.Show(
+                var confirm = Bakım.Helpers.FluentDialog.Show(
                     $"{item.ProcessName} uygulamasının dış ağ bağlantısını Windows Güvenlik Duvarı ile engellemek istiyor musunuz?",
                     "Ağ Erişimini Engelle",
                     MessageBoxButton.YesNo,
@@ -333,11 +333,11 @@ namespace Bakım.ViewModels
                         new FirewallUndoPayload(NetworkMonitorService.FirewallRuleName(item.ProcessPath), item.ProcessPath, Added: true));
                     if (ok)
                     {
-                        MessageBox.Show($"{item.ProcessName} için giden bağlantı engelleme kuralı eklendi.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
+                        Bakım.Helpers.FluentDialog.Show($"{item.ProcessName} için giden bağlantı engelleme kuralı eklendi.", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        MessageBox.Show($"{item.ProcessName} engellenemedi: {_networkService.LastFirewallError}", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        Bakım.Helpers.FluentDialog.Show($"{item.ProcessName} engellenemedi: {_networkService.LastFirewallError}", "Güvenlik Duvarı", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
             }
@@ -351,11 +351,11 @@ namespace Bakım.ViewModels
             string winDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
             if (CriticalProcessPolicy.IsProtected(item.ProcessId, item.ProcessName, item.ProcessPath, winDir, Environment.ProcessId))
             {
-                MessageBox.Show("Kritik Windows sistem süreçleri sonlandırılamaz!", "Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show("Kritik Windows sistem süreçleri sonlandırılamaz!", "Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{item.ProcessName} (PID: {item.ProcessId}) sürecini ve ilişkili tüm soket bağlantılarını sonlandırmak istiyor musunuz?",
                 "Süreç ve Bağlantıyı Sonlandır",
                 MessageBoxButton.YesNo,
@@ -371,7 +371,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("Süreç sonlandırılamadı. Yönetici yetkisi gerekiyor olabilir.", "Yetki Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Bakım.Helpers.FluentDialog.Show("Süreç sonlandırılamadı. Yönetici yetkisi gerekiyor olabilir.", "Yetki Hatası", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -382,7 +382,7 @@ namespace Bakım.ViewModels
             var target = item ?? SelectedConnection;
             if (target == null || string.IsNullOrWhiteSpace(target.ProcessPath) || !File.Exists(target.ProcessPath))
             {
-                MessageBox.Show("Bu bağlantının çalıştırılabilir dosya yolu bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show("Bu bağlantının çalıştırılabilir dosya yolu bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -404,7 +404,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Tehdit analizi başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Tehdit analizi başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -510,7 +510,7 @@ namespace Bakım.ViewModels
             try
             {
                 var ok = await _networkService.FlushDnsCacheAsync();
-                MessageBox.Show(ok 
+                Bakım.Helpers.FluentDialog.Show(ok 
                     ? "DNS önbelleği başarıyla temizlendi (Flush DNS)." 
                     : "DNS önbelleği temizlenirken bir sorun oluştu.",
                     "DNS Önbelleği", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -531,11 +531,11 @@ namespace Bakım.ViewModels
                 if (ok)
                 {
                     await LoadAdaptersAsync();
-                    MessageBox.Show("IP adresi başarıyla yenilendi (ipconfig /renew).", "IP Yapılandırması", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show("IP adresi başarıyla yenilendi (ipconfig /renew).", "IP Yapılandırması", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 else
                 {
-                    MessageBox.Show("IP adresi yenilenemedi.", "IP Yapılandırması", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Bakım.Helpers.FluentDialog.Show("IP adresi yenilenemedi.", "IP Yapılandırması", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -592,7 +592,7 @@ namespace Bakım.ViewModels
             RefreshMeteredStatus();
             if (IsMeteredConnection)
             {
-                var confirm = MessageBox.Show(
+                var confirm = Bakım.Helpers.FluentDialog.Show(
                     MeteredNetworkPolicy.SpeedTestWarningText,
                     "Tarifeli Ağ Uyarısı",
                     MessageBoxButton.YesNo,
@@ -908,7 +908,7 @@ namespace Bakım.ViewModels
         {
             if (rule == null) return;
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"'{rule.Name}' güvenlik duvarı engelleme kuralını kaldırmak istiyor musunuz?",
                 "Kuralı Kaldır",
                 MessageBoxButton.YesNo,
@@ -925,7 +925,7 @@ namespace Bakım.ViewModels
             }
             else
             {
-                MessageBox.Show(res.Message, "Kural Kaldırılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show(res.Message, "Kural Kaldırılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 

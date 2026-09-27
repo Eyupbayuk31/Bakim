@@ -249,7 +249,7 @@ namespace Bakım.ViewModels
 
             if (!row.IsRecycleBinUndo)
             {
-                var confirm = System.Windows.MessageBox.Show(
+                var confirm = Bakım.Helpers.FluentDialog.Show(
                     $"Bu işlem geri alınsın mı?\n\n{row.Title}\n{row.Summary}\n\n" +
                     "Değiştirilen değerler özgün hallerine döndürülür. HKLM gibi korumalı konumlar için bir kez yönetici izni istenebilir.",
                     "Geri Al", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
@@ -264,7 +264,7 @@ namespace Bakım.ViewModels
                 StatusText = result.Message;
                 if (!result.Manual)
                 {
-                    System.Windows.MessageBox.Show(result.Message,
+                    Bakım.Helpers.FluentDialog.Show(result.Message,
                         result.Success ? "Geri Alındı" : "Geri Alma Tamamlanamadı",
                         MessageBoxButton.OK, result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
                 }
@@ -312,7 +312,7 @@ namespace Bakım.ViewModels
         [RelayCommand]
         private void ClearAll()
         {
-            var confirm = System.Windows.MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 "Etkinlik kaydının tamamı ve geri alma yedekleri silinsin mi?\n\nBu işlemden sonra listelenen hiçbir değişiklik Bakım'dan geri alınamaz.",
                 "Etkinlik Kaydını Temizle", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
             if (confirm != MessageBoxResult.Yes) return;

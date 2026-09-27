@@ -123,7 +123,7 @@ namespace Bakım.Views.Dialogs
                 // Handle Self-Protection (Bakım)
                 if (info.IsSelfProcess)
                 {
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         "Bakım kendi kendini hedef alamaz!\n\nLütfen sisteminizde kaldırmak veya yönetmek istediğiniz harici bir program penceresini hedefleyin.",
                         "Pencereden seç - Korumalı uygulama",
                         MessageBoxButton.OK,
@@ -134,7 +134,7 @@ namespace Bakım.Views.Dialogs
                 // Handle Windows Shell Protection
                 if (info.IsSystemShell)
                 {
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         "Windows Masaüstü ve Görev Çubuğu çekirdek işletim sistemi bileşenidir ve kaldırılamaz.",
                         "Pencereden seç - Sistem koruması",
                         MessageBoxButton.OK,
@@ -145,7 +145,7 @@ namespace Bakım.Views.Dialogs
                 // Check if target was found
                 if (!info.IsFound)
                 {
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         "İmleç altında çalışan aktif bir uygulama penceresi tespit edilemedi.\nLütfen hedef simgesini kaldırmak istediğiniz programın penceresine bırakın.",
                         "Pencereden seç",
                         MessageBoxButton.OK,

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Bakım.Controls;
@@ -53,6 +53,9 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        // Fluent pencere kipi: ayrı süreçte, sade bir WPF uygulamasıyla (aşağıdaki RunFluentDialogChecksInChild).
+        if (Array.IndexOf(args, "--fluent-dialogs") >= 0) return RunFluentDialogChecks();
+
         // Görsel doğrulama kipi: her sayfanın PNG görüntüsü (CI yapıtı olarak yüklenir).
         int shotIndex = Array.IndexOf(args, "--screenshots");
         if (shotIndex >= 0)
@@ -78,6 +81,9 @@ internal static class Program
         // servisler ayağa kalkmaz, pencere açılmaz, kullanıcı ayarları değişmez.
         var app = new Bakım.App();
         app.InitializeComponent();
+        // Kontrol pencereleri kapandıkça "son pencere kapanınca çık" kuralı uygulamayı sessizce kapatıyordu;
+        // sonraki kontrollerde Application.Current null oluyordu.
+        app.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
         ThemeService.Shared.ApplyTheme(AppThemeKind.MicaDark, persist: false);
 
@@ -85,6 +91,7 @@ internal static class Program
         RunThemeChecks(app);
         RunContainerChecks();
         RunDialogChecks();
+        RunFluentDialogChecksInChild();
 
         Console.WriteLine();
 
@@ -178,6 +185,132 @@ internal static class Program
     /// yalnızca açılışta görüneni test etmek yetmez — gizli sekmedeki bozuk
     /// bir binding ya da eksik kaynak fark edilmeden kalırdı.
     /// </summary>
+    /// <summary>
+    /// FluentDialog.Show, MessageBox.Show yerine geçer (ANL Faz 5): modal açılmalı, basılan düğmeye göre
+    /// doğru MessageBoxResult dönmeli. Zamanlayıcı açık pencerede düğmeyi otomasyonla tıklar.
+    /// </summary>
+    /// <summary>
+    /// Fluent pencere kontrolleri ayrı süreçte koşar. Bakım.App burada Run() olmadan kurulur; modal pencerenin
+    /// mesaj döngüsü WPF'in kuyruktaki başlangıç işini tetikler ve gerçek açılış (tek örnek denetimi, hata
+    /// yakalayıcı) çalışır: açık bir Bakım varsa test uygulaması kendini kapatır.
+    /// </summary>
+    private static void RunFluentDialogChecksInChild()
+    {
+        Console.WriteLine();
+        Console.WriteLine("FLUENT PENCERE (MessageBox yerine, ayrı süreç)");
+        Console.WriteLine("==============================================");
+        try
+        {
+            var psi = new ProcessStartInfo(Environment.ProcessPath!, "--fluent-dialogs")
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                StandardOutputEncoding = System.Text.Encoding.UTF8
+            };
+            using var child = Process.Start(psi)!;
+            string output = child.StandardOutput.ReadToEnd();
+            if (!child.WaitForExit(120_000)) { child.Kill(); Failures.Add("fluent:zaman-aşımı"); }
+            Console.Write(output);
+            if (child.ExitCode != 0) Failures.Add("fluent");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"  HATA fluent: {ex.Message}");
+            Failures.Add("fluent");
+        }
+    }
+
+    private static int RunFluentDialogChecks()
+    {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+        app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ThemesDictionary { Theme = Wpf.Ui.Appearance.ApplicationTheme.Dark });
+        app.Resources.MergedDictionaries.Add(new Wpf.Ui.Markup.ControlsDictionary());
+
+        var cases = new (MessageBoxButton Buttons, MessageBoxImage Image, string Press, MessageBoxResult Expected)[]
+        {
+            (MessageBoxButton.OK, MessageBoxImage.Information, "Tamam", MessageBoxResult.OK),
+            (MessageBoxButton.YesNo, MessageBoxImage.Question, "Evet", MessageBoxResult.Yes),
+            (MessageBoxButton.YesNo, MessageBoxImage.Warning, "Hayır", MessageBoxResult.No),
+            (MessageBoxButton.YesNoCancel, MessageBoxImage.Warning, "Hayır", MessageBoxResult.No),
+            (MessageBoxButton.YesNoCancel, MessageBoxImage.Warning, "Vazgeç", MessageBoxResult.Cancel),
+            (MessageBoxButton.OKCancel, MessageBoxImage.None, "Tamam", MessageBoxResult.OK),
+        };
+
+        int failed = 0;
+        foreach (var c in cases)
+        {
+            string name = $"fluent:{c.Buttons}->{c.Press}";
+            if (Application.Current == null)
+            {
+                // Uygulama kapanmışsa FluentDialog sistem penceresine düşer; kullanıcının ekranında pencere açmamak için dur.
+                Console.WriteLine($"  HATA {name}: Application.Current yok");
+                failed++;
+                continue;
+            }
+            bool pressed = false;
+            Bakım.Helpers.FluentDialog.OpeningForTest = box =>
+            {
+                // Ekran dışında, odak çalmadan, görev çubuğunda görünmeden aç.
+                box.Owner = null;
+                box.WindowStartupLocation = WindowStartupLocation.Manual;
+                box.Left = -32000;
+                box.Top = -32000;
+                box.ShowActivated = false;
+                box.ShowInTaskbar = false;
+                box.Loaded += (_, _) => box.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle, () =>
+                {
+                    var button = FindButton(box, c.Press);
+                    if (button == null) { box.Close(); return; }
+                    pressed = true;
+                    var peer = new System.Windows.Automation.Peers.ButtonAutomationPeer(button);
+                    ((System.Windows.Automation.Provider.IInvokeProvider)peer.GetPattern(System.Windows.Automation.Peers.PatternInterface.Invoke)!).Invoke();
+                });
+            };
+            try
+            {
+                var result = Bakım.Helpers.FluentDialog.Show("Duman testi: bu dosya kalıcı olarak silinecek.", "Test", c.Buttons, c.Image);
+                bool ok = pressed && result == c.Expected;
+                Console.WriteLine($"  {(ok ? "OK  " : "HATA")} {name}: {result}{(pressed ? "" : " (düğme bulunamadı)")}");
+                if (!ok) failed++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  HATA {name}: {ex}");
+                failed++;
+            }
+            finally
+            {
+                Bakım.Helpers.FluentDialog.OpeningForTest = null;
+            }
+        }
+        return failed == 0 ? 0 : 1;
+    }
+
+    private static void DumpButtons(DependencyObject root, string indent)
+    {
+        int count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (int i = 0; i < count; i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is System.Windows.Controls.Button b)
+                Console.WriteLine($"{indent}button name={b.Name} content={b.Content} visible={b.IsVisible} enabled={b.IsEnabled}");
+            DumpButtons(child, indent);
+        }
+    }
+
+    private static System.Windows.Controls.Button? FindButton(DependencyObject root, string text)
+    {
+        int count = System.Windows.Media.VisualTreeHelper.GetChildrenCount(root);
+        for (int i = 0; i < count; i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(root, i);
+            if (child is System.Windows.Controls.Button b && b.IsVisible && b.IsEnabled && Equals(b.Content, text)) return b;
+            if (FindButton(child, text) is { } found) return found;
+        }
+        return null;
+    }
+
     private static void RunDialogChecks()
     {
         Console.WriteLine();

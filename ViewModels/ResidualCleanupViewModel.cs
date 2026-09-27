@@ -159,11 +159,11 @@ namespace Bakım.ViewModels
             var selected = Residuals.Where(r => r.IsSelected && !r.IsDeleted).ToList();
             if (selected.Count == 0)
             {
-                MessageBox.Show("Lütfen temizlenecek en az bir kalıntı öğesi seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Lütfen temizlenecek en az bir kalıntı öğesi seçin.", "Seçim Yapılmadı", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{AppName} uygulamasına ait seçilen {selected.Count} öğe ({FormattedSelectedSize}) temizlenecek.\n\nDosyalar Geri Dönüşüm Kutusu'na taşınır, kayıt defteri öğeleri silinmeden önce yedeklenir.\n\nDevam edilsin mi?",
                 "Kalıntıları Temizle",
                 MessageBoxButton.YesNo,
@@ -195,7 +195,7 @@ namespace Bakım.ViewModels
                 StatusText = report.FailedCount == 0
                     ? $"{count} öğe temizlendi."
                     : $"{count} öğe temizlendi, {report.FailedCount} öğe temizlenemedi.";
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     StatusText + $"\nBoşaltılan alan: {Bakım.Core.Text.ByteFormatter.Format(report.BytesFreed)}" +
                     (failures.Length > 0 ? "\n\nTemizlenemeyenler:\n" + failures : string.Empty),
                     "Kalıntı Temizliği",
@@ -207,7 +207,7 @@ namespace Bakım.ViewModels
             catch (Exception ex)
             {
                 StatusText = $"Hata oluştu: {ex.Message}";
-                MessageBox.Show($"Kalıntılar temizlenirken hata meydana geldi: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Kalıntılar temizlenirken hata meydana geldi: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -249,12 +249,12 @@ namespace Bakım.ViewModels
                 else if (item.Type == ResidualType.RegistryKey)
                 {
                     Clipboard.SetText(item.Path);
-                    MessageBox.Show($"Kayıt defteri yolu panoya kopyalandı:\n{item.Path}", "Panoya Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show($"Kayıt defteri yolu panoya kopyalandı:\n{item.Path}", "Panoya Kopyalandı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Konum açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Konum açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -59,7 +59,7 @@ namespace Bakım.Views.Dialogs
 
             if (string.IsNullOrWhiteSpace(_updateInfo.DownloadUrl))
             {
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     "Güncelleme paketi indirme bağlantısı alınamadı. Lütfen daha sonra tekrar deneyiniz.",
                     "Güncelleme Bildirimi",
                     MessageBoxButton.OK,
@@ -91,7 +91,7 @@ namespace Bakım.Views.Dialogs
                 LaterButton.IsEnabled = true;
                 ProgressPanel.Visibility = Visibility.Collapsed;
 
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"Güncelleme indirilemedi: {ex.Message}\nLütfen internet bağlantınızı kontrol edip tekrar deneyiniz.",
                     "Güncelleme Hatası",
                     MessageBoxButton.OK,

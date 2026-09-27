@@ -168,7 +168,7 @@ namespace Bakım.Views.Dialogs
         {
             if (sender is not FrameworkElement { Tag: FindingRow row } || !row.CanAct) return;
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{row.ActionLabel}: {row.Title}\n\n{row.Detail}\n\n{Services.Sentinel.Actions.FindingActions.ConfirmText(row.Finding)}",
                 "Kurulum Nöbetçisi", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
             if (confirm != MessageBoxResult.Yes) return;
@@ -290,12 +290,12 @@ namespace Bakım.Views.Dialogs
                     }
                     else
                     {
-                        MessageBox.Show("Dosya diskte bulunamadı veya tehdit analiz servisi aktif değil.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        Bakım.Helpers.FluentDialog.Show("Dosya diskte bulunamadı veya tehdit analiz servisi aktif değil.", "Uyarı", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Dosya analiz edilirken hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Bakım.Helpers.FluentDialog.Show($"Dosya analiz edilirken hata: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -331,7 +331,7 @@ namespace Bakım.Views.Dialogs
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Analizör başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Analizör başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -354,12 +354,12 @@ namespace Bakım.Views.Dialogs
                     });
 
                     File.WriteAllText(sfd.FileName, json);
-                    MessageBox.Show($"Rapor kaydedildi:\n{sfd.FileName}", "Dışa Aktarma Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Bakım.Helpers.FluentDialog.Show($"Rapor kaydedildi:\n{sfd.FileName}", "Dışa Aktarma Başarılı", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Dışa aktarma başarısız: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Dışa aktarma başarısız: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -403,18 +403,18 @@ namespace Bakım.Views.Dialogs
 
             if (string.IsNullOrWhiteSpace(target) || !File.Exists(target))
             {
-                MessageBox.Show("Sandbox'ta çalıştırılacak geçerli bir kurulum veya yürütülebilir dosyası bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show("Sandbox'ta çalıştırılacak geçerli bir kurulum veya yürütülebilir dosyası bulunamadı.", "Dosya Bulunamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var result = await sandbox.LaunchInstallerPreviewAsync(target, enableNetworking: false);
             if (result.Succeeded)
             {
-                MessageBox.Show(result.Message, "Windows Sandbox", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show(result.Message, "Windows Sandbox", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
-                MessageBox.Show(result.Message, "Sandbox Başlatılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show(result.Message, "Sandbox Başlatılamadı", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

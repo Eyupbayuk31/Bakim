@@ -222,7 +222,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"{item.DisplayName} başlatılamadı: {_serviceManager.LastError}", "Hizmet Başlatma", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Bakım.Helpers.FluentDialog.Show($"{item.DisplayName} başlatılamadı: {_serviceManager.LastError}", "Hizmet Başlatma", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -238,11 +238,11 @@ namespace Bakım.ViewModels
 
             if (item.IsCritical)
             {
-                MessageBox.Show($"{item.DisplayName} bir kritik sistem hizmetidir! Durdurulması sistemin çökmesine neden olabilir.", "Kritik Sistem Hizmeti", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"{item.DisplayName} bir kritik sistem hizmetidir! Durdurulması sistemin çökmesine neden olabilir.", "Kritik Sistem Hizmeti", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{item.DisplayName} ({item.ServiceName}) hizmetini durdurmak istediğinize emin misiniz?",
                 "Hizmeti Durdur",
                 MessageBoxButton.YesNo,
@@ -265,7 +265,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"{item.DisplayName} durdurulamadı: {_serviceManager.LastError}", "Hizmet Durdurma", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Bakım.Helpers.FluentDialog.Show($"{item.DisplayName} durdurulamadı: {_serviceManager.LastError}", "Hizmet Durdurma", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -289,7 +289,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show($"{item.DisplayName} yeniden başlatılamadı: {_serviceManager.LastError}", "Hizmeti Yeniden Başlat", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    Bakım.Helpers.FluentDialog.Show($"{item.DisplayName} yeniden başlatılamadı: {_serviceManager.LastError}", "Hizmeti Yeniden Başlat", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
             finally
@@ -312,7 +312,7 @@ namespace Bakım.ViewModels
         public async Task ApplyProfileAsync(ServiceProfileCard? card)
         {
             if (card == null || !card.CanApply) return;
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"{card.Title}\n\nDeğişecek hizmetler:\n{card.PreviewText}\n\nTek yönetici onayıyla uygulanır; Etkinlik Merkezi'nden tek tıkla geri alınabilir.",
                 "Hizmet profili", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
             if (confirm != MessageBoxResult.Yes) return;
@@ -352,12 +352,12 @@ namespace Bakım.ViewModels
             // Kritik hizmetin başlangıç türü hiç değiştirilmez (tek kaynak: CriticalServicePolicy).
             if (param.Item.IsCritical)
             {
-                MessageBox.Show("Kritik sistem hizmetlerinin başlangıç türü değiştirilemez.", "Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show("Kritik sistem hizmetlerinin başlangıç türü değiştirilemez.", "Sistem Koruması", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             if (param.Type.Equals("disabled", StringComparison.OrdinalIgnoreCase) &&
                 CriticalServicePolicy.ReducesSecurityWhenDisabled(param.Item.ServiceName) &&
-                MessageBox.Show($"{param.Item.DisplayName} güvenlik ya da güncellemeyle ilgili bir hizmettir. Devre dışı bırakmak bilgisayarı daha az korunaklı yapar.\n\nYine de devam edilsin mi?",
+                Bakım.Helpers.FluentDialog.Show($"{param.Item.DisplayName} güvenlik ya da güncellemeyle ilgili bir hizmettir. Devre dışı bırakmak bilgisayarı daha az korunaklı yapar.\n\nYine de devam edilsin mi?",
                     "Güvenliği azaltır", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
             {
                 return;
@@ -382,7 +382,7 @@ namespace Bakım.ViewModels
             }
             else
             {
-                MessageBox.Show($"{param.Item.DisplayName} başlangıç türü değiştirilemedi: {_serviceManager.LastError}", "Başlangıç Türü", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show($"{param.Item.DisplayName} başlangıç türü değiştirilemedi: {_serviceManager.LastError}", "Başlangıç Türü", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 

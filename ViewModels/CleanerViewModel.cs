@@ -510,7 +510,7 @@ namespace Bakım.ViewModels
 
             if (itemsToClean.Any(i => i.FilePath == "shell:RecycleBinFolder"))
             {
-                var confirm = MessageBox.Show(
+                var confirm = Bakım.Helpers.FluentDialog.Show(
                     "Geri Dönüşüm Kutusu boşaltılacak. Bu işlem geri alınamaz.\n\nDevam edilsin mi?",
                     "Geri Dönüşüm Kutusu", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
                 if (confirm != MessageBoxResult.Yes)

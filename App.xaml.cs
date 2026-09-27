@@ -282,7 +282,7 @@ namespace Bakım
                 var targetApp = await GetService<IShellUninstallResolverService>().ResolveTargetAppAsync(request.Target);
                 if (targetApp == null)
                 {
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         $"Bu hedef için kaldırılabilecek bir program bulunamadı ya da hedef korumalı bir Windows bileşeni:\n\n{request.Target}",
                         "Kaldırıcı", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
@@ -330,7 +330,7 @@ namespace Bakım
 
                 if (targetApp == null)
                 {
-                    MessageBox.Show(
+                    Bakım.Helpers.FluentDialog.Show(
                         $"Bu hedef için kaldırılabilecek bir program bulunamadı ya da hedef korumalı bir Windows bileşeni:\n\n{path}",
                         "Kaldırıcı Hatası",
                         MessageBoxButton.OK,
@@ -352,7 +352,7 @@ namespace Bakım
             catch (Exception ex)
             {
                 AppLog.Error("Hedef kaldırma sihirbazı başlatılırken hata oluştu.", ex, "Startup");
-                MessageBox.Show($"Kaldırma sihirbazı başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Kaldırma sihirbazı başlatılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
                 Shutdown(1);
             }
         }

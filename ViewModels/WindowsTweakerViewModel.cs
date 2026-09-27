@@ -358,7 +358,7 @@ namespace Bakım.ViewModels
             // S-16: güvenlik katmanını kapatan ayar ayrı ve açık bir onay ister.
             if (targetState && tweak.ReducesSecurity)
             {
-                var confirm = System.Windows.MessageBox.Show(
+                var confirm = Bakım.Helpers.FluentDialog.Show(
                     $"'{tweak.Title}' güvenliği azaltır.\n\n{tweak.SecurityWarning}\n\nYine de uygulansın mı?",
                     "Güvenliği Azaltan Ayar",
                     System.Windows.MessageBoxButton.YesNo,

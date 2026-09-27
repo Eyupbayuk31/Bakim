@@ -214,7 +214,7 @@ namespace Bakım.Services
             {
                 AppLog.Error($"Güvenilmeyen güncelleme adresi reddedildi: {downloadUrl}", null, nameof(AutoUpdateService));
 
-                ShowOnUiThread(() => MessageBox.Show(
+                ShowOnUiThread(() => Bakım.Helpers.FluentDialog.Show(
                     "Güncelleme paketi beklenmeyen bir adresten sunuluyor ve güvenlik gereği indirilmedi.\n\n" +
                     $"Adres: {downloadUrl}\n\n" +
                     "Lütfen güncellemeyi projenin resmî GitHub sürümler sayfasından elle indirin.",
@@ -512,7 +512,7 @@ namespace Bakım.Services
                     AppLog.Info("Kullanıcı güncelleme için yönetici onayı vermedi.", nameof(AutoUpdateService));
                     TryDelete(installerPath);
 
-                    ShowOnUiThread(() => MessageBox.Show(
+                    ShowOnUiThread(() => Bakım.Helpers.FluentDialog.Show(
                         "Güncelleme kurulumu için yönetici izni verilmedi.\n\n" +
                         "Güncellemeyi daha sonra yeniden başlatabilirsiniz.",
                         "Güncelleme",
@@ -528,7 +528,7 @@ namespace Bakım.Services
                 case ErrorAccessDenied:
                     AppLog.Warning("Güncelleme paketi erişim reddi nedeniyle başlatılamadı.", ex, nameof(AutoUpdateService));
 
-                    ShowOnUiThread(() => MessageBox.Show(
+                    ShowOnUiThread(() => Bakım.Helpers.FluentDialog.Show(
                         "Güncelleme kurulumu yetki reddi nedeniyle başlatılamadı.\n\n" +
                         "Bakım'ı yönetici olarak çalıştırıp güncellemeyi yeniden deneyin.",
                         "Güncelleme",
@@ -543,7 +543,7 @@ namespace Bakım.Services
                         nameof(AutoUpdateService));
                     TryDelete(installerPath);
 
-                    ShowOnUiThread(() => MessageBox.Show(
+                    ShowOnUiThread(() => Bakım.Helpers.FluentDialog.Show(
                         $"Güncelleme kurulumu başlatılamadı: {ex.Message}",
                         "Güncelleme",
                         MessageBoxButton.OK,
@@ -573,7 +573,7 @@ namespace Bakım.Services
             {
                 if (isSmartAppControlActive)
                 {
-                    var answer = MessageBox.Show(
+                    var answer = Bakım.Helpers.FluentDialog.Show(
                         "Güncelleme paketi Windows'un Akıllı Uygulama Denetimi (Smart App Control) " +
                         "ilkesi tarafından engellendi.\n\n" +
                         "Nedeni, kurulum paketinin henüz kod imzalama sertifikasıyla imzalanmamış " +
@@ -599,7 +599,7 @@ namespace Bakım.Services
                     return;
                 }
 
-                var fallbackAnswer = MessageBox.Show(
+                var fallbackAnswer = Bakım.Helpers.FluentDialog.Show(
                     "Güncelleme paketi bir Uygulama Denetimi ilkesi tarafından engellendi.\n\n" +
                     "Akıllı Uygulama Denetimi bu bilgisayarda kapalı görünüyor; engel büyük " +
                     "olasılıkla kurumsal bir WDAC ilkesinden veya güvenlik yazılımınızdan " +
@@ -648,7 +648,7 @@ namespace Bakım.Services
                 }
             }
 
-            ShowOnUiThread(() => MessageBox.Show(
+            ShowOnUiThread(() => Bakım.Helpers.FluentDialog.Show(
                 "Windows Güvenliği açılamadı.\n\n" +
                 "Ayara elle ulaşmak için: Windows Güvenliği > Uygulama ve tarayıcı denetimi > " +
                 "Akıllı Uygulama Denetimi ayarları.",
@@ -673,7 +673,7 @@ namespace Bakım.Services
             {
                 AppLog.Warning("Güncelleme paketinin klasörü açılamadı.", ex, nameof(AutoUpdateService));
 
-                ShowOnUiThread(() => MessageBox.Show(
+                ShowOnUiThread(() => Bakım.Helpers.FluentDialog.Show(
                     $"Klasör açılamadı.\n\nPaketin konumu:\n{installerPath}",
                     "Güncelleme",
                     MessageBoxButton.OK,

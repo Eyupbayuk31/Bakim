@@ -224,7 +224,7 @@ namespace Bakım.ViewModels
         [RelayCommand]
         public async Task ResetAccountsAsync()
         {
-            var confirm = System.Windows.MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 "Bu cihazdaki tüm yerel Bakım hesapları silinecek ve yeni bir yönetici hesabı " +
                 "oluşturmanız istenecek.\n\nWindows hesabınız veya sistem ayarlarınız etkilenmez.\n\nDevam edilsin mi?",
                 "Hesapları Sıfırla",

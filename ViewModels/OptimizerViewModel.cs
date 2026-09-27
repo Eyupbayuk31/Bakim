@@ -177,7 +177,7 @@ namespace Bakım.ViewModels
             var target = item ?? SelectedProcess;
             if (target == null || string.IsNullOrWhiteSpace(target.FilePath) || !File.Exists(target.FilePath))
             {
-                MessageBox.Show("Bu sürecin çalıştırılabilir dosya konumuna erişilemedi.", "Dosya Konumu", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show("Bu sürecin çalıştırılabilir dosya konumuna erişilemedi.", "Dosya Konumu", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -192,7 +192,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Klasör açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Klasör açılamadı: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -204,7 +204,7 @@ namespace Bakım.ViewModels
 
             if (target.IsSystemProcess)
             {
-                MessageBox.Show("Kritik Windows sistem süreçleri askıya alınamaz!", "Güvenlik Kalkanı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show("Kritik Windows sistem süreçleri askıya alınamaz!", "Güvenlik Kalkanı", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -233,7 +233,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"İşlem askıya alma/devam ettirme hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"İşlem askıya alma/devam ettirme hatası: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -254,7 +254,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Çalışma kümesi boşaltılamadı: {ex.Message}", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
+                Bakım.Helpers.FluentDialog.Show($"Çalışma kümesi boşaltılamadı: {ex.Message}", "Bilgi", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -264,13 +264,13 @@ namespace Bakım.ViewModels
             var target = item ?? SelectedProcess;
             if (target == null || string.IsNullOrWhiteSpace(target.FilePath) || !File.Exists(target.FilePath))
             {
-                MessageBox.Show("Taranacak dosya yolu bulunamadı.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show("Taranacak dosya yolu bulunamadı.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (_virusTotalService == null)
             {
-                MessageBox.Show("VirusTotal servisi mevcut değil.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show("VirusTotal servisi mevcut değil.", "VirusTotal", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -282,7 +282,7 @@ namespace Bakım.ViewModels
 
                 if (total > 0)
                 {
-                    var result = MessageBox.Show(
+                    var result = Bakım.Helpers.FluentDialog.Show(
                         $"VirusTotal Tehdit Analiz Raporu:\n\n" +
                         $"Dosya: {Path.GetFileName(target.FilePath)}\n" +
                         $"SHA-256: {sha256}\n" +
@@ -300,7 +300,7 @@ namespace Bakım.ViewModels
                 }
                 else
                 {
-                    var result = MessageBox.Show(
+                    var result = Bakım.Helpers.FluentDialog.Show(
                         $"VirusTotal Veritabanı Bilgisi:\n\n{message}\n\nDosyayı VirusTotal'de analiz etmek için tarayıcıda açmak ister misiniz?",
                         "VirusTotal",
                         MessageBoxButton.YesNo,
@@ -314,7 +314,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Tarama başarısız: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+                Bakım.Helpers.FluentDialog.Show($"Tarama başarısız: {ex.Message}", "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -496,7 +496,7 @@ namespace Bakım.ViewModels
 
             if (target.IsSystemProcess)
             {
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"'{target.ProcessName}' kritik bir Windows sistem sürecidir.\nSistem kararlılığını korumak için bu işlem sonlandırılamaz.",
                     "Kritik Sistem Koruması",
                     MessageBoxButton.OK,
@@ -504,7 +504,7 @@ namespace Bakım.ViewModels
                 return;
             }
 
-            var confirm = MessageBox.Show(
+            var confirm = Bakım.Helpers.FluentDialog.Show(
                 $"'{target.ProcessName}' (PID: {target.Id}) işlemini sonlandırmak istediğinize emin misiniz?\n\nKaydedilmemiş çalışma verileri kaybolabilir.",
                 "Görevi Sonlandır",
                 MessageBoxButton.YesNo,
@@ -530,7 +530,7 @@ namespace Bakım.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                Bakım.Helpers.FluentDialog.Show(
                     $"Süreç sonlandırılamadı:\n{ex.Message}",
                     "Hata",
                     MessageBoxButton.OK,

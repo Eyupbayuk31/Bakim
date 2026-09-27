@@ -246,7 +246,7 @@ namespace Bakım.ViewModels
             catch (Exception ex)
             {
                 AppLog.Error("Kurulum raporu açılamadı.", ex, nameof(SentinelViewModel));
-                MessageBox.Show($"Rapor açılamadı: {ex.Message}", "Kurulum Nöbetçisi", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Bakım.Helpers.FluentDialog.Show($"Rapor açılamadı: {ex.Message}", "Kurulum Nöbetçisi", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
