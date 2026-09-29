@@ -14,10 +14,106 @@ namespace Bakım.Services
         Task RunSfcScannowAsync(Action<string> onOutputReceived, Action<bool, string> onCompleted);
         Task RunDismRepairAsync(Action<string> onOutputReceived, Action<bool, string> onCompleted);
         void OpenDumpLocation(string dumpPath);
+
+        /// <summary>Döküm dosyalarını siler ve kayıtları bir daha listelemez.</summary>
+        Task<CrashDeleteResult> DeleteCrashesAsync(IReadOnlyList<BsodCrashItem> crashes);
+
+        /// <summary>Şimdiye kadarki olayları listeden gizler (Windows günlüğüne dokunmaz).</summary>
+        void ClearEventsUntilNow();
     }
+
+    public sealed record CrashDeleteResult(int Removed, int FilesDeleted, int Failed);
 
     public class CrashAnalyzerService : ICrashAnalyzerService
     {
+        private static readonly object DismissGate = new();
+        private static readonly string DismissFile = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Bakim", "crash-dismissed.json");
+
+        private sealed class DismissState
+        {
+            public DateTime? EventsClearedBeforeUtc { get; set; }
+            public List<string> CrashKeys { get; set; } = new();
+        }
+
+        private static DismissState LoadDismissState()
+        {
+            lock (DismissGate)
+            {
+                try
+                {
+                    if (File.Exists(DismissFile))
+                        return System.Text.Json.JsonSerializer.Deserialize<DismissState>(File.ReadAllText(DismissFile)) ?? new DismissState();
+                }
+                catch { }
+                return new DismissState();
+            }
+        }
+
+        private static void SaveDismissState(DismissState state)
+        {
+            lock (DismissGate)
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(DismissFile)!);
+                    File.WriteAllText(DismissFile, System.Text.Json.JsonSerializer.Serialize(state));
+                }
+                catch (Exception ex)
+                {
+                    AppLog.Warning("Çökme kaydı listesi yazılamadı.", ex, nameof(CrashAnalyzerService));
+                }
+            }
+        }
+
+        private static string CrashKey(BsodCrashItem c) => c.CrashTime.ToUniversalTime().ToString("yyyyMMddHHmmss");
+
+        public async Task<CrashDeleteResult> DeleteCrashesAsync(IReadOnlyList<BsodCrashItem> crashes)
+        {
+            return await Task.Run(() =>
+            {
+                string windowsDir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+                var state = LoadDismissState();
+                int removed = 0, filesDeleted = 0, failed = 0;
+
+                foreach (var crash in crashes)
+                {
+                    try
+                    {
+                        string path = crash.DumpFilePath;
+                        bool isDumpFile = !string.IsNullOrWhiteSpace(path)
+                            && string.Equals(Path.GetExtension(path), ".dmp", StringComparison.OrdinalIgnoreCase)
+                            && Path.GetFullPath(path).StartsWith(windowsDir, StringComparison.OrdinalIgnoreCase);
+
+                        if (isDumpFile && File.Exists(path))
+                        {
+                            File.Delete(path);
+                            filesDeleted++;
+                        }
+
+                        string key = CrashKey(crash);
+                        if (!state.CrashKeys.Contains(key)) state.CrashKeys.Add(key);
+                        removed++;
+                    }
+                    catch (Exception ex)
+                    {
+                        failed++;
+                        AppLog.Warning($"Döküm silinemedi: {crash.DumpFilePath}", ex, nameof(CrashAnalyzerService));
+                    }
+                }
+
+                if (removed > 0) SaveDismissState(state);
+                return new CrashDeleteResult(removed, filesDeleted, failed);
+            });
+        }
+
+        public void ClearEventsUntilNow()
+        {
+            var state = LoadDismissState();
+            state.EventsClearedBeforeUtc = DateTime.UtcNow;
+            SaveDismissState(state);
+        }
+
         private static readonly Dictionary<string, (string Name, string Description)> KnownBugChecks = new(StringComparer.OrdinalIgnoreCase)
         {
             { "0x0000000A", ("IRQL_NOT_LESS_OR_EQUAL", "Çekirdek modunda geçersiz bellek adresine erişim. Genellikle uyumsuz sürücü veya arızalı RAM.") },
@@ -119,7 +215,11 @@ namespace Bakım.Services
                 // Minidump silinmiş olsa dahi Event Log'da kayıtlı BSOD olaylarını ekle
                 crashes.AddRange(eventLogCrashes);
 
-                return crashes.OrderByDescending(c => c.CrashTime).ToList();
+                var dismissed = LoadDismissState().CrashKeys.ToHashSet();
+                return crashes
+                    .Where(c => !dismissed.Contains(CrashKey(c)))
+                    .OrderByDescending(c => c.CrashTime)
+                    .ToList();
             });
         }
 
@@ -296,7 +396,11 @@ namespace Bakım.Services
                 }
                 catch { }
 
-                return events.OrderByDescending(e => e.TimeGenerated).ToList();
+                var clearedBefore = LoadDismissState().EventsClearedBeforeUtc;
+                return events
+                    .Where(e => clearedBefore == null || e.TimeGenerated.ToUniversalTime() > clearedBefore.Value)
+                    .OrderByDescending(e => e.TimeGenerated)
+                    .ToList();
             });
         }
 

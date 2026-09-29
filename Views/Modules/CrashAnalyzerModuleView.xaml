@@ -169,21 +169,55 @@
                         Margin="0,0,10,0" AutomationProperties.Name="Kaynak, olay ID veya mesaj ara..."/>
 
             <!-- Olay Görüntüleyici (günlük silme özelliği kaldırıldı: S-15) -->
-            <ui:Button Grid.Row="1" Grid.Column="1" 
-                       Appearance="Secondary" 
-                       Command="{Binding OpenEventViewerCommand}"
-                       Padding="14,8"
-                       Content="Olay Görüntüleyici"
-                       Icon="{ui:SymbolIcon Open20}"
-                       AutomationProperties.Name="Windows Olay Görüntüleyici'yi aç"/>
+            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                <ui:Button Appearance="Secondary"
+                           Command="{Binding ClearEventsCommand}"
+                           Padding="14,8"
+                           Margin="0,0,8,0"
+                           Content="Listeyi temizle"
+                           Icon="{ui:SymbolIcon Broom20}"
+                           ToolTip="Şimdiye kadarki olayları listeden ve sağlık puanından çıkarır. Windows günlüğü silinmez."
+                           AutomationProperties.Name="Olay listesini temizle"/>
+                <ui:Button Appearance="Secondary"
+                           Command="{Binding OpenEventViewerCommand}"
+                           Padding="14,8"
+                           Content="Olay Görüntüleyici"
+                           Icon="{ui:SymbolIcon Open20}"
+                           AutomationProperties.Name="Windows Olay Görüntüleyici'yi aç"/>
+            </StackPanel>
         </Grid>
 
         <!-- 3. Active Viewport Content -->
         <Grid Grid.Row="3">
             <!-- VIEW 1: BSOD & Crashes -->
             <Grid Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Bsod}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Toplu eylem: yalnızca kayıt varken -->
+                <Grid Grid.Row="0" Margin="0,0,0,10"
+                      Visibility="{Binding Stats.TotalCrashesCount, Converter={StaticResource IntToVis}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                               Text="{Binding Stats.TotalCrashesCount, StringFormat='{}{0} mavi ekran kaydı'}"
+                               FontSize="{StaticResource Font.Caption}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <ui:Button Grid.Column="1" Appearance="Secondary"
+                               Content="Tümünü sil"
+                               Icon="{ui:SymbolIcon Delete20}"
+                               Command="{Binding DeleteAllCrashesCommand}"
+                               Padding="12,6"
+                               ToolTip="Tüm döküm dosyalarını siler ve kayıtları listeden kaldırır."
+                               AutomationProperties.Name="Tüm mavi ekran kayıtlarını sil"/>
+                </Grid>
+
                 <!-- Empty State (No Crashes Found) -->
-                <Border Style="{StaticResource Card.Surface}" 
+                <Border Grid.Row="1" Style="{StaticResource Card.Surface}"
                          VerticalAlignment="Center" 
                          HorizontalAlignment="Center" 
                          MaxWidth="560"
@@ -205,7 +239,7 @@
                 </Border>
 
                 <!-- Crashes List -->
-                <ListView ItemsSource="{Binding Crashes}"
+                <ListView Grid.Row="1" ItemsSource="{Binding Crashes}"
                           BorderThickness="0"
                           Background="Transparent"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -293,7 +327,18 @@
                                                    Icon="{ui:SymbolIcon FolderOpen20}"
                                                    Command="{Binding DataContext.OpenDumpLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                    CommandParameter="{Binding}"
-                                                   Padding="12,8"/>
+                                                   Padding="12,8"
+                                                   HorizontalAlignment="Stretch"/>
+                                        <ui:Button Appearance="Secondary"
+                                                   Content="Sil"
+                                                   Icon="{ui:SymbolIcon Delete20}"
+                                                   Command="{Binding DataContext.DeleteCrashCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                   CommandParameter="{Binding}"
+                                                   Padding="12,8"
+                                                   Margin="0,6,0,0"
+                                                   HorizontalAlignment="Stretch"
+                                                   ToolTip="Döküm dosyasını siler ve kaydı listeden kaldırır."
+                                                   AutomationProperties.Name="Bu mavi ekran kaydını sil"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>

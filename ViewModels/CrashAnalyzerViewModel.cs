@@ -175,6 +175,39 @@ namespace Bakım.ViewModels
         }
 
         [RelayCommand]
+        public async Task DeleteCrashAsync(BsodCrashItem? crash)
+        {
+            if (crash == null || IsBusy || IsRepairRunning) return;
+            await DeleteCrashesCoreAsync(new[] { crash });
+        }
+
+        [RelayCommand]
+        public async Task DeleteAllCrashesAsync()
+        {
+            if (Crashes.Count == 0 || IsBusy || IsRepairRunning) return;
+            await DeleteCrashesCoreAsync(Crashes.ToList());
+        }
+
+        private async Task DeleteCrashesCoreAsync(IReadOnlyList<BsodCrashItem> crashes)
+        {
+            var result = await _crashService.DeleteCrashesAsync(crashes);
+            await RefreshAllAsync();
+
+            StatusMessage = result.Failed > 0
+                ? $"{result.Removed} kayıt silindi, {result.Failed} döküm silinemedi (yönetici izni gerekebilir)."
+                : $"{result.Removed} mavi ekran kaydı silindi ({result.FilesDeleted} döküm dosyası).";
+        }
+
+        [RelayCommand]
+        public async Task ClearEventsAsync()
+        {
+            if (IsBusy || IsRepairRunning) return;
+            _crashService.ClearEventsUntilNow();
+            await RefreshAllAsync();
+            StatusMessage = "Olay listesi temizlendi. Windows günlüğü silinmedi; yalnızca bundan sonraki olaylar gösterilecek.";
+        }
+
+        [RelayCommand]
         public async Task RunSfcAsync()
         {
             if (IsRepairRunning) return;

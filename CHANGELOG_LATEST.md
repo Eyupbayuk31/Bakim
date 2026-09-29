@@ -1,12 +1,11 @@
-# Bakım v4.20.4 - Sürüm Notları
+# Bakım v4.20.5 - Sürüm Notları
 
-## Temizleyici: sayfa artık tam görünüyor
+## Sürüm geçmişi sayfalandı, çökme ve olay kayıtları silinebiliyor
 
-Temizleyici sayfası kaydırılamıyordu. Temizlik hedefleri kartları ekranın altına taşınca alttaki kartlar ve tarama sonuç listesi kesiliyor, görünmüyordu.
+Ayarlar'daki sürüm geçmişi v4.6.3'te kalmıştı ve sonsuza kadar uzuyordu. Olaylar ve çökmeler sayfasında ise eski kayıtlar hiçbir zaman kalkmıyordu.
 
-### Düzeltmeler
-- **Sayfa kaydırılabilir:** Tüm temizlik hedefleri görünür. Tarama sonuç listesi sabit yükseklikte kendi içinde kayar ve sanallaştırması korunur.
-- **Uzun hedef adları:** "Windows Hata Raporlama Kalıntıları", "Geliştirici Paket Önbellekleri" gibi adlar kartın kenarında kesilmek yerine üç nokta ile kısalıyor. Yönetici kalkanı simgesi sağa sabitlendi.
-- **Eşit kart yüksekliği:** Hedef kartlarına asgari yükseklik verildi, satırlar düzgün hizalanıyor.
-- **Filtre satırı hizası:** Kategori sekmeleri ile profil düğmeleri aynı hizada.
-- **Karışıklık giderildi:** Profil grubundaki "Temizle" düğmesi "Seçimi kaldır" olarak yeniden adlandırıldı. Sayfanın asıl "Temizle" eylemiyle karışıyordu.
+### Yenilikler
+- **Sürüm geçmişi güncel:** v4.7.0'dan v4.20.x'e kadar tüm sürümler listeye eklendi, en yeni sürüm en üstte ve "En son güncellemede ne geldi?" kartında görünüyor.
+- **Sayfalama:** Sürüm geçmişi 8'erli sayfalara bölündü. Altta 1 2 3 ... sayfa düğmeleri ile önceki/sonraki okları var.
+- **Mavi ekran kayıtlarını sil:** "Tümünü sil" ve kayıt başına "Sil" düğmeleri. Minidump dosyası diskten silinir, kayıt listeden ve sağlık puanından çıkar. Dosya silinemezse (izin gerekirse) kayıt listede kalır ve durum çubuğu bunu bildirir.
+- **Olay listesini temizle:** Olaylar sekmesinde "Listeyi temizle". Windows olay günlüğü silinmez, yalnızca temizleme anından önceki olaylar listeden ve sağlık puanından çıkarılır. Seçim uygulama yeniden açılınca da korunur.

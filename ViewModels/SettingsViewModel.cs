@@ -1101,6 +1101,61 @@ namespace Bakım.ViewModels
         [ObservableProperty]
         private ReleaseChangelogItem? _latestRelease;
 
+        private const int ChangelogPageSize = 8;
+
+        public ObservableCollection<ReleaseChangelogItem> PagedReleases { get; } = new();
+        public ObservableCollection<ChangelogPageButton> ChangelogPageButtons { get; } = new();
+
+        [ObservableProperty]
+        private int _changelogPage = 1;
+
+        public int ChangelogPageCount => Math.Max(1, (ReleaseHistory.Count + ChangelogPageSize - 1) / ChangelogPageSize);
+        public bool HasMultipleChangelogPages => ChangelogPageCount > 1;
+        public bool CanGoPrevChangelogPage => ChangelogPage > 1;
+        public bool CanGoNextChangelogPage => ChangelogPage < ChangelogPageCount;
+        public string ChangelogPageInfo => $"{ReleaseHistory.Count} sürüm · sayfa {ChangelogPage}/{ChangelogPageCount}";
+
+        partial void OnChangelogPageChanged(int value) => RebuildChangelogPage();
+
+        private void RebuildChangelogPage()
+        {
+            int page = Math.Clamp(ChangelogPage, 1, ChangelogPageCount);
+            if (page != ChangelogPage)
+            {
+                ChangelogPage = page;
+                return;
+            }
+
+            PagedReleases.Clear();
+            foreach (var item in ReleaseHistory.Skip((page - 1) * ChangelogPageSize).Take(ChangelogPageSize))
+                PagedReleases.Add(item);
+
+            ChangelogPageButtons.Clear();
+            for (int i = 1; i <= ChangelogPageCount; i++)
+                ChangelogPageButtons.Add(new ChangelogPageButton(i, i == page));
+
+            OnPropertyChanged(nameof(ChangelogPageCount));
+            OnPropertyChanged(nameof(HasMultipleChangelogPages));
+            OnPropertyChanged(nameof(CanGoPrevChangelogPage));
+            OnPropertyChanged(nameof(CanGoNextChangelogPage));
+            OnPropertyChanged(nameof(ChangelogPageInfo));
+        }
+
+        [RelayCommand]
+        public void GoToChangelogPage(int page) => ChangelogPage = page;
+
+        [RelayCommand]
+        public void PrevChangelogPage()
+        {
+            if (CanGoPrevChangelogPage) ChangelogPage--;
+        }
+
+        [RelayCommand]
+        public void NextChangelogPage()
+        {
+            if (CanGoNextChangelogPage) ChangelogPage++;
+        }
+
         [RelayCommand]
         public void ToggleChangelog(ReleaseChangelogItem? item)
         {
@@ -1114,13 +1169,281 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v4205 = new ReleaseChangelogItem
+            {
+                Version = "v4.20.5",
+                ReleaseDate = "29 Eylül 2026",
+                Title = "Sürüm geçmişi sayfalandı, çökme ve olay kayıtları silinebiliyor",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Sürüm geçmişi güncellendi: v4.7.0 ile v4.20.x arasındaki tüm sürümler listeye eklendi, en yeni sürüm en üstte.",
+                    "Sayfalama: Sürüm geçmişi 8'erli sayfalara bölündü; altta 1 2 3 ... sayfa düğmeleri ve önceki/sonraki okları var.",
+                    "Olaylar ve çökmeler: 'Tümünü sil' ve kayıt başına 'Sil' düğmeleri eklendi. Mavi ekran dökümleri diskten silinir ve kayıt listeden kalkar.",
+                    "Olaylar sekmesine 'Listeyi temizle' eklendi. Windows olay günlüğü silinmez; temizlik anından önceki olaylar listeden ve sağlık puanından çıkarılır."
+                }
+            };
+
+            var v4204 = new ReleaseChangelogItem
+            {
+                Version = "v4.20.4",
+                ReleaseDate = "29 Eylül 2026",
+                Title = "Temizleyici sayfası tam görünüyor",
+                Highlights = new List<string>
+                {
+                    "Sayfa kaydırılabilir oldu; tüm temizlik hedefleri ve tarama sonuç listesi görünür.",
+                    "Uzun hedef adları üç nokta ile kısalıyor, yönetici kalkanı sağa sabitlendi, kartlar eşit yükseklikte.",
+                    "Profil grubundaki 'Temizle' düğmesi 'Seçimi kaldır' olarak yeniden adlandırıldı."
+                }
+            };
+
+            var v4203 = new ReleaseChangelogItem
+            {
+                Version = "v4.20.3",
+                ReleaseDate = "29 Eylül 2026",
+                Title = "Hizmetler sayfası sadeleşti",
+                Highlights = new List<string>
+                {
+                    "Önerilen profiller bölümü kaldırıldı; hizmet listesi ekranın tamamını kullanıyor ve alt kısım kesilmiyor."
+                }
+            };
+
+            var v4202 = new ReleaseChangelogItem
+            {
+                Version = "v4.20.2",
+                ReleaseDate = "29 Eylül 2026",
+                Title = "Kategori şeridi tekerlekle kayıyor",
+                Highlights = new List<string>
+                {
+                    "Analizör kategori şeridindeki görünür kaydırma çubuğu kaldırıldı; fare tekerleği ile yatay kayıyor."
+                }
+            };
+
+            var v4201 = new ReleaseChangelogItem
+            {
+                Version = "v4.20.1",
+                ReleaseDate = "29 Eylül 2026",
+                Title = "Analizör listesi ekrana sığıyor",
+                Highlights = new List<string>
+                {
+                    "Kalıcılık girdileri listesine yeterli yükseklik verildi; alttaki satırlar artık kesilmiyor."
+                }
+            };
+
+            var v4200 = new ReleaseChangelogItem
+            {
+                Version = "v4.20.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Mağaza kataloğu 59'dan 147 uygulamaya çıktı",
+                Highlights = new List<string>
+                {
+                    "Uygulama Mağazası kataloğu genişletildi: 147 uygulama."
+                }
+            };
+
+            var v4191 = new ReleaseChangelogItem
+            {
+                Version = "v4.19.1",
+                ReleaseDate = "Eylül 2026",
+                Title = "Dışarıdan kaldırma algılama düzeltmeleri",
+                Highlights = new List<string>
+                {
+                    "Kaldırıcının dışarıdan yapılan kaldırmaları algılamasındaki hatalar giderildi."
+                }
+            };
+
+            var v4190 = new ReleaseChangelogItem
+            {
+                Version = "v4.19.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Oyun Modu v2: ölçülebilir etki",
+                Highlights = new List<string>
+                {
+                    "Windows Oyun Modu, süreç önceliği ve arka plan işlemci kullanımı ölçümü eklendi.",
+                    "Riot oyunları için destek eklendi."
+                }
+            };
+
+            var v4182 = new ReleaseChangelogItem
+            {
+                Version = "v4.18.2",
+                ReleaseDate = "Eylül 2026",
+                Title = "'Bakım ile analiz et' Analizör sayfasını açıyor",
+                Highlights = new List<string>
+                {
+                    "Sağ tık menüsünden gelen analiz isteği Analizör sayfasını açmıyordu; düzeltildi."
+                }
+            };
+
+            var v4181 = new ReleaseChangelogItem
+            {
+                Version = "v4.18.1",
+                ReleaseDate = "Eylül 2026",
+                Title = "Sağ tık menüsü simgeleri ve belge analizi",
+                Highlights = new List<string>
+                {
+                    "Sağ tık menüsü simgeleri düzeltildi.",
+                    "Belge analizindeki yanlış alarm giderildi."
+                }
+            };
+
+            var v4180 = new ReleaseChangelogItem
+            {
+                Version = "v4.18.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 5 tamamlandı",
+                Highlights = new List<string>
+                {
+                    "Kanıt paneli, toplu eylemler ve sayfa içi analiz eklendi.",
+                    "MSI derin kalıntı taraması eklendi."
+                }
+            };
+
+            var v4170 = new ReleaseChangelogItem
+            {
+                Version = "v4.17.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Tasarım turu: Disk Haritası, Etkinlik Merkezi, Analizör Geçmişi",
+                Highlights = new List<string>
+                {
+                    "Disk Haritası iç içe harita görünümü ve 'En büyükler' paneli kazandı.",
+                    "Etkinlik Merkezi, Analizör Geçmişi ve Kurulum Nöbetçisi yeniden tasarlandı."
+                }
+            };
+
+            var v4160 = new ReleaseChangelogItem
+            {
+                Version = "v4.16.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Kaldırıcı: program simgeleri ve dışarıdan kaldırma algılama",
+                Highlights = new List<string>
+                {
+                    "Kaldırıcıda program simgeleri gösteriliyor.",
+                    "Dışarıdan yapılan kaldırmalar algılanıyor.",
+                    "Pencereler Fluent tasarıma taşındı."
+                }
+            };
+
+            var v4150 = new ReleaseChangelogItem
+            {
+                Version = "v4.15.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 7: girdi başına zaman çizelgesi",
+                Highlights = new List<string>
+                {
+                    "Her kalıcılık girdisi için zaman çizelgesi ve kararlı kimlik eklendi."
+                }
+            };
+
+            var v4140 = new ReleaseChangelogItem
+            {
+                Version = "v4.14.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 6+8: kalıcı tarama önbelleği ve komut satırı",
+                Highlights = new List<string>
+                {
+                    "Kalıcı tarama önbelleği ile ilk tarama 4,5 saniyeden 1,5 saniyeye indi.",
+                    "Komut satırı derlemi eklendi (29 yeni durum)."
+                }
+            };
+
+            var v4130 = new ReleaseChangelogItem
+            {
+                Version = "v4.13.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 4+5: canlı izleme, sürükle-bırak, sağ tık analizi",
+                Highlights = new List<string>
+                {
+                    "Canlı kalıcılık izleme, Fluent pencereler, sürükle-bırak ve sağ tık analizi eklendi."
+                }
+            };
+
+            var v4120 = new ReleaseChangelogItem
+            {
+                Version = "v4.12.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 4: canlı kalıcılık izleme",
+                Highlights = new List<string>
+                {
+                    "Canlı kalıcılık izleme ve Kurulum Nöbetçisi bağlantısı eklendi."
+                }
+            };
+
+            var v4110 = new ReleaseChangelogItem
+            {
+                Version = "v4.11.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 3: Defender ikinci görüşü",
+                Highlights = new List<string>
+                {
+                    "Defender ikinci görüşü, betik analizi ve karantina eklendi."
+                }
+            };
+
+            var v4100 = new ReleaseChangelogItem
+            {
+                Version = "v4.10.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 2: tek risk dili",
+                Highlights = new List<string>
+                {
+                    "Tek risk dili, açıklamalı kararlar ve kalıcı 'Güvenilir' kararı eklendi."
+                }
+            };
+
+            var v490x = new ReleaseChangelogItem
+            {
+                Version = "v4.9.0",
+                ReleaseDate = "Eylül 2026",
+                Title = "Analizör Faz 1: Autoruns düzeyinde kapsam",
+                Highlights = new List<string>
+                {
+                    "Active Setup, Winlogon, sistem kancaları, tarayıcı ve Office eklentileri taranıyor."
+                }
+            };
+
+            var v480x = new ReleaseChangelogItem
+            {
+                Version = "v4.8.0",
+                ReleaseDate = "27 Eylül 2026",
+                Title = "Analizör v3 Faz 0: doğru yollar, güvenli eylemler",
+                Highlights = new List<string>
+                {
+                    "Doğru dosya yolları, güvenli eylemler ve dürüst puanlama."
+                }
+            };
+
+            var v471 = new ReleaseChangelogItem
+            {
+                Version = "v4.7.1",
+                ReleaseDate = "26 Eylül 2026",
+                Title = "winget ve sessiz MSI kurulumları yakalanıyor",
+                Highlights = new List<string>
+                {
+                    "Kurulum Nöbetçisi winget ve sessiz MSI kurulumlarını (olay 1033) artık yakalıyor."
+                }
+            };
+
+            var v470 = new ReleaseChangelogItem
+            {
+                Version = "v4.7.0",
+                ReleaseDate = "26 Eylül 2026",
+                Title = "Kurulum Nöbetçisi v3 Faz A",
+                Highlights = new List<string>
+                {
+                    "Doğru raporlar ve dürüst koruma rozeti ('Gelişmiş Mod').",
+                    "Geçici dosyalar ayrıldı, yeniden adlandırma yapıldı."
+                }
+            };
+
             var v460 = new ReleaseChangelogItem
             {
                 Version = "v4.6.3",
                 ReleaseDate = "Eylül 2026",
                 Title = "Fluent 2 Kontrol Paneli Sağlık Kartı Modernizasyonu & Rafine Kart Satırları",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Dinamik Sağlık Göstergesi: Puan halkasına kılavuz zemin dairesi ve sağlık durumuna (İyi / Dikkat / Kritik) göre renk alan dinamik vurgu arkı eklendi; '80 / 100' formatında net tipografi sağlandı.",
@@ -2074,8 +2397,31 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v460;
+            LatestRelease = v4205;
 
+            ReleaseHistory.Add(v4205);
+            ReleaseHistory.Add(v4204);
+            ReleaseHistory.Add(v4203);
+            ReleaseHistory.Add(v4202);
+            ReleaseHistory.Add(v4201);
+            ReleaseHistory.Add(v4200);
+            ReleaseHistory.Add(v4191);
+            ReleaseHistory.Add(v4190);
+            ReleaseHistory.Add(v4182);
+            ReleaseHistory.Add(v4181);
+            ReleaseHistory.Add(v4180);
+            ReleaseHistory.Add(v4170);
+            ReleaseHistory.Add(v4160);
+            ReleaseHistory.Add(v4150);
+            ReleaseHistory.Add(v4140);
+            ReleaseHistory.Add(v4130);
+            ReleaseHistory.Add(v4120);
+            ReleaseHistory.Add(v4110);
+            ReleaseHistory.Add(v4100);
+            ReleaseHistory.Add(v490x);
+            ReleaseHistory.Add(v480x);
+            ReleaseHistory.Add(v471);
+            ReleaseHistory.Add(v470);
             ReleaseHistory.Add(v460);
             ReleaseHistory.Add(v450);
             ReleaseHistory.Add(v440);
@@ -2133,6 +2479,9 @@ namespace Bakım.ViewModels
             ReleaseHistory.Add(v310);
             ReleaseHistory.Add(v300);
             ReleaseHistory.Add(v250);
+
+            ChangelogPage = 1;
+            RebuildChangelogPage();
         }
 
         #endregion

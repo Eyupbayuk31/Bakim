@@ -15,4 +15,16 @@ namespace Bakım.Models
         [ObservableProperty]
         private bool _isExpanded;
     }
+
+    public sealed class ChangelogPageButton
+    {
+        public ChangelogPageButton(int number, bool isCurrent)
+        {
+            Number = number;
+            IsCurrent = isCurrent;
+        }
+
+        public int Number { get; }
+        public bool IsCurrent { get; }
+    }
 }

@@ -1289,7 +1289,7 @@
                                                    Margin="0,2,0,0"/>
                                     </StackPanel>
 
-                                    <ItemsControl ItemsSource="{Binding ReleaseHistory}">
+                                    <ItemsControl ItemsSource="{Binding PagedReleases}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="{x:Type models:ReleaseChangelogItem}">
                                                 <Border Background="{DynamicResource Card.Fill.Secondary}"
@@ -1389,6 +1389,62 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+
+                                    <!-- Sayfalama -->
+                                    <StackPanel Margin="0,8,0,0"
+                                                Visibility="{Binding HasMultipleChangelogPages, Converter={StaticResource BoolToVis}}">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <ui:Button Appearance="Secondary"
+                                                       Icon="{ui:SymbolIcon ChevronLeft20}"
+                                                       Padding="10,6"
+                                                       Margin="0,0,6,0"
+                                                       Command="{Binding PrevChangelogPageCommand}"
+                                                       IsEnabled="{Binding CanGoPrevChangelogPage}"
+                                                       ToolTip="Önceki sayfa"
+                                                       AutomationProperties.Name="Önceki sayfa"/>
+                                            <ItemsControl ItemsSource="{Binding ChangelogPageButtons}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <ui:Button Content="{Binding Number}"
+                                                                   MinWidth="36"
+                                                                   Padding="8,6"
+                                                                   Margin="0,0,6,0"
+                                                                   Command="{Binding DataContext.GoToChangelogPageCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                   CommandParameter="{Binding Number}"
+                                                                   AutomationProperties.Name="{Binding Number, StringFormat='Sayfa {0}'}">
+                                                            <ui:Button.Style>
+                                                                <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                                    <Setter Property="Appearance" Value="Secondary"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                                                            <Setter Property="Appearance" Value="Primary"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </ui:Button.Style>
+                                                        </ui:Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <ui:Button Appearance="Secondary"
+                                                       Icon="{ui:SymbolIcon ChevronRight20}"
+                                                       Padding="10,6"
+                                                       Command="{Binding NextChangelogPageCommand}"
+                                                       IsEnabled="{Binding CanGoNextChangelogPage}"
+                                                       ToolTip="Sonraki sayfa"
+                                                       AutomationProperties.Name="Sonraki sayfa"/>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding ChangelogPageInfo}"
+                                                   HorizontalAlignment="Center"
+                                                   Margin="0,8,0,0"
+                                                   FontSize="{StaticResource Font.Caption}"
+                                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
