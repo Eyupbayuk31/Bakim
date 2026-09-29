@@ -1,9 +1,9 @@
-# Bakım v4.20.2 - Sürüm Notları
+# Bakım v4.20.3 - Sürüm Notları
 
-## Analizör: kategori şeridi tekerlekle kayıyor
+## Hizmetler ve sürücüler: sayfa sadeleşti
 
-Önceki sürümde kategori düğmeleri tek satıra alınmış, ama altında kaba bir kaydırma çubuğu görünüyordu. Çubuk kaldırıldı.
+Hizmetler sekmesinin üstündeki "Önerilen profiller" kartları büyük yer kaplıyordu; hizmet listesi ekranın altına sıkışıp yalnızca bir satır görünüyordu.
 
 ### Düzeltmeler
-- **Fare tekerleği şeridi yatay kaydırır:** Kategori düğmelerinin üstündeyken tekerleği çevirmek şeridi sağa ve sola kaydırıyor. Kaydırılacak bir şey yoksa sayfa normal şekilde kayıyor.
-- **Kaydırma çubuğu gizlendi:** Şeritte artık çubuk yok. Ekrana sığmayan tarafta düğmeler yumuşakça soluyor, böylece devamı olduğu anlaşılıyor.
+- **Önerilen profiller kaldırıldı:** Yazıcı, Xbox, Faks, uzaktan kayıt defteri, telemetri ve çevrimdışı harita kartları sayfadan çıkarıldı. Hizmet listesi artık pencerenin kalan alanını dolduruyor.
+- **Boşluklar düzeltildi:** Özet kartları, arama satırı ve liste arasındaki dikey boşluklar birbirine uyumlu hale getirildi.

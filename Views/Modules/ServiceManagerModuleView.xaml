@@ -69,14 +69,13 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/> <!-- Title & Top Controls -->
             <RowDefinition Height="Auto"/> <!-- Metric Cards -->
-            <RowDefinition Height="Auto"/> <!-- Önerilen profiller (§5.7) -->
             <RowDefinition Height="Auto"/> <!-- Search & Filters -->
             <RowDefinition Height="*"/>    <!-- Active Content (Services or Drivers Table) -->
             <RowDefinition Height="Auto"/> <!-- Bottom Status Bar -->
         </Grid.RowDefinitions>
 
         <!-- 2. Metric Overview Cards -->
-        <Grid Grid.Row="1" Margin="0,0,0,18">
+        <Grid Grid.Row="1" Margin="0,0,0,14">
             <!-- Services Overview Cards -->
             <Grid Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Services}">
                 <Grid.ColumnDefinitions>
@@ -216,44 +215,8 @@
             </Grid>
         </Grid>
 
-        <!-- 2b. Güvenli önerilen profiller: önizleme + tek onay + Etkinlik Merkezi'nden geri alma -->
-        <StackPanel Grid.Row="2" Margin="0,0,0,14"
-                    Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Services}">
-            <TextBlock Text="Önerilen profiller" Style="{StaticResource Text.Label}" Margin="0,0,0,8"/>
-            <ItemsControl ItemsSource="{Binding Profiles}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Style="{StaticResource Card.Surface.Compact}" Width="260" Margin="0,0,10,10">
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <ui:SymbolIcon Symbol="{Binding Icon}" FontSize="18" Margin="0,0,8,0"
-                                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="{StaticResource Font.Body}"
-                                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                                </StackPanel>
-                                <TextBlock Text="{Binding Description}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <TextBlock Text="{Binding StepText}" FontSize="{StaticResource Font.Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
-                                           Foreground="{DynamicResource TextFillColorTertiaryBrush}" ToolTip="{Binding PreviewText}"/>
-                                <ui:Button Content="Önizle ve uygula" Appearance="Secondary" Padding="10,4" Margin="0,8,0,0"
-                                           IsEnabled="{Binding CanApply}"
-                                           Command="{Binding DataContext.ApplyProfileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                           CommandParameter="{Binding}"
-                                           AutomationProperties.Name="{Binding Title}"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </StackPanel>
-
         <!-- 3. Search & Filter Bar -->
-        <Grid Grid.Row="3" Margin="0,0,0,12">
+        <Grid Grid.Row="2" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -287,7 +250,7 @@
 
         <!-- 4. Table Area -->
         <!-- TAB 1: Services Table -->
-        <Grid Grid.Row="4" Grid.IsSharedSizeScope="True" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Services}">
+        <Grid Grid.Row="3" Grid.IsSharedSizeScope="True" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Services}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header -->
                 <RowDefinition Height="*"/>    <!-- Rows -->
@@ -503,7 +466,7 @@
         </Grid>
 
         <!-- TAB 2: Drivers Table -->
-        <Grid Grid.Row="4" Grid.IsSharedSizeScope="True" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Drivers}">
+        <Grid Grid.Row="3" Grid.IsSharedSizeScope="True" Visibility="{Binding ActiveTab, Converter={StaticResource StringToVis}, ConverterParameter=Drivers}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header -->
                 <RowDefinition Height="*"/>    <!-- Rows -->
@@ -672,7 +635,7 @@
         </Grid>
 
         <!-- 5. Bottom Status Bar -->
-        <Border Grid.Row="5" 
+        <Border Grid.Row="4" 
                 Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}" 
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}" 
                 BorderThickness="1,0,1,1" 
