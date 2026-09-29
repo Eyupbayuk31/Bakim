@@ -171,8 +171,9 @@
 
                 <!-- Row 0: Category Filter Buttons -->
                 <ScrollViewer Grid.Row="0" VerticalAlignment="Center"
-                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
-                              PanningMode="HorizontalOnly">
+                              HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"
+                              PanningMode="HorizontalOnly"
+                              helpers:HorizontalWheelScroll.IsEnabled="True">
                 <StackPanel Orientation="Horizontal">
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="All"
                                Appearance="{Binding IsAllCategory, Converter={StaticResource BoolToNavAppearance}}"

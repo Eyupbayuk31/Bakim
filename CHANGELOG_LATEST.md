@@ -1,11 +1,9 @@
-# Bakım v4.20.1 - Sürüm Notları
+# Bakım v4.20.2 - Sürüm Notları
 
-## Analizör: liste artık ekrana sığıyor
+## Analizör: kategori şeridi tekerlekle kayıyor
 
-Analizör sayfasında üstteki bölümler çok yer kapladığı için kalıcılık listesi yalnızca bir buçuk satır gösteriyordu. Sayfa düzeni sıkılaştırıldı; liste artık pencerenin kalan alanını kullanıyor.
+Önceki sürümde kategori düğmeleri tek satıra alınmış, ama altında kaba bir kaydırma çubuğu görünüyordu. Çubuk kaldırıldı.
 
 ### Düzeltmeler
-- **Liste alanı büyüdü:** Sayfaya iki kez uygulanan kenar boşluğu kaldırıldı, alt başlık tek satıra indi ve listeye en az 300 piksel yükseklik verildi.
-- **Özet kartları sadeleşti:** Kartlardaki açıklama satırları kaldırıldı; metinler fare kartın üstüne gelince ipucu olarak görünüyor.
-- **Kategori düğmeleri tek satırda:** Düğmeler iki satıra sarılmak yerine tek satırda duruyor; sığmazsa yatay kaydırılıyor.
-- **Sürüm yazısı:** Sayfanın altındaki sürüm metni elle yazılmış ve eski kalmıştı (v41.0). Artık uygulamanın gerçek sürümünü gösteriyor.
+- **Fare tekerleği şeridi yatay kaydırır:** Kategori düğmelerinin üstündeyken tekerleği çevirmek şeridi sağa ve sola kaydırıyor. Kaydırılacak bir şey yoksa sayfa normal şekilde kayıyor.
+- **Kaydırma çubuğu gizlendi:** Şeritte artık çubuk yok. Ekrana sığmayan tarafta düğmeler yumuşakça soluyor, böylece devamı olduğu anlaşılıyor.
