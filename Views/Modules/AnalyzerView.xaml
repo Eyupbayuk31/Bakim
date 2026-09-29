@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:app="clr-namespace:Bakım"
              xmlns:helpers="clr-namespace:Bakım.Helpers"
              xmlns:vm="clr-namespace:Bakım.ViewModels"
              xmlns:models="clr-namespace:Bakım.Models"
@@ -17,7 +18,7 @@
              Drop="OnDrop">
 
     <c:ModulePage Title="Analizör"
-                  Subtitle="Başlangıç noktalarını, WMI kalıcılığını ve dosya imzalarını tarar; isteğe bağlı VirusTotal denetimi yapar. Dosyaları analiz için buraya sürükleyebilirsiniz."
+                  Subtitle="Başlangıç noktalarını, WMI kalıcılığını ve dosya imzalarını tarar; isteğe bağlı VirusTotal denetimi yapar."
                   IsScrollable="False">
     <c:ModulePage.Actions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -72,9 +73,9 @@
     </c:ModulePage.Actions>
 
     <Grid>
-        <Grid Margin="24">
+        <Grid>
             <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> <!-- 0: Header & Global Actions -->
+            <RowDefinition Height="0"/> <!-- 0: (kullanılmıyor; başlık ModulePage içinde) -->
             <RowDefinition Height="Auto"/> <!-- 1: Sekmeler (Tarama / Geçmiş / Değişiklikler) -->
             <RowDefinition Height="Auto"/> <!-- 2: KPI Statistics Cards -->
             <RowDefinition Height="Auto"/> <!-- 3: Category Filter Bar & Options -->
@@ -126,31 +127,31 @@
                         Intent="Accent"
                         Label="Aktif kalıcılık"
                         Value="{Binding TotalCount}"
-                        Caption="Taranan tüm başlangıç vektörleri"/>
+                        ToolTip="Taranan tüm başlangıç vektörleri"/>
 
             <c:StatCard Icon="ShieldDismiss24"
                         Intent="Critical"
                         Label="Yüksek risk"
                         Value="{Binding HighRiskCount}"
-                        Caption="Listenin en üstünde sıralanır"/>
+                        ToolTip="Listenin en üstünde sıralanır"/>
 
             <c:StatCard Icon="Warning24"
                         Intent="Caution"
                         Label="İmzasız / şüpheli"
                         Value="{Binding UnsignedCount}"
-                        Caption="Dijital imzası doğrulanamayan girdiler"/>
+                        ToolTip="Dijital imzası doğrulanamayan girdiler"/>
 
             <c:StatCard Icon="ShieldCheckmark24"
                         Intent="Success"
                         Label="Doğrulanmış imza"
                         Value="{Binding VerifiedCount}"
-                        Caption="Gömülü veya katalog imzası geçerli"/>
+                        ToolTip="Gömülü veya katalog imzası geçerli"/>
 
             <c:StatCard Icon="CalendarClock24"
                         Intent="Caution"
                         Label="Son 7 günde eklenen"
                         Value="{Binding RecentlyAddedCount}"
-                        Caption="Taze başlangıç girdisi = erken bulaşma sinyali"/>
+                        ToolTip="Taze başlangıç girdisi = erken bulaşma sinyali"/>
         </c:SummaryStrip>
 
         <!-- 2. Category Toolbar & Options -->
@@ -159,57 +160,61 @@
                 BorderBrush="{DynamicResource Card.Stroke.Glass}"
                 BorderThickness="1"
                 CornerRadius="{StaticResource Radius.LG}"
-                Padding="12"
-                Margin="0,0,0,16">
+                Padding="10"
+                Margin="0,0,0,12">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="10"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Row 0: Category Filter Buttons -->
-                <WrapPanel Grid.Row="0" VerticalAlignment="Center">
+                <ScrollViewer Grid.Row="0" VerticalAlignment="Center"
+                              HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                              PanningMode="HorizontalOnly">
+                <StackPanel Orientation="Horizontal">
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="All"
                                Appearance="{Binding IsAllCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Tümü"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Tümü"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Registry"
                                Appearance="{Binding IsRegistryCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Kayıt Defteri (Run)" Icon="{ui:SymbolIcon Document20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Kayıt Defteri (Run)" Icon="{ui:SymbolIcon Document20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Startup"
                                Appearance="{Binding IsStartupCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Başlangıç klasörü" Icon="{ui:SymbolIcon Folder20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Başlangıç klasörü" Icon="{ui:SymbolIcon Folder20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Tasks"
                                Appearance="{Binding IsTasksCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Zamanlanmış görevler" Icon="{ui:SymbolIcon CalendarClock20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Zamanlanmış görevler" Icon="{ui:SymbolIcon CalendarClock20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Services"
                                Appearance="{Binding IsServicesCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Windows servisleri" Icon="{ui:SymbolIcon DeveloperBoard20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Windows servisleri" Icon="{ui:SymbolIcon DeveloperBoard20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Wmi"
                                Appearance="{Binding IsWmiCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="WMI kalıcılığı" Icon="{ui:SymbolIcon Flash20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="WMI kalıcılığı" Icon="{ui:SymbolIcon Flash20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Shell"
                                Appearance="{Binding IsShellCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Shell eklentileri" Icon="{ui:SymbolIcon Desktop20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Shell eklentileri" Icon="{ui:SymbolIcon Desktop20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Drivers"
                                Appearance="{Binding IsDriversCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Sürücüler" Icon="{ui:SymbolIcon Wrench20}"
+                               Padding="10,4" Margin="0,0,6,0" Content="Sürücüler" Icon="{ui:SymbolIcon Wrench20}"
                                ToolTip="Çekirdek ve dosya sistemi sürücüleri. Yalnızca incelenir; buradan kapatılamaz."/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Hooks"
                                Appearance="{Binding IsHooksCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Sistem kancaları" Icon="{ui:SymbolIcon PlugConnected20}"
+                               Padding="10,4" Margin="0,0,6,0" Content="Sistem kancaları" Icon="{ui:SymbolIcon PlugConnected20}"
                                ToolTip="AppInit/AppCert DLL, LSA paketleri, yazdırma izleyicileri, Winsock, Netsh, BootExecute ve PowerShell profilleri."/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Browser"
                                Appearance="{Binding IsBrowserCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Tarayıcı eklentileri" Icon="{ui:SymbolIcon Globe20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Tarayıcı eklentileri" Icon="{ui:SymbolIcon Globe20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Office"
                                Appearance="{Binding IsOfficeCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="Office eklentileri" Icon="{ui:SymbolIcon DocumentBulletList20}"/>
+                               Padding="10,4" Margin="0,0,6,0" Content="Office eklentileri" Icon="{ui:SymbolIcon DocumentBulletList20}"/>
                     <ui:Button Command="{Binding SetCategoryFilterCommand}" CommandParameter="Files"
                                Appearance="{Binding IsFilesCategory, Converter={StaticResource BoolToNavAppearance}}"
-                               Padding="12,6" Margin="0,0,6,4" Content="İncelenen dosyalar" Icon="{ui:SymbolIcon DocumentSearch20}"
+                               Padding="10,4" Margin="0,0,6,0" Content="İncelenen dosyalar" Icon="{ui:SymbolIcon DocumentSearch20}"
                                ToolTip="Kurulum Nöbetçisi'nden ya da elle incelemeye gönderilen dosyalar (başlangıç kaydı değil)."/>
-                </WrapPanel>
+                </StackPanel>
+                </ScrollViewer>
 
                 <!-- Row 2: Search Box & Sysinternals Filter Toggles -->
                 <Grid Grid.Row="2">
@@ -270,7 +275,7 @@
             </DockPanel>
         </Border>
 
-        <Grid Grid.Row="4" Visibility="{Binding ShowScanContent, Converter={StaticResource BoolToVis}}">
+        <Grid Grid.Row="4" MinHeight="300" Visibility="{Binding ShowScanContent, Converter={StaticResource BoolToVis}}">
 
             <!-- Boş durum: filtre hiçbir şey döndürmediğinde kullanıcıyı yalnız bırakma -->
             <c:EmptyState Icon="Search24"
@@ -828,7 +833,7 @@
         </Grid>
 
         <!-- 4. Status Footer -->
-        <Grid Grid.Row="5" Margin="0,10,0,0" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
+        <Grid Grid.Row="5" Margin="0,6,0,0" Visibility="{Binding IsScanTab, Converter={StaticResource BoolToVis}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -842,7 +847,7 @@
                 <TextBlock Text="{Binding ScanStatusText}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
 
-            <TextBlock Grid.Column="1" Text="Bakım Güvenlik Kalkanı v41.0" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+            <TextBlock Grid.Column="1" Text="{x:Static app:AppInfo.BrandTitle}" FontSize="{StaticResource Font.Caption}" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
         </Grid>
     </Grid>
 
