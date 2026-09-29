@@ -10,8 +10,7 @@
               d:DataContext="{d:DesignInstance Type=vm:CleanerViewModel}"
               d:DesignHeight="850" d:DesignWidth="1100">
     <c:ModulePage Title="Temizleyici"
-                  Subtitle="Geçici dosyaları, önbellekleri ve uygulama kalıntılarını bulur. Silinenler Etkinlik Merkezi'ne kaydedilir."
-                  IsScrollable="False">
+                  Subtitle="Geçici dosyaları, önbellekleri ve uygulama kalıntılarını bulur. Silinenler Etkinlik Merkezi'ne kaydedilir.">
     <c:ModulePage.Actions>
                     <StackPanel Orientation="Horizontal">
                         <ui:Button Appearance="Secondary"
@@ -43,7 +42,7 @@
             <RowDefinition Height="Auto"/> <!-- Row 1: InfoBar Operation Result -->
             <RowDefinition Height="Auto"/> <!-- Row 2: Cleaning Targets & Toolbar -->
             <RowDefinition Height="Auto"/> <!-- Row 3: Realtime Progress & Status -->
-            <RowDefinition Height="*"/>    <!-- Row 4: Virtualized Scanned Files & Drawer -->
+            <RowDefinition Height="Auto"/> <!-- Row 4: Virtualized Scanned Files & Drawer (sabit yükseklik, sayfa kayar) -->
         </Grid.RowDefinitions>
 
         <!-- ROW 0: Sayfa başlığı (tek birincil eylem: Temizle) + özet şeridi -->
@@ -101,7 +100,7 @@
                              Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"/>
 
                 <!-- Row 2: Category Filter Pills & Quick Presets (Responsive WrapPanel Layout) -->
-                <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,12">
+                <WrapPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,6">
                     <!-- Group Filter Pills (Segmented Container) -->
                     <Border Style="{StaticResource FluentSegmentedContainer}" Margin="0,0,14,6">
                         <StackPanel Orientation="Horizontal">
@@ -128,7 +127,7 @@
                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}" 
                                    VerticalAlignment="Center" Margin="0,0,8,0"/>
 
-                    <Border Style="{StaticResource FluentSegmentedContainer}" Margin="0,0,0,6">
+                    <Border Style="{StaticResource FluentSegmentedContainer}">
                         <StackPanel Orientation="Horizontal">
                             <ui:Button Content="Hızlı ve güvenli" Icon="{ui:SymbolIcon ShieldCheckmark20}" Appearance="Secondary" Padding="10,4" Margin="0,0,2,0"
                                        Command="{Binding ApplyPresetCommand}" CommandParameter="quick"
@@ -145,8 +144,9 @@
                             <ui:Button Content="Tümünü seç" Appearance="Secondary" Padding="8,4" Margin="0,0,2,0"
                                        Command="{Binding SelectAllCategoriesCommand}"/>
 
-                            <ui:Button Content="Temizle" Appearance="Secondary" Padding="8,4"
-                                       Command="{Binding DeselectAllCategoriesCommand}"/>
+                            <ui:Button Content="Seçimi kaldır" Appearance="Secondary" Padding="8,4"
+                                       Command="{Binding DeselectAllCategoriesCommand}"
+                                       ToolTip="Tüm hedeflerin işaretini kaldırır (dosya silmez)."/>
                         </StackPanel>
                     </Border>
                     </StackPanel>
@@ -161,7 +161,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource Card.Surface.Interactive}" Padding="{StaticResource Pad.CardCompact}" ClipToBounds="False" ToolTip="{Binding Description}">
+                            <Border Style="{StaticResource Card.Surface.Interactive}" Padding="{StaticResource Pad.CardCompact}" MinHeight="66" ClipToBounds="False" ToolTip="{Binding Description}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -180,21 +180,22 @@
 
                                     <!-- Details -->
                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Name}" 
-                                                       FontWeight="SemiBold" 
-                                                       FontSize="{StaticResource Font.Caption}" 
-                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                       TextTrimming="CharacterEllipsis"/>
-                                            
+                                        <DockPanel LastChildFill="True">
                                             <!-- Admin shield icon -->
-                                            <ui:SymbolIcon Symbol="ShieldKeyhole20" 
+                                            <ui:SymbolIcon DockPanel.Dock="Right"
+                                                           Symbol="ShieldKeyhole20"
                                                            FontSize="10"
                                                            Foreground="{DynamicResource SystemFillColorCautionBrush}"
                                                            Margin="4,0,0,0"
+                                                           VerticalAlignment="Center"
                                                            ToolTip="Yönetici (Admin) yetkisi gerektirebilir"
                                                            Visibility="{Binding RequiresAdmin, Converter={StaticResource BoolToVis}}"/>
-                                        </StackPanel>
+                                            <TextBlock Text="{Binding Name}"
+                                                       FontWeight="SemiBold"
+                                                       FontSize="{StaticResource Font.Caption}"
+                                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </DockPanel>
 
                                         <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                                             <TextBlock Text="{Binding FormattedSize, StringFormat='Bulunan: {0}'}" 
@@ -305,7 +306,7 @@
         <!-- ========================================================================= -->
         <!-- ROW 4: SCANNED FILES TABLE & RIGHT INSPECTION DRAWER                      -->
         <!-- ========================================================================= -->
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="4" Height="480">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>

@@ -1,9 +1,12 @@
-# Bakım v4.20.3 - Sürüm Notları
+# Bakım v4.20.4 - Sürüm Notları
 
-## Hizmetler ve sürücüler: sayfa sadeleşti
+## Temizleyici: sayfa artık tam görünüyor
 
-Hizmetler sekmesinin üstündeki "Önerilen profiller" kartları büyük yer kaplıyordu; hizmet listesi ekranın altına sıkışıp yalnızca bir satır görünüyordu.
+Temizleyici sayfası kaydırılamıyordu. Temizlik hedefleri kartları ekranın altına taşınca alttaki kartlar ve tarama sonuç listesi kesiliyor, görünmüyordu.
 
 ### Düzeltmeler
-- **Önerilen profiller kaldırıldı:** Yazıcı, Xbox, Faks, uzaktan kayıt defteri, telemetri ve çevrimdışı harita kartları sayfadan çıkarıldı. Hizmet listesi artık pencerenin kalan alanını dolduruyor.
-- **Boşluklar düzeltildi:** Özet kartları, arama satırı ve liste arasındaki dikey boşluklar birbirine uyumlu hale getirildi.
+- **Sayfa kaydırılabilir:** Tüm temizlik hedefleri görünür. Tarama sonuç listesi sabit yükseklikte kendi içinde kayar ve sanallaştırması korunur.
+- **Uzun hedef adları:** "Windows Hata Raporlama Kalıntıları", "Geliştirici Paket Önbellekleri" gibi adlar kartın kenarında kesilmek yerine üç nokta ile kısalıyor. Yönetici kalkanı simgesi sağa sabitlendi.
+- **Eşit kart yüksekliği:** Hedef kartlarına asgari yükseklik verildi, satırlar düzgün hizalanıyor.
+- **Filtre satırı hizası:** Kategori sekmeleri ile profil düğmeleri aynı hizada.
+- **Karışıklık giderildi:** Profil grubundaki "Temizle" düğmesi "Seçimi kaldır" olarak yeniden adlandırıldı. Sayfanın asıl "Temizle" eylemiyle karışıyordu.
