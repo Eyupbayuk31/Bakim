@@ -54,7 +54,7 @@ namespace Bakım.Services
 
         // Cam ve Malzeme Sistemi (docs/WIN11_CAM_TASARIM_PLANI.md §2)
         public Color OverlayTint { get; init; } = Color.FromRgb(0xFF, 0xFF, 0xFF);
-        public double TintOpacity { get; init; } = 0.0;
+        public double TintOpacity { get; init; } = 0.82;
         public Color? AmbientPrimary { get; init; }
         public Color? AmbientSecondary { get; init; }
     }
@@ -387,10 +387,18 @@ namespace Bakım.Services
             {
                 try
                 {
+                    PublishMaterials(app.Resources, CurrentDefinition, backdropType);
+
                     foreach (Window window in app.Windows)
                     {
                         if (window is Wpf.Ui.Controls.FluentWindow fluent)
+                        {
                             fluent.WindowBackdropType = backdropType;
+                            if (app.Resources["Surface.WindowTint"] is Brush windowTint)
+                            {
+                                fluent.Background = windowTint;
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -664,16 +672,69 @@ namespace Bakım.Services
         /// Degrade cam kenarlığı, denetim yükseklik kenarı, kahraman malzemesi ve statik ortam ışıklarını üretir.
         /// Ayrıca WPF-UI denetimlerinin varsayılan fırçalarını malzeme token'larıyla yeniden bağlar.
         /// </summary>
-        private static void PublishMaterials(ResourceDictionary res, ThemeDefinition def)
+        private void PublishMaterials(ResourceDictionary res, ThemeDefinition def)
         {
-            if (def.Kind == AppThemeKind.HighContrast)
+            PublishMaterials(res, def, CurrentBackdropType);
+        }
+
+        private static void PublishMaterials(ResourceDictionary res, ThemeDefinition def, Wpf.Ui.Controls.WindowBackdropType backdropType)
+        {
+            if (def.Kind == AppThemeKind.HighContrast || backdropType == Wpf.Ui.Controls.WindowBackdropType.None)
             {
-                Set(res, "Card.Stroke.Glass", new SolidColorBrush(def.CardStroke));
-                Set(res, "Control.Stroke.Elevation", new SolidColorBrush(def.ControlStroke));
-                Set(res, "Card.Surface.Hero.Fill", new SolidColorBrush(def.CardBackground));
-                Set(res, "Card.Surface.Hero.Stroke", new SolidColorBrush(def.CardStroke));
+                var winBg = new SolidColorBrush(def.WindowBackground);
+                winBg.Freeze();
+                Set(res, "Surface.WindowTint", winBg);
+                Set(res, "ApplicationBackgroundBrush", winBg);
+
+                var contentLayer = new SolidColorBrush(def.ContentLayer);
+                contentLayer.Freeze();
+                Set(res, "Layer.Fill", contentLayer);
+                Set(res, "LayerFillColorDefaultBrush", contentLayer);
+                Set(res, "Layer.Stroke", new SolidColorBrush(def.CardStroke));
+
+                var cardBg = new SolidColorBrush(def.CardBackground);
+                cardBg.Freeze();
+                Set(res, "Card.Fill", cardBg);
+                Set(res, "CardBackgroundFillColorDefaultBrush", cardBg);
+                Set(res, "CardBackground", cardBg);
+
+                var cardBgAlt = new SolidColorBrush(def.CardBackgroundAlt);
+                cardBgAlt.Freeze();
+                Set(res, "Card.Fill.Secondary", cardBgAlt);
+                Set(res, "CardBackgroundFillColorSecondaryBrush", cardBgAlt);
+                Set(res, "Card.Fill.Hover", new SolidColorBrush(def.SubtleHover));
+
+                var solidCtrlFill = new SolidColorBrush(def.ControlFill);
+                solidCtrlFill.Freeze();
+                Set(res, "Control.Fill", solidCtrlFill);
+                Set(res, "ControlFillColorDefaultBrush", solidCtrlFill);
+                Set(res, "ControlFillColorSecondaryBrush", solidCtrlFill);
+                Set(res, "Control.Fill.Secondary", new SolidColorBrush(def.ControlFillAlt));
+
+                var cardStroke = new SolidColorBrush(def.CardStroke);
+                cardStroke.Freeze();
+                Set(res, "Card.Stroke.Glass", cardStroke);
+                Set(res, "CardStrokeColorDefaultBrush", cardStroke);
+                Set(res, "CardBorderBrush", cardStroke);
+
+                var ctrlStroke = new SolidColorBrush(def.ControlStroke);
+                ctrlStroke.Freeze();
+                Set(res, "Control.Stroke.Elevation", ctrlStroke);
+                Set(res, "ControlElevationBorderBrush", ctrlStroke);
+                Set(res, "ControlStrokeColorDefaultBrush", ctrlStroke);
+
+                Set(res, "Card.Surface.Hero.Fill", cardBg);
+                Set(res, "Card.Surface.Hero.Stroke", cardStroke);
+
+                Set(res, "Subtle.Fill.Hover", new SolidColorBrush(def.SubtleHover));
+                Set(res, "Subtle.Fill.Selected", new SolidColorBrush(def.SubtlePressed));
+                Set(res, "Divider.Stroke", new SolidColorBrush(def.CardStroke));
+                Set(res, "Acrylic.Fill", new SolidColorBrush(def.CardBackground));
+                Set(res, "Smoke.Fill", Color.FromArgb(0x4D, 0, 0, 0));
+
                 Set(res, "Surface.AmbientLight", Brushes.Transparent);
                 Set(res, "Surface.AmbientSecondary", Brushes.Transparent);
+                return;
             }
             else if (def.IsDark)
             {
@@ -729,18 +790,18 @@ namespace Bakım.Services
                 };
                 Set(res, "Card.Surface.Hero.Stroke", heroStroke);
 
-                // 4. Ortam ışığı: sağ üst köşe radyal degrade, vurgu renginde
+                // 4. Ortam ışığı: sağ üst köşe radyal degrade (zarif köşe aurası)
                 var ambPrimary = def.AmbientPrimary ?? def.Primary;
                 var ambLight = new RadialGradientBrush
                 {
                     Center = new Point(1, 0),
                     GradientOrigin = new Point(1, 0),
-                    RadiusX = 1.25,
-                    RadiusY = 1.25,
+                    RadiusX = 0.85,
+                    RadiusY = 0.65,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambPrimary, 0x38), 0.0),
-                        new GradientStop(WithAlpha(ambPrimary, 0x14), 0.45),
+                        new GradientStop(WithAlpha(ambPrimary, 0x24), 0.0),
+                        new GradientStop(WithAlpha(ambPrimary, 0x0A), 0.45),
                         new GradientStop(WithAlpha(ambPrimary, 0x00), 1.0)
                     }
                 };
@@ -752,12 +813,12 @@ namespace Bakım.Services
                 {
                     Center = new Point(0, 1),
                     GradientOrigin = new Point(0, 1),
-                    RadiusX = 1.15,
-                    RadiusY = 1.15,
+                    RadiusX = 0.75,
+                    RadiusY = 0.55,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambSecondary, 0x22), 0.0),
-                        new GradientStop(WithAlpha(ambSecondary, 0x08), 0.5),
+                        new GradientStop(WithAlpha(ambSecondary, 0x18), 0.0),
+                        new GradientStop(WithAlpha(ambSecondary, 0x06), 0.5),
                         new GradientStop(WithAlpha(ambSecondary, 0x00), 1.0)
                     }
                 };
@@ -819,11 +880,11 @@ namespace Bakım.Services
                 {
                     Center = new Point(1, 0),
                     GradientOrigin = new Point(1, 0),
-                    RadiusX = 1.35,
-                    RadiusY = 1.35,
+                    RadiusX = 0.85,
+                    RadiusY = 0.65,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambPrimary, 0x1F), 0.0),
+                        new GradientStop(WithAlpha(ambPrimary, 0x18), 0.0),
                         new GradientStop(WithAlpha(ambPrimary, 0x00), 1.0)
                     }
                 };
@@ -834,11 +895,11 @@ namespace Bakım.Services
                 {
                     Center = new Point(0, 1),
                     GradientOrigin = new Point(0, 1),
-                    RadiusX = 1.25,
-                    RadiusY = 1.25,
+                    RadiusX = 0.75,
+                    RadiusY = 0.55,
                     GradientStops = new GradientStopCollection
                     {
-                        new GradientStop(WithAlpha(ambSecondary, 0x14), 0.0),
+                        new GradientStop(WithAlpha(ambSecondary, 0x10), 0.0),
                         new GradientStop(WithAlpha(ambSecondary, 0x00), 1.0)
                     }
                 };
@@ -957,7 +1018,7 @@ namespace Bakım.Services
                 Caution = Hex("#FCE100"),
                 Critical = Hex("#FF99A4"),
                 OverlayTint = Hex("#FFFFFF"),
-                TintOpacity = 0.0,
+                TintOpacity = 0.82,
                 AmbientPrimary = Hex("#60CDFF"),
                 AmbientSecondary = Hex("#99EBFF")
             };
@@ -986,7 +1047,7 @@ namespace Bakım.Services
                 Caution = Hex("#FBBF24"),
                 Critical = Hex("#F87171"),
                 OverlayTint = Hex("#FFFFFF"),
-                TintOpacity = 0.18,
+                TintOpacity = 0.85,
                 AmbientPrimary = Hex("#2563EB"),
                 AmbientSecondary = Hex("#60A5FA")
             };
@@ -1015,7 +1076,7 @@ namespace Bakım.Services
                 Caution = Hex("#FACC15"),
                 Critical = Hex("#FB7185"),
                 OverlayTint = Hex("#FFFFFF"),
-                TintOpacity = 0.22,
+                TintOpacity = 0.95,
                 AmbientPrimary = Hex("#9333EA"),
                 AmbientSecondary = Hex("#C084FC")
             };
@@ -1044,7 +1105,7 @@ namespace Bakım.Services
                 Caution = Hex("#FBBF24"),
                 Critical = Hex("#F43F5E"),
                 OverlayTint = Hex("#DDD6FE"),
-                TintOpacity = 0.25,
+                TintOpacity = 0.85,
                 AmbientPrimary = Hex("#8B5CF6"),
                 AmbientSecondary = Hex("#A78BFA")
             };
@@ -1122,7 +1183,7 @@ namespace Bakım.Services
                 Caution = Hex("#9D5D00"),
                 Critical = Hex("#C42B1C"),
                 OverlayTint = Hex("#FFFFFF"),
-                TintOpacity = 0.0,
+                TintOpacity = 0.82,
                 AmbientPrimary = Hex("#005FB8"),
                 AmbientSecondary = Hex("#003E92")
             };

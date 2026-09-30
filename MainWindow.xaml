@@ -17,7 +17,7 @@
         Width="1280" Height="840"
         WindowStartupLocation="CenterScreen"
         WindowBackdropType="Mica"
-        Background="Transparent"
+        Background="{DynamicResource Surface.WindowTint}"
         ExtendsContentIntoTitleBar="True"
         Icon="pack://application:,,,/Bakim;component/Assets/app.ico">
 

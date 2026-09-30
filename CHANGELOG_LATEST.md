@@ -1,11 +1,12 @@
-# Bakım v4.20.5 - Sürüm Notları
+# Bakım v4.20.6 - Sürüm Notları
 
-## Sürüm geçmişi sayfalandı, çökme ve olay kayıtları silinebiliyor
+## Pencere saydamlığı ve Mica malzeme arka planı kararlı hale getirildi
 
-Ayarlar'daki sürüm geçmişi v4.6.3'te kalmıştı ve sonsuza kadar uzuyordu. Olaylar ve çökmeler sayfasında ise eski kayıtlar hiçbir zaman kalkmıyordu.
+Uygulamanın bazı durumlarda (sistem tepsisinden geri yüklenirken, simge durumundan büyütülürken, pil tasarrufu modunda veya Windows saydamlık efektleri kapalıyken) şeffaf veya içi görünür hayalet pencere olarak açılması sorunu tamamen giderildi.
 
-### Yenilikler
-- **Sürüm geçmişi güncel:** v4.7.0'dan v4.20.x'e kadar tüm sürümler listeye eklendi, en yeni sürüm en üstte ve "En son güncellemede ne geldi?" kartında görünüyor.
-- **Sayfalama:** Sürüm geçmişi 8'erli sayfalara bölündü. Altta 1 2 3 ... sayfa düğmeleri ile önceki/sonraki okları var.
-- **Mavi ekran kayıtlarını sil:** "Tümünü sil" ve kayıt başına "Sil" düğmeleri. Minidump dosyası diskten silinir, kayıt listeden ve sağlık puanından çıkar. Dosya silinemezse (izin gerekirse) kayıt listede kalır ve durum çubuğu bunu bildirir.
-- **Olay listesini temizle:** Olaylar sekmesinde "Listeyi temizle". Windows olay günlüğü silinmez, yalnızca temizleme anından önceki olaylar listeden ve sağlık puanından çıkarılır. Seçim uygulama yeniden açılınca da korunur.
+### Yenilikler ve İyileştirmeler
+- **Hayalet Pencere & Şeffaflık Çözümü:** Pencere başlangıç arka plan rengi ve Window Tint fırçası %82 taban opaklık ile güvene alındı. Windows DWM Mica efektini askıya alsa bile pencere asla şeffaf kalmaz.
+- **Güvenli Katı Arka Plan Yedeklemesi:** Efektsiz (None) veya Yüksek Karşıtlık modlarında tüm cam katmanları %100 opak Fluent yüzey fırçalarıyla (WindowBackground, ContentLayer, CardBackground) beslenir.
+- **Pencere Yaşam Döngüsü Senkronizasyonu:** Sistem tepsisinden geri yükleme (`IsVisibleChanged`) ve simge durumundan normale dönme (`StateChanged`) anlarında malzeme ve arka plan kancaları tetiklenerek DWM kompozisyon kaybı önlenir.
+- **Ortam Işığı (Ambient Light) Canlı Senkronizasyonu:** Ayarlar sayfasından ortam ışığı açılıp kapatıldığında ana pencereye anında yansıtılır; radyal ışık yayılım yarıçapı içerik görünürlüğünü ve okunabilirliğini bozmayacak şekilde dengelendi.
+- **Test ve Süreç Kararlılığı:** Arka plan dosya dinleyicisi ve tekil örnek (single instance) tüketim testlerindeki yarışma durumu (race condition) deterministik hale getirildi.

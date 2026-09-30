@@ -1169,13 +1169,27 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v4206 = new ReleaseChangelogItem
+            {
+                Version = "v4.20.6",
+                ReleaseDate = "30 Eylül 2026",
+                Title = "Pencere saydamlığı ve Mica malzeme arka planı kararlı hale getirildi",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "Pencere Şeffaflığı & Hayalet Görünüm Çözümü: Sistem tepsisinden veya başlangıçta uygulamanın şeffaf/içini gösterir şekilde açılması sorunu giderildi.",
+                    "Yedek Malzeme ve Tint Opaklığı: Window Tint opaklığı dengelendi (%82 taban opaklık), sistem Mica efektini kapattığında veya pil tasarrufunda katı arka plan rengine güvenli geçiş sağlandı.",
+                    "Yaşam Döngüsü Kancaları: Pencere simge durumundan büyütüldüğünde veya sistem tepsisinden geri yüklendiğinde DWM malzeme katmanı otomatik olarak yenilenir.",
+                    "Ortam Işığı Dengesi: Aşırı parlak mor radyal degrade alanı sınırlandırılarak pencere içeriğiyle dengeli ve yumuşak hale getirildi."
+                }
+            };
+
             var v4205 = new ReleaseChangelogItem
             {
                 Version = "v4.20.5",
                 ReleaseDate = "29 Eylül 2026",
                 Title = "Sürüm geçmişi sayfalandı, çökme ve olay kayıtları silinebiliyor",
-                IsLatest = true,
-                IsExpanded = true,
                 Highlights = new List<string>
                 {
                     "Sürüm geçmişi güncellendi: v4.7.0 ile v4.20.x arasındaki tüm sürümler listeye eklendi, en yeni sürüm en üstte.",
@@ -2397,8 +2411,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v4205;
+            LatestRelease = v4206;
 
+            ReleaseHistory.Add(v4206);
             ReleaseHistory.Add(v4205);
             ReleaseHistory.Add(v4204);
             ReleaseHistory.Add(v4203);

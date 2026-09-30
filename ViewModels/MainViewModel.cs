@@ -86,6 +86,13 @@ namespace Bakım.ViewModels
             _isGameModeActive = _gameModeService.IsGameModeActive;
             _gameModeService.GameModeChanged += active => OnUiThread(() => IsGameModeActive = active);
             _isAmbientLightEnabled = _appSettings.Current?.IsAmbientLightEnabled ?? true;
+            _appSettings.SettingsChanged += s =>
+            {
+                if (s != null)
+                {
+                    OnUiThread(() => IsAmbientLightEnabled = s.IsAmbientLightEnabled);
+                }
+            };
 
             _miniTelemetryTimer = new DispatcherTimer
             {

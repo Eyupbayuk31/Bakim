@@ -31,9 +31,29 @@ namespace Bakım
             // Tepsi simgesini hemen bağla; pencere gizli başlatılsa bile tepsi ikonu aktif olsun
             _trayIcon.Attach(this);
 
-            Loaded += (_, _) =>
+            void ReapplyBackdrop()
             {
-                theme.ApplyBackdrop(settings.Current.IsMicaEnabled);
+                if (IsVisible && WindowState != WindowState.Minimized)
+                {
+                    theme.ApplyBackdrop(settings.Current.IsMicaEnabled);
+                }
+            }
+
+            SourceInitialized += (_, _) => ReapplyBackdrop();
+            Loaded += (_, _) => ReapplyBackdrop();
+            IsVisibleChanged += (_, e) =>
+            {
+                if (e.NewValue is true)
+                {
+                    ReapplyBackdrop();
+                }
+            };
+            StateChanged += (_, _) =>
+            {
+                if (WindowState != WindowState.Minimized)
+                {
+                    ReapplyBackdrop();
+                }
             };
 
             // Farenin geri/ileri düğmeleri modüller arası gezinme geçmişinde dolaşır (§2.3).

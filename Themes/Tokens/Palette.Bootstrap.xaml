@@ -194,7 +194,7 @@
     <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="#B3000000"/>
 
     <!-- ============ CAM VE MALZEME SİSTEMİ (docs/WIN11_CAM_TASARIM_PLANI.md §2) ============ -->
-    <SolidColorBrush x:Key="Surface.WindowTint" Color="#00202020"/>
+    <SolidColorBrush x:Key="Surface.WindowTint" Color="#D1202020"/>
     <SolidColorBrush x:Key="Layer.Fill" Color="#18FFFFFF"/>
     <SolidColorBrush x:Key="Layer.Stroke" Color="#2EFFFFFF"/>
     <SolidColorBrush x:Key="Card.Fill" Color="#22FFFFFF"/>
@@ -228,13 +228,13 @@
         <GradientStop Color="#14FFFFFF" Offset="1.0"/>
     </LinearGradientBrush>
 
-    <RadialGradientBrush x:Key="Surface.AmbientLight" Center="1,0" GradientOrigin="1,0" RadiusX="1.25" RadiusY="1.25">
+    <RadialGradientBrush x:Key="Surface.AmbientLight" Center="1,0" GradientOrigin="1,0" RadiusX="0.85" RadiusY="0.65">
         <GradientStop Color="#3860CDFF" Offset="0.0"/>
         <GradientStop Color="#1460CDFF" Offset="0.45"/>
         <GradientStop Color="#0060CDFF" Offset="1.0"/>
     </RadialGradientBrush>
 
-    <RadialGradientBrush x:Key="Surface.AmbientSecondary" Center="0,1" GradientOrigin="0,1" RadiusX="1.15" RadiusY="1.15">
+    <RadialGradientBrush x:Key="Surface.AmbientSecondary" Center="0,1" GradientOrigin="0,1" RadiusX="0.75" RadiusY="0.55">
         <GradientStop Color="#2299EBFF" Offset="0.0"/>
         <GradientStop Color="#0899EBFF" Offset="0.5"/>
         <GradientStop Color="#0099EBFF" Offset="1.0"/>
