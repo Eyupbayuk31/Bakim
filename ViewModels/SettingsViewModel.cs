@@ -1169,13 +1169,31 @@ namespace Bakım.ViewModels
         {
             ReleaseHistory.Clear();
 
+            var v4210 = new ReleaseChangelogItem
+            {
+                Version = "v4.21.0",
+                ReleaseDate = "14 Ekim 2026",
+                Title = "Gelişmiş PE adli bilişim ve tehdit analiz motoru",
+                IsLatest = true,
+                IsExpanded = true,
+                Highlights = new List<string>
+                {
+                    "PE Overlay & Entropi Analizi: PE bölümlerinin bittiği ofsetten sonra dosyaya eklenen veriler tespit edilir ve Shannon entropisi (0.0 - 8.0) hesaplanır. Şifreli veya paketlenmiş dropper payload'ları ortaya çıkarılır.",
+                    "Authenticode İstisna Kalkanı: İmzalı Windows ikililerinde dijital sertifika tablosunun overlay alanında yer alması nedeniyle oluşan yanlış alarmlar önlendi. Meşru sistem dosyalarında sıfır sahte pozitif sağlandı.",
+                    "TLS Callback Denetimi: Programın giriş noktası (EntryPoint) çalışmadan önce yürütülen gizli TLS rutinleri ve anti-debug teknikleri tespit edilir.",
+                    "Gömülü İkili & BYOVD Tespiti: PE overlay ve kaynak (.rsrc) bölümlerine gizlenen ikincil çalıştırılabilir dosyalar (.exe) ve savunmasız sürücüler (.sys) otomatik algılanır.",
+                    "Derleyici Parmak İzi (Rich Header): DOS stub üzerindeki DanS/Rich XOR yapısı doğrulanarak dosyanın Microsoft Visual Studio (MSVC), MinGW/GCC veya .NET derleyicileriyle üretildiği belirlenir.",
+                    "Genişletilmiş Win32 Tehdit Kuralları: Anti-Debug / Evasion, LSASS bellek dökümü ve doğrudan kernel sürücü yükleme (BYOVD) API zincirleri tehdit kataloğuna eklendi."
+                }
+            };
+
             var v4206 = new ReleaseChangelogItem
             {
                 Version = "v4.20.6",
                 ReleaseDate = "30 Eylül 2026",
                 Title = "Pencere saydamlığı ve Mica malzeme arka planı kararlı hale getirildi",
-                IsLatest = true,
-                IsExpanded = true,
+                IsLatest = false,
+                IsExpanded = false,
                 Highlights = new List<string>
                 {
                     "Pencere Şeffaflığı & Hayalet Görünüm Çözümü: Sistem tepsisinden veya başlangıçta uygulamanın şeffaf/içini gösterir şekilde açılması sorunu giderildi.",
@@ -2411,8 +2429,9 @@ namespace Bakım.ViewModels
                 }
             };
 
-            LatestRelease = v4206;
+            LatestRelease = v4210;
 
+            ReleaseHistory.Add(v4210);
             ReleaseHistory.Add(v4206);
             ReleaseHistory.Add(v4205);
             ReleaseHistory.Add(v4204);

@@ -767,6 +767,31 @@ namespace Bakım.Services
             { "SetWindowsHookExW", ("Klavye / Casusluk", "Küresel Windows kancası kurarak tuş basımlarını yakalar.") },
             { "GetAsyncKeyState", ("Klavye / Casusluk", "Arka planda basılan klavye tuşlarını gizlice dinler (Keylogger).") },
 
+            // Anti-Debugging & Evasion
+            { "IsDebuggerPresent", ("Anti-Debug / Evasion", "Sürecin bir hata ayıklayıcı (debugger) altında çalışıp çalışmadığını denetler.") },
+            { "CheckRemoteDebuggerPresent", ("Anti-Debug / Evasion", "Uzak bir debugger varlığını sorgulayarak analizi engeller.") },
+            { "NtQueryInformationProcess", ("Anti-Debug / Evasion", "ProcessDebugPort veya ProcessDebugFlags ile gelişmiş debugger tespiti yapar.") },
+            { "ZwQueryInformationProcess", ("Anti-Debug / Evasion", "Kernel seviyesinde süreç hata ayıklama bilgilerini sorgular.") },
+            { "NtSetInformationThread", ("Anti-Debug / Evasion", "ThreadHideFromDebugger kullanarak iş parçacığını hata ayıklayıcılardan gizler.") },
+            { "ZwSetInformationThread", ("Anti-Debug / Evasion", "Kernel çağrısıyla iş parçacığını debugger'lardan gizler.") },
+            { "OutputDebugStringA", ("Anti-Debug / Evasion", "Hata ayıklayıcı varlığını tespit etmek için debug çıktısı gönderir.") },
+            { "OutputDebugStringW", ("Anti-Debug / Evasion", "Hata ayıklayıcı varlığını sorgulamak için debug çıktısı gönderir.") },
+            { "FindWindowA", ("Anti-Analiz / Pencere", "Cheat Engine, x64dbg, IDA Pro gibi analiz araçlarının pencere başlıklarını arar.") },
+            { "FindWindowW", ("Anti-Analiz / Pencere", "Tersine mühendislik araçlarının pencere başlıklarını tarar.") },
+
+            // Credential Access & Memory Dumping
+            { "MiniDumpWriteDump", ("Kimlik Hırsızlığı / LSASS", "Hedef sürecin (özellikle lsass.exe) tam bellek dökümünü diske yazar (parola hırsızlığı).") },
+            { "OpenProcessToken", ("Süreç / Token Manipülasyonu", "Süreç erişim belirtecini açarak ayrıcalık yükseltme hazırlar.") },
+
+            // Kernel Driver Loading & Rootkit (BYOVD)
+            { "NtLoadDriver", ("Kernel Sürücü / BYOVD", "Doğrudan Windows çekirdeğine (Ring 0) sürücü yükler; rootkit ve koruma bypass tekniğidir.") },
+            { "ZwLoadDriver", ("Kernel Sürücü / BYOVD", "Kernel düzeyinde izinsiz veya savunmasız sürücü yükleme çağrısıdır.") },
+            { "CreateServiceA", ("Kalıcılık / Registry", "Yeni bir Windows servisi veya çekirdek sürücü servisi tanımlar.") },
+            { "CreateServiceW", ("Kalıcılık / Registry", "Yeni bir Windows servisi veya çekirdek sürücü servisi kaydeder.") },
+            { "StartServiceA", ("Kalıcılık / Registry", "Kayıtlı bir servis veya kernel sürücüsünü başlatır.") },
+            { "StartServiceW", ("Kalıcılık / Registry", "Kayıtlı bir servis veya kernel sürücüsünü başlatır.") },
+            { "DeviceIoControl", ("Kernel Sürücü / BYOVD", "Kernel sürücüleriyle doğrudan haberleşerek bellek ve donanım manipülasyonu yapar.") },
+
             // C2 & Network Communication
             { "InternetOpenUrlA", ("Ağ / C2 İletişimi", "Uzak C2 sunucusuna HTTP/HTTPS bağlantısı açar.") },
             { "InternetOpenUrlW", ("Ağ / C2 İletişimi", "Uzak C2 sunucusuna HTTP/HTTPS bağlantısı açar.") },
@@ -857,7 +882,59 @@ namespace Bakım.Services
                 ushort dllCharacteristics = 0;
                 uint importDirRva = 0;
                 uint importDirSize = 0;
+                uint resourceDirRva = 0;
+                uint resourceDirSize = 0;
+                uint certDirOffset = 0;
+                uint certDirSize = 0;
+                uint tlsDirRva = 0;
+                uint tlsDirSize = 0;
                 bool isDotNet = false;
+
+                // Rich Header & Compiler Fingerprint (DOS Stub ile e_lfanew arasında)
+                if (e_lfanew > 0x40 && e_lfanew <= stream.Length)
+                {
+                    long currentPos = stream.Position;
+                    try
+                    {
+                        stream.Position = 0x40;
+                        int stubLen = Math.Min(e_lfanew - 0x40, 2048);
+                        byte[] stub = reader.ReadBytes(stubLen);
+                        int richIdx = -1;
+                        for (int j = 0; j <= stub.Length - 8; j++)
+                        {
+                            if (stub[j] == 0x52 && stub[j + 1] == 0x69 && stub[j + 2] == 0x63 && stub[j + 3] == 0x68) // "Rich"
+                            {
+                                richIdx = j;
+                                break;
+                            }
+                        }
+
+                        if (richIdx >= 0)
+                        {
+                            peHeader.HasRichHeader = true;
+                            uint xorKey = BitConverter.ToUInt32(stub, richIdx + 4);
+                            uint dansEncrypted = 0x536E6144 ^ xorKey; // "DanS" little-endian
+                            int dansIdx = -1;
+                            for (int j = richIdx - 4; j >= 0; j -= 4)
+                            {
+                                if (BitConverter.ToUInt32(stub, j) == dansEncrypted)
+                                {
+                                    dansIdx = j;
+                                    break;
+                                }
+                            }
+
+                            peHeader.CompilerFingerprint = dansIdx >= 0
+                                ? "Microsoft Visual Studio (MSVC Rich Header Doğrulandı)"
+                                : "MSVC (Rich Yapısı Mevcut)";
+                        }
+                    }
+                    catch { }
+                    finally
+                    {
+                        stream.Position = currentPos;
+                    }
+                }
 
                 // 4. Optional Header
                 if (sizeOfOptionalHeader > 0)
@@ -903,6 +980,9 @@ namespace Bakım.Services
                             uint va = reader.ReadUInt32();
                             uint sz = reader.ReadUInt32();
                             if (d == 1) { importDirRva = va; importDirSize = sz; }
+                            if (d == 2) { resourceDirRva = va; resourceDirSize = sz; }
+                            if (d == 4) { certDirOffset = va; certDirSize = sz; } // Certificate Table (raw file offset)
+                            if (d == 9) { tlsDirRva = va; tlsDirSize = sz; }
                             if (d == 14 && va > 0) { isDotNet = true; } // CLR Runtime Header
                         }
                     }
@@ -934,11 +1014,21 @@ namespace Bakım.Services
                             uint va = reader.ReadUInt32();
                             uint sz = reader.ReadUInt32();
                             if (d == 1) { importDirRva = va; importDirSize = sz; }
+                            if (d == 2) { resourceDirRva = va; resourceDirSize = sz; }
+                            if (d == 4) { certDirOffset = va; certDirSize = sz; } // Certificate Table (raw file offset)
+                            if (d == 9) { tlsDirRva = va; tlsDirSize = sz; }
                             if (d == 14 && va > 0) { isDotNet = true; } // CLR Runtime Header
                         }
                     }
 
                     stream.Position = optionalHeaderStart + sizeOfOptionalHeader;
+                }
+
+                if (!peHeader.HasRichHeader)
+                {
+                    peHeader.CompilerFingerprint = isDotNet
+                        ? ".NET Derleyicisi (Roslyn/CLR)"
+                        : "MinGW / GCC veya Özel Derleyici (Rich Header Yok)";
                 }
 
                 peHeader.EntryPointRva = entryPointRva;
@@ -1092,6 +1182,172 @@ namespace Bakım.Services
                         Severity = ThreatSeverity.Critical,
                         ScoreImpact = 25
                     });
+                }
+
+                // 5b. PE Overlay Tespiti (Ek Veri / Dropper Gizleme Alanı)
+                uint maxRawEnd = 0;
+                foreach (var sec in rawSectionTuples)
+                {
+                    uint end = sec.RawPointer + sec.RawSize;
+                    if (end > maxRawEnd) maxRawEnd = end;
+                }
+
+                if (maxRawEnd > 0 && stream.Length > maxRawEnd + 512)
+                {
+                    long overlaySize = stream.Length - maxRawEnd;
+                    peHeader.HasOverlay = true;
+                    peHeader.OverlaySizeBytes = overlaySize;
+
+                    long savedPos = stream.Position;
+                    try
+                    {
+                        stream.Position = maxRawEnd;
+                        int readLen = (int)Math.Min(overlaySize, 2 * 1024 * 1024);
+                        byte[] overlayBuf = reader.ReadBytes(readLen);
+                        double overlayEntropy = CalculateBufferEntropy(overlayBuf);
+                        peHeader.OverlayEntropy = Math.Round(overlayEntropy, 2);
+
+                        if (CheckBufferForEmbeddedPe(overlayBuf))
+                        {
+                            peHeader.HasEmbeddedPe = true;
+                            peHeader.EmbeddedPeDetails = "Overlay alanında ikincil bir PE/Sürücü başlığı tespit edildi.";
+                            score += 30;
+                            result.Factors.Add(new ThreatFactor
+                            {
+                                Title = "PE Overlay İçinde Gömülü İkili / Sürücü (Embedded PE)",
+                                Description = "Dosyanın sonundaki ek veri (Overlay) içinde başka bir çalıştırılabilir dosya ya da sürücü (.sys) başlığı bulundu. Klasik Dropper ve BYOVD tekniğidir.",
+                                Severity = ThreatSeverity.Critical,
+                                ScoreImpact = 30
+                            });
+                        }
+                        else
+                        {
+                            // Authenticode Sertifika Bloğu Kontrolü:
+                            // PE spesifikasyonunda Data Directory[4] (IMAGE_DIRECTORY_ENTRY_SECURITY) RVA değil,
+                            // doğrudan ham dosya ofsetidir (file offset).
+                            // Dijital imzalı Windows ikililerinde sertifika tablosu PE bölümlerinin bittiği ofsette saklanır.
+                            // Sertifikalar ve imzalar yüksek entropilidir (>7.2). Bu durum meşru bir dijital imzadır, zararlı payload değildir.
+                            bool isSignatureBlock = (certDirOffset > 0 && certDirOffset >= maxRawEnd) || result.IsSigned;
+
+                            if (isSignatureBlock)
+                            {
+                                result.Factors.Add(new ThreatFactor
+                                {
+                                    Title = "Authenticode Sertifika Bloğu (Overlay)",
+                                    Description = $"PE bölümlerinin bittiği ofsetten sonra {peHeader.OverlaySizeFormatted} boyutunda dijital imza sertifika tablosu yer alıyor. Dosya meşru şekilde imzalanmıştır.",
+                                    Severity = ThreatSeverity.Clean,
+                                    ScoreImpact = 0
+                                });
+                            }
+                            else if (overlaySize > 4096)
+                            {
+                                int impact = overlayEntropy >= 7.2 ? 20 : 10;
+                                score += impact;
+                                result.Factors.Add(new ThreatFactor
+                                {
+                                    Title = overlayEntropy >= 7.2
+                                        ? "Şüpheli Şifreli PE Overlay (Gizli Payload)"
+                                        : "PE Overlay Tespit Edildi (Ek Veri)",
+                                    Description = $"PE bölümlerinin bittiği ofsetten sonra {peHeader.OverlaySizeFormatted} boyutunda ek veri bulundu (Entropi: {overlayEntropy:F2} / 8.0). Dropper ve şifrelenmiş payload'lar sıklıkla bu alana gizlenir.",
+                                    Severity = overlayEntropy >= 7.2 ? ThreatSeverity.Warning : ThreatSeverity.Info,
+                                    ScoreImpact = impact
+                                });
+                            }
+                        }
+                    }
+                    catch { }
+                    finally
+                    {
+                        stream.Position = savedPos;
+                    }
+                }
+
+                // 5c. Kaynaklar (.rsrc) Bölümünde Gömülü İkili / Sürücü Taraması
+                if (!peHeader.HasEmbeddedPe && resourceDirRva > 0 && resourceDirSize > 0)
+                {
+                    uint resOffset = RvaToOffset(resourceDirRva, rawSectionTuples);
+                    if (resOffset > 0 && resOffset < stream.Length)
+                    {
+                        long savedPos = stream.Position;
+                        try
+                        {
+                            stream.Position = resOffset;
+                            int readLen = (int)Math.Min(resourceDirSize, 4 * 1024 * 1024);
+                            byte[] resBuf = reader.ReadBytes(readLen);
+                            if (CheckBufferForEmbeddedPe(resBuf))
+                            {
+                                peHeader.HasEmbeddedPe = true;
+                                peHeader.EmbeddedPeDetails = "Kaynak (.rsrc) bölümünde gömülü ikincil bir PE/Sürücü tespit edildi.";
+                                score += 25;
+                                result.Factors.Add(new ThreatFactor
+                                {
+                                    Title = "Kaynaklarda Gömülü İkili / Sürücü (Embedded PE in .rsrc)",
+                                    Description = "Dosyanın kaynak bölümünde başka bir çalıştırılabilir dosya veya kernel sürücüsü (.sys) başlığı tespit edildi. Dropper veya BYOVD rootkit tekniğidir.",
+                                    Severity = ThreatSeverity.Critical,
+                                    ScoreImpact = 25
+                                });
+                            }
+                        }
+                        catch { }
+                        finally
+                        {
+                            stream.Position = savedPos;
+                        }
+                    }
+                }
+
+                // 5d. TLS Callbacks Tespiti (Main Öncesi Gizli Kod Yürütme)
+                if (tlsDirRva > 0 && tlsDirSize > 0)
+                {
+                    uint tlsOffset = RvaToOffset(tlsDirRva, rawSectionTuples);
+                    if (tlsOffset > 0 && tlsOffset + (is64Bit ? 40 : 24) <= stream.Length)
+                    {
+                        long savedPos = stream.Position;
+                        try
+                        {
+                            stream.Position = tlsOffset + (is64Bit ? 24 : 12);
+                            ulong addressOfCallBacks = is64Bit
+                                ? reader.ReadUInt64()
+                                : reader.ReadUInt32();
+
+                            if (addressOfCallBacks >= imageBase)
+                            {
+                                uint callbacksRva = (uint)(addressOfCallBacks - imageBase);
+                                uint callbacksOffset = RvaToOffset(callbacksRva, rawSectionTuples);
+                                if (callbacksOffset > 0 && callbacksOffset < stream.Length)
+                                {
+                                    stream.Position = callbacksOffset;
+                                    int callbackCount = 0;
+                                    while (callbackCount < 32 && stream.Position + (is64Bit ? 8 : 4) <= stream.Length)
+                                    {
+                                        ulong cb = is64Bit ? reader.ReadUInt64() : reader.ReadUInt32();
+                                        if (cb == 0) break;
+                                        callbackCount++;
+                                    }
+
+                                    if (callbackCount > 0)
+                                    {
+                                        peHeader.HasTlsCallbacks = true;
+                                        peHeader.TlsCallbackCount = callbackCount;
+                                        int tlsImpact = result.IsSigned ? 5 : 15;
+                                        score += tlsImpact;
+                                        result.Factors.Add(new ThreatFactor
+                                        {
+                                            Title = "TLS Callback Tespiti (Main Öncesi Kod Yürütme)",
+                                            Description = $"Programda giriş noktası (EntryPoint) çalışmadan önce yürütülen {callbackCount} adet TLS Callback tespit edildi. Anti-debug veya gizli ön-başlatma rutinleri için sıkça kullanılır.",
+                                            Severity = ThreatSeverity.Warning,
+                                            ScoreImpact = tlsImpact
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        catch { }
+                        finally
+                        {
+                            stream.Position = savedPos;
+                        }
+                    }
                 }
 
                 // 6. Import Directory & Suspicious Win32 APIs
@@ -1311,6 +1567,30 @@ namespace Bakım.Services
                 i++;
             }
             return $"{dblBytes:0.##} {suffixes[i]}";
+        }
+
+        private static bool CheckBufferForEmbeddedPe(byte[] buffer)
+        {
+            if (buffer == null || buffer.Length < 256) return false;
+            for (int i = 0; i <= buffer.Length - 128; i++)
+            {
+                if (buffer[i] == 0x4D && buffer[i + 1] == 0x5A) // 'MZ'
+                {
+                    if (i + 0x3C + 4 <= buffer.Length)
+                    {
+                        int elfanew = BitConverter.ToInt32(buffer, i + 0x3C);
+                        if (elfanew > 0 && elfanew < 1024 && i + elfanew + 4 <= buffer.Length)
+                        {
+                            if (buffer[i + elfanew] == 0x50 && buffer[i + elfanew + 1] == 0x45 &&
+                                buffer[i + elfanew + 2] == 0 && buffer[i + elfanew + 3] == 0) // 'PE\0\0'
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
     }
 }

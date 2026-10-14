@@ -61,6 +61,49 @@ namespace Bakım.Models
         public string ImageBaseHex => $"0x{ImageBase:X16}";
         public int SectionCount { get; set; }
         public bool Is64Bit { get; set; }
+
+        // Overlay (Ek Veri / Dropper Gizleme)
+        public bool HasOverlay { get; set; }
+        public long OverlaySizeBytes { get; set; }
+        public string OverlaySizeFormatted => FormatBytes(OverlaySizeBytes);
+        public double OverlayEntropy { get; set; }
+
+        // TLS Callbacks (Pre-main execution)
+        public bool HasTlsCallbacks { get; set; }
+        public int TlsCallbackCount { get; set; }
+
+        // Compiler Fingerprint & Rich Header
+        public bool HasRichHeader { get; set; }
+        public string CompilerFingerprint { get; set; } = "Bilinmiyor";
+
+        // Gömülü İkili / Sürücü
+        public bool HasEmbeddedPe { get; set; }
+        public string EmbeddedPeDetails { get; set; } = string.Empty;
+
+        public string OverlaySummary => HasOverlay 
+            ? $"{OverlaySizeFormatted} (Entropi: {OverlayEntropy:F2})" 
+            : "Yok (Temiz)";
+
+        public string TlsCallbacksSummary => HasTlsCallbacks 
+            ? $"{TlsCallbackCount} Callback" 
+            : "Yok";
+
+        public string EmbeddedPeSummary => HasEmbeddedPe 
+            ? "Mevcut (Şüpheli)" 
+            : "Yok (Temiz)";
+
+        private static string FormatBytes(long bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB" };
+            double len = bytes;
+            int order = 0;
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len /= 1024;
+            }
+            return $"{len:0.##} {sizes[order]}";
+        }
     }
 
     public class ExploitMitigationMatrix
@@ -170,10 +213,14 @@ namespace Bakım.Models
         public Intent CategoryIntent => Category switch
         {
             "Bellek Enjeksiyonu" or "Process Hollowing" => Intent.Critical,
+            "Anti-Debug / Evasion" => Intent.Critical,
+            "Kernel Sürücü / BYOVD" => Intent.Critical,
+            "Kimlik Hırsızlığı / LSASS" => Intent.Critical,
             "Klavye / Casusluk" => Intent.Critical,
             "Ağ / C2 İletişimi" => Intent.Caution,
             "Kalıcılık / Registry" => Intent.Caution,
             "Süreç / Token" => Intent.Caution,
+            "Anti-Analiz / Pencere" => Intent.Caution,
             _ => Intent.Neutral
         };
 
@@ -181,10 +228,14 @@ namespace Bakım.Models
         public string CategoryIcon => Category switch
         {
             "Bellek Enjeksiyonu" or "Process Hollowing" => "Bug24",
+            "Anti-Debug / Evasion" => "ShieldDismiss24",
+            "Kernel Sürücü / BYOVD" => "Server24",
+            "Kimlik Hırsızlığı / LSASS" => "LockClosed24",
             "Klavye / Casusluk" => "Eye24",
             "Ağ / C2 İletişimi" => "Globe24",
             "Kalıcılık / Registry" => "Pin24",
             "Süreç / Token" => "Key24",
+            "Anti-Analiz / Pencere" => "Eye24",
             _ => "Code24"
         };
     }

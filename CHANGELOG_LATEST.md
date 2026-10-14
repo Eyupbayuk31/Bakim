@@ -1,12 +1,13 @@
-# Bakım v4.20.6 - Sürüm Notları
+# Bakım v4.21.0 - Sürüm Notları
 
-## Pencere saydamlığı ve Mica malzeme arka planı kararlı hale getirildi
+## Gelişmiş PE Adli Bilişim ve Tehdit Analiz Motoru
 
-Uygulamanın bazı durumlarda (sistem tepsisinden geri yüklenirken, simge durumundan büyütülürken, pil tasarrufu modunda veya Windows saydamlık efektleri kapalıyken) şeffaf veya içi görünür hayalet pencere olarak açılması sorunu tamamen giderildi.
+Tehdit Analizörü (File Threat Analyzer) ikili dosya inceleme altyapısı ileri düzey adli bilişim (binary forensics) yetenekleriyle güçlendirildi. Derin PE başlık incelemesi, şifreli payload tespiti, TLS callback analizi ve kötü niyetli API zincirlerinin yakalanması sağlandı.
 
 ### Yenilikler ve İyileştirmeler
-- **Hayalet Pencere & Şeffaflık Çözümü:** Pencere başlangıç arka plan rengi ve Window Tint fırçası %82 taban opaklık ile güvene alındı. Windows DWM Mica efektini askıya alsa bile pencere asla şeffaf kalmaz.
-- **Güvenli Katı Arka Plan Yedeklemesi:** Efektsiz (None) veya Yüksek Karşıtlık modlarında tüm cam katmanları %100 opak Fluent yüzey fırçalarıyla (WindowBackground, ContentLayer, CardBackground) beslenir.
-- **Pencere Yaşam Döngüsü Senkronizasyonu:** Sistem tepsisinden geri yükleme (`IsVisibleChanged`) ve simge durumundan normale dönme (`StateChanged`) anlarında malzeme ve arka plan kancaları tetiklenerek DWM kompozisyon kaybı önlenir.
-- **Ortam Işığı (Ambient Light) Canlı Senkronizasyonu:** Ayarlar sayfasından ortam ışığı açılıp kapatıldığında ana pencereye anında yansıtılır; radyal ışık yayılım yarıçapı içerik görünürlüğünü ve okunabilirliğini bozmayacak şekilde dengelendi.
-- **Test ve Süreç Kararlılığı:** Arka plan dosya dinleyicisi ve tekil örnek (single instance) tüketim testlerindeki yarışma durumu (race condition) deterministik hale getirildi.
+- **PE Overlay & Shannon Entropi Analizi:** PE bölümlerinin bittiği ofsetten sonra dosyaya eklenen veriler tespit edilir ve Shannon entropisi (0.0 - 8.0) hesaplanır. Şifreli veya paketlenmiş dropper payload'ları anında ortaya çıkarılır.
+- **Authenticode İstisna Kalkanı:** İmzalı Windows ikililerinde dijital sertifika tablosunun overlay alanında yer alması nedeniyle oluşan yanlış alarmlar önlendi. Meşru sistem dosyalarında sıfır sahte pozitif sağlandı.
+- **TLS (Thread Local Storage) Callback Denetimi:** Giriş noktası (EntryPoint) çalışmadan önce bellekte yürütülen gizli TLS fonksiyonları taranır; anti-debug ve analiz savuşturma rutinleri yakalanır.
+- **Gömülü İkili & BYOVD Tespiti:** PE overlay ve kaynak (.rsrc) bölümlerine gizlenen ikincil çalıştırılabilir dosyalar (.exe) ve savunmasız sürücüler (.sys) otomatik tespit edilir.
+- **Derleyici Parmak İzi (Rich Header):** DOS stub üzerindeki DanS/Rich XOR yapısı doğrulanarak dosyanın Microsoft Visual C++ (MSVC), MinGW/GCC veya .NET derleyicileriyle üretildiği belirlenir.
+- **Genişletilmiş Win32 API Kural Zincirleri:** Anti-Debug / Evasion, LSASS bellek dökümü ve doğrudan kernel sürücü yükleme (BYOVD) API zincirleri tehdit kataloğuna eklendi.

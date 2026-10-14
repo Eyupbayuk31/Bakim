@@ -155,6 +155,116 @@ public class PeAnalysisTests
         Assert.NotNull(result);
     }
 
+    [Fact]
+    public async Task MinimalPe_WithoutOverlay_ReportsNoOverlay()
+    {
+        string path = WriteTemp(BuildMinimalPe(512));
+        try
+        {
+            var result = await CreateAnalyzer().AnalyzeFileAsync(path);
+            Assert.NotNull(result);
+            Assert.True(result.HasPeAnalysis);
+            Assert.False(result.PeHeader!.HasOverlay);
+        }
+        finally { TryDelete(path); }
+    }
+
+    [Fact]
+    public async Task PeWithOverlay_IsDetectedAndMeasured()
+    {
+        var dummyOverlay = new byte[8192];
+        new Random(42).NextBytes(dummyOverlay);
+
+        string path = WriteTemp(BuildMinimalPe(512, dummyOverlay));
+        try
+        {
+            var result = await CreateAnalyzer().AnalyzeFileAsync(path);
+            Assert.NotNull(result);
+            Assert.True(result.HasPeAnalysis);
+            Assert.True(result.PeHeader!.HasOverlay);
+            Assert.Equal(8192, result.PeHeader.OverlaySizeBytes);
+            Assert.True(result.PeHeader.OverlayEntropy > 5.0);
+            Assert.Contains(result.Factors, f => f.Title.Contains("PE Overlay"));
+        }
+        finally { TryDelete(path); }
+    }
+
+    [Fact]
+    public async Task PeWithEmbeddedPeInOverlay_TriggersCriticalThreatFactor()
+    {
+        var embeddedPe = BuildMinimalPe(256);
+        string path = WriteTemp(BuildMinimalPe(512, embeddedPe));
+        try
+        {
+            var result = await CreateAnalyzer().AnalyzeFileAsync(path);
+            Assert.NotNull(result);
+            Assert.True(result.HasPeAnalysis);
+            Assert.True(result.PeHeader!.HasEmbeddedPe);
+            Assert.Contains(result.Factors, f => f.Title.Contains("Gömülü İkili") && f.Severity == ThreatSeverity.Critical);
+        }
+        finally { TryDelete(path); }
+    }
+
+    /// <summary>Geçerli bir minimal 64-bit PE dosyası üretir.</summary>
+    private static byte[] BuildMinimalPe(int sectionRawSize = 512, byte[]? overlay = null)
+    {
+        int peOffset = 0x80;
+        int optHeaderSize = 240;
+        int sectionHeaderOffset = peOffset + 24 + optHeaderSize;
+        int headersSize = 0x200; // 512 bayt hizalı
+
+        int totalSize = headersSize + sectionRawSize + (overlay?.Length ?? 0);
+        var bytes = new byte[totalSize];
+
+        // DOS Header
+        bytes[0] = 0x4D; bytes[1] = 0x5A; // MZ
+        BitConverter.GetBytes(peOffset).CopyTo(bytes, 0x3C);
+
+        // NT Signature
+        bytes[peOffset] = 0x50; bytes[peOffset + 1] = 0x45; // PE\0\0
+
+        // File Header (20 bayt)
+        BitConverter.GetBytes((ushort)0x8664).CopyTo(bytes, peOffset + 4); // AMD64
+        BitConverter.GetBytes((ushort)1).CopyTo(bytes, peOffset + 6);      // 1 section
+        BitConverter.GetBytes((uint)1700000000).CopyTo(bytes, peOffset + 8); // timestamp
+        BitConverter.GetBytes((ushort)optHeaderSize).CopyTo(bytes, peOffset + 20);
+        BitConverter.GetBytes((ushort)0x0002).CopyTo(bytes, peOffset + 22); // Executable
+
+        // Optional Header (PE32+)
+        int opt = peOffset + 24;
+        BitConverter.GetBytes((ushort)0x20B).CopyTo(bytes, opt); // PE32+
+        BitConverter.GetBytes((uint)0x1000).CopyTo(bytes, opt + 16); // EntryPoint
+        BitConverter.GetBytes((ulong)0x140000000).CopyTo(bytes, opt + 24); // ImageBase
+        BitConverter.GetBytes((uint)0x1000).CopyTo(bytes, opt + 32); // SectionAlignment
+        BitConverter.GetBytes((uint)0x200).CopyTo(bytes, opt + 36);  // FileAlignment
+        BitConverter.GetBytes((ushort)2).CopyTo(bytes, opt + 68);    // Subsystem = Windows GUI
+        BitConverter.GetBytes((ushort)0x0160).CopyTo(bytes, opt + 70); // DllCharacteristics (ASLR + DEP)
+        BitConverter.GetBytes((uint)16).CopyTo(bytes, opt + 108);     // NumberOfRvaAndSizes
+
+        // Section Header (.text)
+        int sec = sectionHeaderOffset;
+        System.Text.Encoding.ASCII.GetBytes(".text\0\0\0").CopyTo(bytes, sec);
+        BitConverter.GetBytes((uint)0x1000).CopyTo(bytes, sec + 8);   // VirtualSize
+        BitConverter.GetBytes((uint)0x1000).CopyTo(bytes, sec + 12);  // VirtualAddress
+        BitConverter.GetBytes((uint)sectionRawSize).CopyTo(bytes, sec + 16); // RawSize
+        BitConverter.GetBytes((uint)headersSize).CopyTo(bytes, sec + 20);    // RawPointer
+        BitConverter.GetBytes((uint)0x60000020).CopyTo(bytes, sec + 36);    // Characteristics (Exec + Read)
+
+        // NOP'lar ile bölümü doldur
+        for (int i = 0; i < sectionRawSize; i++)
+        {
+            bytes[headersSize + i] = 0x90;
+        }
+
+        // Varsa Overlay kopyala
+        if (overlay != null && overlay.Length > 0)
+        {
+            overlay.CopyTo(bytes, headersSize + sectionRawSize);
+        }
+
+        return bytes;
+    }
+
     private static void TryDelete(string path)
     {
         try { if (File.Exists(path)) File.Delete(path); } catch { }

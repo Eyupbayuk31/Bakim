@@ -129,6 +129,18 @@ namespace Bakım.Core.Analyzer
             if (downloader && !trustedSigned)
                 findings.Add(new ImportFinding("İndir ve çalıştır birleşimi", "İnternetten dosya indirme ve doğrudan çalıştırma API'leri birlikte.", 10, false));
 
+            bool antiDebug = (set.Contains("IsDebuggerPresent") || set.Contains("CheckRemoteDebuggerPresent") || set.Contains("NtQueryInformationProcess")) && set.Contains("NtSetInformationThread");
+            if (antiDebug && !trustedSigned)
+                findings.Add(new ImportFinding("Hata ayıklama engelleme ve gizlenme zinciri", "Program hem debugger tespiti hem de iş parçacığını debugger'dan gizleme API'lerini içeriyor (Anti-Debug / Evasion tekniği).", 15, false));
+
+            bool driverLoad = set.Contains("NtLoadDriver") || set.Contains("ZwLoadDriver") || (set.Contains("CreateService") && set.Contains("DeviceIoControl"));
+            if (driverLoad && !trustedSigned)
+                findings.Add(new ImportFinding("Kernel sürücüsü yükleme ve iletişim zinciri (BYOVD)", "Program doğrudan çekirdek (Ring 0) sürücüsü yükleme veya sürücüyle doğrudan IOCTL iletişimi yapma yetkilerine sahip.", 20, true));
+
+            bool lsassDump = set.Contains("MiniDumpWriteDump") && set.Contains("OpenProcess");
+            if (lsassDump && !trustedSigned)
+                findings.Add(new ImportFinding("Süreç bellek dökümü (LSASS Şifre Çalma)", "Program çalışan başka süreçlerin tam bellek dökümünü alma API'lerini içeriyor.", 25, true));
+
             return findings;
         }
 

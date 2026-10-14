@@ -579,22 +579,40 @@
                                     <TextBlock Text="{Binding PeHeader.CompileTimeUtc}" Style="{StaticResource FieldValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
+                            <Border Style="{StaticResource MetaCard}" Margin="0,6,6,6">
                                 <StackPanel>
                                     <TextBlock Text="Giriş noktası (RVA)" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.EntryPointHex}" Style="{StaticResource MonoValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource MetaCard}" Margin="6,6,6,0">
+                            <Border Style="{StaticResource MetaCard}" Margin="6,6,6,6">
                                 <StackPanel>
                                     <TextBlock Text="Image base" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.ImageBaseHex}" Style="{StaticResource MonoValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
+                            <Border Style="{StaticResource MetaCard}" Margin="6,6,0,6">
                                 <StackPanel>
                                     <TextBlock Text="Bölüm sayısı" Style="{StaticResource FieldLabel}"/>
                                     <TextBlock Text="{Binding PeHeader.SectionCount}" Style="{StaticResource FieldValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="0,6,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="Derleyici parmak izi" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.CompilerFingerprint}" Style="{StaticResource FieldValue}" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="6,6,6,0">
+                                <StackPanel>
+                                    <TextBlock Text="PE overlay (ek veri)" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.OverlaySummary}" Style="{StaticResource FieldValue}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetaCard}" Margin="6,6,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="TLS callbacks" Style="{StaticResource FieldLabel}"/>
+                                    <TextBlock Text="{Binding PeHeader.TlsCallbacksSummary}" Style="{StaticResource FieldValue}"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
